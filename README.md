@@ -1,8 +1,8 @@
 # f5-appsvcs-extension
 
 [![Slack Status](https://f5cloudsolutions.herokuapp.com/badge.svg)](https://f5cloudsolutions.herokuapp.com)
-[![Releases](https://img.shields.io/github/release/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-aws-cloudformation/releases)
-[![Issues](https://img.shields.io/github/issues/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-aws-cloudformation/issues)
+[![Releases](https://img.shields.io/github/release/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-appsvcs-extension/releases)
+[![Issues](https://img.shields.io/github/issues/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-appsvcs-extension/issues)
 
 ## Introduction
 Application Services 3 Extension (AS3) is a flexible, low-overhead mechanism for managing application-specific configurations on a BIG-IP system. AS3 uses a declarative model, meaning you provide a JSON declaration rather than a set of imperative commands. 
