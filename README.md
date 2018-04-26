@@ -15,7 +15,7 @@ If you come across a bug or other issue when using AS3, use [GitHub Issues](http
 
 Because AS3 is has been created and fully tested by F5 Networks, it is fully supported by F5. This means you can get assistance if necessary from [F5 Technical Support](https://support.f5.com/csp/article/K25327565).  
 
-Be sure to see the [Support page](SUPPORT.md) for more details and supported versions of AS3.  
+Be sure to see the [Support page](SUPPORT.md) in this repo for more details and supported versions of AS3.  
 
 **Community Help**  
 We encourage you to use our [Slack channel](https://f5cloudsolutions.herokuapp.com) for discussion and assistance on AS3 templates (**f5-appsvcs-extension** channel). There are F5 employees who are members of this community who typically monitor the channel Monday-Friday 9-5 PST and will offer best-effort assistance. This slack channel community support should **not** be considered a substitute for F5 Technical Support. See the [Slack Channel Statement](slack-channel-statement.md) for guidelines on using this channel.
@@ -26,7 +26,7 @@ We encourage you to use our [Slack channel](https://f5cloudsolutions.herokuapp.c
 Copyright 2014-2018 F5 Networks Inc.
 
 
-## F5 Networks Contributor License Agreement
+### F5 Networks Contributor License Agreement
 
 Before you start contributing to any project sponsored by F5 Networks, Inc. (F5) on GitHub, you will need to sign a Contributor License Agreement (CLA).  
 
