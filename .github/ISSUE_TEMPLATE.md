@@ -8,14 +8,15 @@
 
 
 ##### AS3 BUILD/ VERSION
-<!--- Paste verbatim output from “ansible --version” between quotes below -->
+<!--- Type your AS3 build number. This is the number on the RPM file just before .noarch, i.e. f5-appsvcs-3.0.0-34.noarch.rpm is build 34.  From the BIG-IP UI, click iApp > Package Management LX and then look at the Build column
+-->
 ```
 
 ```
 
 ##### BIGIP VERSION
 <!---
-Paste verbatim output from “tmsh show sys version” between quotes below
+Paste verbatim output from “tmsh show sys version” between quotes below. From the BIG-IP UI, click System > Configuration, and then look at the Version row 
 -->
 ```
 
@@ -24,6 +25,10 @@ Paste verbatim output from “tmsh show sys version” between quotes below
 
 ##### SUMMARY
 <!--- Explain the problem briefly -->
+
+```
+
+```
 
 ##### STEPS TO REPRODUCE
 <!---
