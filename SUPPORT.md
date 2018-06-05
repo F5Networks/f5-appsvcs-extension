@@ -13,3 +13,4 @@ Currently supported versions:
 | Software Version | First Customer Ship | End of Software Development | End of Technical Support |
 |------------------|---------------------|-----------------------------|--------------------------|
 | AS 3.0.0         | 30-Apr-2018         | 30-Oct-2018                 | 30-Apr-2019              |
+| AS 3.1.0         | 05-Jun-2018         | 05-Dec-2018                 | 05-Jun-2019              |
