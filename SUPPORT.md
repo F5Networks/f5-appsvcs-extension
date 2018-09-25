@@ -20,9 +20,9 @@ Currently supported versions:
  
 | Software Version | Release Type  | First Customer Ship | End of  Support |
 |------------------|---------------|---------------------|-----------------|
-| AS 3.2.0         | Feature       |  06-Jul-2018        | 06-Oct-2019     |
-| AS 3.3.0         | Feature       |  06-Aug-2018        | 06-Nov-2019     |
-|AS 3.4.0          |Feature        |05-Sep-2018          |05-Dec-2018      |
+| AS 3.2.0         | Feature       |  06-Jul-2018        | 06-Oct-2018     |
+| AS 3.3.0         | Feature       |  06-Aug-2018        | 06-Nov-2018     |
+| AS 3.4.0         | Feature       |  05-Sep-2018        | 05-Dec-2018     |
 
 Versions no longer supported:
 
