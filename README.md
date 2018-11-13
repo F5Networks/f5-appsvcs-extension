@@ -8,7 +8,7 @@
 Application Services 3 Extension (AS3) is a flexible, low-overhead mechanism for managing application-specific configurations on a BIG-IP system. AS3 uses a declarative model, meaning you provide a JSON declaration rather than a set of imperative commands. 
 
 ## Documentation
-For the documentation on AS3, including download, installation, and usage instructions, see the AS3 [User](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/userguide/) and [Reference](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/refguide/) guides at http://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/.
+For the documentation on AS3, including download, installation, and usage instructions, see the AS3 [User](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/) and [Reference](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/) guides at http://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/.
 
 ### Example AS3 declarations
 The AS3 documentation contains a wide variety of example declarations you can use directly or modify to suit your needs.  See the [Examples](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/userguide/examples.html) and [Additional Examples](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/refguide/additional-examples.html) pages.

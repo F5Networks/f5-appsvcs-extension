@@ -12,7 +12,7 @@ http://www.f5.com/about/guidelines-policies/ and http://askf5.com.
 **AS3 Software Lifecycle**:
 * AS3 releases are intended to be delivered on a monthly basis
 * There will be 2 stability releases per year (focused on bug-fixing, infra improvements, and so on)
-* Stability releases are supported for 1 year
+* Stability (LTS) releases are supported for 1 year
 * Feature releases are supported for 3 months
 * "End of Support" = End of Software Development (EOSD) + End of Technical Support (EOTS)
 
@@ -20,9 +20,10 @@ Currently supported versions:
  
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
-| AS 3.3.0         | Feature       |  06-Aug-2018        | 06-Nov-2018     |
 | AS 3.4.0         | Feature       |  05-Sep-2018        | 05-Dec-2018     |
 | AS 3.5.0         | Feature       |  02-Oct-2018        | 02-Jan-2019     |
+| AS 3.5.1         | LTS           |  13-Nov-2018        | 13-Nov-2019     |
+| AS 3.6.0         | Feature       |  13-Nov-2018        | 13-Fed-2019     |
 
 Versions no longer supported:
 
@@ -31,5 +32,7 @@ Versions no longer supported:
 | AS 3.0.0         | Feature       |  30-Apr-2018        | 30-Jul-2018     |
 | AS 3.1.0         | Feature       |  05-Jun-2018        | 05-Sep-2018     |
 | AS 3.2.0         | Feature       |  06-Jul-2018        | 06-Oct-2018     |
+| AS 3.3.0         | Feature       |  06-Aug-2018        | 06-Nov-2018     |
 
 See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/3/) for new features and issues resolved for each release. 
+
