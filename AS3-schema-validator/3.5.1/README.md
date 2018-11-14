@@ -12,7 +12,6 @@ Validator requires:
 - The validator is specific to an AS3 release. This means this validator for 3.5.1 and 3.5.0 will not validate other versions of AS3 correctly.
 
 ## INSTALLATION
-------------
 
 1. Download and extract the Validator Tool which is in the build.zip folder in this directory.  
 
@@ -24,9 +23,9 @@ Validator requires:
 
     - Inside the as3validatortool directory run  ```serve -s build```
 
-    - To set a port (optional) run ```serve -s build -p 5000```
+    - To set a port (optional) run ```serve -s build -p 5000```  <br>      Note: The default port is 5000.
 
-  Note: The default port is 5000.
+3. Once it is installed, use the **Help** tab for specific instructions on using the validator.
 
 
 
