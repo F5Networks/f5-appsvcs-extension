@@ -13,7 +13,7 @@ Validator requires:
 
 ## INSTALLATION
 
-1. Download and extract the Validator Tool which is in the build.zip folder in this directory.  
+1. Download and extract the Validator Tool which is in [build.zip](build.zip).  
 
 2. Install the tool 
 
