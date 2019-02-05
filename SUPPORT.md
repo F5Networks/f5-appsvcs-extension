@@ -24,6 +24,7 @@ Currently supported versions:
 | AS 3.6.0         | Feature       |  13-Nov-2018        | 13-Feb-2019     |
 | AS 3.7.0         | Feature       |  11-Dec-2018        | 11-Mar-2019     |
 | AS 3.8.0         | Feature       |  23-Jan-2019        | 23-Apr-2019     | 
+| AS 3.8.1         | Feature       |  06-Jan-2019        | 06-May-2019     |
 
 Versions no longer supported:
 
