@@ -37,5 +37,5 @@ Versions no longer supported:
 | AS 3.4.0         | Feature       |  05-Sep-2018        | 05-Dec-2018     |
 | AS 3.5.0         | Feature       |  02-Oct-2018        | 02-Jan-2019     |
 
-See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/) for new features and issues resolved for each release. 
+See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release. 
 
