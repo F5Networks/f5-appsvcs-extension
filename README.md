@@ -13,6 +13,8 @@ For the documentation on AS3, including download, installation, and usage instru
 ### Example AS3 declarations
 The AS3 documentation contains a wide variety of example declarations you can use directly or modify to suit your needs.  See the [Examples](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/examples.html) and [Additional Examples](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/declarations/) pages.
 
+
+
 ## Filing Issues and Getting Help
 If you come across a bug or other issue when using AS3, use [GitHub Issues](https://github.com/F5Networks/f5-appsvcs-extension/issues) to submit an issue for our team.  You can also see the current known issues on that page, which are tagged with a purple Known Issue label.  
 
