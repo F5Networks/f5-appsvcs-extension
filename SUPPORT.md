@@ -20,10 +20,9 @@ Currently supported versions:
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
 | AS 3.5.1         | LTS           |  13-Nov-2018        | 13-Nov-2019     |
-| AS 3.8.0         | Feature       |  23-Jan-2019        | 23-Apr-2019     | 
-| AS 3.8.1         | Feature       |  06-Jan-2019        | 06-May-2019     |
 | AS 3.9.0	       | Feature	   |  27-Feb-2019	     | 27-May-2019     |
 | AS 3.10.0	       | Feature	   |  09-Apr-2019	     | 09-Jul-2019     |
+| AS 3.11.0	       | Feature	   |  07-May-2019	     | 07-Aug-2019     |
 
 
 Versions no longer supported:
@@ -38,6 +37,8 @@ Versions no longer supported:
 | AS 3.5.0         | Feature       |  02-Oct-2018        | 02-Jan-2019     |
 | AS 3.6.0         | Feature       |  13-Nov-2018        | 13-Feb-2019     |
 | AS 3.7.0         | Feature       |  11-Dec-2018        | 11-Mar-2019     |
+| AS 3.8.0         | Feature       |  23-Jan-2019        | 23-Apr-2019     | 
+| AS 3.8.1         | Feature       |  06-Jan-2019        | 06-May-2019     |
 
 See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release. 
 
