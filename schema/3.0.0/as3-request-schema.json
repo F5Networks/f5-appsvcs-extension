@@ -1,0 +1,151 @@
+{
+ "$id": "urn:uuid:85626792-9ee7-46bb-8fc8-4ba708cfdc1d",
+ "$schema": "http://json-schema.org/draft-07/schema#",
+
+ "title": "AS3 Request",
+ "description": "AS3 request body",
+ "type": "object",
+
+ "properties": {
+    "class": {
+        "title": "Class",
+        "description": "Indicates the structure of this request",
+        "type": "string",
+        "enum": [ "AS3" ]
+    },
+    "action": {
+        "title": "Action",
+        "description": "Indicates desired action:  'deploy' means deploy the included declaration to targetHost; 'dry-run' does NOT deploy the declaration but does do everything short of changing targetHost's configuration; 'redeploy' causes an old declaration from targetHost's declaration history to be re-deployed (property redeployAge (default 0) selects the old declaration, and note redeployUpdateMode as well); 'retrieve' returns a copy of a previously-deployed declaration; 'remove' deletes the declaration or declaration component." ,
+        "type": "string",
+        "enum": [ "deploy", "dry-run", "redeploy", "retrieve", "remove" ]
+    },
+    "redeployAge": {
+        "title": "Redeploy age",
+        "description": "For action=redeploy (only), chooses which old declaration to deploy again.  Value 0 (default) means re-deploy the most recent declaration (the one which set the current configuration of targetHost-- useful to erase changes introduced by manual configuration).  Value 1 means re-deploy the declaration prior to the most-recent one, etc.  Note that whenever re-deploying an old declaration causes ADC configuration changes, that declaration becomes the current declaration (age 0) and the ages of all other declarations in the history increase (0 => 1, 1 => 2, u.s.w.)",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 15,
+        "default": 0
+    },
+    "redeployUpdateMode": {
+        "title": "Redeploy update mode",
+        "description": "Value 'original' (default) means re-deploy the chosen declaration using its original updateMode (which if not explicitly specified in that declaration will default to 'selective').  Otherwise, forces the updateMode for re-deployment to 'complete' or 'selective' as specified.  Remember, 'selective' updates do not affect Tenants not explicitly named.  To simply roll-back the targetHost configuration to the state it had immediately after deploying some earlier declaration, put 'complete' here (that will remove Tenants created later than the redeployAge declaration).  To use action=redeploy as a simple roll-back facility, always deploy (updateMode=)complete declarations.",
+        "type": "string",
+        "enum": [ "original", "complete", "selective" ],
+        "default": "original"
+    },
+    "persist": {
+        "title": "Persist on device",
+        "description": "When true (default) make the whole working configuration persistent on targetHost after (and only if) this request deploys any changes.  If false, leave the working configuration in memory only (from which it may be lost if targetHost restarts)",
+        "type": "boolean",
+        "default": true
+    },
+    "syncToGroup": {
+        "title": "Sync to device group",
+        "description": "Name (like /Common/my_dg) of config-sync group TO which targetHost configuration should be synchronized after (and only if) this request deploys any changes.  When empty (default) this request will not affect config-sync at all.  Leave undefined or empty whenever you use auto-sync or manage configuration synchronization separately",
+        "type": "string",
+        "default": ""
+    },
+    "historyLimit": {
+        "title": "History limit",
+        "description": "This value (default 4) limits the number of previously-deployed declarations saved on targetHost for review using GET and for use with POST action=redeploy and redeployAge=N.  The limit includes the current and immediately-previous declarations so may not be less than two",
+        "type": "number",
+        "minimum": 2,
+        "maximum": 15,
+        "default": 4
+    },
+
+    "logLevel": {
+        "title": "Log level",
+        "description": "Controls level of detail in logs using RFC 5424 severity levels (default is 'error').  Portions of declaration may use different logLevels",
+        "type": "string",
+        "enum": [
+            "emergency", "alert", "critical", "error",
+            "warning", "notice", "info", "debug"
+        ],
+        "default": "error"
+    },
+    "trace": {
+        "title": "Trace",
+        "description": "If true, a detailed trace of the configuration process will be created for subsequent analysis (default false).  May be overridden on a per-Declaration and/or per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
+        "type": "boolean",
+        "default": false
+    },
+    "retrieveAge": {
+        "title": "Retrieve age",
+        "description": "Use this property with action=retrieve.  You can usually get a copy of the declaration most recently deployed to targetHost, and often copies of previously-deployed declarations are also available.  Value 0 (default) means 'the last-deployed declaration,' value 1 means 'the declaration previous to 0' and so-forth.  To get a list of available declarations, set value 'list'",
+        "type": [ "integer", "string" ],
+        "minimum": 0,
+        "pattern": "^list$",
+        "default": 0
+    },
+    "targetHost": {
+        "title": "Target host",
+        "description": "Hostname or IP address of ADC to which request applies (default localhost)",
+        "type": "string",
+        "anyOf": [
+            { "format": "hostname" },
+            { "format": "f5ip" }
+        ],
+        "default": "localhost"
+    },
+    "targetPort": {
+        "title": "Target port",
+        "description": "TCP port number of management service on targetHost; default 0 means auto-discover",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65535,
+        "default": 0
+    },
+    "targetUsername": {
+        "title": "Target username",
+        "description": "Username of principal authorized to modify configuration of targetHost (may not include the character ':').  NOTE:  this is generally not required to configure 'localhost' because client authentication and authorization precede invocation of AS3.  It is also not required for any targetHost if you populate targetTokens",
+        "type": "string",
+        "pattern": "^[^:]{0,254}$"
+    },
+    "targetPassphrase": {
+        "title": "Target passphrase",
+        "description": "Passphrase for targetUsername account.  This is generally not required to configure 'localhost' and is not required when you populate targetTokens",
+        "type": "string",
+        "pattern": "^.{0,254}$"
+    },
+    "targetTokens": {
+        "title": "Target tokens",
+        "description": "One or more HTTP headers (each a property, like 'X-F5-Auth-Token': 'MF6APSRUYKTMSDBEOOEWLCNSO2') to be sent with queries to the targetHost management service as authentication/authorization tokens",
+        "type": "object",
+        "patternProperties": {
+            "^[^\\x00-\\x20:\\x7f-\\xff]{1,254}$": {
+                "title": "HTTP header",
+                "type": "string",
+                "pattern": "^[^\\x00-\\x1f\\x7f-\\xff]{0,8192}$"
+            }
+        },
+        "additionalProperties": false
+    },
+    "targetTimeout": {
+        "title": "Target timeout",
+        "description": "Maximum delay allowed while communicating with targetHost device (seconds, default 150)",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 900,
+        "default": 150
+    },
+    "resourceTimeout": {
+        "title": "Resource timeout",
+        "description": "Maximum delay allowed while communicating with URL resources (seconds, default 5)",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 900,
+        "default": 5
+    },
+
+    "declaration": {
+        "title": "Declaration",
+        "description": "Declaration to deploy to targetHost",
+        "type": "object",
+        "$comment": "See adc-schema.json"
+    }
+ },
+
+ "required": [ "class" ]
+}
