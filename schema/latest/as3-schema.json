@@ -683,6 +683,15 @@
           "description": "If false (default), the system updates the policy in every AS3 declaration deployment. If true, AS3 creates the policy on first deployment, and leaves it untouched afterwards",
           "type": "boolean",
           "default": false
+        },
+        "enforcementMode": {
+          "title": "Enforcement Mode",
+          "description": "Overrides the enforcement mode setting of the WAF policy",
+          "type": "string",
+          "enum": [
+            "blocking",
+            "transparent"
+          ]
         }
       },
       "additionalProperties": false,
@@ -1121,6 +1130,12 @@
             "allow",
             "require"
           ]
+        },
+        "renegotiationEnabled": {
+          "title": "TLS Renegotiation",
+          "description": "Controls on a per-connection basis how the system responds to mid-stream SSL reconnection requests. When enabled, the system processes mid-stream SSL renegotiation requests.",
+          "type": "boolean",
+          "default": true
         },
         "staplerOCSPEnabled": {
           "description": "Specifies whether to enable OCSP stapling",
@@ -3389,10 +3404,18 @@
         },
         "minimumMonitors": {
           "title": "Minimum monitors",
-          "description": "Member is down when fewer than minimum monitors report it healthy",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 63
+          "description": "Member is down when fewer than minimum monitors report it healthy. Specify 'all' or an integer value (1-63)",
+          "oneOf": [
+            {
+              "type": "string",
+              "const": "all"
+            },
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 63
+            }
+          ]
         },
         "members": {
           "title": "Members",
@@ -3676,6 +3699,29 @@
         }
       ]
     },
+    "Include": {
+      "title": "Include",
+      "description": "Defines inclusion of one part of the schema into another",
+      "properties": {
+        "include": {
+          "description": "Keyword to allow for inclusion of one part of the schema into another",
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "f5pointer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "f5pointer"
+              }
+            }
+          ],
+          "f5include": "object"
+        }
+      }
+    },
     "Pointer_DNS_TSIG_Key": {
       "description": "Reference to a DNS TSIG key",
       "type": "object",
@@ -3777,7 +3823,7 @@
         },
         "persistenceMethods": {
           "title": "Persistence methods",
-          "description": "Default 'source-address' is generally good",
+          "description": "Default 'source-address' is generally good. Use 'persistenceMethods: []' for no persistence.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Basic_Persist"
@@ -4595,7 +4641,7 @@
         },
         "persistenceMethods": {
           "title": "Persistence methods",
-          "description": "Default 'source-address' is generally good",
+          "description": "Default 'source-address' is generally good. Use 'persistenceMethods: []' for no persistence.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Basic_Persist"
@@ -5024,6 +5070,7 @@
               "FTP_Profile",
               "HTTP_Profile",
               "HTTP_Compress",
+              "HTTP2_Profile",
               "Multiplex_Profile",
               "TCP_Profile",
               "UDP_Profile",
@@ -5042,6 +5089,7 @@
               "NAT_Source_Translation",
               "SSH_Proxy_Profile",
               "Data_Group",
+              "DNS_Cache",
               "DNS_Profile",
               "DNS_TSIG_Key",
               "DNS_Zone",
@@ -5368,6 +5416,18 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "HTTP2_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTTP2_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Multiplex_Profile"
                 }
               }
@@ -5578,6 +5638,18 @@
             },
             "then": {
               "$ref": "#/definitions/Data_Group"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "DNS_Cache"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/DNS_Cache"
             }
           },
           {
@@ -6082,7 +6154,9 @@
           "description": "Specifies the action that the firewall rule will take on matching packets.",
           "enum": [
             "accept",
-            "drop"
+            "drop",
+            "accept-decisively",
+            "reject"
           ]
         },
         "protocol": {
@@ -6328,6 +6402,42 @@
         }
       }
     },
+    "Pointer_TLS_Client": {
+      "description": "Reference to a TLS Client",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to TLS Client declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "TLS_Client"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP TLS Client",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile server-ssl"
+        }
+      ]
+    },
     "Enforcement_Rule_Forwarding_ICAP": {
       "description": "Specifies that the flow forwards to the ICAP virtual server",
       "properties": {
@@ -6435,6 +6545,109 @@
       },
       "required": [],
       "additionalProperties": false
+    },
+    "HTTP2_Profile": {
+      "title": "HTTP2 Profile",
+      "type": "object",
+      "description": "HTTP2 profile with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTTP2_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "activationMode": {
+          "title": "Activation Mode",
+          "description": "This setting specifies the condition that will cause the BIG-IP system to handle an incoming connection as an HTTP/2 connection.",
+          "type": "string",
+          "enum": [
+            "alpn",
+            "always"
+          ],
+          "default": "alpn"
+        },
+        "concurrentStreamsPerConnection": {
+          "title": "Concurrent streams per connection",
+          "description": "The number of concurrent connections to allow on a single HTTP/2 connection.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256,
+          "default": 10
+        },
+        "connectionIdleTimeout": {
+          "title": "Connection idle timeout",
+          "description": "The number of seconds that a HTTP/2 connection is left open idly before it is closed.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 300
+        },
+        "enforceTlsRequirements": {
+          "title": "Enforce TLS requirements",
+          "description": "Enable or disable enforcement of TLS requirements.",
+          "type": "boolean",
+          "default": true
+        },
+        "frameSize": {
+          "title": "Frame size",
+          "description": "The size of the data frames, in bytes, that the HTTP/2 protocol sends to the client.",
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 16384,
+          "default": 2048
+        },
+        "headerTableSize": {
+          "title": "Header table size",
+          "description": "The size of the header table, in KB, for the HTTP headers that the HTTP/2 protocol compresses to save bandwidth.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 4096
+        },
+        "includeContentLength": {
+          "title": "Include content length",
+          "description": "Enable to include content-length in HTTP/2 headers.",
+          "type": "boolean",
+          "default": false
+        },
+        "insertHeader": {
+          "title": "Insert header",
+          "description": "This setting specifies whether the BIG-IP system should add an HTTP header to the HTTP request to show that the request was received over HTTP/2.",
+          "type": "boolean",
+          "default": false
+        },
+        "insertHeaderName": {
+          "title": "Insert header name",
+          "description": "This setting specifies the name of the header that the BIG-IP system will add to the HTTP request when the Insert Header is enabled.",
+          "type": "string",
+          "default": "X-HTTP2"
+        },
+        "receiveWindow": {
+          "title": "Receive window",
+          "description": "The flow-control size for upload streams, in KB.",
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 128,
+          "default": 32
+        },
+        "writeSize": {
+          "title": "Write size",
+          "description": "The total size of combined data frames, in bytes, that the HTTP/2 protocol sends in a single write function.",
+          "type": "integer",
+          "minimum": 2048,
+          "maximum": 32768,
+          "default": 16384
+        }
+      },
+      "required": [
+        "class"
+      ]
     },
     "Pointer_Service": {
       "description": "Reference to a service",
@@ -8314,76 +8527,26 @@
           "default": "none"
         },
         "policyFirewallEnforced": {
-          "title": "Firewall policy",
-          "description": "AS3 pointer to firewall (ASM) policy declaration",
+          "title": "Firewall policy (enforced)",
           "f5modules": [
             "afm"
           ],
-          "type": "object",
-          "properties": {
-            "bigip": {
-              "title": "BIG-IP firewall policy",
-              "description": "Pathname of existing BIG-IP firewall policy",
-              "type": "string",
-              "format": "f5bigip"
-            },
-            "use": {
-              "title": "Use",
-              "description": "AS3 pointer to firewall policy declaration",
-              "type": "string",
-              "minLength": 1,
-              "f5pointsTo": {
-                "properties": {
-                  "class": {
-                    "const": "Firewall_Policy"
-                  }
-                },
-                "required": [
-                  "class"
-                ]
-              }
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Firewall_Policy"
             }
-          },
-          "additionalProperties": false,
-          "minProperties": 1,
-          "maxProperties": 1,
-          "f5bigComponent": "query security firewall policy"
+          ]
         },
         "policyFirewallStaged": {
-          "title": "Firewall policy",
-          "description": "AS3 pointer to firewall (ASM) policy declaration",
+          "title": "Firewall policy (staged)",
           "f5modules": [
             "afm"
           ],
-          "type": "object",
-          "properties": {
-            "bigip": {
-              "title": "BIG-IP firewall policy",
-              "description": "Pathname of existing BIG-IP firewall policy",
-              "type": "string",
-              "format": "f5bigip"
-            },
-            "use": {
-              "title": "Use",
-              "description": "AS3 pointer to firewall policy declaration",
-              "type": "string",
-              "minLength": 1,
-              "f5pointsTo": {
-                "properties": {
-                  "class": {
-                    "const": "Firewall_Policy"
-                  }
-                },
-                "required": [
-                  "class"
-                ]
-              }
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Firewall_Policy"
             }
-          },
-          "additionalProperties": false,
-          "minProperties": 1,
-          "maxProperties": 1,
-          "f5bigComponent": "query security firewall policy"
+          ]
         },
         "policyNAT": {
           "description": "AS3 pointer to NAT policy declaration",
@@ -8489,7 +8652,7 @@
         },
         "persistenceMethods": {
           "title": "Persistence method(s)",
-          "description": "List of persistence methods (each by name or AS3 pointer).  Element 0 is primary (default) persistence method",
+          "description": "List of persistence methods (each by name or AS3 pointer).  Element 0 is primary (default) persistence method. Use 'persistenceMethods: []' for no persistence.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Basic_Persist"
@@ -8617,6 +8780,11 @@
           ]
         }
       },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Include"
+        }
+      ],
       "dependencies": {
         "fallbackPersistenceMethod": [
           "persistenceMethods"
@@ -11395,6 +11563,49 @@
         }
       ]
     },
+    "DNS_Cache_Transparent": {
+      "description": "Properties for a DNS transparent cache",
+      "properties": {
+        "answerDefaultZones": {
+          "description": "Specifies whether the system answers DNS queries for the default zones localhost, reverse 127.0.0.1 and ::1, and AS112",
+          "type": "boolean",
+          "default": false
+        },
+        "localZones": {
+          "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/DNS_Zone_Local"
+          },
+          "propertyNames": {
+            "format": "hostname"
+          }
+        },
+        "messageCacheSize": {
+          "description": "Specifies the maximum size of the message cache in bytes",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 1048576
+        },
+        "recordCacheSize": {
+          "description": "Specifies the maximum size of the resource record (RR) cache in bytes",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 10485760
+        },
+        "recordRotationMethod": {
+          "description": "Specifies the resource record rotation method used within cached responses",
+          "type": "string",
+          "enum": [
+            "none",
+            "query-id"
+          ],
+          "default": "none"
+        }
+      }
+    },
     "Security_Log_Profile_Bot_Defense": {
       "title": "Bot Defense Log Profile",
       "description": "Specifies, when enabled, that the system logs events from the Proactive Bot Defense mechanism. Depending on settings, the system logs Illegal requests, Legal requests and BIGIP Challenges.",
@@ -11452,7 +11663,7 @@
       "properties": {
         "persistenceMethods": {
           "title": "Persistence methods",
-          "description": "Default 'cookie' is generally good",
+          "description": "Default 'cookie' is generally good. Use 'persistenceMethods: []' for no persistence.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Basic_Persist"
@@ -11510,6 +11721,24 @@
             "f5bigComponent": "query ltm profile http"
           },
           "default": "basic"
+        },
+        "profileHTTP2": {
+          "title": "HTTP/2 profile",
+          "description": "HTTP/2 profile; name of built-in or else AS3 pointer",
+          "if": {
+            "not": {
+              "type": "object"
+            }
+          },
+          "then": {
+            "type": "string",
+            "enum": [
+              "basic"
+            ]
+          },
+          "else": {
+            "$ref": "#/definitions/Pointer_HTTP2_Profile"
+          }
         },
         "profileHTTPCompression": {
           "title": "HTTP compression profile",
@@ -11827,6 +12056,32 @@
         "category"
       ],
       "additionalProperties": false
+    },
+    "DNS_Zone_Local": {
+      "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Describes how the cache handles a non-matching query for the local zone",
+          "type": "string",
+          "enum": [
+            "deny",
+            "redirect",
+            "refuse",
+            "static",
+            "transparent",
+            "type-transparent"
+          ],
+          "default": "transparent"
+        },
+        "records": {
+          "description": "A or AAAA record entry",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "Enforcement_Policy": {
       "description": "Configures policies for the Policy Enforcement Manager (PEM)",
@@ -12490,7 +12745,7 @@
         },
         "persistenceMethods": {
           "title": "Persistence methods",
-          "description": "Default 'source-address' is generally good",
+          "description": "Default 'source-address' is generally good. Use 'persistenceMethods: []' for no persistence.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Basic_Persist"
@@ -15746,7 +16001,7 @@
           "title": "Port",
           "description": "L4 port for service (like 443 for HTTPS)",
           "type": "integer",
-          "minimum": 1,
+          "minimum": 0,
           "maximum": 65535
         },
         "address": {
@@ -15765,8 +16020,9 @@
           "title": "Address Translation Port",
           "description": "L4 port for service (like 443 for HTTPS)",
           "type": "integer",
-          "minimum": 1,
-          "maximum": 65535
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 0
         },
         "monitors": {
           "title": "Monitors",
@@ -17682,6 +17938,23 @@
       "description": "Reference to a DNS cache",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to DNS cache declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "DNS_Cache"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP DNS cache",
           "type": "string",
@@ -21676,6 +21949,49 @@
         "receive"
       ]
     },
+    "DNS_Cache": {
+      "title": "DNS Cache",
+      "description": "Configures a DNS cache",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "DNS_Cache"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "type": {
+          "description": "Type of DNS cache",
+          "type": "string",
+          "enum": [
+            "transparent"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "transparent"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/DNS_Cache_Transparent"
+          }
+        }
+      ],
+      "required": [
+        "class",
+        "type"
+      ]
+    },
     "Enforcement_Rule_Usage_Hsl": {
       "description": "Sends reporting data to remote HSL servers",
       "properties": {
@@ -21838,7 +22154,7 @@
         },
         "optimisticLockKey": {
           "title": "Optimistic lock key",
-          "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key AS3 computes for the most-recent previous declaration, then AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'opLocks=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by AS3 may be used here-- you cannot generate your own.",
+          "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key AS3 computes for the most-recent previous declaration, then AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by AS3 may be used here-- you cannot generate your own.",
           "type": "string",
           "maxLength": 128,
           "default": ""
@@ -23784,6 +24100,15 @@
               "class"
             ]
           }
+        },
+        "clientTLS": {
+          "title": "Client TLS",
+          "description": "AS3 pointer to client TLS Profile",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_TLS_Client"
+            }
+          ]
         }
       },
       "if": true,
@@ -24071,6 +24396,42 @@
       },
       "required": [
         "class"
+      ]
+    },
+    "Pointer_HTTP2_Profile": {
+      "description": "Reference to a HTTP/2 Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to HTTP/2 Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "HTTP2_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP HTTP/2 Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile http2"
+        }
       ]
     },
     "Pointer_SSL_CRL_File": {
@@ -24489,6 +24850,42 @@
         }
       ]
     },
+    "Pointer_Firewall_Policy": {
+      "description": "Reference to a firewall (AFM) policy",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to firewall (AFM) policy declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Firewall_Policy"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP firewall (AFM) policy",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security firewall policy"
+        }
+      ]
+    },
     "Template_udp": {
       "title": "UDP application",
       "description": "Declares a UDP application",
@@ -24530,6 +24927,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.13.0",
             "3.12.0",
             "3.11.0",
             "3.10.0",
