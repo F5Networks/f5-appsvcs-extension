@@ -923,6 +923,25 @@
       ],
       "additionalProperties": false
     },
+    "Pointer_FPS_Profile": {
+      "description": "Reference to a FPS Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP FPS Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security anti-fraud profile"
+        }
+      ]
+    },
     "TLS_Server": {
       "title": "TLS Server",
       "description": "TLS server parameters (connections arriving to ADC)",
@@ -4569,9 +4588,10 @@
           "default": 4294967295
         },
         "storageFormat": {
-          "description": "Specifies the format type for log messages",
+          "description": "Specifies the format type for log messages. If it is a string it is user-defined",
           "anyOf": [
             {
+              "description": "Use this for user-defined storage format",
               "type": "string",
               "minLength": 1
             },
@@ -4658,6 +4678,9 @@
         },
         "profileILX": {
           "$ref": "#/definitions/Pointer_ILX_Profile"
+        },
+        "profileRTSP": {
+          "$ref": "#/definitions/Pointer_RTSP_Profile"
         }
       },
       "if": true,
@@ -5067,6 +5090,7 @@
               "FIX_Profile",
               "SIP_Profile",
               "Analytics_Profile",
+              "Analytics_TCP_Profile",
               "FTP_Profile",
               "HTTP_Profile",
               "HTTP_Compress",
@@ -5374,6 +5398,18 @@
             },
             "then": {
               "$ref": "#/definitions/Analytics_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Analytics_TCP_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Analytics_TCP_Profile"
             }
           },
           {
@@ -6804,6 +6840,106 @@
         }
       ]
     },
+    "Analytics_TCP_Profile": {
+      "title": "TCP Analytics Profile",
+      "type": "object",
+      "description": "TCP Analytics profile with configurable options",
+      "f5modules": [
+        "avr"
+      ],
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Analytics_TCP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "collectedStatsInternalLogging": {
+          "title": "Collected Statistics Internal Logging",
+          "description": "Specifies that statistics logs are stored in the system",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedStatsExternalLogging": {
+          "title": "Collected Statistics External Logging",
+          "description": "Specifies that statistics logs are stored on a remote server",
+          "type": "boolean",
+          "default": false
+        },
+        "externalLoggingPublisher": {
+          "$ref": "#/definitions/Pointer_Log_Publisher"
+        },
+        "collectedByClientSide": {
+          "title": "Collected By Client Side",
+          "description": "Specifies that system collects statistics on the client side",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedByServerSide": {
+          "title": "Collected By Server Side",
+          "description": "Specifies that system collects statistics on the server side",
+          "type": "boolean",
+          "default": true
+        },
+        "collectRemoteHostIp": {
+          "title": "Collect Remote Host IP",
+          "description": "Specifies that the system collects IP addresses with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        },
+        "collectRemoteHostSubnet": {
+          "title": "Collect Remote Host Subnet",
+          "description": "Specifies that the system saves the address of the subnet with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectNexthop": {
+          "title": "Collect Next Hop Ethernet Address",
+          "description": "Specifies that the system saves the address to which the traffic is being routed",
+          "type": "boolean",
+          "default": false
+        },
+        "collectContinent": {
+          "title": "Collect Continent",
+          "description": "Specifies that the system saves the name of the continent with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectCountry": {
+          "title": "Collect Country",
+          "description": "Specifies that the system saves the name of the country with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectRegion": {
+          "title": "Collect Region",
+          "description": "Specifies that the system saves the name of the region with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectCity": {
+          "title": "Collect City",
+          "description": "Specifies that the system saves the name of the city with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        },
+        "collectPostCode": {
+          "title": "Collect Post Code",
+          "description": "Specifies that the system saves the name of the postcode with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ]
+    },
     "DNS_Zone_DNS_Express": {
       "description": "Configure zone DNS Express settings",
       "properties": {
@@ -8070,6 +8206,28 @@
           "description": "Default 80 is well-known HTTP port",
           "type": "integer",
           "default": 80
+        },
+        "profileAccess": {
+          "title": "Access profile",
+          "f5modules": [
+            "apm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Access_Profile"
+            }
+          ]
+        },
+        "profileConnectivity": {
+          "title": "Connectivity profile",
+          "f5modules": [
+            "apm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Connectivity_Profile"
+            }
+          ]
         }
       },
       "if": true,
@@ -8079,7 +8237,10 @@
       "dependencies": {
         "serverTLS": {
           "not": {}
-        }
+        },
+        "profileConnectivity": [
+          "profileAccess"
+        ]
       },
       "required": [
         "class"
@@ -8649,6 +8810,12 @@
           "description": "If true (default), make server-side connection to server port (otherwise, connect to server on virtual-server port)",
           "type": "boolean",
           "default": true
+        },
+        "nat64Enabled": {
+          "title": "Translate IPv6 to IPv4",
+          "description": "If true, translate IPv6 traffic into IPv4 (default false)",
+          "type": "boolean",
+          "default": false
         },
         "persistenceMethods": {
           "title": "Persistence method(s)",
@@ -9398,9 +9565,10 @@
         },
         "congestionControl": {
           "title": "Congestion-control algorithm",
-          "description": "Selects TCP congestion-control algorithm (default 'woodside')",
+          "description": "Selects TCP congestion-control algorithm (default 'woodside'). Note: bbr is only supported in tmos version 14.1+.",
           "type": "string",
           "enum": [
+            "bbr",
             "cdg",
             "chd",
             "cubic",
@@ -11675,6 +11843,9 @@
         "profileAnalytics": {
           "$ref": "#/definitions/Pointer_Analytics_Profile"
         },
+        "profileAnalyticsTcp": {
+          "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
+        },
         "profileHTTP": {
           "title": "HTTP profile",
           "description": "HTTP profile; name of built-in or else AS3 pointer",
@@ -11843,6 +12014,17 @@
             "bigip"
           ],
           "f5bigComponent": "query apm profile access"
+        },
+        "profileFPS": {
+          "description": "FPS Profile to attach to service",
+          "f5modules": [
+            "fps"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_FPS_Profile"
+            }
+          ]
         }
       },
       "if": true,
@@ -12184,7 +12366,7 @@
     "Analytics_Profile": {
       "title": "Analytics Profile",
       "type": "object",
-      "description": "Analytics profile with configurable options",
+      "description": "HTTP analytics profile with configurable options",
       "f5modules": [
         "avr"
       ],
@@ -14316,6 +14498,42 @@
       "minProperties": 1,
       "maxProperties": 1
     },
+    "Pointer_Analytics_TCP_Profile": {
+      "description": "Reference to a Analytics_TCP_Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Analytics_TCP_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Analytics_TCP_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Analytics_TCP_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile tcp-analytics"
+        }
+      ]
+    },
     "Pointer_Bot_Signature_Category": {
       "description": "Reference to a bot signature category",
       "type": "object",
@@ -14812,6 +15030,25 @@
       "allOf": [
         {
           "f5bigComponent": "query ltm classification application"
+        }
+      ]
+    },
+    "Pointer_RTSP_Profile": {
+      "description": "Reference to a Real Time Streaming Protocol Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Real Time Streaming Protocol Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile rtsp"
         }
       ]
     },
@@ -16613,6 +16850,25 @@
         "replace"
       ]
     },
+    "Pointer_Access_Profile": {
+      "description": "Reference to a Access Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Access Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query apm profile access"
+        }
+      ]
+    },
     "Data_Group": {
       "title": "Data Group",
       "description": "Configures a data group object which contains list of data",
@@ -17063,6 +17319,9 @@
             "f5bigComponent": "query ltm profile tcp"
           },
           "default": "normal"
+        },
+        "profileAnalyticsTcp": {
+          "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
         },
         "profileSSHProxy": {
           "$ref": "#/definitions/Pointer_SSH_Proxy_Profile"
@@ -18274,6 +18533,9 @@
         },
         "profileRADIUS": {
           "$ref": "#/definitions/Pointer_Radius_Profile"
+        },
+        "profileTFTP": {
+          "$ref": "#/definitions/Pointer_TFTP_Profile"
         }
       },
       "if": true,
@@ -21838,6 +22100,9 @@
             "$ref": "#/definitions/Pointer_L4_Profile"
           },
           "default": "basic"
+        },
+        "profileAnalyticsTcp": {
+          "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
         }
       },
       "if": true,
@@ -22154,7 +22419,7 @@
         },
         "optimisticLockKey": {
           "title": "Optimistic lock key",
-          "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key AS3 computes for the most-recent previous declaration, then AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by AS3 may be used here-- you cannot generate your own.",
+          "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key AS3 computes for the most-recent previous declaration, then AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
           "type": "string",
           "maxLength": 128,
           "default": ""
@@ -22612,6 +22877,25 @@
       },
       "required": [
         "destination"
+      ]
+    },
+    "Pointer_Connectivity_Profile": {
+      "description": "Reference to a Connectivity Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Connectivity Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query apm profile connectivity"
+        }
       ]
     },
     "Pointer_Persist": {
@@ -23712,6 +23996,25 @@
         }
       },
       "additionalProperties": false
+    },
+    "Pointer_TFTP_Profile": {
+      "description": "Reference to a TFTP profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP TFTP profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile tftp"
+        }
+      ]
     },
     "Service_Discovery_Consul": {
       "description": "Service Discovery properties for Consul",
@@ -24927,6 +25230,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.14.0",
             "3.13.0",
             "3.12.0",
             "3.11.0",
