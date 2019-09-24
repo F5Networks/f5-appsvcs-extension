@@ -24,6 +24,7 @@ Currently supported versions:
 | AS 3.12.0	       | Feature	   |  18-Jun-2019	     | 18-Sep-2019     |
 | AS 3.13.0        | Feature       |  30-Jul-2019        | 30-Oct-2019     |
 | AS 3.13.1        | LTS           |  16-Jul-2019        | 16-Jul-2020     | 
+| AS 3.14.0        | Feature       |  10-Sep-2019        | 10-Dec-2019     | 
 
 \* Fix for updated Docker Container packaging only
 
