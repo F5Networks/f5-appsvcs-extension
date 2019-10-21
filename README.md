@@ -7,6 +7,9 @@
 ## Introduction
 Application Services 3 Extension (AS3) is a flexible, low-overhead mechanism for managing application-specific configurations on a BIG-IP system. AS3 uses a declarative model, meaning you provide a JSON declaration rather than a set of imperative commands. 
 
+**IMPORTANT** Beginning with AS3 3.15.0, the RPM, Postman Collection, and checksum files will no longer be located in the **/dist** directory in this repository.  These files can be found on the [Release page](https://github.com/F5Networks/f5-appsvcs-extension/releases), as **Assets**.  
+You can find historical files by using the **Branch** drop-down, clicking the **Tags** tab, and then selecting the appropriate release.
+
 ## Documentation
 For the documentation on AS3, including download, installation, and usage instructions, see the AS3 [User](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/) and [Reference](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/) guides at http://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/.
 

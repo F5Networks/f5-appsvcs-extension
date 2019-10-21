@@ -3423,7 +3423,7 @@
         },
         "minimumMonitors": {
           "title": "Minimum monitors",
-          "description": "Member is down when fewer than minimum monitors report it healthy. Specify 'all' or an integer value (1-63)",
+          "description": "Member is down when fewer than minimum monitors report it healthy. Specify 'all' to require all monitors to be up.",
           "oneOf": [
             {
               "type": "string",
@@ -4371,6 +4371,25 @@
         }
       ]
     },
+    "Pointer_PPTP_Profile": {
+      "description": "Reference to a PPTP_Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP PPTP_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile pptp"
+        }
+      ]
+    },
     "Pointer_Classification_Category": {
       "description": "Reference to a category classification",
       "type": "object",
@@ -4679,6 +4698,9 @@
         "profileILX": {
           "$ref": "#/definitions/Pointer_ILX_Profile"
         },
+        "profilePPTP": {
+          "$ref": "#/definitions/Pointer_PPTP_Profile"
+        },
         "profileRTSP": {
           "$ref": "#/definitions/Pointer_RTSP_Profile"
         }
@@ -4749,7 +4771,7 @@
     },
     "Service_Address": {
       "title": "Service address",
-      "description": "Service IP address definition (BIG-IP virtual-address)",
+      "description": "Service IP address definition (BIG-IP virtual-address).  NOTE: When AS3 creates a Service_Address, it is placed in /tenant/serviceAddress (and not /tenant/app/serviceAddress) on the BIG-IP system.",
       "type": "object",
       "properties": {
         "class": {
@@ -5073,6 +5095,7 @@
               "Service_HTTPS",
               "Service_TCP",
               "Service_UDP",
+              "Service_SCTP",
               "Service_L4",
               "Service_Generic",
               "Service_Address",
@@ -5194,6 +5217,18 @@
             },
             "then": {
               "$ref": "#/definitions/Service_UDP"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Service_SCTP"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Service_SCTP"
             }
           },
           {
@@ -6101,6 +6136,18 @@
           },
           "then": {
             "$ref": "#/definitions/Template_udp"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "template": {
+                "const": "sctp"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Template_sctp"
           }
         },
         {
@@ -8505,27 +8552,7 @@
                 "uniqueItems": true
               },
               "else": {
-                "type": "object",
-                "properties": {
-                  "use": {
-                    "title": "Use",
-                    "definition": "AS3 pointer to Service_Address declaration",
-                    "type": "string",
-                    "minLength": 1,
-                    "f5pointsTo": {
-                      "properties": {
-                        "class": {
-                          "const": "Service_Address"
-                        }
-                      },
-                      "required": [
-                        "class"
-                      ]
-                    }
-                  }
-                },
-                "minProperties": 1,
-                "maxProperties": 1
+                "$ref": "#/definitions/Pointer_Service_Address"
               }
             }
           },
@@ -11248,6 +11275,42 @@
       },
       "required": [],
       "additionalProperties": false
+    },
+    "Pointer_NAT_Source_Translation": {
+      "description": "Reference to a NAT Source Translation",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to NAT Source Translation declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "NAT_Source_Translation"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP NAT Source Translation",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security nat source-translation"
+        }
+      ]
     },
     "Security_Log_Profile_Protocol_Transfer": {
       "title": "Protocol Transfer Log Profile",
@@ -15870,6 +15933,18 @@
         }
       ]
     },
+    "Template_sctp": {
+      "title": "SCTP application",
+      "description": "Declares a SCTP application",
+      "properties": {
+        "serviceMain": {
+          "$ref": "#/definitions/Service_SCTP"
+        }
+      },
+      "required": [
+        "serviceMain"
+      ]
+    },
     "GSLB_Domain": {
       "title": "GSLB Domain",
       "description": "Configures GSLB (Global Server Load Balancing) settings for a domain.",
@@ -17422,6 +17497,43 @@
         "$ref": "#/definitions/Service_Core"
       }
     },
+    "Service_SCTP": {
+      "title": "SCTP virtual server",
+      "description": "Declares a SCTP virtual server",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Service_SCTP"
+        },
+        "virtualPort": {
+          "title": "virtual server SCTP port",
+          "description": "virtual server port",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "profileSCTP": {
+          "$ref": "#/definitions/Pointer_SCTP_Profile"
+        },
+        "layer4": {
+          "title": "L4 protocol",
+          "description": "For SCTP virtual server, Layer 4 protocol must be SCTP",
+          "type": "string",
+          "const": "sctp",
+          "default": "sctp"
+        }
+      },
+      "if": true,
+      "then": {
+        "$ref": "#/definitions/Service_Core"
+      },
+      "required": [
+        "class",
+        "virtualPort"
+      ]
+    },
     "Service_Generic": {
       "description": "Declares a generic virtual server",
       "type": "object",
@@ -18655,6 +18767,25 @@
           "required": [
             "service"
           ]
+        }
+      ]
+    },
+    "Pointer_SCTP_Profile": {
+      "description": "Reference to a SCTP Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP SCTP Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile sctp"
         }
       ]
     },
@@ -21056,6 +21187,20 @@
             "maxProperties": 1,
             "f5bigComponent": "query security firewall port-list"
           }
+        },
+        "vlans": {
+          "type": "array",
+          "description": "A list of VLANs by BIG-IP pathname",
+          "items": {
+            "bigip": {
+              "title": "BIG-IP VLAN",
+              "description": "Pathname of existing BIG-IP VLAN",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "f5bigComponent": "query net vlan"
         }
       },
       "additionalProperties": false
@@ -22214,6 +22359,42 @@
         "receive"
       ]
     },
+    "Pointer_Security_Log_Profile": {
+      "description": "Reference to a Security Log Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Security Log Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Security_Log_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Security Log Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security log profile"
+        }
+      ]
+    },
     "DNS_Cache": {
       "title": "DNS Cache",
       "description": "Configures a DNS cache",
@@ -23245,6 +23426,32 @@
         }
       ]
     },
+    "Pointer_Service_Address": {
+      "description": "Reference to a Service Address",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Service Address declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Service_Address"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1
+    },
     "Bandwidth_Control_Policy": {
       "description": "Create a listener to specify how to handle traffic for policy enforcement",
       "type": "object",
@@ -23579,7 +23786,7 @@
           "$ref": "#/definitions/Remark"
         },
         "bundle": {
-          "description": "Reference to a CA bundle",
+          "description": "Reference to a CA bundle or string of PEM encoded certificates",
           "if": true,
           "then": {
             "$ref": "#/definitions/F5string"
@@ -24116,39 +24323,18 @@
           "default": "any"
         },
         "sourceTranslation": {
-          "description": "AS3 pointer to NAT source translation declaration",
-          "type": "object",
-          "f5modules": [
-            "afm"
-          ],
-          "properties": {
-            "use": {
-              "title": "Use",
-              "description": "AS3 pointer to NAT source translation declaration",
-              "type": "string",
-              "minLength": 1,
-              "f5pointsTo": {
-                "properties": {
-                  "class": {
-                    "const": "NAT_Source_Translation"
-                  }
-                },
-                "required": [
-                  "class"
-                ]
-              }
-            },
-            "bigip": {
-              "title": "BIG-IP NAT Source Translation",
-              "description": "Pathname of existing BIG-IP NAT Source Translation",
-              "type": "string",
-              "format": "f5bigip"
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_NAT_Source_Translation"
             }
-          },
-          "additionalProperties": false,
-          "minProperties": 1,
-          "maxProperties": 1,
-          "f5bigComponent": "query security nat source-translation"
+          ]
+        },
+        "securityLogProfile": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Security_Log_Profile"
+            }
+          ]
         }
       },
       "required": [
@@ -25230,6 +25416,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.15.0",
             "3.14.0",
             "3.13.0",
             "3.12.0",

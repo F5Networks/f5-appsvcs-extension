@@ -25,6 +25,7 @@ Currently supported versions:
 | AS 3.13.1        | LTS           |  16-Jul-2019        | 16-Jul-2020     | 
 | AS 3.14.0        | Feature       |  10-Sep-2019        | 10-Dec-2019     | 
 | AS 3.13.2        | LTS**         |  27-Sep-2019        | 16-Jul-2020     | 
+| AS 3.15.0        | Feature       |  22-Oct-2019        | 22-Jan-2020     |
 
 \* Fix for updated Docker Container packaging only  
 \** Update for the schema description for Pool minimumMonitors
@@ -48,6 +49,8 @@ Versions no longer supported:
 | AS 3.11.0	       | Feature	   |  07-May-2019	     | 07-Aug-2019     |
 | AS 3.11.1	       | Feature*	   |  22-May-2019	     | 07-Aug-2019     |
 | AS 3.12.0	       | Feature	   |  18-Jun-2019	     | 18-Sep-2019     |
+
+\* Fix for updated Docker Container packaging only  
 
 
 See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release. 
