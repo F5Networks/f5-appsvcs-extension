@@ -667,9 +667,11 @@
         "url": {
           "title": "URL",
           "description": "The URL to pull the ASM policy from",
-          "type": "string",
-          "minLength": 3,
-          "f5expand": true
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_URL"
+            }
+          ]
         },
         "file": {
           "title": "File",
@@ -692,6 +694,28 @@
             "blocking",
             "transparent"
           ]
+        },
+        "serverTechnologies": {
+          "title": "Server Technologies",
+          "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Note: This is available in tmos versions 13.+",
+          "type": "array",
+          "items": {
+            "title": "Server Technology",
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "disabledSignatures": {
+          "title": "Disabled attack signatures",
+          "description": "Disable various attack signatures by ID.",
+          "type": "array",
+          "items": {
+            "title": "Attack Signature ID",
+            "type": "integer",
+            "minimum": 200000000,
+            "maximum": 399999999
+          },
+          "uniqueItems": true
         }
       },
       "additionalProperties": false,
@@ -3193,6 +3217,38 @@
         "serviceMain"
       ]
     },
+    "Enforcement_iRule": {
+      "description": "Specifies or configures an iRule for use in Enforcement Policies",
+      "title": "Enforcement iRule",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Enforcement_iRule"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "expand": {
+          "title": "Expand",
+          "description": "If true (default), expand backquoted variables in iRule",
+          "type": "boolean",
+          "default": true
+        },
+        "iRule": {
+          "$ref": "#/definitions/iRule_Core"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "iRule"
+      ]
+    },
     "SSH_Proxy_Profile_Rule_Collection": {
       "description": "User defined rule",
       "type": "object",
@@ -3723,7 +3779,7 @@
       "description": "Defines inclusion of one part of the schema into another",
       "properties": {
         "include": {
-          "description": "Keyword to allow for inclusion of one part of the schema into another",
+          "description": "Keyword to allow for inclusion of one part of the declaration into another",
           "oneOf": [
             {
               "type": "string",
@@ -3852,14 +3908,28 @@
           ]
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_UDP_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_UDP_Core"
+        }
+      ],
       "required": [
-        "class",
-        "virtualPort"
-      ]
+        "class"
+      ],
+      "if": {
+        "not": {
+          "properties": {
+            "virtualType": {
+              "const": "internal"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "virtualPort"
+        ]
+      }
     },
     "Sender_Tag_Mapping": {
       "title": "Sender and Tag Data Group Mapping",
@@ -4413,6 +4483,23 @@
       "description": "Reference to a enforcement iRule",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to enforcement iRule declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Enforcement_iRule"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP PEM iRule",
           "type": "string",
@@ -4703,16 +4790,38 @@
         },
         "profileRTSP": {
           "$ref": "#/definitions/Pointer_RTSP_Profile"
+        },
+        "profileICAP": {
+          "$ref": "#/definitions/Pointer_ICAP_Profile"
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_TCP_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_TCP_Core"
+        }
+      ],
       "required": [
-        "class",
-        "virtualPort"
-      ]
+        "class"
+      ],
+      "if": {
+        "not": {
+          "properties": {
+            "virtualType": {
+              "const": "internal"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "virtualPort"
+        ],
+        "not": {
+          "required": [
+            "profileICAP"
+          ]
+        }
+      }
     },
     "Pointer_SNAT_Pool": {
       "description": "Reference to a snat pool",
@@ -5128,6 +5237,9 @@
               "Rewrite_Profile",
               "HTTP_Acceleration_Profile",
               "Stream_Profile",
+              "Access_Profile",
+              "ICAP_Profile",
+              "Adapt_Profile",
               "Firewall_Address_List",
               "Firewall_Port_List",
               "Firewall_Rule_List",
@@ -5159,6 +5271,7 @@
               "Bandwidth_Control_Policy",
               "Enforcement_Policy",
               "Enforcement_Diameter_Endpoint_Profile",
+              "Enforcement_iRule",
               "Enforcement_Radius_AAA_Profile",
               "Enforcement_Profile",
               "Enforcement_Subscriber_Management_Profile",
@@ -5619,6 +5732,42 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "Access_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Access_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "ICAP_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/ICAP_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Adapt_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Adapt_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Firewall_Address_List"
                 }
               }
@@ -5991,6 +6140,18 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "Enforcement_iRule"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Enforcement_iRule"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Enforcement_Radius_AAA_Profile"
                 }
               }
@@ -6086,7 +6247,7 @@
         ]
       },
       "propertyNames": {
-        "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
+        "pattern": "^[A-Za-z]([0-9A-Za-z_.-]{0,62}[0-9A-Za-z_.])?$",
         "maxLength": 64
       },
       "allOf": [
@@ -7092,8 +7253,10 @@
             "ixfr",
             "mx",
             "ns",
+            "nxdomain",
             "other",
             "ptr",
+            "qdcount",
             "soa",
             "srv",
             "txt",
@@ -8253,28 +8416,6 @@
           "description": "Default 80 is well-known HTTP port",
           "type": "integer",
           "default": 80
-        },
-        "profileAccess": {
-          "title": "Access profile",
-          "f5modules": [
-            "apm"
-          ],
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_Access_Profile"
-            }
-          ]
-        },
-        "profileConnectivity": {
-          "title": "Connectivity profile",
-          "f5modules": [
-            "apm"
-          ],
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_Connectivity_Profile"
-            }
-          ]
         }
       },
       "if": true,
@@ -8527,7 +8668,7 @@
         },
         "virtualAddresses": {
           "title": "Virtual addresses",
-          "description": "Virtual server will listen to each IP address in list.  To accept connections only from certain subnet(s), replace IP address with array [IP-address, accept-from-subnet]",
+          "description": "Virtual server will listen to each IP address in list.  To accept connections only from certain subnet(s), replace IP address with array [IP-address, accept-from-subnet]. IP address can also be replaced by a reference to a Service_Address.",
           "type": "array",
           "items": {
             "if": {
@@ -8544,8 +8685,15 @@
                 "type": "array",
                 "items": {
                   "title": "Virtual address",
-                  "type": "string",
-                  "format": "f5ip"
+                  "if": {
+                    "type": "string"
+                  },
+                  "then": {
+                    "format": "f5ip"
+                  },
+                  "else": {
+                    "$ref": "#/definitions/Pointer_Service_Address"
+                  }
                 },
                 "minItems": 2,
                 "maxItems": 2,
@@ -8558,6 +8706,12 @@
           },
           "minItems": 1,
           "uniqueItems": true
+        },
+        "sourceAddress": {
+          "title": "Source address",
+          "description": "Accept connections only from these subnet(s). Only allowed if virtualType is internal, otherwise use virtualAddresses.",
+          "type": "string",
+          "format": "f5ip"
         },
         "enable": {
           "title": "Enable",
@@ -8956,25 +9110,48 @@
           "$ref": "#/definitions/Clone_Pools"
         }
       },
-      "if": {
-        "properties": {
-          "allowVlans": {}
-        },
-        "required": [
-          "allowVlans"
-        ]
-      },
-      "then": {
-        "not": {
-          "properties": {
-            "rejectVlans": {}
-          },
-          "required": [
-            "rejectVlans"
-          ]
-        }
-      },
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "allowVlans": {}
+            },
+            "required": [
+              "allowVlans"
+            ]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "rejectVlans": {}
+              },
+              "required": [
+                "rejectVlans"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "properties": {
+                "virtualType": {
+                  "const": "internal"
+                }
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "virtualAddresses"
+            ],
+            "not": {
+              "required": [
+                "sourceAddress"
+              ]
+            }
+          }
+        },
         {
           "$ref": "#/definitions/Include"
         }
@@ -8983,10 +9160,7 @@
         "fallbackPersistenceMethod": [
           "persistenceMethods"
         ]
-      },
-      "required": [
-        "virtualAddresses"
-      ]
+      }
     },
     "GSLB_Monitor_UDP": {
       "description": "Additional Monitor class properties available when monitorType = udp",
@@ -12063,20 +12237,14 @@
         "policyIAM": {
           "title": "IAM policy",
           "description": "AS3 pointer to IAM (APM) policy declaration",
-          "type": "object",
-          "properties": {
-            "bigip": {
-              "title": "BIG-IP IAM policy",
-              "description": "Pathname of existing BIG-IP IAM (APM) policy",
-              "type": "string",
-              "format": "f5bigip"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "bigip"
+          "f5modules": [
+            "apm"
           ],
-          "f5bigComponent": "query apm profile access"
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Access_Profile"
+            }
+          ]
         },
         "profileFPS": {
           "description": "FPS Profile to attach to service",
@@ -12086,6 +12254,34 @@
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_FPS_Profile"
+            }
+          ]
+        },
+        "profileRequestAdapt": {
+          "$ref": "#/definitions/Pointer_Request_Adapt_Profile"
+        },
+        "profileResponseAdapt": {
+          "$ref": "#/definitions/Pointer_Response_Adapt_Profile"
+        },
+        "profileAccess": {
+          "title": "Access profile",
+          "f5modules": [
+            "apm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Access_Profile"
+            }
+          ]
+        },
+        "profileConnectivity": {
+          "title": "Connectivity profile",
+          "f5modules": [
+            "apm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Connectivity_Profile"
             }
           ]
         }
@@ -12970,6 +13166,74 @@
         }
       ]
     },
+    "Adapt_Profile": {
+      "description": "Configures a request or response Adapt profile or both",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Adapt_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "messageType": {
+          "description": "The type of Adapt profile. Use both to create a request and response profile with the same property values",
+          "type": "string",
+          "enum": [
+            "response",
+            "request",
+            "request-and-response"
+          ]
+        },
+        "enableHttpAdaptation": {
+          "description": "Enable or disable the adaptation of HTTP requests/responses. They will be forwarded to the internal service",
+          "type": "boolean",
+          "default": true
+        },
+        "internalService": {
+          "description": "Specifies the name of the internal service to use for adapting the request/response",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Service"
+            }
+          ]
+        },
+        "previewSize": {
+          "description": "Specifies the maximum size of the preview buffer",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 1024
+        },
+        "serviceDownAction": {
+          "description": "Specifies the action to take if the internal service doesn't exist or is down",
+          "type": "string",
+          "enum": [
+            "ignore",
+            "reset",
+            "drop"
+          ],
+          "default": "ignore"
+        },
+        "timeout": {
+          "description": "Specifies how long in miliseconds to wait for the internal service before a timeout error will occur",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 0
+        },
+        "allowHTTP10": {
+          "description": "Specifies whether to forward HTTP 1.0 requests/responses",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "class",
+        "messageType"
+      ]
+    },
     "GSLB_Domain_CNAME": {
       "description": "Configures GSLB (Global Server Load Balancing) settings for CNAME domain.",
       "allOf": [
@@ -13554,6 +13818,50 @@
       "required": [
         "headerName",
         "operation"
+      ],
+      "additionalProperties": false
+    },
+    "ICAP_Profile": {
+      "description": "Configures an ICAP profile",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "ICAP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "uri": {
+          "description": "Specifies the absolute URI that contains both the complete hostname and the path of the resource to use in the ICAP header. Macro expansion is supported for all attribute values in the ICAP header (e.g. icap://${SERVER_IP}:${SERVER_PORT}/videoOptimization)",
+          "type": "string"
+        },
+        "fromHeader": {
+          "description": "Specifies the 'From' attribute to use in the ICAP header",
+          "type": "string"
+        },
+        "hostHeader": {
+          "description": "Specifies the 'Host' attribute to use in the ICAP header",
+          "type": "string"
+        },
+        "refererHeader": {
+          "description": "Specifies the 'Referer' attribute to use in the ICAP header",
+          "type": "string"
+        },
+        "userAgentHeader": {
+          "description": "Specifies the 'User-Agent' attribute to use in the ICAP header",
+          "type": "string"
+        },
+        "previewLength": {
+          "description": "Specifies the length of the preview in the transaction",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 0
+        }
+      },
+      "required": [
+        "class"
       ],
       "additionalProperties": false
     },
@@ -14245,6 +14553,42 @@
         "monitorType"
       ]
     },
+    "Pointer_ICAP_Profile": {
+      "description": "Reference to a ICAP Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to ICAP Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "ICAP_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP ICAP Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile icap"
+        }
+      ]
+    },
     "Endpoint_Policy": {
       "title": "Endpoint policy",
       "description": "Policy to manage connections based on metadata and content",
@@ -14392,6 +14736,42 @@
           "default": "ssl-client-hello"
         }
       }
+    },
+    "Pointer_Response_Adapt_Profile": {
+      "description": "Reference to a Response Adapt Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Response Adapt Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Adapt_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Response Adapt Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile response-adapt"
+        }
+      ]
     },
     "Pointer_GSLB_Server": {
       "description": "Reference to a GSLB server",
@@ -14879,6 +15259,42 @@
       },
       "additionalProperties": false
     },
+    "Access_Profile": {
+      "description": "Configures an Access Profile",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Access_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "url": {
+          "title": "URL",
+          "description": "The URL to pull the Access Profile from",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_URL"
+            }
+          ]
+        },
+        "ignoreChanges": {
+          "title": "Ignore changes",
+          "description": "If false (default), the system updates the profile in every AS3 declaration deployment. If true, AS3 creates the profile on first deployment, and leaves it untouched afterwards",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "class",
+        "url"
+      ],
+      "additionalProperties": false
+    },
     "iRule": {
       "title": "iRule",
       "description": "An iRule",
@@ -14902,15 +15318,7 @@
           "default": true
         },
         "iRule": {
-          "description": "Reference to an iRule",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
-          "f5fetch": "string",
-          "f5expand": {
-            "when": "1/expand"
-          }
+          "$ref": "#/definitions/iRule_Core"
         }
       },
       "additionalProperties": false,
@@ -16929,6 +17337,23 @@
       "description": "Reference to a Access Profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to Access Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Access_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP Access Profile",
           "type": "string",
@@ -17213,6 +17638,16 @@
       "description": "Core attributes of TCP virtual server",
       "type": "object",
       "properties": {
+        "virtualType": {
+          "title": "Virtual addresses",
+          "description": "Type of the virtual",
+          "type": "string",
+          "enum": [
+            "standard",
+            "internal"
+          ],
+          "default": "standard"
+        },
         "virtualPort": {
           "title": "virtual server TCP port",
           "description": "virtual server TCP port",
@@ -17703,9 +18138,11 @@
         "url": {
           "title": "URL",
           "description": "URL from which secret should be fetched",
-          "type": "string",
-          "format": "url",
-          "f5expand": true
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_URL"
+            }
+          ]
         }
       },
       "oneOf": [
@@ -18496,6 +18933,16 @@
       "description": "Core attributes of UDP virtual server",
       "type": "object",
       "properties": {
+        "virtualType": {
+          "title": "Virtual addresses",
+          "description": "Type of the virtual",
+          "type": "string",
+          "enum": [
+            "standard",
+            "internal"
+          ],
+          "default": "standard"
+        },
         "virtualPort": {
           "title": "Virtual server UDP port",
           "description": "Virtual server UDP port",
@@ -19421,7 +19868,7 @@
         },
         "requestChunking": {
           "title": "Request chunking",
-          "description": "Controls handling of HTTP payload chunking in requests from clients (default is 'preserve')",
+          "description": "Controls handling of HTTP payload chunking in requests from clients (default is 'preserve'). Note: 'selective' and 'preserve' will be translated to 'sustain' when TMOS version is 15.0 or newer",
           "type": "string",
           "enum": [
             "selective",
@@ -19432,7 +19879,7 @@
         },
         "responseChunking": {
           "title": "Response chunking",
-          "description": "Controls handling of HTTP payload chunking in responses from pool members (default 'selective' adapts to most situations)",
+          "description": "Controls handling of HTTP payload chunking in responses from pool members (default 'selective' adapts to most situations). Note: 'selective' and 'preserve' will be translated to 'sustain' when TMOS version is 15.0 or newer",
           "type": "string",
           "enum": [
             "selective",
@@ -20218,11 +20665,7 @@
             "type": "string"
           },
           "url": {
-            "title": "URL",
-            "description": "URL from which to retrieve value",
-            "type": "string",
-            "minLength": 3,
-            "f5expand": true
+            "$ref": "#/definitions/Resource_URL"
           },
           "copyFrom": {
             "title": "Copy from",
@@ -20240,6 +20683,18 @@
         "additionalProperties": false,
         "minimumProperties": 1,
         "maximumProperties": 1
+      }
+    },
+    "iRule_Core": {
+      "title": "iRule Core definition",
+      "description": "Reference to an iRule or text of an iRule",
+      "if": true,
+      "then": {
+        "$ref": "#/definitions/F5string"
+      },
+      "f5fetch": "string",
+      "f5expand": {
+        "when": "1/expand"
       }
     },
     "Enforcement_Interception_Endpoint": {
@@ -21675,6 +22130,42 @@
         "class"
       ],
       "additionalProperties": false
+    },
+    "Pointer_Request_Adapt_Profile": {
+      "description": "Reference to a Request Adapt Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Request Adapt Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Adapt_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Request Adapt Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile request-adapt"
+        }
+      ]
     },
     "Pointer_Bot_Signature": {
       "description": "Reference to a bot signature",
@@ -24104,9 +24595,11 @@
             "icmpv6-flood",
             "icmp-frag",
             "ip-frag-flood",
+            "ip-low-ttl",
             "ip-opt-frames",
             "ipv6-ext-hdr-frames",
             "ipv6-frag-flood",
+            "non-tcp-connection",
             "opt-present-with-illegal-len",
             "sweep",
             "tcp-half-open",
@@ -24351,6 +24844,36 @@
       },
       "required": [
         "radiusAAAService"
+      ]
+    },
+    "Resource_URL": {
+      "title": "Resource URL",
+      "description": "Describes the URL to remote resource and optional parameters",
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "url",
+          "f5expand": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL from which to retrieve value",
+              "type": "string",
+              "format": "url",
+              "f5expand": true
+            },
+            "skipCertificateCheck": {
+              "description": "Skip verification of SSL certificates (default false)",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
       ]
     },
     "Policy_Action_HTTP_Redirect": {
@@ -25416,6 +25939,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.16.0",
             "3.15.0",
             "3.14.0",
             "3.13.0",
