@@ -697,7 +697,7 @@
         },
         "serverTechnologies": {
           "title": "Server Technologies",
-          "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Note: This is available in tmos versions 13.+",
+          "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Note: This is available in TMOS versions 13.0 and later.",
           "type": "array",
           "items": {
             "title": "Server Technology",
@@ -744,6 +744,7 @@
           "type": "string",
           "enum": [
             "equals",
+            "does-not-equal",
             "less",
             "greater",
             "less-or-equal",
@@ -1027,9 +1028,12 @@
         },
         "ciphers": {
           "title": "Ciphers",
-          "description": "Ciphersuite selection string",
-          "type": "string",
-          "default": "DEFAULT"
+          "description": "Ciphersuite selection string. ciphers and cipherGroup are mutually exclusive, only use one.",
+          "type": "string"
+        },
+        "cipherGroup": {
+          "description": "Pointer to a cipherGroup. cipherGroup and ciphers are mutually exclusive, only use one.",
+          "$ref": "#/definitions/Pointer_Cipher_Group"
         },
         "authenticationMode": {
           "title": "Authentication mode",
@@ -1184,6 +1188,12 @@
           "description": "Specifies whether to enable OCSP stapling",
           "type": "boolean",
           "default": false
+        },
+        "tls1_3Enabled": {
+          "title": "TLS 1.3",
+          "description": "Allow TLS 1.3 Ciphers. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false,
@@ -1228,6 +1238,37 @@
             "required": [
               "authenticationTrustCA"
             ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "ciphers"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "cipherGroup"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "required": [
+                "ciphers",
+                "cipherGroup"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "ciphers": {
+                "default": "DEFAULT"
+              }
+            }
           }
         }
       ],
@@ -3018,9 +3059,12 @@
         },
         "ciphers": {
           "title": "Ciphers",
-          "description": "Ciphersuite selection string",
-          "type": "string",
-          "default": "DEFAULT"
+          "description": "Ciphersuite selection string. ciphers and cipherGroup are mutually exclusive, only use one.",
+          "type": "string"
+        },
+        "cipherGroup": {
+          "description": "Pointer to a cipherGroup. cipherGroup and ciphers are mutually exclusive, only use one.",
+          "$ref": "#/definitions/Pointer_Cipher_Group"
         },
         "authenticationFrequency": {
           "title": "Authentication frequency",
@@ -3198,8 +3242,47 @@
             "allow",
             "require"
           ]
+        },
+        "tls1_3Enabled": {
+          "title": "TLS 1.3",
+          "description": "Allow TLS 1.3 Ciphers. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
+          "type": "boolean",
+          "default": false
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "ciphers"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "cipherGroup"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "not": {
+              "required": [
+                "ciphers",
+                "cipherGroup"
+              ]
+            }
+          },
+          "then": {
+            "properties": {
+              "ciphers": {
+                "default": "DEFAULT"
+              }
+            }
+          }
+        }
+      ],
       "additionalProperties": false,
       "required": [
         "class"
@@ -3886,6 +3969,88 @@
         }
       }
     },
+    "Cipher_Rule": {
+      "description": "Configures a cipher rule. This is available in TMOS versions 13.0 and later",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Cipher_Rule"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "cipherSuites": {
+          "description": "Specifies the cipher suites",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "namedGroups": {
+          "description": "Specifies the Elliptic Curve Diffie Hellman key agreement algorithms used to negotiate SSL/TLS connections. namedGroups are only supported on BIG-IP 14.0 and later.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "P256",
+              "P384",
+              "X25519"
+            ]
+          }
+        },
+        "signatureAlgorithms": {
+          "description": "Specifies the digital signature algorithms used for authentication. signatureAlgorithms are only supported on BIG-IP 14.0 and later.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "DEFAULT",
+              "DSA-SHA1",
+              "DSA-SHA256",
+              "DSA-SHA384",
+              "DSA-SHA512",
+              "ECDSA-SHA1",
+              "ECDSA-SHA256",
+              "ECDSA-SHA384",
+              "ECDSA-SHA512",
+              "RSA-PKCS1-SHA1",
+              "RSA-PKCS1-SHA256",
+              "RSA-PKCS1-SHA384",
+              "RSA-PKCS1-SHA512",
+              "RSA-PSS-SHA256",
+              "RSA-PSS-SHA384",
+              "RSA-PSS-SHA512"
+            ]
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "cipherSuites"
+          ]
+        },
+        {
+          "required": [
+            "namedGroups"
+          ]
+        },
+        {
+          "required": [
+            "signatureAlgorithms"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    },
     "Service_UDP": {
       "title": "UDP virtual server",
       "description": "Declares a UDP virtual server (w/optional (D)TLS)",
@@ -4083,6 +4248,25 @@
       ],
       "additionalProperties": false
     },
+    "Pointer_Bot_Defense_Profile": {
+      "description": "Reference to a bot defense profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP bot defense profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security bot-defense profile"
+        }
+      ]
+    },
     "Traffic_Log_Profile_Response_Settings": {
       "description": "A traffic log profiles response settings",
       "type": "object",
@@ -4278,7 +4462,7 @@
           "default": true
         },
         "securityEnabled": {
-          "description": "Specifies whether to enable or disable secure FTP traffic for the Big-IP Application Security Manager",
+          "description": "Specifies whether to enable or disable secure FTP traffic for the BIG-IP Application Security Manager",
           "type": "boolean",
           "default": false
         },
@@ -5240,12 +5424,15 @@
               "Access_Profile",
               "ICAP_Profile",
               "Adapt_Profile",
+              "Cipher_Rule",
+              "Cipher_Group",
               "Firewall_Address_List",
               "Firewall_Port_List",
               "Firewall_Rule_List",
               "Firewall_Policy",
               "NAT_Policy",
               "NAT_Source_Translation",
+              "Protocol_Inspection_Profile",
               "SSH_Proxy_Profile",
               "Data_Group",
               "DNS_Cache",
@@ -5768,6 +5955,30 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "Cipher_Rule"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Cipher_Rule"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Cipher_Group"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Cipher_Group"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Firewall_Address_List"
                 }
               }
@@ -5834,6 +6045,18 @@
             },
             "then": {
               "$ref": "#/definitions/NAT_Source_Translation"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Protocol_Inspection_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Protocol_Inspection_Profile"
             }
           },
           {
@@ -6247,8 +6470,8 @@
         ]
       },
       "propertyNames": {
-        "pattern": "^[A-Za-z]([0-9A-Za-z_.-]{0,62}[0-9A-Za-z_.])?$",
-        "maxLength": 64
+        "pattern": "^[A-Za-z]([0-9A-Za-z_.-]{0,188}[0-9A-Za-z_.])?$",
+        "maxLength": 190
       },
       "allOf": [
         {
@@ -8747,7 +8970,7 @@
             "properties": {
               "use": {
                 "title": "Use",
-                "definition": "AS3 pointer to SNAT pool declaration",
+                "description": "AS3 pointer to SNAT pool declaration",
                 "type": "string",
                 "minLength": 1,
                 "f5pointsTo": {
@@ -8806,12 +9029,27 @@
                   "description": "Pathname of existing BIG-IP iRule",
                   "type": "string",
                   "format": "f5bigip"
+                },
+                "use": {
+                  "title": "Use",
+                  "description": "AS3 pointer to iRule (declared separately)",
+                  "type": "string",
+                  "minLength": 1,
+                  "f5pointsTo": {
+                    "properties": {
+                      "class": {
+                        "const": "iRule"
+                      }
+                    },
+                    "required": [
+                      "class"
+                    ]
+                  }
                 }
               },
               "additionalProperties": false,
-              "required": [
-                "bigip"
-              ],
+              "minimumProperties": 1,
+              "maximumProperties": 1,
               "f5bigComponent": "query ltm rule"
             }
           },
@@ -8843,12 +9081,27 @@
                 "description": "Pathname of existing BIG-IP pool",
                 "type": "string",
                 "format": "f5bigip"
+              },
+              "use": {
+                "title": "Use",
+                "description": "AS3 pointer to pool if any (declared separately)",
+                "type": "string",
+                "minLength": 1,
+                "f5pointsTo": {
+                  "properties": {
+                    "class": {
+                      "const": "Pool"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
               }
             },
             "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
+            "minimumProperties": 1,
+            "maximumProperties": 1,
             "f5bigComponent": "query ltm pool"
           }
         },
@@ -8946,7 +9199,7 @@
             "properties": {
               "use": {
                 "title": "Use",
-                "definition": "AS3 pointer to last-hop pool declaration",
+                "description": "AS3 pointer to last-hop pool declaration",
                 "type": "string",
                 "minLength": 1,
                 "f5pointsTo": {
@@ -9102,6 +9355,25 @@
         },
         "profileRewrite": {
           "$ref": "#/definitions/Pointer_Rewrite_Profile"
+        },
+        "profileProtocolInspection": {
+          "description": "AS3 pointer to Protocol Inspection Profile declaration. Protocol Inspection Profiles are only supported in tmos version 13.1+",
+          "f5modules": [
+            "afm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Protocol_Inspection_Profile"
+            }
+          ]
+        },
+        "profileBotDefense": {
+          "description": "Attaches a Bot Defense profile to the service. These are only available on BIG-IP 14.1+.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Bot_Defense_Profile"
+            }
+          ]
         },
         "metadata": {
           "$ref": "#/definitions/Metadata"
@@ -14278,12 +14550,27 @@
                 "description": "Pathname of existing BIG-IP iRule",
                 "type": "string",
                 "format": "f5bigip"
+              },
+              "use": {
+                "title": "Use",
+                "description": "AS3 pointer to iRule (declared separately)",
+                "type": "string",
+                "minLength": 1,
+                "f5pointsTo": {
+                  "properties": {
+                    "class": {
+                      "const": "iRule"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
               }
             },
             "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
+            "minimumProperties": 1,
+            "maximumProperties": 1,
             "f5bigComponent": "query ltm rule"
           }
         }
@@ -16066,9 +16353,13 @@
           "type": "string",
           "enum": [
             "equals",
+            "does-not-equal",
             "starts-with",
+            "does-not-start-with",
             "ends-with",
-            "contains"
+            "does-not-end-with",
+            "contains",
+            "does-not-contain"
           ],
           "default": "equals"
         },
@@ -20868,38 +21159,61 @@
       "additionalProperties": false
     },
     "Pointer_Endpoint_Policy": {
-      "description": "Reference to an Endpoint Policy",
-      "if": {
-        "type": "string"
-      },
-      "then": {
-        "minLength": 1,
-        "f5pointsTo": {
-          "properties": {
-            "class": {
-              "const": "Endpoint_Policy"
-            }
-          },
-          "required": [
-            "class"
-          ]
-        }
-      },
-      "else": {
-        "type": "object",
-        "properties": {
-          "bigip": {
-            "title": "BIG-IP Endpoint policy",
-            "description": "Pathname of existing BIG-IP LTM policy",
-            "type": "string",
-            "format": "f5bigip"
+      "oneOf": [
+        {
+          "description": "AS3 pointer to endpoint policy declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Endpoint_Policy"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
           }
         },
-        "required": [
-          "bigip"
-        ],
-        "f5bigComponent": "query ltm policy"
-      }
+        {
+          "description": "Reference to a endpoint policy",
+          "type": "object",
+          "properties": {
+            "use": {
+              "description": "AS3 pointer to endpoint policy declaration",
+              "type": "string",
+              "minLength": 1,
+              "f5pointsTo": {
+                "properties": {
+                  "class": {
+                    "enum": [
+                      "Endpoint_Policy"
+                    ]
+                  }
+                },
+                "required": [
+                  "class"
+                ]
+              }
+            },
+            "bigip": {
+              "description": "Pathname of existing BIG-IP endpoint policy",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "allOf": [
+            {
+              "f5bigComponent": "query ltm policy"
+            }
+          ]
+        }
+      ]
     },
     "NAT_Source_Translation_PortBlockAllocation": {
       "description": "Configure the port block allocation",
@@ -21355,6 +21669,42 @@
           "default": 3
         }
       }
+    },
+    "Pointer_Protocol_Inspection_Profile": {
+      "description": "Reference to a Protocol Inspection Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Protocol Inspection Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Protocol_Inspection_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Protocol Inspection Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security protocol-inspection profile"
+        }
+      ]
     },
     "Template_l4": {
       "title": "L4 application",
@@ -22048,6 +22398,78 @@
         }
       ]
     },
+    "Pointer_Cipher_Rule": {
+      "description": "Reference to a cipher rule",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to cipher rule declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Cipher_Rule"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP cipher rule",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm cipher rule"
+        }
+      ]
+    },
+    "Pointer_Request_Adapt_Profile": {
+      "description": "Reference to a Request Adapt Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Request Adapt Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Adapt_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Request Adapt Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile request-adapt"
+        }
+      ]
+    },
     "Enforcement_Radius_AAA_Profile": {
       "description": "Configures a radius AAA profile",
       "f5modules": [
@@ -22131,41 +22553,37 @@
       ],
       "additionalProperties": false
     },
-    "Pointer_Request_Adapt_Profile": {
-      "description": "Reference to a Request Adapt Profile",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to Request Adapt Profile declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "Adapt_Profile"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
+    "Protocol_Inspection_Profile_Service_Checks": {
+      "description": "A list of checks to attach to the Protocol Inspection Profile",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "check": {
+            "type": "string",
+            "description": "The name of the check"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "drop",
+              "reject"
+            ],
+            "description": "Which action to perform on traffic matching the check",
+            "default": "accept"
+          },
+          "log": {
+            "type": "boolean",
+            "description": "Specifies whether to log the check",
+            "default": true
           }
         },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP Request Adapt Profile",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5bigComponent": "query ltm profile request-adapt"
-        }
-      ]
+        "required": [
+          "check"
+        ],
+        "additionalProperties": false
+      }
     },
     "Pointer_Bot_Signature": {
       "description": "Reference to a bot signature",
@@ -23101,8 +23519,8 @@
         "$ref": "#/definitions/Application"
       },
       "propertyNames": {
-        "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
-        "maxLength": 64
+        "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+        "maxLength": 190
       },
       "required": [
         "class"
@@ -23569,6 +23987,64 @@
           "f5bigComponent": "query apm profile connectivity"
         }
       ]
+    },
+    "Cipher_Group": {
+      "description": "Configures a Cipher Group. Note: This is available in TMOS versions 13.0 and later.",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Cipher_Group"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "order": {
+          "description": "Configure the order of the specified Cipher Rules.",
+          "type": "string",
+          "enum": [
+            "default",
+            "speed",
+            "strength",
+            "fips",
+            "hardware"
+          ],
+          "default": "default"
+        },
+        "allowCipherRules": {
+          "description": "Allow the following Cipher Rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pointer_Cipher_Rule"
+          },
+          "default": [
+            {
+              "bigip": "/Common/f5-default"
+            }
+          ]
+        },
+        "excludeCipherRules": {
+          "description": "Exclude the following Cipher_Rules from the Allowed list.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pointer_Cipher_Rule"
+          }
+        },
+        "requireCipherRules": {
+          "description": "Restrict the Allowed list to the following Cipher_Rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pointer_Cipher_Rule"
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
     },
     "Pointer_Persist": {
       "description": "Reference to a persistence profile",
@@ -24580,6 +25056,103 @@
         }
       ]
     },
+    "Protocol_Inspection_Profile": {
+      "description": "Protocol Inspection Profile used for configurable BIG-IP AFM intrusion prevention. Note: Protocol Inspection Profiles are only supported in tmos version 13.1+",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Protocol_Inspection_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "collectAVRStats": {
+          "description": "If true, AVR will collect data from the intrusion prevention profile",
+          "type": "boolean",
+          "default": true
+        },
+        "enableComplianceChecks": {
+          "description": "Specifies whether the compliance checks will be enabled for this profile",
+          "type": "boolean",
+          "default": true
+        },
+        "enableSignatureChecks": {
+          "description": "Specifies whether the signature checks will be enabled for this profile",
+          "type": "boolean",
+          "default": true
+        },
+        "autoAddNewInspections": {
+          "description": "Specifies whether new inspections delivered via IPS IM package will be automatically added to this profile",
+          "type": "boolean",
+          "default": false
+        },
+        "autoPublish": {
+          "description": "Specifies whether the inspections will be automatically updated to the suggested action after the staging period",
+          "type": "boolean",
+          "default": false
+        },
+        "defaultFromProfile": {
+          "description": "Specifies the parent profile. If specified, the new profile will be cloned from the parent",
+          "type": "string"
+        },
+        "services": {
+          "description": "Specifies the services and service checks for this profile",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "description": "The name of the service type",
+                "type": "string",
+                "enum": [
+                  "dhcp",
+                  "dns",
+                  "gtp",
+                  "imap",
+                  "mqtt",
+                  "netbios_ns",
+                  "nntp",
+                  "pop3",
+                  "sip",
+                  "snmp",
+                  "ssl",
+                  "telnet",
+                  "wins",
+                  "diameter",
+                  "ftp",
+                  "http",
+                  "irc",
+                  "mysql",
+                  "netbios_ssn",
+                  "other",
+                  "radius",
+                  "smtp",
+                  "ssh",
+                  "sunrpc",
+                  "tftp"
+                ]
+              },
+              "compliance": {
+                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Checks"
+              },
+              "signature": {
+                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Checks"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "DOS_Network_Vector": {
       "description": "Network Denial-of-Service (DoS) vector",
       "type": "object",
@@ -25200,6 +25773,42 @@
         }
       },
       "required": []
+    },
+    "Pointer_Cipher_Group": {
+      "description": "Reference to a cipher group",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to cipher group declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Cipher_Group"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP cipher group",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm cipher group"
+        }
+      ]
     },
     "Security_Log_Profile_Ip_Intelligence": {
       "title": "IP Intelligence Log Profile",
@@ -25939,6 +26548,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.17.0",
             "3.16.0",
             "3.15.0",
             "3.14.0",
@@ -26167,8 +26777,8 @@
         "$ref": "#/definitions/Tenant"
       },
       "propertyNames": {
-        "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
-        "maxLength": 64
+        "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+        "maxLength": 190
       },
       "required": [
         "class",
