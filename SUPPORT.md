@@ -21,8 +21,8 @@ Currently supported versions:
 |------------------|---------------|---------------------|-----------------|
 | AS 3.13.1        | LTS           |  16-Jul-2019        | 16-Jul-2020     | 
 | AS 3.13.2        | LTS*          |  27-Sep-2019        | 16-Jul-2020     | 
-| AS 3.16.0        | Feature       |  03-Dec-2019        | 03-Mar-2020     |
 | AS 3.17.0        | Feature       |  28-Jan-2020        | 28-Apr-2020     | 
+| AS 3.18.0        | Feature       |  12-Mar-2019        | 12-Jun-2020     |
 
 \* Update for the schema description for Pool minimumMonitors
 
@@ -50,6 +50,7 @@ Versions no longer supported:
 | AS 3.5.2         | LTS*          |  22-May-2019        | 13-Nov-2019     |
 | AS 3.14.0        | Feature       |  10-Sep-2019        | 10-Dec-2019     | 
 | AS 3.15.0        | Feature       |  22-Oct-2019        | 22-Jan-2020     |
+| AS 3.16.0        | Feature       |  03-Dec-2019        | 03-Mar-2020     |
 
 \* Fix for updated Docker Container packaging only  
 

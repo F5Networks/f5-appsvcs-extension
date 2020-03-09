@@ -845,6 +845,25 @@
         }
       ]
     },
+    "Pointer_Existing_TLS_Server_Profile": {
+      "description": "Reference to a TLS Server profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP TLS Server profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile server-ssl"
+        }
+      ]
+    },
     "SSH_Proxy_Profile_Auth_Info_Collection": {
       "description": "A collection of authentication info of public and private keys",
       "type": "object",
@@ -5391,6 +5410,7 @@
               "Service_SCTP",
               "Service_L4",
               "Service_Generic",
+              "Service_Forwarding",
               "Service_Address",
               "SNAT_Pool",
               "iRule",
@@ -5553,6 +5573,18 @@
             },
             "then": {
               "$ref": "#/definitions/Service_Generic"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Service_Forwarding"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Service_Forwarding"
             }
           },
           {
@@ -6905,31 +6937,48 @@
         }
       ]
     },
-    "Enforcement_Rule_Forwarding_ICAP": {
-      "description": "Specifies that the flow forwards to the ICAP virtual server",
+    "Basic_Auth": {
+      "title": "Basic Authentication",
+      "description": "Describes the basic authentication to access a resource",
+      "type": "object",
       "properties": {
-        "icapType": {
-          "description": "Specifies the ICAP adaptation type",
+        "method": {
+          "title": "Authentication Method",
+          "description": "Specifices the authentication method",
           "type": "string",
-          "enum": [
-            "request",
-            "response",
-            "both"
-          ]
+          "const": "basic"
         },
-        "icapService": {
-          "description": "ICAP service to route to",
+        "username": {
+          "title": "Username",
+          "description": "Specifies the user name for authentication",
+          "type": "string"
+        },
+        "passphrase": {
+          "title": "Passphrase",
+          "description": "Specifies the password for authentication",
+          "type": "object",
+          "properties": {
+            "allowReuse": {
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean",
+              "default": false
+            }
+          },
           "allOf": [
             {
-              "$ref": "#/definitions/Pointer_Service"
+              "$ref": "#/definitions/Secret"
             }
-          ]
+          ],
+          "f5fetch": "object",
+          "f5secret": true
         }
       },
       "required": [
-        "icapType",
-        "icapService"
-      ]
+        "method",
+        "username",
+        "passphrase"
+      ],
+      "additionalProperties": false
     },
     "Policy_Action_HTTP_Cookie": {
       "type": "object",
@@ -7012,6 +7061,32 @@
       },
       "required": [],
       "additionalProperties": false
+    },
+    "Enforcement_Rule_Forwarding_ICAP": {
+      "description": "Specifies that the flow forwards to the ICAP virtual server",
+      "properties": {
+        "icapType": {
+          "description": "Specifies the ICAP adaptation type",
+          "type": "string",
+          "enum": [
+            "request",
+            "response",
+            "both"
+          ]
+        },
+        "icapService": {
+          "description": "ICAP service to route to",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Service"
+            }
+          ]
+        }
+      },
+      "required": [
+        "icapType",
+        "icapService"
+      ]
     },
     "HTTP2_Profile": {
       "title": "HTTP2 Profile",
@@ -7128,6 +7203,7 @@
             "properties": {
               "class": {
                 "enum": [
+                  "Service_Forwarding",
                   "Service_HTTPS",
                   "Service_HTTP",
                   "Service_TCP",
@@ -8655,6 +8731,36 @@
       },
       "required": [
         "class"
+      ]
+    },
+    "Secret_Resource_URL": {
+      "title": "Resource URL",
+      "description": "Describes the URL to remote resource and optional parameters",
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "f5expand": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL from which to retrieve value",
+              "type": "string",
+              "format": "uri",
+              "f5expand": true
+            },
+            "skipCertificateCheck": {
+              "description": "Skip verification of SSL certificates (default false)",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
       ]
     },
     "Pointer_DNS_Resolver": {
@@ -18147,20 +18253,18 @@
             }
           },
           "else": {
-            "type": "object",
-            "properties": {
-              "bigip": {
-                "title": "BIG-IP client SSL profile",
-                "description": "Pathname of existing BIG-IP Client SSL profile",
-                "type": "string",
-                "format": "f5bigip"
-              }
+            "if": {
+              "type": "object"
             },
-            "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
-            "f5bigComponent": "query ltm profile client-ssl"
+            "then": {
+              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+            },
+            "else": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+              }
+            }
           }
         },
         "clientTLS": {
@@ -18183,20 +18287,18 @@
             }
           },
           "else": {
-            "type": "object",
-            "properties": {
-              "bigip": {
-                "title": "BIG-IP server SSL profile",
-                "description": "Pathname of existing BIG-IP Server SSL profile",
-                "type": "string",
-                "format": "f5bigip"
-              }
+            "if": {
+              "type": "object"
             },
-            "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
-            "f5bigComponent": "query ltm profile server-ssl"
+            "then": {
+              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+            },
+            "else": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+              }
+            }
           }
         },
         "policyEndpoint": {
@@ -18431,7 +18533,7 @@
           "description": "URL from which secret should be fetched",
           "allOf": [
             {
-              "$ref": "#/definitions/Resource_URL"
+              "$ref": "#/definitions/Secret_Resource_URL"
             }
           ]
         }
@@ -19314,20 +19416,18 @@
             }
           },
           "else": {
-            "type": "object",
-            "properties": {
-              "bigip": {
-                "title": "BIG-IP client SSL profile",
-                "description": "Pathname of existing BIG-IP Client SSL profile",
-                "type": "string",
-                "format": "f5bigip"
-              }
+            "if": {
+              "type": "object"
             },
-            "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
-            "f5bigComponent": "query ltm profile client-ssl"
+            "then": {
+              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+            },
+            "else": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+              }
+            }
           }
         },
         "clientTLS": {
@@ -19350,20 +19450,18 @@
             }
           },
           "else": {
-            "type": "object",
-            "properties": {
-              "bigip": {
-                "title": "BIG-IP server SSL profile",
-                "description": "Pathname of existing BIG-IP Server SSL profile",
-                "type": "string",
-                "format": "f5bigip"
-              }
+            "if": {
+              "type": "object"
             },
-            "additionalProperties": false,
-            "required": [
-              "bigip"
-            ],
-            "f5bigComponent": "query ltm profile server-ssl"
+            "then": {
+              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+            },
+            "else": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+              }
+            }
           }
         },
         "policyEndpoint": {
@@ -19931,7 +20029,8 @@
           "title": "Name",
           "description": "Name of the endpoint policy rule",
           "type": "string",
-          "format": "f5name"
+          "pattern": "^[a-zA-Z0-9_\\-.:%]+$",
+          "maxLength": 64000
         },
         "label": {
           "$ref": "#/definitions/Label"
@@ -21670,6 +21769,25 @@
         }
       }
     },
+    "Pointer_Existing_TLS_Client_Profile": {
+      "description": "Reference to a TLS Client profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP TLS Client profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile client-ssl"
+        }
+      ]
+    },
     "Pointer_Protocol_Inspection_Profile": {
       "description": "Reference to a Protocol Inspection Profile",
       "type": "object",
@@ -23194,6 +23312,12 @@
         "trace": {
           "title": "Trace",
           "description": "If true, AS3 creates a detailed trace of the configuration process for this Tenant for subsequent analysis (default is whole-declaration Controls/trace value).  Warning:  trace files may contain sensitive configuration data",
+          "type": "boolean",
+          "default": false
+        },
+        "traceResponse": {
+          "title": "Trace Response",
+          "description": "If true, the response will contain the trace files",
           "type": "boolean",
           "default": false
         },
@@ -25425,7 +25549,7 @@
       "oneOf": [
         {
           "type": "string",
-          "format": "url",
+          "format": "uri",
           "f5expand": true
         },
         {
@@ -25434,13 +25558,21 @@
             "url": {
               "description": "URL from which to retrieve value",
               "type": "string",
-              "format": "url",
+              "format": "uri",
               "f5expand": true
             },
             "skipCertificateCheck": {
               "description": "Skip verification of SSL certificates (default false)",
               "type": "boolean",
               "default": false
+            },
+            "authentication": {
+              "description": "Authentication to the remote source",
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/Basic_Auth"
+                }
+              ]
             }
           },
           "required": [
@@ -25810,54 +25942,146 @@
         }
       ]
     },
-    "Security_Log_Profile_Ip_Intelligence": {
-      "title": "IP Intelligence Log Profile",
-      "description": "Specifies, when enabled, that the system logs IP Intelligence events",
+    "Service_Forwarding": {
+      "title": "Forwarding virtual server",
+      "description": "Attributes of a forwarding virtual server",
+      "type": "object",
       "properties": {
-        "publisher": {
-          "description": "Specifies the name of the log publisher used for logging IP Intelligence events",
-          "type": "object",
-          "properties": {
-            "use": {
-              "title": "Use",
-              "description": "AS3 pointer to log publisher declaration",
-              "type": "string",
-              "minLength": 1,
-              "f5pointsTo": {
-                "properties": {
-                  "class": {
-                    "const": "Log_Publisher"
-                  }
-                },
-                "required": [
-                  "class"
-                ]
-              }
-            },
-            "bigip": {
-              "title": "BIG-IP log publisher",
-              "description": "Pathname of existing BIG-IP log publisher",
-              "type": "string",
-              "format": "f5bigip"
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Service_Forwarding"
+        },
+        "forwardingType": {
+          "title": "Forwarding Type",
+          "description": "Controls whether the forwarding service uses IP or L2 forwarding",
+          "type": "string",
+          "enum": [
+            "ip",
+            "l2"
+          ]
+        },
+        "layer4": {
+          "title": "L4 protocol",
+          "description": "Layer 4 protocol",
+          "type": "string",
+          "default": "any"
+        },
+        "profileL4": {
+          "title": "L4 profile",
+          "description": "L4 profile; name of built-in or else AS3 pointer",
+          "if": {
+            "not": {
+              "type": "object"
             }
           },
-          "additionalProperties": false,
-          "minProperties": 1,
-          "maxProperties": 1,
-          "f5bigComponent": "query sys log-config publisher"
-        },
-        "logTranslationFields": {
-          "description": "Specifies, when enabled, that the system logs translation values if and when it logs a network firewall event",
-          "type": "boolean",
-          "default": false
-        },
-        "rateLimitAggregate": {
-          "description": "Defines a rate limit for all combined IP intelligence log messages per second",
-          "type": "integer",
-          "default": 4294967295
+          "then": {
+            "type": "string",
+            "enum": [
+              "basic"
+            ]
+          },
+          "else": {
+            "$ref": "#/definitions/Pointer_L4_Profile"
+          }
         }
       },
-      "additionalProperties": false
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "forwardingType": {
+                "const": "ip"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "translateServerPort": {
+                "type": "boolean",
+                "default": false,
+                "const": false
+              },
+              "translateServerAddress": {
+                "type": "boolean",
+                "default": false,
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "$ref": "#/definitions/Service_Core"
+        }
+      ],
+      "required": [
+        "class",
+        "forwardingType"
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "fallbackPersistenceMethod"
+            ]
+          },
+          {
+            "required": [
+              "persistenceMethods"
+            ]
+          },
+          {
+            "required": [
+              "policyNAT"
+            ]
+          },
+          {
+            "required": [
+              "pool"
+            ]
+          },
+          {
+            "required": [
+              "profileBotDefense"
+            ]
+          },
+          {
+            "required": [
+              "profileDiameterEndpoint"
+            ]
+          },
+          {
+            "required": [
+              "profileDNS"
+            ]
+          },
+          {
+            "required": [
+              "profileIPOther"
+            ]
+          },
+          {
+            "required": [
+              "profileProtocolInspection"
+            ]
+          },
+          {
+            "required": [
+              "profileRewrite"
+            ]
+          },
+          {
+            "required": [
+              "profileTrafficLog"
+            ]
+          },
+          {
+            "required": [
+              "sourceAddress"
+            ]
+          }
+        ]
+      }
     },
     "Radius_Profile": {
       "description": "Configures a RADIUS profile for network traffic load balancing",
@@ -25988,6 +26212,55 @@
       "required": [
         "class"
       ],
+      "additionalProperties": false
+    },
+    "Security_Log_Profile_Ip_Intelligence": {
+      "title": "IP Intelligence Log Profile",
+      "description": "Specifies, when enabled, that the system logs IP Intelligence events",
+      "properties": {
+        "publisher": {
+          "description": "Specifies the name of the log publisher used for logging IP Intelligence events",
+          "type": "object",
+          "properties": {
+            "use": {
+              "title": "Use",
+              "description": "AS3 pointer to log publisher declaration",
+              "type": "string",
+              "minLength": 1,
+              "f5pointsTo": {
+                "properties": {
+                  "class": {
+                    "const": "Log_Publisher"
+                  }
+                },
+                "required": [
+                  "class"
+                ]
+              }
+            },
+            "bigip": {
+              "title": "BIG-IP log publisher",
+              "description": "Pathname of existing BIG-IP log publisher",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "f5bigComponent": "query sys log-config publisher"
+        },
+        "logTranslationFields": {
+          "description": "Specifies, when enabled, that the system logs translation values if and when it logs a network firewall event",
+          "type": "boolean",
+          "default": false
+        },
+        "rateLimitAggregate": {
+          "description": "Defines a rate limit for all combined IP intelligence log messages per second",
+          "type": "integer",
+          "default": 4294967295
+        }
+      },
       "additionalProperties": false
     },
     "GSLB_Topology_Region": {
@@ -26548,6 +26821,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.18.0",
             "3.17.0",
             "3.16.0",
             "3.15.0",
@@ -26746,6 +27020,17 @@
               "description": "If true, AS3 creates a detailed trace of the configuration process for subsequent analysis (default false).  May be overridden on a per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
               "type": "boolean",
               "default": false
+            },
+            "traceResponse": {
+              "title": "Trace Response",
+              "description": "If true, the response will contain the trace files",
+              "type": "boolean",
+              "default": false
+            },
+            "userAgent": {
+              "title": "User Agent",
+              "description": "User Agent information to include in TEEM report",
+              "type": "string"
             },
             "archiveId": {
               "title": "Archive ID",
