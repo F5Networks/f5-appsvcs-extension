@@ -111,11 +111,6 @@
               "description": "IP address of managed device to be configured",
               "type": "string",
               "format": "f5ip"
-            },
-            "ssgName": {
-              "title": "SSG Name",
-              "description": "Name of shared service group to be configured",
-              "type": "string"
             }
           },
           "maxProperties": 1
@@ -1035,6 +1030,22 @@
                     "class"
                   ]
                 }
+              },
+              "proxyCertificate": {
+                "title": "Proxy Certificate",
+                "description": "AS3 pointer to Certificate declaration for SSL forward proxy",
+                "type": "string",
+                "minLength": 1,
+                "f5pointsTo": {
+                  "properties": {
+                    "class": {
+                      "const": "Certificate"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
               }
             },
             "additionalProperties": false,
@@ -1162,6 +1173,12 @@
           "type": "boolean",
           "default": false
         },
+        "cacheCertificateEnabled": {
+          "title": "Cache Certificate Enabled",
+          "description": "Enables or disables (default) caching certificates by IP address and port number",
+          "type": "boolean",
+          "default": false
+        },
         "c3dOCSPUnknownStatusAction": {
           "title": "C3D OCSP Unknown Status Action",
           "description": "Specifies the BIG-IP action when the OCSP returns unknown status. The default is drop",
@@ -1187,6 +1204,18 @@
           "type": "boolean",
           "default": false
         },
+        "forwardProxyEnabled": {
+          "title": "Forward Proxy Enabled",
+          "description": "Enables or disables (default) SSL forward proxy",
+          "type": "boolean",
+          "default": false
+        },
+        "forwardProxyBypassEnabled": {
+          "title": "Forward Proxy Bypass Enabled",
+          "description": "Enables or disables (default) SSL forward proxy bypass",
+          "type": "boolean",
+          "default": false
+        },
         "ldapStartTLS": {
           "title": "Client-LDAP Profile",
           "description": "Creates a client LDAP profile with the specified activation mode STARTTLS.",
@@ -1208,11 +1237,41 @@
           "type": "boolean",
           "default": false
         },
+        "insertEmptyFragmentsEnabled": {
+          "title": "Insert Empty Fragments Enabled",
+          "description": "Enables a countermeasure against an SSL 3.0/TLS 1.0 protocol vulnerability affecting CBC ciphers. These ciphers cannot be handled by certain broken SSL implementations.",
+          "type": "boolean",
+          "default": false
+        },
+        "singleUseDhEnabled": {
+          "title": "Single Use DH Enabled",
+          "description": "Creates a new key when using temporary/ephemeral DH parameters. This option must be used to prevent small subgroup attacks, when the DH parameters were not generated using strong primes (for example. when using DSA-parameters). If strong primes were used, it is not strictly necessary to generate a new DH key during each handshake, but F5 Networks recommends it. Enable the Single DH Use option whenever temporary or ephemeral DH parameters are used.",
+          "type": "boolean",
+          "default": false
+        },
         "tls1_3Enabled": {
           "title": "TLS 1.3",
           "description": "Allow TLS 1.3 Ciphers. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
           "type": "boolean",
           "default": false
+        },
+        "tls1_2Enabled": {
+          "title": "TLS 1.2",
+          "description": "Allow TLS 1.2 Ciphers.",
+          "type": "boolean",
+          "default": true
+        },
+        "tls1_1Enabled": {
+          "title": "TLS 1.1",
+          "description": "Allow TLS 1.1 Ciphers.",
+          "type": "boolean",
+          "default": true
+        },
+        "tls1_0Enabled": {
+          "title": "TLS 1.0",
+          "description": "Allow TLS 1.0 Ciphers.",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": false,
@@ -1839,6 +1898,42 @@
       "required": [
         "class",
         "resourceRecordType"
+      ]
+    },
+    "Pointer_Idle_Timeout_Policy": {
+      "description": "Reference to a idle timeout policy",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to idle timeout policy declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Idle_Timeout_Policy"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP idle timeout policy",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query net timer-policy"
+        }
       ]
     },
     "Pointer_Firewall_Address_List": {
@@ -2755,8 +2850,8 @@
           "description": "Specifies the weight for the topology record. The system load balances to the server object and DNS that matches the record with the highest topology weight",
           "type": "integer",
           "default": 1,
-          "minValue": 0,
-          "maxValue": 4294967295
+          "minimum": 0,
+          "maximum": 4294967295
         }
       },
       "allOf": [
@@ -3150,8 +3245,8 @@
               }
             },
             "additionalProperties": false,
-            "minimumProperties": 1,
-            "maximumProperties": 1,
+            "minProperties": 1,
+            "maxProperties": 1,
             "f5bigComponent": "query sys file ssl-cert"
           }
         },
@@ -3252,6 +3347,18 @@
           "type": "boolean",
           "default": false
         },
+        "forwardProxyEnabled": {
+          "title": "Forward Proxy Enabled",
+          "description": "Enables or disables (default) SSL forward proxy",
+          "type": "boolean",
+          "default": false
+        },
+        "forwardProxyBypassEnabled": {
+          "title": "Forward Proxy Bypass Enabled",
+          "description": "Enables or disables (default) SSL forward proxy bypass",
+          "type": "boolean",
+          "default": false
+        },
         "ldapStartTLS": {
           "title": "Server-LDAP Profile",
           "description": "Creates a client LDAP profile with the specified activation mode STARTTLS.",
@@ -3262,11 +3369,41 @@
             "require"
           ]
         },
+        "insertEmptyFragmentsEnabled": {
+          "title": "Insert Empty Fragments Enabled",
+          "description": "Enables a countermeasure against an SSL 3.0/TLS 1.0 protocol vulnerability affecting CBC ciphers. These ciphers cannot be handled by certain broken SSL implementations.",
+          "type": "boolean",
+          "default": false
+        },
+        "singleUseDhEnabled": {
+          "title": "Single Use DH Enabled",
+          "description": "Creates a new key when using temporary/ephemeral DH parameters. This option must be used to prevent small subgroup attacks, when the DH parameters were not generated using strong primes (for example. when using DSA-parameters). If strong primes were used, it is not strictly necessary to generate a new DH key during each handshake, but F5 Networks recommends it. Enable the Single DH Use option whenever temporary or ephemeral DH parameters are used.",
+          "type": "boolean",
+          "default": false
+        },
         "tls1_3Enabled": {
           "title": "TLS 1.3",
           "description": "Allow TLS 1.3 Ciphers. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
           "type": "boolean",
           "default": false
+        },
+        "tls1_2Enabled": {
+          "title": "TLS 1.2",
+          "description": "Allow TLS 1.2 Ciphers.",
+          "type": "boolean",
+          "default": true
+        },
+        "tls1_1Enabled": {
+          "title": "TLS 1.1",
+          "description": "Allow TLS 1.1 Ciphers.",
+          "type": "boolean",
+          "default": true
+        },
+        "tls1_0Enabled": {
+          "title": "TLS 1.0",
+          "description": "Allow TLS 1.0 Ciphers.",
+          "type": "boolean",
+          "default": true
         }
       },
       "allOf": [
@@ -3899,6 +4036,34 @@
         }
       }
     },
+    "Idle_Timeout_Policy": {
+      "description": "Destination port based idle timeout policy",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Idle_Timeout_Policy"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "rules": {
+          "description": "List of idle timeout rules",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Idle_Timeout_Rule"
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
     "Pointer_DNS_TSIG_Key": {
       "description": "Reference to a DNS TSIG key",
       "type": "object",
@@ -4400,7 +4565,7 @@
           "type": "string"
         }
       },
-      "additionalproperties": false
+      "additionalProperties": false
     },
     "Pointer_Radius_Profile": {
       "description": "Reference to a radius profile",
@@ -5476,6 +5641,7 @@
               "Endpoint_Policy",
               "Endpoint_Strategy",
               "Bandwidth_Control_Policy",
+              "Idle_Timeout_Policy",
               "Enforcement_Policy",
               "Enforcement_Diameter_Endpoint_Profile",
               "Enforcement_iRule",
@@ -6371,6 +6537,18 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "Idle_Timeout_Policy"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Idle_Timeout_Policy"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Enforcement_Policy"
                 }
               }
@@ -6835,8 +7013,8 @@
           }
         },
         "additionalProperties": false,
-        "minimumProperties": 1,
-        "maximumProperties": 1,
+        "minProperties": 1,
+        "maxProperties": 1,
         "f5bigComponent": "probe ltm persistence dest-addr"
       }
     },
@@ -6944,7 +7122,7 @@
       "properties": {
         "method": {
           "title": "Authentication Method",
-          "description": "Specifices the authentication method",
+          "description": "Specifies the authentication method",
           "type": "string",
           "const": "basic"
         },
@@ -8951,7 +9129,7 @@
           "type": "string"
         }
       },
-      "additionalproperties": false
+      "additionalProperties": false
     },
     "NAT_Policy": {
       "description": "Configures network address translation policy",
@@ -8981,6 +9159,68 @@
       },
       "required": [
         "class"
+      ],
+      "additionalProperties": false
+    },
+    "Idle_Timeout_Rule": {
+      "description": "Idle timeout rule",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Idle timeout rule name",
+          "type": "string",
+          "pattern": "^[A-Za-z_][0-9A-Za-z_/-]*$",
+          "maxLength": 64
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "protocol": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Enum_Protocols_Idle_Timeout_Policy"
+            }
+          ],
+          "default": "all-other"
+        },
+        "destinationPorts": {
+          "type": "array",
+          "description": "List of ports, port ranges (for example, 80, \"8080-8090\"), or \"all-other\".",
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "minItems": 1
+        },
+        "idleTimeout": {
+          "description": "Idle timeout in seconds",
+          "type": [
+            "integer",
+            "string"
+          ],
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "immediate",
+                "indefinite",
+                "unspecified"
+              ]
+            }
+          ],
+          "default": "unspecified"
+        }
+      },
+      "required": [
+        "name"
       ],
       "additionalProperties": false
     },
@@ -9098,8 +9338,8 @@
               }
             },
             "additionalProperties": false,
-            "minimumProperties": 1,
-            "maximumProperties": 1,
+            "minProperties": 1,
+            "maxProperties": 1,
             "f5bigComponent": "query ltm snatpool"
           },
           "default": "auto"
@@ -9154,8 +9394,8 @@
                 }
               },
               "additionalProperties": false,
-              "minimumProperties": 1,
-              "maximumProperties": 1,
+              "minProperties": 1,
+              "maxProperties": 1,
               "f5bigComponent": "query ltm rule"
             }
           },
@@ -9206,8 +9446,8 @@
               }
             },
             "additionalProperties": false,
-            "minimumProperties": 1,
-            "maximumProperties": 1,
+            "minProperties": 1,
+            "maxProperties": 1,
             "f5bigComponent": "query ltm pool"
           }
         },
@@ -9226,6 +9466,15 @@
             "L4"
           ],
           "default": "none"
+        },
+        "policyBandwidthControl": {
+          "title": "Bandwidth Control Policy",
+          "description": "AS3 pointer to Bandwidth Control Policy (policy must be static)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Bandwidth_Control_Policy"
+            }
+          ]
         },
         "policyFirewallEnforced": {
           "title": "Firewall policy (enforced)",
@@ -9284,6 +9533,9 @@
           "maxProperties": 1,
           "f5bigComponent": "query security nat policy"
         },
+        "policyIdleTimeout": {
+          "$ref": "#/definitions/Pointer_Idle_Timeout_Policy"
+        },
         "lastHop": {
           "title": "Last hop",
           "description": "Name of built-in last-hop method or AS3 pointer to last-hop pool (default 'default' means use system setting)",
@@ -9327,17 +9579,33 @@
               }
             },
             "additionalProperties": false,
-            "minimumProperties": 1,
-            "maximumProperties": 1,
+            "minProperties": 1,
+            "maxProperties": 1,
             "f5bigComponent": "query ltm pool"
           },
           "default": "default"
         },
         "translateClientPort": {
           "title": "Translate client port",
-          "description": "If true, hide client's port number from server (default false)",
-          "type": "boolean",
-          "default": false
+          "description": "If true, hide client's port number from server.  A value of true is the same as the string 'change' while a value of false is the same as the string 'preserve'.  The value 'preserve-strict' is the only other allowed value for a string",
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "default": false,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "change",
+                "preserve",
+                "preserve-strict"
+              ]
+            }
+          ]
         },
         "translateServerAddress": {
           "title": "Translate server address",
@@ -9486,6 +9754,23 @@
         },
         "clonePools": {
           "$ref": "#/definitions/Clone_Pools"
+        },
+        "maximumBandwidth": {
+          "description": "Specifies the maximum bandwidth allowed, in Mbps.",
+          "f5modules": [
+            "afm"
+          ],
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 1000000
+            },
+            {
+              "type": "string",
+              "const": "infinite"
+            }
+          ]
         }
       },
       "allOf": [
@@ -10993,13 +11278,13 @@
           "default": "off"
         },
         "blockSuspiscousBrowsers": {
-          "$comments": "maps to application.bot-defense.browswer-legit-enabled",
+          "$comment": "maps to application.bot-defense.browswer-legit-enabled",
           "description": "Detect and block requests from highly suspicious browsers",
           "type": "boolean",
           "default": true
         },
         "issueCaptchaChallenge": {
-          "$comments": "maps to application.bot-defense.browswer-legit-captcha",
+          "$comment": "maps to application.bot-defense.browswer-legit-captcha",
           "description": "Issue CAPTCHA challenges to moderately suspicious browsers",
           "type": "boolean",
           "default": true
@@ -14675,8 +14960,8 @@
               }
             },
             "additionalProperties": false,
-            "minimumProperties": 1,
-            "maximumProperties": 1,
+            "minProperties": 1,
+            "maxProperties": 1,
             "f5bigComponent": "query ltm rule"
           }
         }
@@ -15303,8 +15588,8 @@
           }
         },
         "additionalProperties": false,
-        "minimumProperties": 1,
-        "maximumProperties": 1,
+        "minProperties": 1,
+        "maxProperties": 1,
         "f5bigComponent": "probe ltm monitor icmp"
       }
     },
@@ -15602,7 +15887,7 @@
           "description": "Specifies the profile that this profile will inherit values from",
           "allOf": [
             {
-              "ref": "#/definitions/Pointer_Stream_Profile"
+              "$ref": "#/definitions/Pointer_Stream_Profile"
             }
           ],
           "default": {
@@ -17154,7 +17439,7 @@
         "address",
         "port"
       ],
-      "additionalPropertes": "false"
+      "additionalProperties": false
     },
     "Pool_Member": {
       "title": "Pool member",
@@ -21071,8 +21356,8 @@
           }
         },
         "additionalProperties": false,
-        "minimumProperties": 1,
-        "maximumProperties": 1
+        "minProperties": 1,
+        "maxProperties": 1
       }
     },
     "iRule_Core": {
@@ -23806,6 +24091,155 @@
         }
       }
     },
+    "Enum_Protocols_Idle_Timeout_Policy": {
+      "description": "Enum values for Idle_Timeout_Policy protocols",
+      "type": "string",
+      "enum": [
+        "3pc",
+        "a/n",
+        "ah",
+        "all-other",
+        "argus",
+        "aris",
+        "ax.25",
+        "bbn-rcc",
+        "bna",
+        "br-sat-mon",
+        "cbt",
+        "cftp",
+        "chaos",
+        "compaq-peer",
+        "cphb",
+        "cpnx",
+        "crdup",
+        "crtp",
+        "dccp",
+        "dcn",
+        "ddp",
+        "ddx",
+        "dgp",
+        "dsr",
+        "egp",
+        "eigrp",
+        "emcon",
+        "encap",
+        "esp",
+        "etherip",
+        "fc",
+        "fire",
+        "ggp",
+        "gmtp",
+        "gre",
+        "hip",
+        "hmp",
+        "hopopt",
+        "i-nlsp",
+        "iatp",
+        "icmp",
+        "idpr",
+        "idpr-cmtp",
+        "idrp",
+        "ifmp",
+        "igmp",
+        "igp",
+        "il",
+        "ip",
+        "ipcomp",
+        "ipcv",
+        "ipencap",
+        "ipip",
+        "iplt",
+        "ippc",
+        "ipv4",
+        "ipv6",
+        "ipv6-auth",
+        "ipv6-crypt",
+        "ipv6-frag",
+        "ipv6-icmp",
+        "ipv6-nonxt",
+        "ipv6-opts",
+        "ipv6-route",
+        "ipx-in-ip",
+        "irtp",
+        "isis",
+        "iso-ip",
+        "iso-tp4",
+        "kryptolan",
+        "l2tp",
+        "larp",
+        "leaf-1",
+        "leaf-2",
+        "manet",
+        "merit-inp",
+        "mfe-nsp",
+        "micp",
+        "mobile",
+        "mobility-header",
+        "mpls-in-ip",
+        "mtp",
+        "mux",
+        "narp",
+        "netblt",
+        "nsfnet-igp",
+        "nvp",
+        "ospf",
+        "pgm",
+        "pim",
+        "pipe",
+        "pnni",
+        "prm",
+        "ptp",
+        "pup",
+        "pvp",
+        "qnx",
+        "rdp",
+        "rohc",
+        "rsvp",
+        "rspv-e2e-ignore",
+        "rvd",
+        "sat-expak",
+        "sat-mon",
+        "scc-sp",
+        "scps",
+        "sctp",
+        "sdrp",
+        "secure-vmtp",
+        "shim6",
+        "skip",
+        "sm",
+        "smp",
+        "snp",
+        "sprite-rpc",
+        "sps",
+        "srp",
+        "sscopmce",
+        "st",
+        "stp",
+        "sun-nd",
+        "swipe",
+        "tcf",
+        "tcp",
+        "tlsp",
+        "tp++",
+        "trunk-1",
+        "trunk-2",
+        "ttp",
+        "udp",
+        "udplite",
+        "uti",
+        "vines",
+        "visa",
+        "vmtp",
+        "vrrp",
+        "wb-expak",
+        "wb-mon",
+        "wesp",
+        "wsn",
+        "xnet",
+        "xns-idp",
+        "xtp"
+      ]
+    },
     "Security_Log_Profile_Ssh_Proxy": {
       "f5modules": [
         "afm",
@@ -24537,11 +24971,21 @@
               "class"
             ]
           }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Service Address",
+          "type": "string",
+          "format": "f5bigip"
         }
       },
       "additionalProperties": false,
       "minProperties": 1,
-      "maxProperties": 1
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm virtual-address"
+        }
+      ]
     },
     "Bandwidth_Control_Policy": {
       "description": "Create a listener to specify how to handle traffic for policy enforcement",
@@ -26821,6 +27265,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.19.0",
             "3.18.0",
             "3.17.0",
             "3.16.0",
@@ -26863,11 +27308,6 @@
               "description": "IP address of managed device to be configured",
               "type": "string",
               "format": "f5ip"
-            },
-            "ssgName": {
-              "title": "SSG Name",
-              "description": "Name of shared service group to be configured",
-              "type": "string"
             }
           },
           "maxProperties": 1
