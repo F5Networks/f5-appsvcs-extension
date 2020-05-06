@@ -9179,6 +9179,7 @@
           "$ref": "#/definitions/Remark"
         },
         "protocol": {
+          "type": "string",
           "allOf": [
             {
               "$ref": "#/definitions/Enum_Protocols_Idle_Timeout_Policy"
