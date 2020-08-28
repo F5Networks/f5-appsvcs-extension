@@ -22245,24 +22245,23 @@
           ],
           "cloudLibsEncrypt": true
         },
+        "resourceType": {
+          "description": "Type of resource identified by resourceId. This can be used in place of tagKey/tagValue.",
+          "type": "string",
+          "enum": [
+            "tag",
+            "scaleSet"
+          ]
+        },
+        "resourceId": {
+          "description": "ID of resource to find nodes by.",
+          "type": "string"
+        },
         "environment": {
           "title": "Azure environment",
           "description": "Azure environment name. Required if environment should not be determined by instance metadata.",
           "type": "string",
           "default": "Azure"
-        }
-      },
-      "if": {
-        "required": [
-          "monitors"
-        ]
-      },
-      "then": {
-        "properties": {
-          "minimumMonitors": {
-            "type": "integer",
-            "default": 1
-          }
         }
       },
       "required": [
@@ -22275,6 +22274,49 @@
       "allOf": [
         {
           "$ref": "#/definitions/Service_Discovery_Polling_Core_Tagged"
+        },
+        {
+          "if": {
+            "required": [
+              "monitors"
+            ]
+          },
+          "then": {
+            "properties": {
+              "minimumMonitors": {
+                "type": "integer",
+                "default": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "tagKey",
+              "tagValue"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "resourceId",
+                "resourceType"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "resourceId",
+              "resourceType"
+            ],
+            "not": {
+              "required": [
+                "tagKey",
+                "tagValue"
+              ]
+            }
+          }
         }
       ]
     },
@@ -23234,7 +23276,9 @@
         }
       },
       "required": [
-        "region"
+        "region",
+        "tagKey",
+        "tagValue"
       ],
       "allOf": [
         {
@@ -25197,10 +25241,6 @@
           "description": "The tag value associated with the node to add to this pool"
         }
       },
-      "required": [
-        "tagKey",
-        "tagValue"
-      ],
       "allOf": [
         {
           "$ref": "#/definitions/Service_Discovery_Polling_Core"
@@ -25795,7 +25835,9 @@
         }
       },
       "required": [
-        "region"
+        "region",
+        "tagKey",
+        "tagValue"
       ],
       "allOf": [
         {
@@ -27825,6 +27867,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.22.0",
             "3.21.0",
             "3.20.0",
             "3.19.0",
