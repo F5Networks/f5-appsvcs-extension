@@ -601,6 +601,7 @@
               "WAF_Policy",
               "Persist",
               "Pool",
+              "Address_Discovery",
               "Monitor",
               "TLS_Server",
               "TLS_Client",
@@ -626,6 +627,7 @@
               "HTTP_Acceleration_Profile",
               "Stream_Profile",
               "Access_Profile",
+              "Per_Request_Access_Policy",
               "ICAP_Profile",
               "Adapt_Profile",
               "Cipher_Rule",
@@ -842,6 +844,18 @@
             },
             "then": {
               "$ref": "#/definitions/Pool"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Address_Discovery"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Address_Discovery"
             }
           },
           {
@@ -1142,6 +1156,18 @@
             },
             "then": {
               "$ref": "#/definitions/Access_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Per_Request_Access_Policy"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Per_Request_Access_Policy"
             }
           },
           {
@@ -1931,9 +1957,34 @@
         "serverTLS": {
           "not": {}
         },
-        "profileConnectivity": [
-          "profileAccess"
-        ]
+        "profileConnectivity": {
+          "oneOf": [
+            {
+              "required": [
+                "profileAccess"
+              ]
+            },
+            {
+              "required": [
+                "policyIAM"
+              ]
+            }
+          ]
+        },
+        "policyPerRequestAccess": {
+          "oneOf": [
+            {
+              "required": [
+                "profileAccess"
+              ]
+            },
+            {
+              "required": [
+                "policyIAM"
+              ]
+            }
+          ]
+        }
       },
       "required": [
         "class"
@@ -2168,6 +2219,9 @@
             "$ref": "#/definitions/Pointer_Multiplex_Profile"
           }
         },
+        "profileNTLM": {
+          "$ref": "#/definitions/Pointer_NTLM_Profile"
+        },
         "policyWAF": {
           "$ref": "#/definitions/Pointer_WAF_Policy"
         },
@@ -2221,8 +2275,41 @@
               "$ref": "#/definitions/Pointer_Connectivity_Profile"
             }
           ]
+        },
+        "policyPerRequestAccess": {
+          "title": "Per Request Access Policy",
+          "f5modules": [
+            "apm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Per_Request_Access_Policy"
+            }
+          ]
         }
       },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "policyIAM": {}
+            },
+            "required": [
+              "policyIAM"
+            ]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "profileAccess": {}
+              },
+              "required": [
+                "profileAccess"
+              ]
+            }
+          }
+        }
+      ],
       "if": true,
       "then": {
         "$ref": "#/definitions/Service_TCP_Core"
@@ -5124,146 +5211,9 @@
         "class"
       ]
     },
-    "Pool_Member": {
-      "title": "Pool member",
-      "description": "Declares a service-pool member",
+    "Address_Discovery_Common": {
       "type": "object",
-      "properties": {
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "servicePort": {
-          "title": "Service port",
-          "description": "Service L4 port (optional port-discovery may override)",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65535
-        },
-        "bigip": {
-          "title": "BIG-IP node",
-          "description": "If defined, pathname of existing BIG-IP node",
-          "type": "string",
-          "format": "f5bigip"
-        },
-        "enable": {
-          "description": "Maps to BIG-IP pool member state",
-          "type": "boolean",
-          "default": true
-        },
-        "connectionLimit": {
-          "title": "Connection limit",
-          "description": "Maximum concurrent connections to member",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 2147483647,
-          "default": 0
-        },
-        "rateLimit": {
-          "title": "Rate limit",
-          "description": "Value zero prevents use of member",
-          "type": "integer",
-          "minimum": -1,
-          "maximum": 2147483647,
-          "default": -1
-        },
-        "dynamicRatio": {
-          "title": "Dynamic ratio",
-          "description": "Specifies a range of numbers that you want the system to use in conjunction with the ratio load balancing method",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 100,
-          "default": 1
-        },
-        "ratio": {
-          "title": "Ratio",
-          "description": "Specifies the weight of the pool member for load balancing purposes",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 100,
-          "default": 1
-        },
-        "priorityGroup": {
-          "title": "Priority group",
-          "description": "Specifies the priority group within the pool for this pool member",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65535,
-          "default": 0
-        },
-        "monitors": {
-          "title": "Monitors",
-          "description": "List of monitors (each by name or AS3 pointer)",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Basic_Monitor"
-          },
-          "$comment": "uniqueItems: true"
-        },
-        "minimumMonitors": {
-          "title": "Minimum monitors",
-          "description": "Member is down when fewer than minimum monitors report it healthy",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 63
-        },
-        "adminState": {
-          "title": "Administration State",
-          "description": "Setting adminState to enable will create the node in an operational state. Set to disable to disallow new connections but allow existing connections to drain. Set to offline to force immediate termination of all connections.",
-          "type": "string",
-          "enum": [
-            "enable",
-            "disable",
-            "offline"
-          ],
-          "default": "enable"
-        },
-        "addressDiscovery": {
-          "title": "Address discovery",
-          "description": "Selects how server (node) addresses are discovered",
-          "type": "string",
-          "enum": [
-            "static",
-            "fqdn",
-            "event",
-            "aws",
-            "gce",
-            "azure",
-            "consul"
-          ],
-          "default": "static"
-        },
-        "shareNodes": {
-          "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "f5bigComponent": "query ltm node",
-      "required": [
-        "servicePort"
-      ],
       "allOf": [
-        {
-          "if": {
-            "required": [
-              "bigip"
-            ]
-          },
-          "then": {
-            "if": {
-              "required": [
-                "monitors"
-              ]
-            },
-            "then": {
-              "properties": {
-                "minimumMonitors": {
-                  "default": 1
-                }
-              }
-            }
-          }
-        },
         {
           "if": {
             "properties": {
@@ -5471,6 +5421,199 @@
           },
           "then": {
             "$ref": "#/definitions/Service_Discovery_Consul"
+          }
+        }
+      ]
+    },
+    "Address_Discovery": {
+      "description": "Sharable Pool Member information",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Address_Discovery"
+        },
+        "addressDiscovery": {
+          "title": "Address discovery",
+          "description": "Selects how server (node) addresses are discovered",
+          "type": "string",
+          "enum": [
+            "static",
+            "fqdn",
+            "event",
+            "aws",
+            "gce",
+            "azure",
+            "consul"
+          ]
+        },
+        "shareNodes": {
+          "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "addressDiscovery"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Address_Discovery_Common"
+        }
+      ]
+    },
+    "Pool_Member": {
+      "title": "Pool member",
+      "description": "Declares a service-pool member",
+      "type": "object",
+      "properties": {
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "servicePort": {
+          "title": "Service port",
+          "description": "Service L4 port (optional port-discovery may override)",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "bigip": {
+          "title": "BIG-IP node",
+          "description": "If defined, pathname of existing BIG-IP node",
+          "type": "string",
+          "format": "f5bigip"
+        },
+        "enable": {
+          "description": "Maps to BIG-IP pool member state",
+          "type": "boolean",
+          "default": true
+        },
+        "connectionLimit": {
+          "title": "Connection limit",
+          "description": "Maximum concurrent connections to member",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "default": 0
+        },
+        "rateLimit": {
+          "title": "Rate limit",
+          "description": "Value zero prevents use of member",
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 2147483647,
+          "default": -1
+        },
+        "dynamicRatio": {
+          "title": "Dynamic ratio",
+          "description": "Specifies a range of numbers that you want the system to use in conjunction with the ratio load balancing method",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 1
+        },
+        "ratio": {
+          "title": "Ratio",
+          "description": "Specifies the weight of the pool member for load balancing purposes",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 1
+        },
+        "priorityGroup": {
+          "title": "Priority group",
+          "description": "Specifies the priority group within the pool for this pool member",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 0
+        },
+        "monitors": {
+          "title": "Monitors",
+          "description": "List of monitors (each by name or AS3 pointer)",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Basic_Monitor"
+          },
+          "$comment": "uniqueItems: true"
+        },
+        "minimumMonitors": {
+          "title": "Minimum monitors",
+          "description": "Member is down when fewer than minimum monitors report it healthy",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 63
+        },
+        "adminState": {
+          "title": "Administration State",
+          "description": "Setting adminState to enable will create the node in an operational state. Set to disable to disallow new connections but allow existing connections to drain. Set to offline to force immediate termination of all connections.",
+          "type": "string",
+          "enum": [
+            "enable",
+            "disable",
+            "offline"
+          ],
+          "default": "enable"
+        },
+        "addressDiscovery": {
+          "title": "Address discovery",
+          "description": "Selects how server (node) addresses are discovered",
+          "type": [
+            "string",
+            "object"
+          ],
+          "if": {
+            "type": "string"
+          },
+          "then": {
+            "enum": [
+              "static",
+              "fqdn",
+              "event",
+              "aws",
+              "gce",
+              "azure",
+              "consul"
+            ]
+          },
+          "else": {
+            "$ref": "#/definitions/Pointer_Address_Discovery"
+          },
+          "default": "static"
+        },
+        "shareNodes": {
+          "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "f5bigComponent": "query ltm node",
+      "required": [
+        "servicePort"
+      ],
+      "allOf": [
+        {
+          "$ref": "#/definitions/Address_Discovery_Common"
+        },
+        {
+          "if": {
+            "required": [
+              "bigip"
+            ]
+          },
+          "then": {
+            "if": {
+              "required": [
+                "monitors"
+              ]
+            },
+            "then": {
+              "properties": {
+                "minimumMonitors": {
+                  "default": 1
+                }
+              }
+            }
           }
         }
       ]
@@ -5946,6 +6089,7 @@
             "https",
             "icmp",
             "ldap",
+            "mysql",
             "radius",
             "sip",
             "smtp",
@@ -6097,71 +6241,83 @@
                     "if": {
                       "properties": {
                         "monitorType": {
-                          "const": "sip"
+                          "const": "mysql"
                         }
                       }
                     },
                     "then": {
-                      "$ref": "#/definitions/Monitor_SIP"
+                      "$ref": "#/definitions/Monitor_MySQL"
                     },
                     "else": {
                       "if": {
                         "properties": {
                           "monitorType": {
-                            "const": "tcp-half-open"
+                            "const": "sip"
                           }
                         }
                       },
                       "then": {
-                        "$ref": "#/definitions/Monitor_TCP_Half_Open"
+                        "$ref": "#/definitions/Monitor_SIP"
                       },
                       "else": {
                         "if": {
                           "properties": {
                             "monitorType": {
-                              "const": "ldap"
+                              "const": "tcp-half-open"
                             }
                           }
                         },
                         "then": {
-                          "$ref": "#/definitions/Monitor_LDAP"
+                          "$ref": "#/definitions/Monitor_TCP_Half_Open"
                         },
                         "else": {
                           "if": {
                             "properties": {
                               "monitorType": {
-                                "const": "dns"
+                                "const": "ldap"
                               }
                             }
                           },
                           "then": {
-                            "$ref": "#/definitions/Monitor_DNS"
+                            "$ref": "#/definitions/Monitor_LDAP"
                           },
                           "else": {
                             "if": {
                               "properties": {
                                 "monitorType": {
-                                  "const": "radius"
+                                  "const": "dns"
                                 }
                               }
                             },
                             "then": {
-                              "$ref": "#/definitions/Monitor_RADIUS"
+                              "$ref": "#/definitions/Monitor_DNS"
                             },
                             "else": {
                               "if": {
                                 "properties": {
                                   "monitorType": {
-                                    "const": "ftp"
+                                    "const": "radius"
                                   }
                                 }
                               },
                               "then": {
-                                "$ref": "#/definitions/Monitor_FTP"
+                                "$ref": "#/definitions/Monitor_RADIUS"
                               },
                               "else": {
-                                "$comment": "Unrecognized monitorType.",
-                                "not": {}
+                                "if": {
+                                  "properties": {
+                                    "monitorType": {
+                                      "const": "ftp"
+                                    }
+                                  }
+                                },
+                                "then": {
+                                  "$ref": "#/definitions/Monitor_FTP"
+                                },
+                                "else": {
+                                  "$comment": "Unrecognized monitorType.",
+                                  "not": {}
+                                }
                               }
                             }
                           }
@@ -6475,6 +6631,88 @@
       "if": true,
       "then": {
         "$ref": "#/definitions/Monitor_May_Adapt"
+      }
+    },
+    "Monitor_MySQL": {
+      "description": "Additional Monitor class properties available when monitorType = mysql",
+      "type": "object",
+      "properties": {
+        "send": {
+          "title": "Send",
+          "description": "Send this (backquote-expanded) string to query node",
+          "type": "string",
+          "f5expand": true
+        },
+        "receive": {
+          "title": "Receive = up",
+          "description": "Mark node up upon receipt of this (backquote-expanded) string",
+          "type": "string",
+          "f5expand": true
+        },
+        "username": {
+          "title": "Username",
+          "description": "Username if any for query authentication",
+          "type": "string"
+        },
+        "passphrase": {
+          "title": "Passphrase",
+          "description": "Passphrase if any for query authentication",
+          "type": "object",
+          "properties": {
+            "allowReuse": {
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "if": true,
+          "then": {
+            "$ref": "#/definitions/Secret"
+          },
+          "f5fetch": "object",
+          "f5secret": true
+        },
+        "count": {
+          "title": "Count",
+          "description": "Number of monitor probes after which the connection to the database will be terminated.  Count value of zero indicates that the connection will never be terminated.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "default": 0
+        },
+        "database": {
+          "title": "Database",
+          "description": "The name of the database with which the monitor attempts to communicate.",
+          "type": "string"
+        },
+        "receiveColumn": {
+          "title": "Receive Column",
+          "description": "Specifies the column in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Receive properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "receiveRow": {
+          "title": "Receive Row",
+          "description": "Specifies the row in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Recieve properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      },
+      "dependencies": {
+        "receiveColumn": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        },
+        "receiveRow": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        }
       }
     },
     "Monitor_SIP": {
@@ -6941,6 +7179,25 @@
           "type": "boolean",
           "default": false
         },
+        "alertTimeout": {
+          "title": "Alert Timeout",
+          "description": "Specifies the duration of time, in seconds, for the system to try to close an SSL connection before resetting the connection. The default is 'indefinite'. You can also specify 'immediate', or an integer.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "maximum": 4294967294,
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "enum": [
+                "immediate",
+                "indefinite"
+              ]
+            }
+          ],
+          "default": "indefinite"
+        },
         "cacheTimeout": {
           "title": "Cache Timeout",
           "description": "Sets the cache timeout (in seconds)",
@@ -7323,6 +7580,25 @@
           "type": "string",
           "format": "hostname",
           "default": "none"
+        },
+        "alertTimeout": {
+          "title": "Alert Timeout",
+          "description": "Specifies the duration of time, in seconds, for the system to try to close an SSL connection before resetting the connection. The default is 'indefinite'. You can also specify 'immediate', or an integer.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "maximum": 4294967294,
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "enum": [
+                "immediate",
+                "indefinite"
+              ]
+            }
+          ],
+          "default": "indefinite"
         },
         "cacheTimeout": {
           "title": "Cache Timeout",
@@ -10429,6 +10705,14 @@
           ],
           "default": 300
         },
+        "keepAliveInterval": {
+          "title": "Keep-alive interval",
+          "description": "Number of seconds between keep-alive probes. A value of 0 seconds disables the feature.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 0
+        },
         "looseClose": {
           "title": "Loose close",
           "description": "When true, system closes a loosely-initiated connection when the system receives the first FIN packet from either the client or the server (default false).",
@@ -11557,6 +11841,48 @@
         "url": {
           "title": "URL",
           "description": "The URL to pull the Access Profile from",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_URL"
+            }
+          ]
+        },
+        "ignoreChanges": {
+          "title": "Ignore changes",
+          "description": "If false (default), the system updates the profile in every AS3 declaration deployment. If true, AS3 creates the profile on first deployment, and leaves it untouched afterwards. However, if enable is set to true, the policy will be applied even if ignoreChanges is true",
+          "type": "boolean",
+          "default": false
+        },
+        "enable": {
+          "title": "Enable",
+          "description": "Apply the profile after updating it. If false (default), the system only updates the profile. Also note 'ignoreChanges'.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "class",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "Per_Request_Access_Policy": {
+      "description": "Configures a Per Flow Request Access Policy",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Per_Request_Access_Policy"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "url": {
+          "title": "URL",
+          "description": "The URL to pull the policy from",
           "allOf": [
             {
               "$ref": "#/definitions/Resource_URL"
@@ -12887,7 +13213,10 @@
                   "smtp",
                   "ssh",
                   "sunrpc",
-                  "tftp"
+                  "tftp",
+                  "coap",
+                  "oracle",
+                  "pfcp"
                 ]
               },
               "compliance": {
@@ -12895,8 +13224,520 @@
               },
               "signature": {
                 "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Signature_Checks"
+              },
+              "ports": {
+                "description": "List of ports to attach to the service.",
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535
+                }
               }
             },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "dhcp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        67,
+                        68
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "dns"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        53
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "gtp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        2123,
+                        2152,
+                        3386
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "imap"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        143,
+                        993
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "mqtt"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        1883
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "netbios_ns"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        137
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "nntp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        119
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "pop3"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        110
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "sip"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        5060,
+                        5061
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "snmp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        161,
+                        162
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "ssl"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        443
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "telnet"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        23
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "wins"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        42
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "diameter"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        3868
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "ftp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        20,
+                        21
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "http"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        80,
+                        8080
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "irc"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        6663,
+                        6667,
+                        6668,
+                        7000
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "mysql"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        3306
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "netbios_ssn"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        139,
+                        445
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "radius"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        1645,
+                        1646,
+                        1812,
+                        1813
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "smtp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        25
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "ssh"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        22
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "sunrpc"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        111
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "tftp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        69
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "coap"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        5683
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "oracle"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        1521
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "pfcp"
+                    }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "ports": {
+                      "default": [
+                        8805
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
             "required": [
               "type"
             ],
@@ -24202,6 +25043,32 @@
       ],
       "additionalProperties": false
     },
+    "Pointer_Address_Discovery": {
+      "description": "Reference to a Address Discovery",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Address Discovery declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Address_Discovery"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1
+    },
     "Pointer_Bandwidth_Control_Policy": {
       "description": "Reference to a bandwidth control policy",
       "type": "object",
@@ -26602,6 +27469,42 @@
         }
       ]
     },
+    "Pointer_Per_Request_Access_Policy": {
+      "description": "Reference to a Per Request Access Policy",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Per Request Access Policy declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Per_Request_Access_Policy"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Per Request Access Policy",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query apm policy access-policy"
+        }
+      ]
+    },
     "Pointer_Connectivity_Profile": {
       "description": "Reference to a Connectivity Profile",
       "type": "object",
@@ -27074,6 +27977,25 @@
       "allOf": [
         {
           "f5bigComponent": "query ltm profile one-connect"
+        }
+      ]
+    },
+    "Pointer_NTLM_Profile": {
+      "description": "Reference to a NT LAN Manager profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP NT LAN Manager profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile ntlm"
         }
       ]
     },
@@ -27888,6 +28810,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.23.0",
             "3.22.0",
             "3.21.0",
             "3.20.0",
