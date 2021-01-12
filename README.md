@@ -31,7 +31,7 @@ We encourage you to use our [Slack channel](https://f5cloudsolutions.herokuapp.c
 
 ## Copyright
 
-Copyright 2014-2020 F5 Networks Inc.
+Copyright 2014-2021 F5 Networks Inc.
 
 
 ### F5 Networks Contributor License Agreement
