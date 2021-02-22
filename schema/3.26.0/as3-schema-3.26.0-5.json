@@ -2303,13 +2303,26 @@
         },
         "profileVdi": {
           "title": "VDI profile",
-          "description": "VDI profile to attach to servie.",
+          "description": "VDI profile to attach to service.",
           "f5modules": [
             "apm"
           ],
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_VDI_Profile"
+            }
+          ]
+        },
+        "profileApiProtection": {
+          "title": "API Protection Profile",
+          "description": "API protection profile to attach to service. This option is only available on BIG-IP 14.1+.",
+          "f5modules": [
+            "apm",
+            "asm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_API_Protection_Profile"
             }
           ]
         }
@@ -4443,6 +4456,17 @@
           "minLength": 3,
           "f5expand": true
         },
+        "policy": {
+          "description": "Reference to a WAF Policy",
+          "if": true,
+          "then": {
+            "$ref": "#/definitions/F5string"
+          },
+          "f5fetch": "string",
+          "f5expand": {
+            "when": "1/expand"
+          }
+        },
         "ignoreChanges": {
           "title": "Ignore changes",
           "description": "If false (default), the system updates the policy in every AS3 declaration deployment. If true, AS3 creates the policy on first deployment, and leaves it untouched afterwards",
@@ -4494,6 +4518,11 @@
         {
           "required": [
             "file"
+          ]
+        },
+        {
+          "required": [
+            "policy"
           ]
         }
       ]
@@ -15167,7 +15196,7 @@
             }
           ]
         },
-        "whitelist": {
+        "allowlist": {
           "description": "Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention.",
           "allOf": [
             {
@@ -15175,8 +15204,27 @@
             }
           ]
         },
-        "applicationWhitelist": {
+        "whitelist": {
+          "description": "Deprecated. Replaced with functionally equivalent allowlist. Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Firewall_Address_List"
+            }
+          ]
+        },
+        "applicationAllowlist": {
           "description": "Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
+          "f5modules": [
+            "asm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Firewall_Address_List"
+            }
+          ]
+        },
+        "applicationWhitelist": {
+          "description": "Deprecated. Replaced with functionally equivalent applicationAllowlist. Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
           "f5modules": [
             "asm"
           ],
@@ -15187,7 +15235,11 @@
           ]
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "f5aliases": {
+        "allowlist": "whitelist",
+        "applicationAllowlist": "applicationWhitelist"
+      }
     },
     "DOS_Auto_Denylist_Settings": {
       "description": "Adds the source IP address to the denylist category assigned to the Denial-of-Service (DoS) vector",
@@ -15381,13 +15433,23 @@
             "type": "string"
           }
         },
-        "urlWhitelist": {
+        "urlAllowlist": {
           "description": "Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
           "type": "array",
           "items": {
             "type": "string"
           }
+        },
+        "urlWhitelist": {
+          "description": "Deprecated. Replaced with functionally equivalent urlAllowlist. Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
+      },
+      "f5aliases": {
+        "urlAllowlist": "urlWhitelist"
       },
       "dependencies": {
         "issueCaptchaChallenge": {
@@ -16087,15 +16149,29 @@
           ],
           "default": {}
         },
-        "blacklistedGeolocations": {
+        "denylistedGeolocations": {
           "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "whitelistedGeolocations": {
+        "blacklistedGeolocations": {
+          "description": "Deprecated. Replaced with functionally equivalent denylistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowlistedGeolocations": {
           "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "whitelistedGeolocations": {
+          "description": "Deprecated. Replaced with functionally equivalent allowlistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
@@ -16200,7 +16276,11 @@
           "default": {}
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "f5aliases": {
+        "allowlistedGeolocations": "whitelistedGeolocations",
+        "denylistedGeolocations": "blacklistedGeolocations"
+      }
     },
     "DOS_Profile_Network_Dynamic_Signatures": {
       "description": "",
@@ -16338,7 +16418,15 @@
           ],
           "default": {}
         },
+        "autoDenylistSettings": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
+            }
+          ]
+        },
         "autoBlacklistSettings": {
+          "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
           "allOf": [
             {
               "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
@@ -16387,7 +16475,10 @@
           "default": false
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "f5aliases": {
+        "autoDenylistSettings": "autoBlacklistSettings"
+      }
     },
     "DOS_Profile_Protocol_DNS": {
       "description": "",
@@ -16458,7 +16549,15 @@
           ],
           "default": {}
         },
+        "autoDenylistSettings": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
+            }
+          ]
+        },
         "autoBlacklistSettings": {
+          "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
           "allOf": [
             {
               "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
@@ -16510,7 +16609,10 @@
       "additionalProperties": false,
       "required": [
         "type"
-      ]
+      ],
+      "f5aliases": {
+        "autoDenylistSettings": "autoBlacklistSettings"
+      }
     },
     "DOS_Profile_Protocol_SIP": {
       "description": "",
@@ -16579,7 +16681,15 @@
           ],
           "default": {}
         },
+        "autoDenylistSettings": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
+            }
+          ]
+        },
         "autoBlacklistSettings": {
+          "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
           "allOf": [
             {
               "$ref": "#/definitions/DOS_Auto_Denylist_Settings"
@@ -16631,7 +16741,10 @@
       "additionalProperties": false,
       "required": [
         "type"
-      ]
+      ],
+      "f5aliases": {
+        "autoDenylistSettings": "autoBlacklistSettings"
+      }
     },
     "Enum_ISP": {
       "description": "Enum values for Internet Service Providers (ISP)",
@@ -19863,7 +19976,7 @@
     },
     "Security_Log_Profile_Bot_Defense": {
       "title": "Bot Defense Log Profile",
-      "description": "Specifies, when enabled, that the system logs events from the Proactive Bot Defense mechanism. Depending on settings, the system logs Illegal requests, Legal requests and BIGIP Challenges.",
+      "description": "Specifies, when enabled, the system logs events from the Proactive Bot Defense mechanism.",
       "type": "object",
       "f5modules": [
         "asm"
@@ -19907,6 +20020,96 @@
         },
         "logLegalRequests": {
           "description": "This option enables or disables the logging of legal requests",
+          "type": "boolean",
+          "default": false
+        },
+        "logAlarm": {
+          "description": "This option enables or disables the logging of requests with alarm mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logBlock": {
+          "description": "This option enables or disables the logging of requests with block mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logBrowser": {
+          "description": "This option enables or disables the logging of requests with browser classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logBrowserVerificationAction": {
+          "description": "This option enables or disables the logging of requests by browser verification action. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logCaptcha": {
+          "description": "This option enables or disables the logging of requests with captcha mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logDeviceIdCollectionRequest": {
+          "description": "This option enables or disables the logging of requests by device ID collection. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logMaliciousBot": {
+          "description": "This option enables or disables the logging of requests with malicious bot classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logMobileApplication": {
+          "description": "This option enables or disables the logging of requests with mobile application classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logNone": {
+          "description": "This option enables or disables the logging of requests with no mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logRateLimit": {
+          "description": "This option enables or disables the logging of requests with rate limit mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logSuspiciousBrowser": {
+          "description": "This option enables or disables the logging of requests with suspicious browser classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logTcpReset": {
+          "description": "This option enables or disables the logging of requests with TCP reset mitigation. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logTrustedBot": {
+          "description": "This option enables or disables the logging of requests with trusted bot classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logUnknown": {
+          "description": "This option enables or disables the logging of requests with unknown classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": true
+        },
+        "logUntrustedBot": {
+          "description": "This option enables or disables the logging of requests with untrusted bot classification. This feature is only supported in TMOS versions 14.1+",
+          "type": "boolean",
+          "default": false
+        },
+        "logHoneyPotPage": {
+          "description": "This option enables or disables the logging of requests with honey pot page mitigation. This feature is only supported in TMOS versions 15.0+",
+          "type": "boolean",
+          "default": false
+        },
+        "logRedirectToPool": {
+          "description": "This option enables or disables the logging of requests with redirect to pool mitigation. This feature is only supported in TMOS versions 15.0+",
+          "type": "boolean",
+          "default": false
+        },
+        "logChallengeFailureRequest": {
+          "description": "This option enables or disables the logging of requests by challenge failure. This feature is only supported in TMOS versions 15.0+",
           "type": "boolean",
           "default": false
         }
@@ -25308,6 +25511,25 @@
       "minProperties": 1,
       "maxProperties": 1
     },
+    "Pointer_API_Protection_Profile": {
+      "description": "Reference to a API_Protection_Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP API_Protection_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query api-protection profile apiprotection"
+        }
+      ]
+    },
     "Pointer_Bandwidth_Control_Policy": {
       "description": "Reference to a bandwidth control policy",
       "type": "object",
@@ -29076,6 +29298,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.26.0",
             "3.25.0",
             "3.24.0",
             "3.23.0",
