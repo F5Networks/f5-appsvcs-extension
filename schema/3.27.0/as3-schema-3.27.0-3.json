@@ -2367,6 +2367,12 @@
           "type": "string",
           "const": "Service_TCP"
         },
+        "mqttEnabled": {
+          "title": "MQTT profile",
+          "description": "Attaches the MQTT profile /Common/mqtt.  MQTT profiles have no configurable properties.",
+          "type": "boolean",
+          "default": false
+        },
         "persistenceMethods": {
           "title": "Persistence methods",
           "description": "Default 'source-address' is generally good. Use 'persistenceMethods: []' for no persistence.",
@@ -3236,7 +3242,7 @@
     },
     "Service_Forwarding": {
       "title": "Forwarding virtual server",
-      "description": "Attributes of a forwarding virtual server",
+      "description": "Attributes of a forwarding virtual server. ARP and ICMP Echo will be disabled on virtualAddresses by default.",
       "type": "object",
       "properties": {
         "class": {
@@ -5519,7 +5525,8 @@
             "gce",
             "azure",
             "consul"
-          ]
+          ],
+          "f5serviceDiscovery": true
         },
         "shareNodes": {
           "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
@@ -5653,7 +5660,13 @@
           "else": {
             "$ref": "#/definitions/Pointer_Address_Discovery"
           },
-          "default": "static"
+          "default": "static",
+          "f5serviceDiscovery": {
+            "exceptions": [
+              "static",
+              "fqdn"
+            ]
+          }
         },
         "shareNodes": {
           "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
@@ -6036,6 +6049,11 @@
             }
           ],
           "cloudLibsEncrypt": true
+        },
+        "projectId": {
+          "title": "Project Id",
+          "description": "For Google Cloud Engine (GCE) only: The ID of the project in which the members are located",
+          "type": "string"
         }
       },
       "if": {
@@ -6215,6 +6233,7 @@
             "icmp",
             "ldap",
             "mysql",
+            "postgresql",
             "radius",
             "sip",
             "smtp",
@@ -6388,71 +6407,83 @@
                         "if": {
                           "properties": {
                             "monitorType": {
-                              "const": "sip"
+                              "const": "postgresql"
                             }
                           }
                         },
                         "then": {
-                          "$ref": "#/definitions/Monitor_SIP"
+                          "$ref": "#/definitions/Monitor_PostgreSQL"
                         },
                         "else": {
                           "if": {
                             "properties": {
                               "monitorType": {
-                                "const": "tcp-half-open"
+                                "const": "sip"
                               }
                             }
                           },
                           "then": {
-                            "$ref": "#/definitions/Monitor_TCP_Half_Open"
+                            "$ref": "#/definitions/Monitor_SIP"
                           },
                           "else": {
                             "if": {
                               "properties": {
                                 "monitorType": {
-                                  "const": "ldap"
+                                  "const": "tcp-half-open"
                                 }
                               }
                             },
                             "then": {
-                              "$ref": "#/definitions/Monitor_LDAP"
+                              "$ref": "#/definitions/Monitor_TCP_Half_Open"
                             },
                             "else": {
                               "if": {
                                 "properties": {
                                   "monitorType": {
-                                    "const": "dns"
+                                    "const": "ldap"
                                   }
                                 }
                               },
                               "then": {
-                                "$ref": "#/definitions/Monitor_DNS"
+                                "$ref": "#/definitions/Monitor_LDAP"
                               },
                               "else": {
                                 "if": {
                                   "properties": {
                                     "monitorType": {
-                                      "const": "radius"
+                                      "const": "dns"
                                     }
                                   }
                                 },
                                 "then": {
-                                  "$ref": "#/definitions/Monitor_RADIUS"
+                                  "$ref": "#/definitions/Monitor_DNS"
                                 },
                                 "else": {
                                   "if": {
                                     "properties": {
                                       "monitorType": {
-                                        "const": "ftp"
+                                        "const": "radius"
                                       }
                                     }
                                   },
                                   "then": {
-                                    "$ref": "#/definitions/Monitor_FTP"
+                                    "$ref": "#/definitions/Monitor_RADIUS"
                                   },
                                   "else": {
-                                    "$comment": "Unrecognized monitorType.",
-                                    "not": {}
+                                    "if": {
+                                      "properties": {
+                                        "monitorType": {
+                                          "const": "ftp"
+                                        }
+                                      }
+                                    },
+                                    "then": {
+                                      "$ref": "#/definitions/Monitor_FTP"
+                                    },
+                                    "else": {
+                                      "$comment": "Unrecognized monitorType.",
+                                      "not": {}
+                                    }
                                   }
                                 }
                               }
@@ -6876,6 +6907,88 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 65535
+        }
+      },
+      "dependencies": {
+        "receiveColumn": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        },
+        "receiveRow": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        }
+      }
+    },
+    "Monitor_PostgreSQL": {
+      "description": "Additional Monitor class properties available when monitorType = postgresql",
+      "type": "object",
+      "properties": {
+        "send": {
+          "title": "Send",
+          "description": "Send this (backquote-expanded) string to query node",
+          "type": "string",
+          "f5expand": true
+        },
+        "receive": {
+          "title": "Receive = up",
+          "description": "Mark node up upon receipt of this (backquote-expanded) string",
+          "type": "string",
+          "f5expand": true
+        },
+        "username": {
+          "title": "Username",
+          "description": "Username if any for query authentication",
+          "type": "string"
+        },
+        "passphrase": {
+          "title": "Passphrase",
+          "description": "Passphrase if any for query authentication",
+          "type": "object",
+          "properties": {
+            "allowReuse": {
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "if": true,
+          "then": {
+            "$ref": "#/definitions/Secret"
+          },
+          "f5fetch": "object",
+          "f5secret": true
+        },
+        "count": {
+          "title": "Count",
+          "description": "Number of monitor probes after which the connection to the database will be terminated.  Count value of zero indicates that the connection will never be terminated.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "default": 0
+        },
+        "database": {
+          "title": "Database",
+          "description": "The name of the database with which the monitor attempts to communicate.",
+          "type": "string"
+        },
+        "receiveColumn": {
+          "title": "Receive Column",
+          "description": "Specifies the column in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Receive properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1600
+        },
+        "receiveRow": {
+          "title": "Receive Row",
+          "description": "Specifies the row in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Recieve properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967294
         }
       },
       "dependencies": {
@@ -11280,15 +11393,24 @@
     },
     "Label": {
       "title": "Label",
-      "description": "Optional friendly name for this object",
+      "description": "Optional friendly name for this object. Allows 0-64 chars, excluding a few likely to cause trouble with string searching, JS, TCL, or HTML",
       "type": "string",
-      "format": "f5label"
+      "pattern": "^[^\\x00-\\x1f\\x22#&*<>?\\x5b-\\x5d`\\x7f]*$",
+      "minLength": 0,
+      "maxLength": 64
     },
     "Remark": {
       "title": "Remark",
-      "description": "Arbitrary (brief) text pertaining to this object (optional)",
+      "description": "Arbitrary (brief) text pertaining to this object. Allows 0-64 chars, excluding only control characters, double-quote, and backslash.  This is permissive enough that you should worry about XSS attacks",
       "type": "string",
-      "format": "f5remark"
+      "pattern": "^[^\\x00-\\x1f\\x22\\x5c\\x7f]*$",
+      "minLength": 0,
+      "maxLength": 64
+    },
+    "F5base64": {
+      "type": "string",
+      "description": "Slightly over-matches both base64-orig and base64-url data",
+      "pattern": "^([0-9A-Za-z/+_-]*|[0-9A-Za-z/+_-]+={1,2})$"
     },
     "F5string": {
       "title": "String value",
@@ -11308,7 +11430,11 @@
             "title": "Base64",
             "description": "Base64-encoded value (in JSON string)",
             "type": "string",
-            "format": "f5base64"
+            "allOf": [
+              {
+                "$ref": "#/definitions/F5base64"
+              }
+            ]
           },
           "text": {
             "title": "Text",
@@ -11410,7 +11536,11 @@
           "description": "JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64url-encoded into 'ciphertext').  If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram",
           "type": "string",
           "minLength": 2,
-          "format": "f5base64",
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5base64"
+            }
+          ],
           "default": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
         },
         "ciphertext": {
@@ -11418,7 +11548,11 @@
           "description": "Put base64url(data_value) here",
           "type": "string",
           "minLength": 2,
-          "format": "f5base64"
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5base64"
+            }
+          ]
         },
         "ignoreChanges": {
           "title": "Ignore changes",
@@ -12399,7 +12533,8 @@
                       "gce",
                       "azure",
                       "consul"
-                    ]
+                    ],
+                    "f5serviceDiscovery": true
                   },
                   "updateInterval": {
                     "title": "Update interval",
@@ -21821,7 +21956,8 @@
             "forward",
             "drop",
             "clientSsl",
-            "persist"
+            "persist",
+            "tcl"
           ]
         }
       },
@@ -21944,6 +22080,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Action_Persist"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tcl"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Action_TCL"
           }
         }
       ],
@@ -22392,7 +22540,7 @@
                 "disable": {
                   "type": "object",
                   "title": "Disable",
-                  "description": "Disable persistence",
+                  "description": "Disable persistence. When specifying set this property to an empty object (disable: {}).",
                   "additionalProperties": false
                 }
               },
@@ -22696,6 +22844,45 @@
             }
           ]
         }
+      ]
+    },
+    "Policy_Action_TCL": {
+      "type": "object",
+      "description": "Set a Tcl variable in runtime environment",
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "When to run this event in the request-response cycle",
+          "enum": [
+            "request",
+            "response",
+            "ssl-client-hello",
+            "ssl-server-hello",
+            "ssl-server-handshake"
+          ],
+          "default": "request"
+        },
+        "setVariable": {
+          "type": "object",
+          "description": "Set a Tcl variable in the runtime environment",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Tcl expression to evaluate"
+            },
+            "name": {
+              "type": "string",
+              "description": "Name of variable"
+            }
+          },
+          "required": [
+            "expression",
+            "name"
+          ]
+        }
+      },
+      "required": [
+        "setVariable"
       ]
     },
     "Policy_Condition": {
@@ -29298,6 +29485,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.27.0",
             "3.26.0",
             "3.25.0",
             "3.24.0",
@@ -29331,7 +29519,9 @@
           "title": "Declaration ID",
           "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
           "type": "string",
-          "format": "f5long-id"
+          "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
+          "minLength": 0,
+          "maxLength": 255
         },
         "target": {
           "title": "Target Device",
@@ -29353,16 +29543,10 @@
           "maxProperties": 1
         },
         "label": {
-          "title": "Label",
-          "description": "Optional friendly name for this declaration",
-          "type": "string",
-          "format": "f5label"
+          "$ref": "#/definitions/Label"
         },
         "remark": {
-          "title": "Remark",
-          "description": "Arbitrary (brief) text pertaining to this declaration (optional)",
-          "type": "string",
-          "format": "f5remark"
+          "$ref": "#/definitions/Remark"
         },
         "constants": {
           "title": "Constants",
