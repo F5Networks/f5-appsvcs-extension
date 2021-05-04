@@ -23,6 +23,7 @@ Currently supported versions:
 | AS 3.25.0        | Feature       |  12-Jan-2021        | 12-Apr-2021     |
 | AS 3.26.0        | Feature       |  23-Feb-2021        | 23-May-2021     |
 | AS 3.27.0        | Feature       |  06-Apr-2021        | 06-Jul-2021     |
+| AS 3.26.1        | LTS           |  04-May-2021        | 04-May-2022     |
 
 
 
