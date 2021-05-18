@@ -23,20 +23,295 @@
   "definitions": {
     "ADC": {
       "title": "ADC Declaration",
-      "description": "The Declaration (ADC) containing desired configuration",
+      "description": "A declarative configuration for an ADC such as F5 BIG-IP",
       "type": "object",
       "properties": {
         "class": {
           "title": "Class",
-          "description": "Indicates that this is a declaration (ADC)",
+          "description": "Indicates this JSON document is an ADC declaration",
           "type": "string",
           "const": "ADC"
+        },
+        "$schema": {
+          "description": "URL of schema against which to validate. Used by validation in your local environment only (via Visual Studio Code, for example)",
+          "type": "string",
+          "format": "uri"
+        },
+        "updateMode": {
+          "title": "Update mode",
+          "description": "When set to 'selective' (default) AS3 does not modify Tenants not referenced in the declaration.  Otherwise ('complete') AS3 removes unreferenced Tenants.",
+          "type": "string",
+          "enum": [
+            "complete",
+            "selective"
+          ],
+          "default": "selective"
+        },
+        "schemaVersion": {
+          "title": "Schema version",
+          "description": "Version of ADC Declaration schema this declaration uses",
+          "type": "string",
+          "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
+          "enum": [
+            "3.28.0",
+            "3.27.0",
+            "3.26.0",
+            "3.25.0",
+            "3.24.0",
+            "3.23.0",
+            "3.22.0",
+            "3.21.0",
+            "3.20.0",
+            "3.19.0",
+            "3.18.0",
+            "3.17.0",
+            "3.16.0",
+            "3.15.0",
+            "3.14.0",
+            "3.13.0",
+            "3.12.0",
+            "3.11.0",
+            "3.10.0",
+            "3.9.0",
+            "3.8.0",
+            "3.7.0",
+            "3.6.0",
+            "3.5.0",
+            "3.4.0",
+            "3.3.0",
+            "3.2.0",
+            "3.1.0",
+            "3.0.0"
+          ]
+        },
+        "id": {
+          "title": "Declaration ID",
+          "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
+          "type": "string",
+          "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
+          "minLength": 0,
+          "maxLength": 255
+        },
+        "target": {
+          "title": "Target Device",
+          "description": "Trusted target for config when configuring with BIG-IQ",
+          "type": "object",
+          "properties": {
+            "hostname": {
+              "title": "Host Name",
+              "description": "Host name of managed device to be configured",
+              "type": "string"
+            },
+            "address": {
+              "title": "IP Address",
+              "description": "IP address of managed device to be configured",
+              "type": "string",
+              "format": "f5ip"
+            }
+          },
+          "maxProperties": 1
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "constants": {
+          "title": "Constants",
+          "description": "Declaration metadata and/or named values for (re-)use by declaration objects",
+          "type": "object",
+          "properties": {
+            "class": {
+              "title": "Class",
+              "type": "string",
+              "const": "Constants",
+              "default": "Constants"
+            },
+            "version": {
+              "title": "Declaration version",
+              "description": "Version number of declaration; update when you change contents but not ID (optional but recommended)",
+              "type": [
+                "number",
+                "string"
+              ]
+            },
+            "timestamp": {
+              "title": "Declaration timestamp",
+              "description": "Date+time (this version of) declaration was created (optional but recommended)",
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": {
+            "type": [
+              "boolean",
+              "integer",
+              "number",
+              "string",
+              "array",
+              "object"
+            ],
+            "if": {
+              "type": "object",
+              "required": [
+                "protected",
+                "ciphertext"
+              ]
+            },
+            "then": {
+              "properties": {
+                "allowReuse": {
+                  "title": "Allow reuse",
+                  "description": "If true (default), different declaration objects may reuse a cryptogram, WHICH MAY POSE A SECURITY RISK!",
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "additionalProperties": false,
+              "if": true,
+              "then": {
+                "$ref": "#/definitions/JWE"
+              }
+            }
+          },
+          "propertyNames": {
+            "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
+            "maxLength": 64
+          }
+        },
+        "Common": {
+          "title": "Common tenant",
+          "description": "Special tenant Common holds objects other tenants can share",
+          "type": "object",
+          "properties": {
+            "class": {
+              "title": "Class",
+              "type": "string",
+              "const": "Tenant",
+              "default": "Tenant"
+            },
+            "label": {
+              "$ref": "#/definitions/Label"
+            },
+            "remark": {
+              "$ref": "#/definitions/Remark"
+            },
+            "verifiers": {
+              "title": "Verifiers",
+              "description": "Data (in 'key':'value' properties) used to verify automated tests.  Ordinary declarations do not need this",
+              "type": "object"
+            },
+            "enable": {
+              "title": "Enable",
+              "description": "If declared, you must enable the Common tenant",
+              "type": "boolean",
+              "const": true
+            },
+            "Shared": {
+              "$ref": "#/definitions/Application_Shared"
+            },
+            "constants": {
+              "$ref": "#/definitions/Constants"
+            },
+            "controls": {
+              "$ref": "#/definitions/Controls"
+            }
+          },
+          "additionalProperties": false
+        },
+        "controls": {
+          "title": "Controls",
+          "description": "Options to control configuration process",
+          "type": "object",
+          "$comment": "archiveId and archiveTimestamp reserved for future use.",
+          "properties": {
+            "class": {
+              "title": "Class",
+              "type": "string",
+              "const": "Controls",
+              "default": "Controls"
+            },
+            "logLevel": {
+              "title": "Log level",
+              "description": "Controls the amount of detail in logs produced by the configuration process using RFC 5424 severity levels (default is 'error').  May be overridden on a per-Tenant basis",
+              "type": "string",
+              "enum": [
+                "emergency",
+                "alert",
+                "critical",
+                "error",
+                "warning",
+                "notice",
+                "info",
+                "debug"
+              ],
+              "default": "error"
+            },
+            "trace": {
+              "title": "Trace",
+              "description": "If true, AS3 creates a detailed trace of the configuration process for subsequent analysis (default false).  May be overridden on a per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
+              "type": "boolean",
+              "default": false
+            },
+            "traceResponse": {
+              "title": "Trace Response",
+              "description": "If true, the response will contain the trace files",
+              "type": "boolean",
+              "default": false
+            },
+            "userAgent": {
+              "title": "User Agent",
+              "description": "User Agent information to include in TEEM report",
+              "type": "string"
+            },
+            "archiveId": {
+              "title": "Archive ID",
+              "description": "Read-only property present when you GET a declaration from configuration system.  Archived versions of declaration are identified by a combination of 'id' and 'archiveId'",
+              "type": [
+                "number",
+                "string"
+              ],
+              "readOnly": true
+            },
+            "archiveTimestamp": {
+              "title": "Archive timestamp",
+              "description": "Read-only property present when you GET a declaration from configuration system.  Indicates when this version (see archiveId) of declaration was archived",
+              "type": "string",
+              "format": "date-time",
+              "readOnly": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "scratch": {
+          "title": "f5 scratch",
+          "description": "Holds some system data during declaration processing",
+          "type": "string",
+          "readOnly": true
         }
       },
+      "additionalProperties": {
+        "$ref": "#/definitions/Tenant"
+      },
+      "propertyNames": {
+        "oneOf": [
+          {
+            "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+            "maxLength": 190
+          },
+          {
+            "enum": [
+              "$schema"
+            ]
+          }
+        ]
+      },
       "required": [
-        "class"
-      ],
-      "$comment": "See adc-schema.json"
+        "class",
+        "schemaVersion",
+        "id"
+      ]
     },
     "ADC_Array": {
       "title": "Declaration Array",
@@ -358,6 +633,49 @@
       ],
       "additionalProperties": false
     },
+    "Bearer_Token": {
+      "title": "Bearer Token Authorization",
+      "description": "Describes using a bearer token to access a resource",
+      "type": "object",
+      "properties": {
+        "method": {
+          "title": "Authentication Method",
+          "description": "Specifies the authentication method",
+          "type": "string",
+          "const": "bearer-token"
+        },
+        "token": {
+          "title": "Token",
+          "description": "Specifies the bearer token",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "plain text bearer token",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "required": [
+                    "ciphertext"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/Secret"
+                }
+              ]
+            }
+          ],
+          "cloudLibsEncrypt": true
+        }
+      },
+      "required": [
+        "method",
+        "token"
+      ],
+      "additionalProperties": false
+    },
     "Resource_URL": {
       "title": "Resource URL",
       "description": "Describes the URL to remote resource and optional parameters",
@@ -386,8 +704,12 @@
               "oneOf": [
                 {
                   "$ref": "#/definitions/Basic_Auth"
+                },
+                {
+                  "$ref": "#/definitions/Bearer_Token"
                 }
-              ]
+              ],
+              "f5serviceDiscovery": true
             }
           },
           "required": [
@@ -2367,6 +2689,12 @@
           "type": "string",
           "const": "Service_TCP"
         },
+        "mqttEnabled": {
+          "title": "MQTT profile",
+          "description": "Attaches the MQTT profile /Common/mqtt.  MQTT profiles have no configurable properties.",
+          "type": "boolean",
+          "default": false
+        },
         "persistenceMethods": {
           "title": "Persistence methods",
           "description": "Default 'source-address' is generally good. Use 'persistenceMethods: []' for no persistence.",
@@ -3236,7 +3564,7 @@
     },
     "Service_Forwarding": {
       "title": "Forwarding virtual server",
-      "description": "Attributes of a forwarding virtual server",
+      "description": "Attributes of a forwarding virtual server. ARP and ICMP Echo will be disabled on virtualAddresses by default.",
       "type": "object",
       "properties": {
         "class": {
@@ -5519,7 +5847,8 @@
             "gce",
             "azure",
             "consul"
-          ]
+          ],
+          "f5serviceDiscovery": true
         },
         "shareNodes": {
           "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
@@ -5653,7 +5982,13 @@
           "else": {
             "$ref": "#/definitions/Pointer_Address_Discovery"
           },
-          "default": "static"
+          "default": "static",
+          "f5serviceDiscovery": {
+            "exceptions": [
+              "static",
+              "fqdn"
+            ]
+          }
         },
         "shareNodes": {
           "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
@@ -6036,6 +6371,11 @@
             }
           ],
           "cloudLibsEncrypt": true
+        },
+        "projectId": {
+          "title": "Project Id",
+          "description": "For Google Cloud Engine (GCE) only: The ID of the project in which the members are located",
+          "type": "string"
         }
       },
       "if": {
@@ -6215,6 +6555,7 @@
             "icmp",
             "ldap",
             "mysql",
+            "postgresql",
             "radius",
             "sip",
             "smtp",
@@ -6388,71 +6729,83 @@
                         "if": {
                           "properties": {
                             "monitorType": {
-                              "const": "sip"
+                              "const": "postgresql"
                             }
                           }
                         },
                         "then": {
-                          "$ref": "#/definitions/Monitor_SIP"
+                          "$ref": "#/definitions/Monitor_PostgreSQL"
                         },
                         "else": {
                           "if": {
                             "properties": {
                               "monitorType": {
-                                "const": "tcp-half-open"
+                                "const": "sip"
                               }
                             }
                           },
                           "then": {
-                            "$ref": "#/definitions/Monitor_TCP_Half_Open"
+                            "$ref": "#/definitions/Monitor_SIP"
                           },
                           "else": {
                             "if": {
                               "properties": {
                                 "monitorType": {
-                                  "const": "ldap"
+                                  "const": "tcp-half-open"
                                 }
                               }
                             },
                             "then": {
-                              "$ref": "#/definitions/Monitor_LDAP"
+                              "$ref": "#/definitions/Monitor_TCP_Half_Open"
                             },
                             "else": {
                               "if": {
                                 "properties": {
                                   "monitorType": {
-                                    "const": "dns"
+                                    "const": "ldap"
                                   }
                                 }
                               },
                               "then": {
-                                "$ref": "#/definitions/Monitor_DNS"
+                                "$ref": "#/definitions/Monitor_LDAP"
                               },
                               "else": {
                                 "if": {
                                   "properties": {
                                     "monitorType": {
-                                      "const": "radius"
+                                      "const": "dns"
                                     }
                                   }
                                 },
                                 "then": {
-                                  "$ref": "#/definitions/Monitor_RADIUS"
+                                  "$ref": "#/definitions/Monitor_DNS"
                                 },
                                 "else": {
                                   "if": {
                                     "properties": {
                                       "monitorType": {
-                                        "const": "ftp"
+                                        "const": "radius"
                                       }
                                     }
                                   },
                                   "then": {
-                                    "$ref": "#/definitions/Monitor_FTP"
+                                    "$ref": "#/definitions/Monitor_RADIUS"
                                   },
                                   "else": {
-                                    "$comment": "Unrecognized monitorType.",
-                                    "not": {}
+                                    "if": {
+                                      "properties": {
+                                        "monitorType": {
+                                          "const": "ftp"
+                                        }
+                                      }
+                                    },
+                                    "then": {
+                                      "$ref": "#/definitions/Monitor_FTP"
+                                    },
+                                    "else": {
+                                      "$comment": "Unrecognized monitorType.",
+                                      "not": {}
+                                    }
                                   }
                                 }
                               }
@@ -6876,6 +7229,88 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 65535
+        }
+      },
+      "dependencies": {
+        "receiveColumn": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        },
+        "receiveRow": {
+          "required": [
+            "send",
+            "receive"
+          ]
+        }
+      }
+    },
+    "Monitor_PostgreSQL": {
+      "description": "Additional Monitor class properties available when monitorType = postgresql",
+      "type": "object",
+      "properties": {
+        "send": {
+          "title": "Send",
+          "description": "Send this (backquote-expanded) string to query node",
+          "type": "string",
+          "f5expand": true
+        },
+        "receive": {
+          "title": "Receive = up",
+          "description": "Mark node up upon receipt of this (backquote-expanded) string",
+          "type": "string",
+          "f5expand": true
+        },
+        "username": {
+          "title": "Username",
+          "description": "Username if any for query authentication",
+          "type": "string"
+        },
+        "passphrase": {
+          "title": "Passphrase",
+          "description": "Passphrase if any for query authentication",
+          "type": "object",
+          "properties": {
+            "allowReuse": {
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "if": true,
+          "then": {
+            "$ref": "#/definitions/Secret"
+          },
+          "f5fetch": "object",
+          "f5secret": true
+        },
+        "count": {
+          "title": "Count",
+          "description": "Number of monitor probes after which the connection to the database will be terminated.  Count value of zero indicates that the connection will never be terminated.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647,
+          "default": 0
+        },
+        "database": {
+          "title": "Database",
+          "description": "The name of the database with which the monitor attempts to communicate.",
+          "type": "string"
+        },
+        "receiveColumn": {
+          "title": "Receive Column",
+          "description": "Specifies the column in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Receive properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1600
+        },
+        "receiveRow": {
+          "title": "Receive Row",
+          "description": "Specifies the row in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Recieve properties.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967294
         }
       },
       "dependencies": {
@@ -7396,6 +7831,12 @@
                 "description": "If value is FQDN (wildcard okay), ignore all names in certificate and select this cert when SNI matches value (or by default)",
                 "type": "string"
               },
+              "enabled": {
+                "title": "Enabled",
+                "description": "Enables SSL processing",
+                "type": "boolean",
+                "default": true
+              },
               "certificate": {
                 "title": "Certificate",
                 "description": "AS3 pointer to Certificate declaration",
@@ -7597,6 +8038,15 @@
           "type": "boolean",
           "default": false
         },
+        "forwardProxyBypassAllowlist": {
+          "title": "Forward Proxy Bypass Allowlist",
+          "description": "Specifies the data group name of hostname allowlist when both SSL forwardProxyEnabled & forwardProxyBypassEnabled features are set to true.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Data_Group"
+            }
+          ]
+        },
         "ldapStartTLS": {
           "title": "Client-LDAP Profile",
           "description": "Creates a client LDAP profile with the specified activation mode STARTTLS.",
@@ -7659,9 +8109,30 @@
           "description": "When enabled, server certificate is retained in SSL session.",
           "type": "boolean",
           "default": true
+        },
+        "namingScheme": {
+          "description": "Scheme to use when naming generated tmsh configuration",
+          "type": "string",
+          "enum": [
+            "numbered",
+            "certificate"
+          ],
+          "default": "numbered"
         }
       },
       "additionalProperties": false,
+      "dependencies": {
+        "forwardProxyBypassAllowlist": {
+          "properties": {
+            "forwardProxyEnabled": {
+              "const": true
+            },
+            "forwardProxyBypassEnabled": {
+              "const": true
+            }
+          }
+        }
+      },
       "allOf": [
         {
           "if": {
@@ -11280,15 +11751,24 @@
     },
     "Label": {
       "title": "Label",
-      "description": "Optional friendly name for this object",
+      "description": "Optional friendly name for this object. Allows 0-64 chars, excluding a few likely to cause trouble with string searching, JS, TCL, or HTML",
       "type": "string",
-      "format": "f5label"
+      "pattern": "^[^\\x00-\\x1f\\x22#&*<>?\\x5b-\\x5d`\\x7f]*$",
+      "minLength": 0,
+      "maxLength": 64
     },
     "Remark": {
       "title": "Remark",
-      "description": "Arbitrary (brief) text pertaining to this object (optional)",
+      "description": "Arbitrary (brief) text pertaining to this object. Allows 0-64 chars, excluding only control characters, double-quote, and backslash.  This is permissive enough that you should worry about XSS attacks",
       "type": "string",
-      "format": "f5remark"
+      "pattern": "^[^\\x00-\\x1f\\x22\\x5c\\x7f]*$",
+      "minLength": 0,
+      "maxLength": 64
+    },
+    "F5base64": {
+      "type": "string",
+      "description": "Slightly over-matches both base64-orig and base64-url data",
+      "pattern": "^([0-9A-Za-z/+_-]*|[0-9A-Za-z/+_-]+={1,2})$"
     },
     "F5string": {
       "title": "String value",
@@ -11308,7 +11788,11 @@
             "title": "Base64",
             "description": "Base64-encoded value (in JSON string)",
             "type": "string",
-            "format": "f5base64"
+            "allOf": [
+              {
+                "$ref": "#/definitions/F5base64"
+              }
+            ]
           },
           "text": {
             "title": "Text",
@@ -11410,7 +11894,11 @@
           "description": "JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64url-encoded into 'ciphertext').  If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram",
           "type": "string",
           "minLength": 2,
-          "format": "f5base64",
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5base64"
+            }
+          ],
           "default": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
         },
         "ciphertext": {
@@ -11418,7 +11906,11 @@
           "description": "Put base64url(data_value) here",
           "type": "string",
           "minLength": 2,
-          "format": "f5base64"
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5base64"
+            }
+          ]
         },
         "ignoreChanges": {
           "title": "Ignore changes",
@@ -12399,7 +12891,8 @@
                       "gce",
                       "azure",
                       "consul"
-                    ]
+                    ],
+                    "f5serviceDiscovery": true
                   },
                   "updateInterval": {
                     "title": "Update interval",
@@ -18476,8 +18969,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "domainName",
-        "ratio"
+        "domainName"
       ]
     },
     "GSLB_Pool_Member_MX": {
@@ -18528,9 +19020,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "domainName",
-        "priority",
-        "ratio"
+        "domainName"
       ]
     },
     "GSLB_Server": {
@@ -21821,7 +22311,8 @@
             "forward",
             "drop",
             "clientSsl",
-            "persist"
+            "persist",
+            "tcl"
           ]
         }
       },
@@ -21944,6 +22435,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Action_Persist"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tcl"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Action_TCL"
           }
         }
       ],
@@ -22392,7 +22895,7 @@
                 "disable": {
                   "type": "object",
                   "title": "Disable",
-                  "description": "Disable persistence",
+                  "description": "Disable persistence. When specifying set this property to an empty object (disable: {}).",
                   "additionalProperties": false
                 }
               },
@@ -22698,6 +23201,45 @@
         }
       ]
     },
+    "Policy_Action_TCL": {
+      "type": "object",
+      "description": "Set a Tcl variable in runtime environment",
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "When to run this event in the request-response cycle",
+          "enum": [
+            "request",
+            "response",
+            "ssl-client-hello",
+            "ssl-server-hello",
+            "ssl-server-handshake"
+          ],
+          "default": "request"
+        },
+        "setVariable": {
+          "type": "object",
+          "description": "Set a Tcl variable in the runtime environment",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Tcl expression to evaluate"
+            },
+            "name": {
+              "type": "string",
+              "description": "Name of variable"
+            }
+          },
+          "required": [
+            "expression",
+            "name"
+          ]
+        }
+      },
+      "required": [
+        "setVariable"
+      ]
+    },
     "Policy_Condition": {
       "type": "object",
       "description": "LTM policy condition",
@@ -22707,6 +23249,7 @@
           "type": "string",
           "enum": [
             "httpHeader",
+            "httpMethod",
             "httpUri",
             "httpCookie",
             "sslExtension",
@@ -22737,6 +23280,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Condition_HTTP_Header"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "httpMethod"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Condition_HTTP_Method"
           }
         },
         {
@@ -23074,6 +23629,42 @@
                 "name"
               ]
             }
+          ]
+        }
+      ]
+    },
+    "Policy_Condition_HTTP_Method": {
+      "description": "Match against any HTTP method",
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "event": {
+              "description": "When to evaluate this condition in the request-response cycle",
+              "type": "string",
+              "enum": [
+                "proxy-request",
+                "request"
+              ],
+              "default": "proxy-request"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "all": {
+              "description": "Match on the full HTTP method",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Policy_Compare_String"
+                }
+              ]
+            }
+          },
+          "required": [
+            "all"
           ]
         }
       ]
@@ -23539,6 +24130,9 @@
         "maxBandwidth"
       ],
       "if": {
+        "required": [
+          "dynamicControlEnabled"
+        ],
         "properties": {
           "dynamicControlEnabled": {
             "const": true
@@ -26005,6 +26599,23 @@
       "description": "Reference to a Data Group",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to Data Group declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Data_Group"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP Data Group",
           "type": "string",
@@ -26017,6 +26628,9 @@
       "allOf": [
         {
           "f5bigComponent": "query ltm data-group internal"
+        },
+        {
+          "f5bigComponent": "query ltm data-group external"
         }
       ]
     },
@@ -29262,302 +29876,6 @@
         {
           "f5bigComponent": "query asm policy"
         }
-      ]
-    }
-  },
-  "properties": {
-    "declaration": {
-      "title": "ADC Declaration",
-      "description": "A declarative configuration for an ADC such as F5 BIG-IP",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "description": "Indicates this JSON document is an ADC declaration",
-          "type": "string",
-          "const": "ADC"
-        },
-        "$schema": {
-          "description": "URL of schema against which to validate. Used by validation in your local environment only (via Visual Studio Code, for example)",
-          "type": "string",
-          "format": "uri"
-        },
-        "updateMode": {
-          "title": "Update mode",
-          "description": "When set to 'selective' (default) AS3 does not modify Tenants not referenced in the declaration.  Otherwise ('complete') AS3 removes unreferenced Tenants.",
-          "type": "string",
-          "enum": [
-            "complete",
-            "selective"
-          ],
-          "default": "selective"
-        },
-        "schemaVersion": {
-          "title": "Schema version",
-          "description": "Version of ADC Declaration schema this declaration uses",
-          "type": "string",
-          "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
-          "enum": [
-            "3.26.0",
-            "3.25.0",
-            "3.24.0",
-            "3.23.0",
-            "3.22.0",
-            "3.21.0",
-            "3.20.0",
-            "3.19.0",
-            "3.18.0",
-            "3.17.0",
-            "3.16.0",
-            "3.15.0",
-            "3.14.0",
-            "3.13.0",
-            "3.12.0",
-            "3.11.0",
-            "3.10.0",
-            "3.9.0",
-            "3.8.0",
-            "3.7.0",
-            "3.6.0",
-            "3.5.0",
-            "3.4.0",
-            "3.3.0",
-            "3.2.0",
-            "3.1.0",
-            "3.0.0"
-          ]
-        },
-        "id": {
-          "title": "Declaration ID",
-          "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
-          "type": "string",
-          "format": "f5long-id"
-        },
-        "target": {
-          "title": "Target Device",
-          "description": "Trusted target for config when configuring with BIG-IQ",
-          "type": "object",
-          "properties": {
-            "hostname": {
-              "title": "Host Name",
-              "description": "Host name of managed device to be configured",
-              "type": "string"
-            },
-            "address": {
-              "title": "IP Address",
-              "description": "IP address of managed device to be configured",
-              "type": "string",
-              "format": "f5ip"
-            }
-          },
-          "maxProperties": 1
-        },
-        "label": {
-          "title": "Label",
-          "description": "Optional friendly name for this declaration",
-          "type": "string",
-          "format": "f5label"
-        },
-        "remark": {
-          "title": "Remark",
-          "description": "Arbitrary (brief) text pertaining to this declaration (optional)",
-          "type": "string",
-          "format": "f5remark"
-        },
-        "constants": {
-          "title": "Constants",
-          "description": "Declaration metadata and/or named values for (re-)use by declaration objects",
-          "type": "object",
-          "properties": {
-            "class": {
-              "title": "Class",
-              "type": "string",
-              "const": "Constants",
-              "default": "Constants"
-            },
-            "version": {
-              "title": "Declaration version",
-              "description": "Version number of declaration; update when you change contents but not ID (optional but recommended)",
-              "type": [
-                "number",
-                "string"
-              ]
-            },
-            "timestamp": {
-              "title": "Declaration timestamp",
-              "description": "Date+time (this version of) declaration was created (optional but recommended)",
-              "type": "string",
-              "format": "date-time"
-            }
-          },
-          "additionalProperties": {
-            "type": [
-              "boolean",
-              "integer",
-              "number",
-              "string",
-              "array",
-              "object"
-            ],
-            "if": {
-              "type": "object",
-              "required": [
-                "protected",
-                "ciphertext"
-              ]
-            },
-            "then": {
-              "properties": {
-                "allowReuse": {
-                  "title": "Allow reuse",
-                  "description": "If true (default), different declaration objects may reuse a cryptogram, WHICH MAY POSE A SECURITY RISK!",
-                  "type": "boolean",
-                  "default": true
-                }
-              },
-              "additionalProperties": false,
-              "if": true,
-              "then": {
-                "$ref": "#/definitions/JWE"
-              }
-            }
-          },
-          "propertyNames": {
-            "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
-            "maxLength": 64
-          }
-        },
-        "Common": {
-          "title": "Common tenant",
-          "description": "Special tenant Common holds objects other tenants can share",
-          "type": "object",
-          "properties": {
-            "class": {
-              "title": "Class",
-              "type": "string",
-              "const": "Tenant",
-              "default": "Tenant"
-            },
-            "label": {
-              "$ref": "#/definitions/Label"
-            },
-            "remark": {
-              "$ref": "#/definitions/Remark"
-            },
-            "verifiers": {
-              "title": "Verifiers",
-              "description": "Data (in 'key':'value' properties) used to verify automated tests.  Ordinary declarations do not need this",
-              "type": "object"
-            },
-            "enable": {
-              "title": "Enable",
-              "description": "If declared, you must enable the Common tenant",
-              "type": "boolean",
-              "const": true
-            },
-            "Shared": {
-              "$ref": "#/definitions/Application_Shared"
-            },
-            "constants": {
-              "$ref": "#/definitions/Constants"
-            },
-            "controls": {
-              "$ref": "#/definitions/Controls"
-            }
-          },
-          "additionalProperties": false
-        },
-        "controls": {
-          "title": "Controls",
-          "description": "Options to control configuration process",
-          "type": "object",
-          "$comment": "archiveId and archiveTimestamp reserved for future use.",
-          "properties": {
-            "class": {
-              "title": "Class",
-              "type": "string",
-              "const": "Controls",
-              "default": "Controls"
-            },
-            "logLevel": {
-              "title": "Log level",
-              "description": "Controls the amount of detail in logs produced by the configuration process using RFC 5424 severity levels (default is 'error').  May be overridden on a per-Tenant basis",
-              "type": "string",
-              "enum": [
-                "emergency",
-                "alert",
-                "critical",
-                "error",
-                "warning",
-                "notice",
-                "info",
-                "debug"
-              ],
-              "default": "error"
-            },
-            "trace": {
-              "title": "Trace",
-              "description": "If true, AS3 creates a detailed trace of the configuration process for subsequent analysis (default false).  May be overridden on a per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
-              "type": "boolean",
-              "default": false
-            },
-            "traceResponse": {
-              "title": "Trace Response",
-              "description": "If true, the response will contain the trace files",
-              "type": "boolean",
-              "default": false
-            },
-            "userAgent": {
-              "title": "User Agent",
-              "description": "User Agent information to include in TEEM report",
-              "type": "string"
-            },
-            "archiveId": {
-              "title": "Archive ID",
-              "description": "Read-only property present when you GET a declaration from configuration system.  Archived versions of declaration are identified by a combination of 'id' and 'archiveId'",
-              "type": [
-                "number",
-                "string"
-              ],
-              "readOnly": true
-            },
-            "archiveTimestamp": {
-              "title": "Archive timestamp",
-              "description": "Read-only property present when you GET a declaration from configuration system.  Indicates when this version (see archiveId) of declaration was archived",
-              "type": "string",
-              "format": "date-time",
-              "readOnly": true
-            }
-          },
-          "additionalProperties": false
-        },
-        "scratch": {
-          "title": "f5 scratch",
-          "description": "Holds some system data during declaration processing",
-          "type": "string",
-          "readOnly": true
-        }
-      },
-      "additionalProperties": {
-        "$ref": "#/definitions/Tenant"
-      },
-      "propertyNames": {
-        "oneOf": [
-          {
-            "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
-            "maxLength": 190
-          },
-          {
-            "enum": [
-              "$schema"
-            ]
-          }
-        ]
-      },
-      "required": [
-        "class",
-        "schemaVersion",
-        "id"
       ]
     }
   }
