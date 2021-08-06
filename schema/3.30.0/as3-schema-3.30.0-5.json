@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.30.0",
             "3.29.0",
             "3.28.0",
             "3.27.0",
@@ -217,6 +218,13 @@
             },
             "controls": {
               "$ref": "#/definitions/Controls"
+            },
+            "optimisticLockKey": {
+              "title": "Optimistic lock key",
+              "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key AS3 computes for the most-recent previous declaration, then AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
+              "type": "string",
+              "maxLength": 128,
+              "default": ""
             }
           },
           "additionalProperties": false
@@ -281,6 +289,12 @@
               "type": "string",
               "format": "date-time",
               "readOnly": true
+            },
+            "dryRun": {
+              "title": "Dry-Run Option",
+              "description": "Boolean that indicates if this declaration will be run as a dry-run. If true, the declaration will NOT make any changes to the system, but will respond with whether or not it would.",
+              "type": "boolean",
+              "default": false
             }
           },
           "additionalProperties": false
@@ -667,7 +681,7 @@
               ]
             }
           ],
-          "cloudLibsEncrypt": true
+          "f5LongSecret": true
         }
       },
       "required": [
@@ -708,8 +722,7 @@
                 {
                   "$ref": "#/definitions/Bearer_Token"
                 }
-              ],
-              "f5serviceDiscovery": true
+              ]
             }
           },
           "required": [
@@ -940,6 +953,7 @@
               "Analytics_Profile",
               "Analytics_TCP_Profile",
               "FTP_Profile",
+              "HTML_Rule",
               "HTTP_Profile",
               "HTTP_Compress",
               "HTTP2_Profile",
@@ -1316,6 +1330,18 @@
             },
             "then": {
               "$ref": "#/definitions/FTP_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "HTML_Rule"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTML_Rule"
             }
           },
           {
@@ -8753,10 +8779,18 @@
         "chainCA": {
           "title": "CA chain",
           "description": "Bundle of one or more CA certificates in trust-chain from root CA to certificate (optional)",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "type": [
+            "object",
+            "string"
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            },
+            {
+              "$ref": "#/definitions/Pointer_CA_Bundle"
+            }
+          ],
           "f5fetch": "pki-bundle",
           "f5bigComponent": "query sys file ssl-cert"
         },
@@ -9527,6 +9561,96 @@
       "additionalProperties": false,
       "required": [
         "class"
+      ]
+    },
+    "HTML_Rule": {
+      "title": "HTML_Rule",
+      "type": "object",
+      "description": "HTML Rule with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTML_Rule"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "ruleType": {
+          "title": "Rule type",
+          "description": "Type of rule",
+          "type": "string",
+          "const": "tag-append-html"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "ruleType": {
+                "const": "tag-append-html"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/HTML_Rule_TagAppendHTML"
+          }
+        }
+      ],
+      "required": [
+        "class",
+        "ruleType"
+      ]
+    },
+    "HTML_Rule_TagAppendHTML": {
+      "title": "Append HTML HTML_Rule",
+      "description": "Matches on the specified tag name, attribute name, and attribute value, and then appends the specific HTML content to the tag delimiter",
+      "type": "object",
+      "properties": {
+        "content": {
+          "title": "Content",
+          "description": "HTML content to append to tag delimiter",
+          "type": "string"
+        },
+        "match": {
+          "title": "Match",
+          "description": "Match configuration",
+          "type": "object",
+          "properties": {
+            "attributeName": {
+              "title": "Attribute Name",
+              "description": "Name of attribute",
+              "type": "string"
+            },
+            "attributeValue": {
+              "title": "Attribute Value",
+              "description": "Value of attribute",
+              "type": "string"
+            },
+            "tagName": {
+              "title": "Tag Name",
+              "description": "Name of tag",
+              "type": "string"
+            }
+          },
+          "dependencies": {
+            "attributeValue": {
+              "required": [
+                "attributeName"
+              ]
+            }
+          },
+          "required": [
+            "tagName"
+          ]
+        }
+      },
+      "required": [
+        "content",
+        "match"
       ]
     },
     "HTTP_Profile": {
@@ -18270,7 +18394,8 @@
             "https",
             "gateway-icmp",
             "tcp",
-            "udp"
+            "udp",
+            "external"
           ]
         },
         "target": {
@@ -18305,12 +18430,6 @@
         "ignoreDownResponseEnabled": {
           "title": "Ignore Down Response",
           "description": "Specifies whether the monitor immediately marks an object down when it receives a down response. If enabled, the monitor ignores the down response for the duration of timeout. The default is false (disabled)",
-          "type": "boolean",
-          "default": false
-        },
-        "transparent": {
-          "title": "Transparent",
-          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
           "type": "boolean",
           "default": false
         }
@@ -18375,11 +18494,82 @@
           "then": {
             "$ref": "#/definitions/GSLB_Monitor_TCP"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "monitorType": {
+                "const": "external"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/GSLB_Monitor_External"
+          }
         }
       ],
       "required": [
         "class",
         "monitorType"
+      ]
+    },
+    "GSLB_Monitor_External": {
+      "description": "Additional Monitor class properties available when monitorType = external",
+      "type": "object",
+      "properties": {
+        "pathname": {
+          "title": "pathname",
+          "description": "Tmsh object path name of an imported existing external monitor (e.g. /Common/arg_example)",
+          "type": "string",
+          "minLength": 2,
+          "f5expand": true
+        },
+        "expand": {
+          "title": "Expand",
+          "description": "If true (default), expand backquoted variables in script",
+          "type": "boolean",
+          "default": true
+        },
+        "script": {
+          "title": "External monitor script",
+          "description": "Bash(1) script which implements external monitor",
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
+          "f5fetch": "string",
+          "f5expand": {
+            "when": "1/expand"
+          }
+        },
+        "arguments": {
+          "title": "Arguments",
+          "description": "Arguments to specified external monitor (will be backquote-expanded)",
+          "type": "string",
+          "default": "",
+          "f5expand": true
+        },
+        "environmentVariables": {
+          "description": "Specifies user defined command line parameters that the external program requires.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {}
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "pathname"
+          ]
+        },
+        {
+          "required": [
+            "script"
+          ]
+        }
       ]
     },
     "GSLB_Monitor_HTTP": {
@@ -18405,6 +18595,12 @@
           "type": "string",
           "default": "HTTP/1.",
           "f5expand": true
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -18460,6 +18656,12 @@
           "type": "integer",
           "minimum": 0,
           "default": 3
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -18484,6 +18686,12 @@
           "description": "Specifies the text string that the monitor looks for in the returned resource. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
           "type": "string",
           "default": ""
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -18528,6 +18736,12 @@
           "description": "Specifies the text string that the monitor looks for in the returned resource. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
           "type": "string",
           "default": ""
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -19996,20 +20210,7 @@
           "then": {
             "properties": {
               "matchValue": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Pointer_GSLB_Pool_A"
-                  },
-                  {
-                    "$ref": "#/definitions/Pointer_GSLB_Pool_AAAA"
-                  },
-                  {
-                    "$ref": "#/definitions/Pointer_GSLB_Pool_CNAME"
-                  },
-                  {
-                    "$ref": "#/definitions/Pointer_GSLB_Pool_MX"
-                  }
-                ]
+                "$ref": "#/definitions/Pointer_GSLB_Pool"
               }
             }
           }
@@ -28115,257 +28316,18 @@
       "maxProperties": 1,
       "allOf": [
         {
-          "f5bigComponent": "query gtm pool"
-        }
-      ]
-    },
-    "Pointer_GSLB_Pool_A": {
-      "description": "Reference to a GSLB pool A",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool A declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_A"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP GSLB pool A",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
           "f5bigComponent": "query gtm pool a"
-        }
-      ]
-    },
-    "Pointer_GSLB_Pool_AAAA": {
-      "description": "Reference to a GSLB pool AAAA",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool AAAA declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_AAAA"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
         },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP GSLB pool AAAA",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
         {
           "f5bigComponent": "query gtm pool aaaa"
-        }
-      ]
-    },
-    "Pointer_GSLB_Pool_CNAME": {
-      "description": "Reference to a GSLB pool CNAME",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool CNAME declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_CNAME"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
         },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP GSLB pool CNAME",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
         {
           "f5bigComponent": "query gtm pool cname"
-        }
-      ]
-    },
-    "Pointer_GSLB_Pool_MX": {
-      "description": "Reference to a GSLB pool MX",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool MX declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_MX"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
         },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP GSLB pool MX",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
         {
           "f5bigComponent": "query gtm pool mx"
         }
       ]
-    },
-    "Pointer_GSLB_Pool_Member_A": {
-      "description": "Reference to a GSLB pool member",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool member declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_Member_A"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1
-    },
-    "Pointer_GSLB_Pool_Member_AAAA": {
-      "description": "Reference to a GSLB pool member",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool member declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_Member_AAAA"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1
-    },
-    "Pointer_GSLB_Pool_Member_CNAME": {
-      "description": "Reference to a GSLB pool member",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool member declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_Member_CNAME"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1
-    },
-    "Pointer_GSLB_Pool_Member_MX": {
-      "description": "Reference to a GSLB pool member",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool member declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Pool_Member_MX"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1
     },
     "Pointer_GSLB_Prober_Pool": {
       "description": "Reference to a GSLB pool",
@@ -28400,42 +28362,6 @@
       "allOf": [
         {
           "f5bigComponent": "query gtm prober-pool"
-        }
-      ]
-    },
-    "Pointer_GSLB_Prober_Pool_Member": {
-      "description": "Reference to a GSLB pool",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to GSLB pool declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5pointsTo": {
-            "properties": {
-              "class": {
-                "enum": [
-                  "GSLB_Prober_Pool_Member"
-                ]
-              }
-            },
-            "required": [
-              "class"
-            ]
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP GSLB pool",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5bigComponent": "query gtm prober-pool members"
         }
       ]
     },
@@ -28572,6 +28498,42 @@
       "additionalProperties": false,
       "minProperties": 1,
       "maxProperties": 1
+    },
+    "Pointer_HTML_Rule": {
+      "description": "Reference to a HTML_Rule",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to HTML_Rule declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "HTML_Rule"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP HTML_Rule",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm html-rule tag-append-html"
+        }
+      ]
     },
     "Pointer_HTTP2_Profile": {
       "description": "Reference to a HTTP/2 Profile",
