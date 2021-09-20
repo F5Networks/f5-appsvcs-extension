@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.31.0",
             "3.30.0",
             "3.29.0",
             "3.28.0",
@@ -954,6 +955,7 @@
               "Analytics_TCP_Profile",
               "FTP_Profile",
               "HTML_Rule",
+              "HTML_Profile",
               "HTTP_Profile",
               "HTTP_Compress",
               "HTTP2_Profile",
@@ -1342,6 +1344,18 @@
             },
             "then": {
               "$ref": "#/definitions/HTML_Rule"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "HTML_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTML_Profile"
             }
           },
           {
@@ -2576,6 +2590,9 @@
             "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile"
           }
         },
+        "profileHTML": {
+          "$ref": "#/definitions/Pointer_HTML_Profile"
+        },
         "profileMultiplex": {
           "title": "Multiplex profile",
           "description": "Multiplex (OneConnect) profile; name of built-in or else AS3 pointer",
@@ -2836,7 +2853,6 @@
           "$ref": "#/definitions/Pointer_FIX_Profile"
         },
         "profileTCP": {
-          "f5tcpProfile": true,
           "title": "TCP profile",
           "description": "TCP profile; name of built-in or else AS3 pointer",
           "if": {
@@ -3030,12 +3046,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
               }
             }
           }
@@ -3064,12 +3080,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
               }
             }
           }
@@ -3242,12 +3258,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
               }
             }
           }
@@ -3276,12 +3292,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
               }
             }
           }
@@ -3388,7 +3404,7 @@
     },
     "Service_Generic": {
       "title": "Service_Generic",
-      "description": "Declares a generic virtual server",
+      "description": "Declares an 'Any IP' (IPOther) virtual server",
       "type": "object",
       "properties": {
         "class": {
@@ -3699,11 +3715,6 @@
           {
             "required": [
               "persistenceMethods"
-            ]
-          },
-          {
-            "required": [
-              "policyNAT"
             ]
           },
           {
@@ -6047,6 +6058,12 @@
           "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
           "type": "boolean",
           "default": false
+        },
+        "routeDomain": {
+          "description": "The Route Domain to use for the pool member",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65534
         }
       },
       "f5bigComponent": "query ltm node",
@@ -9583,7 +9600,15 @@
           "title": "Rule type",
           "description": "Type of rule",
           "type": "string",
-          "const": "tag-append-html"
+          "enum": [
+            "comment-raise-event",
+            "comment-remove",
+            "tag-append-html",
+            "tag-prepend-html",
+            "tag-raise-event",
+            "tag-remove",
+            "tag-remove-attribute"
+          ]
         }
       },
       "allOf": [
@@ -9598,6 +9623,54 @@
           "then": {
             "$ref": "#/definitions/HTML_Rule_TagAppendHTML"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "ruleType": {
+                "const": "tag-prepend-html"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/HTML_Rule_TagPrependHTML"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ruleType": {
+                "const": "tag-raise-event"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/HTML_Rule_TagRaiseEvent"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ruleType": {
+                "const": "tag-remove"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/HTML_Rule_TagRemove"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "ruleType": {
+                "const": "tag-remove-attribute"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/HTML_Rule_TagRemoveAttribute"
+          }
         }
       ],
       "required": [
@@ -9605,19 +9678,14 @@
         "ruleType"
       ]
     },
-    "HTML_Rule_TagAppendHTML": {
-      "title": "Append HTML HTML_Rule",
-      "description": "Matches on the specified tag name, attribute name, and attribute value, and then appends the specific HTML content to the tag delimiter",
+    "HTML_Rule_Match_Attribute_Optional": {
+      "title": "HTML_Rule_Match_Attribute_Optional",
+      "description": "Matches on the specified tag name, attribute name, and attribute value. Attribute name and value are optional.",
       "type": "object",
       "properties": {
-        "content": {
-          "title": "Content",
-          "description": "HTML content to append to tag delimiter",
-          "type": "string"
-        },
         "match": {
           "title": "Match",
-          "description": "Match configuration",
+          "description": "Properties the rule is to match",
           "type": "object",
           "properties": {
             "attributeName": {
@@ -9649,9 +9717,175 @@
         }
       },
       "required": [
-        "content",
         "match"
       ]
+    },
+    "HTML_Rule_Match_Attribute_Required": {
+      "title": "HTML_Rule_Match_Attribute_Required",
+      "description": "Matches on the specified tag name, attribute name, and attribute value. Attribute name and value are required.",
+      "type": "object",
+      "properties": {
+        "match": {
+          "title": "Match",
+          "description": "Properties the rule is to match",
+          "type": "object",
+          "properties": {
+            "attributeName": {
+              "title": "Attribute Name",
+              "description": "Name of attribute",
+              "type": "string"
+            },
+            "attributeValue": {
+              "title": "Attribute Value",
+              "description": "Value of attribute",
+              "type": "string"
+            },
+            "tagName": {
+              "title": "Tag Name",
+              "description": "Name of tag",
+              "type": "string"
+            }
+          },
+          "required": [
+            "tagName",
+            "attributeName",
+            "attributeValue"
+          ]
+        }
+      },
+      "required": [
+        "match"
+      ]
+    },
+    "HTML_Rule_TagAppendHTML": {
+      "title": "Append HTML HTML_Rule",
+      "description": "Matches on the specified tag name and optional attribute name and attribute value, and then appends the specified HTML content to the tag delimiter.",
+      "type": "object",
+      "properties": {
+        "content": {
+          "title": "Content",
+          "description": "HTML content to append to tag delimiter",
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/HTML_Rule_Match_Attribute_Optional"
+        }
+      ],
+      "required": [
+        "content"
+      ]
+    },
+    "HTML_Rule_TagPrependHTML": {
+      "title": "HTML_Rule_TagPrependHTML",
+      "description": "Matches on the specified tag name and optional attribute name and attribute value, and then prepends the specified HTML content to the tag delimiter.",
+      "type": "object",
+      "properties": {
+        "content": {
+          "title": "Content",
+          "description": "HTML content to prepend to tag delimiter",
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/HTML_Rule_Match_Attribute_Optional"
+        }
+      ],
+      "required": [
+        "content"
+      ]
+    },
+    "HTML_Rule_TagRaiseEvent": {
+      "title": "HTML_Rule_TagRaiseEvent",
+      "description": "Matches on the specified tag name and optional attribute name and attribute value, and then raises an event.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/HTML_Rule_Match_Attribute_Optional"
+        }
+      ]
+    },
+    "HTML_Rule_TagRemove": {
+      "title": "HTML_Rule_TagRemove",
+      "description": "Matches on the specified tag name and optional attribute name and attribute value, and then removes the tag.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/HTML_Rule_Match_Attribute_Optional"
+        }
+      ]
+    },
+    "HTML_Rule_TagRemoveAttribute": {
+      "title": "Append HTML HTML_Rule",
+      "description": "Matches on the specified tag name, attribute name, and attribute value, and then removes a specified attribute. Tag name, attribute name, and value are required.",
+      "type": "object",
+      "properties": {
+        "attributeName": {
+          "title": "Attriute Name",
+          "description": "Name of the attribute to be removed",
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/HTML_Rule_Match_Attribute_Required"
+        }
+      ],
+      "required": [
+        "attributeName"
+      ]
+    },
+    "HTML_Profile": {
+      "title": "HTML_Profile",
+      "type": "object",
+      "description": "HTML profile with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTML_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "contentDetectionEnabled": {
+          "title": "Content Detection Enabled",
+          "description": "Scans initial HTTP payload to look for HTML signatures and enables HTML profile if HTML-like patterns are detected",
+          "type": "boolean",
+          "default": false
+        },
+        "contentSelection": {
+          "title": "Content Selection",
+          "description": "Matches content-type from response header against a list of the content-types and enables HTML profile if a match is found",
+          "type": "array",
+          "items": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "default": [
+            "text/html",
+            "text/xhtml"
+          ],
+          "uniqueItems": true
+        },
+        "rules": {
+          "title": "HTML Rules",
+          "description": "HTML Rules followed by the profile",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pointer_HTML_Rule"
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
     },
     "HTTP_Profile": {
       "title": "HTTP_Profile",
@@ -11643,6 +11877,18 @@
         "resetOnTimeout": {
           "title": "Reset on timeout",
           "description": "If true (default), connections which time out will be reset (that is, the system sends an RST packet to the peer) before the system expunges them",
+          "type": "boolean",
+          "default": true
+        },
+        "synCookieAllowlist": {
+          "title": "Syn Cookie Allowlist",
+          "description": "Specifies whether or not to use a SYN Cookie Allowlist when doing software SYN Cookies. This means not doing a SYN Cookie for the same src IP address if it has been done already in the previous tm.flowstate.timeout (30) seconds. The default value is disabled.",
+          "type": "boolean",
+          "default": false
+        },
+        "synCookieEnable": {
+          "title": "SYN cookie enable",
+          "description": "Enables syn-cookies capability on this virtual server. If true (default), the system may use SYN cookies to avert connection-table overflow (for example, from DoS attacks)",
           "type": "boolean",
           "default": true
         },
@@ -27771,12 +28017,12 @@
         }
       ]
     },
-    "Pointer_Existing_TLS_Client_Profile": {
-      "description": "Reference to a TLS Client profile",
+    "Pointer_Existing_TLS_Server_Profile": {
+      "description": "Reference to a TLS Server profile",
       "type": "object",
       "properties": {
         "bigip": {
-          "description": "Pathname of existing BIG-IP TLS Client profile",
+          "description": "Pathname of existing BIG-IP TLS Server profile",
           "type": "string",
           "format": "f5bigip"
         }
@@ -27790,12 +28036,12 @@
         }
       ]
     },
-    "Pointer_Existing_TLS_Server_Profile": {
-      "description": "Reference to a TLS Server profile",
+    "Pointer_Existing_TLS_Client_Profile": {
+      "description": "Reference to a TLS Client profile",
       "type": "object",
       "properties": {
         "bigip": {
-          "description": "Pathname of existing BIG-IP TLS Server profile",
+          "description": "Pathname of existing BIG-IP TLS Client profile",
           "type": "string",
           "format": "f5bigip"
         }
@@ -28499,6 +28745,42 @@
       "minProperties": 1,
       "maxProperties": 1
     },
+    "Pointer_HTML_Profile": {
+      "description": "Reference to a HTML_Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to HTML_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "HTML_Profile"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP HTML_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm profile html"
+        }
+      ]
+    },
     "Pointer_HTML_Rule": {
       "description": "Reference to a HTML_Rule",
       "type": "object",
@@ -28531,7 +28813,25 @@
       "maxProperties": 1,
       "allOf": [
         {
+          "f5bigComponent": "query ltm html-rule comment-raise-event"
+        },
+        {
+          "f5bigComponent": "query ltm html-rule comment-remove"
+        },
+        {
           "f5bigComponent": "query ltm html-rule tag-append-html"
+        },
+        {
+          "f5bigComponent": "query ltm html-rule tag-prepend-html"
+        },
+        {
+          "f5bigComponent": "query ltm html-rule tag-raise-event"
+        },
+        {
+          "f5bigComponent": "query ltm html-rule tag-remove"
+        },
+        {
+          "f5bigComponent": "query ltm html-rule tag-remove-attribute"
         }
       ]
     },
