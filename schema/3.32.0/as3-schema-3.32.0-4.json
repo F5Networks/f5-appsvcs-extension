@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.32.0",
             "3.31.0",
             "3.30.0",
             "3.29.0",
@@ -172,10 +173,11 @@
                 }
               },
               "additionalProperties": false,
-              "if": true,
-              "then": {
-                "$ref": "#/definitions/JWE"
-              }
+              "allOf": [
+                {
+                  "$ref": "#/definitions/JWE"
+                }
+              ]
             }
           },
           "propertyNames": {
@@ -724,6 +726,11 @@
                   "$ref": "#/definitions/Bearer_Token"
                 }
               ]
+            },
+            "ignoreChanges": {
+              "description": "If false (default), the URL will be fetched in each AS3 declaration deployment. If true, the resource will be created on the first deployment, but not on additional deployments.",
+              "type": "boolean",
+              "default": false
             }
           },
           "required": [
@@ -874,10 +881,11 @@
           "default": true
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Application"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Application"
+        }
+      ],
       "required": [
         "class",
         "template"
@@ -2329,10 +2337,11 @@
           "default": 80
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_HTTP_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_HTTP_Core"
+        }
+      ],
       "dependencies": {
         "serverTLS": {
           "not": {}
@@ -2438,10 +2447,11 @@
           ]
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_HTTP_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_HTTP_Core"
+        }
+      ],
       "dependencies": {
         "serverTLS": {
           "properties": {
@@ -2736,12 +2746,11 @@
               ]
             }
           }
+        },
+        {
+          "$ref": "#/definitions/Service_TCP_Core"
         }
       ],
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_TCP_Core"
-      },
       "required": [
         "class"
       ]
@@ -3109,10 +3118,11 @@
           "$ref": "#/definitions/Pointer_Stream_Profile"
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_Core"
-      }
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_Core"
+        }
+      ]
     },
     "Service_UDP": {
       "title": "Service_UDP",
@@ -3324,10 +3334,11 @@
           "$ref": "#/definitions/Pointer_TFTP_Profile"
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_Core"
-      }
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_Core"
+        }
+      ]
     },
     "Service_SCTP": {
       "title": "Service_SCTP",
@@ -3357,10 +3368,11 @@
           "default": "sctp"
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_Core"
+        }
+      ],
       "required": [
         "class",
         "virtualPort"
@@ -3388,10 +3400,11 @@
           ]
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_L4_Core"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_L4_Core"
+        }
+      ],
       "required": [
         "class",
         "virtualPort"
@@ -3624,10 +3637,11 @@
           "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
         }
       },
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/Service_Core"
-      }
+      "allOf": [
+        {
+          "$ref": "#/definitions/Service_Core"
+        }
+      ]
     },
     "Service_Forwarding": {
       "title": "Service_Forwarding",
@@ -4791,10 +4805,11 @@
     "iRule_Core": {
       "title": "iRule Core definition",
       "description": "Reference to an iRule or text of an iRule",
-      "if": true,
-      "then": {
-        "$ref": "#/definitions/F5string"
-      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/F5string"
+        }
+      ],
       "f5fetch": "string",
       "f5expand": {
         "when": "1/expand"
@@ -4837,10 +4852,11 @@
         },
         "policy": {
           "description": "Reference to a WAF Policy",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
           "f5fetch": "string",
           "f5expand": {
             "when": "1/expand"
@@ -5234,10 +5250,11 @@
                 "default": false
               }
             },
-            "if": true,
-            "then": {
-              "$ref": "#/definitions/Secret"
-            },
+            "allOf": [
+              {
+                "$ref": "#/definitions/Secret"
+              }
+            ],
             "f5fetch": "object",
             "f5secret": true
           }
@@ -8710,10 +8727,11 @@
         "pkcs12": {
           "title": "PKCS#12 certificate+key",
           "description": "The pkcs12 value which may be a url to fetch the binary file from or base64 encoded string",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
           "f5fetch": "pkcs12",
           "f5certExtract": true
         },
@@ -8758,20 +8776,22 @@
         "certificate": {
           "title": "Certificate",
           "description": "X.509 public-key certificate",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
           "f5fetch": "pki-cert",
           "f5bigComponent": "query sys file ssl-cert"
         },
         "privateKey": {
           "title": "Private key",
           "description": "Private key matching certificate's public key (optional)",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
           "f5fetch": "pki-key",
           "f5bigComponent": "query sys file ssl-key"
         },
@@ -8786,10 +8806,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -8885,10 +8906,11 @@
         },
         "bundle": {
           "description": "Reference to a CA bundle or string of PEM encoded certificates",
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/F5string"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/F5string"
+            }
+          ],
           "f5fetch": "pki-cert",
           "f5bigComponent": "query sys file ssl-cert"
         }
@@ -9936,10 +9958,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -10219,6 +10242,12 @@
             "unmask"
           ],
           "default": "unmask"
+        },
+        "proxyConnectEnabled": {
+          "title": "Proxy connection enabled",
+          "description": "Determines if a proxy connection profile will be created",
+          "type": "boolean",
+          "default": false
         }
       },
       "if": {
@@ -11268,10 +11297,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -12209,10 +12239,11 @@
               "default": true
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/JWE"
-          }
+          "allOf": [
+            {
+              "$ref": "#/definitions/JWE"
+            }
+          ]
         }
       },
       "propertyNames": {
@@ -12522,10 +12553,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -13672,9 +13704,148 @@
           "type": "string",
           "description": "Specifies the protocol to which the firewall rule applies",
           "enum": [
+            "3pc",
+            "a/n",
+            "ah",
             "any",
+            "argus",
+            "aris",
+            "ax.25",
+            "bbn-rcc",
+            "bna",
+            "br-sat-mon",
+            "cbt",
+            "cftp",
+            "chaos",
+            "compaq-peer",
+            "cphb",
+            "cpnx",
+            "crdup",
+            "crtp",
+            "dccp",
+            "dcn",
+            "ddp",
+            "ddx",
+            "dgp",
+            "dsr",
+            "egp",
+            "eigrp",
+            "emcon",
+            "encap",
+            "esp",
+            "etherip",
+            "fc",
+            "fire",
+            "ggp",
+            "gmtp",
+            "gre",
+            "hip",
+            "hmp",
+            "hopopt",
+            "i-nlsp",
+            "iatp",
+            "icmp",
+            "idpr",
+            "idpr-cmtp",
+            "idrp",
+            "ifmp",
+            "igmp",
+            "igp",
+            "il",
+            "ip",
+            "ipcomp",
+            "ipcv",
+            "ipip",
+            "iplt",
+            "ippc",
+            "ipv4",
+            "ipv6",
+            "ipv6-auth",
+            "ipv6-crypt",
+            "ipv6-frag",
+            "ipv6-icmp",
+            "ipv6-nonxt",
+            "ipv6-opts",
+            "ipv6-route",
+            "ipx-in-ip",
+            "irtp",
+            "isis",
+            "iso-ip",
+            "iso-tp4",
+            "kryptolan",
+            "l2tp",
+            "larp",
+            "leaf-1",
+            "leaf-2",
+            "manet",
+            "merit-inp",
+            "mfe-nsp",
+            "micp",
+            "mobile",
+            "mobility-header",
+            "mpls-in-ip",
+            "mtp",
+            "mux",
+            "narp",
+            "netblt",
+            "nsfnet-igp",
+            "nvp",
+            "ospf",
+            "pgm",
+            "pim",
+            "pipe",
+            "pnni",
+            "prm",
+            "ptp",
+            "pup",
+            "pvp",
+            "qnx",
+            "rdp",
+            "rohc",
+            "rsvp",
+            "rsvp-e2e-ignore",
+            "rvd",
+            "sat-expak",
+            "sat-mon",
+            "scc-sp",
+            "scps",
+            "sctp",
+            "sdrp",
+            "secure-vmtp",
+            "shim6",
+            "skip",
+            "sm",
+            "smp",
+            "snp",
+            "sprite-rpc",
+            "sps",
+            "srp",
+            "sscopmce",
+            "st",
+            "stp",
+            "sun-nd",
+            "swipe",
+            "tcf",
             "tcp",
-            "udp"
+            "tlsp",
+            "tp++",
+            "trunk-1",
+            "trunk-2",
+            "ttp",
+            "udp",
+            "udplite",
+            "uti",
+            "vines",
+            "visa",
+            "vmtp",
+            "vrrp",
+            "wb-expak",
+            "wb-mon",
+            "wesp",
+            "wsn",
+            "xnet",
+            "xns-idp",
+            "xtp"
           ],
           "default": "any"
         },
@@ -15113,10 +15284,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -15977,10 +16149,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         }
@@ -24437,58 +24610,9 @@
               "properties": {
                 "address": {
                   "description": "Specify the address to use",
-                  "oneOf": [
+                  "allOf": [
                     {
                       "$ref": "#/definitions/Policy_Match_String"
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "datagroup": {
-                          "description": "Reference a data-group for the values",
-                          "type": "object",
-                          "properties": {
-                            "bigip": {
-                              "title": "BIG-IP Data-Group",
-                              "description": "Pathname of existing BIG-IP Data-Group",
-                              "type": "string",
-                              "format": "f5bigip"
-                            },
-                            "use": {
-                              "title": "Use",
-                              "description": "AS3 pointer to Data_Group",
-                              "type": "string",
-                              "minLength": 1,
-                              "f5pointsTo": {
-                                "properties": {
-                                  "class": {
-                                    "const": "Data_Group"
-                                  }
-                                },
-                                "required": [
-                                  "class"
-                                ]
-                              }
-                            }
-                          },
-                          "additionalProperties": false,
-                          "minProperties": 1,
-                          "maxProperties": 1,
-                          "f5bigComponent": "query ltm data-group internal"
-                        },
-                        "operand": {
-                          "description": "Specifies the comparison",
-                          "type": "string",
-                          "enum": [
-                            "matches",
-                            "does-not-match"
-                          ],
-                          "default": "matches"
-                        }
-                      },
-                      "required": [
-                        "datagroup"
-                      ]
                     }
                   ]
                 }
@@ -24546,6 +24670,10 @@
           },
           "minItems": 1
         },
+        "datagroup": {
+          "description": "Reference to a data-group containing the values",
+          "$ref": "#/definitions/Datagroup_Value"
+        },
         "caseSensitive": {
           "description": "Specifies if the comparison the system should perform with case sensitivity",
           "type": "boolean",
@@ -24577,8 +24705,17 @@
             ]
           },
           "then": {
-            "required": [
-              "values"
+            "oneOf": [
+              {
+                "required": [
+                  "values"
+                ]
+              },
+              {
+                "required": [
+                  "datagroup"
+                ]
+              }
             ]
           }
         }
@@ -24636,12 +24773,57 @@
             "type": "string"
           },
           "minItems": 1
+        },
+        "datagroup": {
+          "description": "Reference to a data-group containing the values",
+          "$ref": "#/definitions/Datagroup_Value"
         }
       },
-      "required": [
-        "values"
+      "oneOf": [
+        {
+          "required": [
+            "values"
+          ]
+        },
+        {
+          "required": [
+            "datagroup"
+          ]
+        }
       ],
       "additionalProperties": false
+    },
+    "Datagroup_Value": {
+      "description": "Reference to a data-group containing the values",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "title": "BIG-IP Data-Group",
+          "description": "Pathname of existing BIG-IP Data-Group",
+          "type": "string",
+          "format": "f5bigip"
+        },
+        "use": {
+          "title": "Use",
+          "description": "AS3 pointer to Data_Group",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "const": "Data_Group"
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "f5bigComponent": "query ltm data-group internal"
     },
     "Bandwidth_Control_Policy": {
       "title": "Bandwidth_Control_Policy",
@@ -26270,10 +26452,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
@@ -26287,10 +26470,11 @@
               "default": false
             }
           },
-          "if": true,
-          "then": {
-            "$ref": "#/definitions/Secret"
-          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Secret"
+            }
+          ],
           "f5fetch": "object",
           "f5secret": true
         },
