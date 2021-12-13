@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.33.0",
             "3.32.0",
             "3.31.0",
             "3.30.0",
@@ -4320,6 +4321,12 @@
         "metadata": {
           "$ref": "#/definitions/Metadata"
         },
+        "rateLimit": {
+          "description": "Specifies the maximum number of connections per second allowed for a virtual server",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
         "clonePools": {
           "$ref": "#/definitions/Clone_Pools"
         },
@@ -6214,7 +6221,7 @@
               ]
             }
           ],
-          "cloudLibsEncrypt": true
+          "f5LongSecret": true
         }
       },
       "dependencies": {
@@ -6313,7 +6320,7 @@
               ]
             }
           ],
-          "cloudLibsEncrypt": true
+          "f5LongSecret": true
         },
         "resourceType": {
           "description": "Type of resource identified by resourceId. This can be used in place of tagKey/tagValue.",
@@ -6457,7 +6464,7 @@
               ]
             }
           ],
-          "cloudLibsEncrypt": true
+          "f5LongSecret": true
         },
         "projectId": {
           "title": "Project Id",
@@ -6519,7 +6526,7 @@
               ]
             }
           ],
-          "cloudLibsEncrypt": true
+          "f5LongSecret": true
         },
         "trustCA": {
           "title": "Trusted CA bundle",
@@ -8278,6 +8285,18 @@
             "certificate"
           ],
           "default": "numbered"
+        },
+        "sslEnabled": {
+          "title": "SSL",
+          "description": "Allow SSL protocol",
+          "type": "boolean",
+          "default": true
+        },
+        "ssl3Enabled": {
+          "title": "SSL v3",
+          "description": "Allow SSL v3 protocol",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": false,
@@ -8666,6 +8685,18 @@
         "retainCertificateEnabled": {
           "title": "Retain Certificate",
           "description": "When enabled, server certificate is retained in SSL session.",
+          "type": "boolean",
+          "default": true
+        },
+        "sslEnabled": {
+          "title": "SSL",
+          "description": "Allow SSL protocol",
+          "type": "boolean",
+          "default": true
+        },
+        "ssl3Enabled": {
+          "title": "SSL v3",
+          "description": "Allow SSL v3 protocol",
           "type": "boolean",
           "default": true
         }
@@ -23290,28 +23321,44 @@
     "Policy_Action_Forward_Select": {
       "description": "Select appropriate location for forwarding the connection based on specified parameters",
       "type": "object",
-      "oneOf": [
+      "allOf": [
         {
-          "type": "object",
-          "properties": {
-            "pool": {
-              "$ref": "#/definitions/Pointer_Pool"
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "pool": {
+                  "$ref": "#/definitions/Pointer_Pool"
+                }
+              },
+              "required": [
+                "pool"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "service": {
+                  "$ref": "#/definitions/Pointer_Service"
+                }
+              },
+              "required": [
+                "service"
+              ]
             }
-          },
-          "required": [
-            "pool"
           ]
         },
         {
-          "type": "object",
           "properties": {
-            "service": {
-              "$ref": "#/definitions/Pointer_Service"
+            "snat": {
+              "description": "Controls snat automap",
+              "type": "string",
+              "enum": [
+                "disable",
+                "automap"
+              ]
             }
-          },
-          "required": [
-            "service"
-          ]
+          }
         }
       ]
     },
