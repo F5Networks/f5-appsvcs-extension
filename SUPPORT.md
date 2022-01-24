@@ -20,10 +20,10 @@ Currently supported versions:
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
 | AS 3.26.1        | LTS           |  04-May-2021        | 04-May-2022     |
-| AS 3.31.0        | Feature       |  20-Sep-2021        | 20-Dec-2021     |
 | AS 3.32.0        | Feature       |  01-Nov-2021        | 01-Feb-2022     |
 | AS 3.32.1        | LTS           |  13-Dec-2021        | 13-Dec-2022     |
 | AS 3.33.0        | Feature       |  13-Dec-2021        | 13-Mar-2022     |
+| AS 3.34.0        | Feature       |  25-Jan-2022        | 25-Apr-2022     |
 
 
 Versions no longer supported:
@@ -69,6 +69,7 @@ Versions no longer supported:
 | AS 3.28.0        | Feature       |  19-May-2021        | 19-Aug-2021     |
 | AS 3.29.0        | Feature       |  28-Jun-2021        | 28-Sep-2021     |
 | AS 3.30.0        | Feature       |  06-Aug-2021        | 06-Nov-2021     |
+| AS 3.31.0        | Feature       |  20-Sep-2021        | 20-Dec-2021     |
 
 
 \* Fix for updated Docker Container packaging only  

@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.34.0",
             "3.33.0",
             "3.32.0",
             "3.31.0",
@@ -4945,35 +4946,7 @@
         ]
       },
       "else": {
-        "type": "object",
-        "properties": {
-          "use": {
-            "title": "Use",
-            "description": "AS3 pointer to persistence method declaration",
-            "type": "string",
-            "minLength": 1,
-            "f5pointsTo": {
-              "properties": {
-                "class": {
-                  "const": "Persist"
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          },
-          "bigip": {
-            "title": "BIG-IP persistence profile",
-            "description": "Pathname of existing BIG-IP persistence profile",
-            "type": "string",
-            "format": "f5bigip"
-          }
-        },
-        "additionalProperties": false,
-        "minProperties": 1,
-        "maxProperties": 1,
-        "f5bigComponent": "probe ltm persistence dest-addr"
+        "$ref": "#/definitions/Pointer_Persist_Profile"
       }
     },
     "Persist": {
@@ -15748,8 +15721,11 @@
           "externalFilePath": {
             "title": "External File Path",
             "description": "Specifies the location (URI) from where the records will be copied",
-            "type": "string",
-            "f5expand": true
+            "allOf": [
+              {
+                "$ref": "#/definitions/Resource_URL"
+              }
+            ]
           },
           "separator": {
             "title": "Record Key Value Separator",
@@ -23117,7 +23093,8 @@
             "drop",
             "clientSsl",
             "persist",
-            "tcl"
+            "tcl",
+            "log"
           ]
         }
       },
@@ -23253,6 +23230,18 @@
           "then": {
             "$ref": "#/definitions/Policy_Action_TCL"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "log"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Action_Log"
+          }
         }
       ],
       "required": [
@@ -23311,8 +23300,9 @@
           "type": "string",
           "description": "When to run this event in the request-response cycle",
           "enum": [
-            "ssl-client-hello",
-            "request"
+            "proxy-request",
+            "request",
+            "ssl-client-hello"
           ],
           "default": "ssl-client-hello"
         }
@@ -24030,6 +24020,7 @@
           "type": "string",
           "description": "When to run this event in the request-response cycle",
           "enum": [
+            "proxy-request",
             "request",
             "response",
             "ssl-client-hello",
@@ -24059,6 +24050,101 @@
       },
       "required": [
         "setVariable"
+      ]
+    },
+    "Policy_Action_Log": {
+      "type": "object",
+      "description": "Writes messages to local or remote system log",
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "When to run this event in the request-response cycle",
+          "enum": [
+            "classification-detected",
+            "client-accepted",
+            "proxy-connect",
+            "proxy-request",
+            "proxy-response",
+            "request",
+            "response",
+            "server-connected",
+            "ssl-client-hello",
+            "ssl-client-serverhello-send",
+            "ssl-server-handshake",
+            "ssl-server-hello",
+            "ws-request",
+            "ws-response"
+          ],
+          "default": "ssl-client-hello"
+        },
+        "write": {
+          "type": "object",
+          "description": "Write a message to the system log files",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "The message to write to the system log. Can also be a Tcl command substitution",
+              "minLength": 1
+            },
+            "facility": {
+              "type": "string",
+              "description": "Standard syslog facility associated with the message",
+              "enum": [
+                "authpriv",
+                "cron",
+                "daemon",
+                "ftp",
+                "kern",
+                "local0",
+                "local1",
+                "local2",
+                "local3",
+                "local4",
+                "local5",
+                "local6",
+                "local7",
+                "lpr",
+                "mail",
+                "news",
+                "security",
+                "user",
+                "uucp"
+              ],
+              "default": "local0"
+            },
+            "priority": {
+              "type": "string",
+              "description": "Standard syslog priority associated with the message",
+              "enum": [
+                "crit",
+                "debug",
+                "error",
+                "info",
+                "notice",
+                "warning"
+              ],
+              "default": "info"
+            },
+            "ipAddress": {
+              "type": "string",
+              "description": "The IP address of the remote syslog server",
+              "format": "f5ip"
+            },
+            "port": {
+              "type": "integer",
+              "description": "The port number of the remote syslog server",
+              "minimum": 0,
+              "maximum": 65535,
+              "default": 0
+            }
+          },
+          "required": [
+            "message"
+          ]
+        }
+      },
+      "required": [
+        "write"
       ]
     },
     "Policy_Condition": {
@@ -24167,6 +24253,7 @@
               "description": "When to evaluate this condition in the request-response cycle",
               "type": "string",
               "enum": [
+                "proxy-request",
                 "request"
               ],
               "default": "request"
@@ -29190,6 +29277,66 @@
       "allOf": [
         {
           "f5bigComponent": "query security nat source-translation"
+        }
+      ]
+    },
+    "Pointer_Persist_Profile": {
+      "description": "Reference to a Persist Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Persist Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5pointsTo": {
+            "properties": {
+              "class": {
+                "enum": [
+                  "Persist"
+                ]
+              }
+            },
+            "required": [
+              "class"
+            ]
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Persist Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query ltm persistence cookie"
+        },
+        {
+          "f5bigComponent": "query ltm persistence dest-addr"
+        },
+        {
+          "f5bigComponent": "query ltm persistence hash"
+        },
+        {
+          "f5bigComponent": "query ltm persistence host"
+        },
+        {
+          "f5bigComponent": "query ltm persistence msrdp"
+        },
+        {
+          "f5bigComponent": "query ltm persistence sip"
+        },
+        {
+          "f5bigComponent": "query ltm persistence source-addr"
+        },
+        {
+          "f5bigComponent": "query ltm persistence ssl"
+        },
+        {
+          "f5bigComponent": "query ltm persistence universal"
         }
       ]
     },
