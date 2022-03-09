@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.35.0",
             "3.34.0",
             "3.33.0",
             "3.32.0",
@@ -824,7 +825,8 @@
         },
         "defaultRouteDomain": {
           "title": "Default route domain",
-          "description": "Selects the default route domain for IP traffic to and from this Tenant's application resources (note: affects declared IP addresses which do not include a %RD route-domain specifier).  You must choose an existing route domain--this option cannot create one.  Route domain 0 (default) is always available",
+          "description": "Using the route-domain ID, this property selects the default route domain for IP traffic to and from this Tenant's application resources (note: affects declared IP addresses which do not include a %RD route-domain specifier).  You must choose an existing route domain--this option cannot create one.  Route domain 0 (default) is always available",
+          "$comment": "TMSH forces this value to be an integer",
           "type": "integer",
           "minimum": 0,
           "maximum": 65535,
@@ -4347,6 +4349,25 @@
               "const": "infinite"
             }
           ]
+        },
+        "ipIntelligencePolicy": {
+          "f5modules": [
+            "afm",
+            "asm"
+          ],
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_IP_Intelligence_Policy"
+            }
+          ]
+        },
+        "profileIntegratedBotDefense": {
+          "description": "AS3 pointer to an Integrated Bot Defense Profile. These are only supported in tmos version 17.0+.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Integrated_Bot_Defense_Profile"
+            }
+          ]
         }
       },
       "allOf": [
@@ -5717,14 +5738,43 @@
                 "properties": {
                   "serverAddresses": {
                     "title": "Server addresses",
-                    "description": "Static IP addresses of servers (nodes)",
+                    "description": "Static IP addresses of servers (nodes). Shorthand for 'servers' where you only want to specify the address property.",
                     "type": "array",
                     "items": {
                       "title": "Server address",
+                      "description": "Static IP address for this server (node)",
                       "type": "string",
                       "format": "f5ip"
                     },
                     "uniqueItems": true
+                  },
+                  "servers": {
+                    "title": "Servers",
+                    "description": "Same as serverAddresses, but allowing for further specification of each node.",
+                    "type": "array",
+                    "items": {
+                      "title": "Servers",
+                      "description": "Static IP address and other details for this server (node)",
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "title": "Server address",
+                          "description": "Static IP address for this server (node)",
+                          "type": "string",
+                          "format": "f5ip"
+                        },
+                        "name": {
+                          "title": "Name",
+                          "type": "string",
+                          "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+                          "maxLength": 64
+                        }
+                      },
+                      "required": [
+                        "address"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "if": {
@@ -5739,8 +5789,17 @@
                     }
                   }
                 },
-                "required": [
-                  "serverAddresses"
+                "anyOf": [
+                  {
+                    "required": [
+                      "serverAddresses"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "servers"
+                    ]
+                  }
                 ]
               }
             ]
@@ -6058,6 +6117,7 @@
         },
         "routeDomain": {
           "description": "The Route Domain to use for the pool member",
+          "$comment": "Due to the fact the Route Domain id is required for address modification, AS3 does NOT support this route domain reference as anything but the id.",
           "type": "integer",
           "minimum": 0,
           "maximum": 65534
@@ -10622,9 +10682,16 @@
         "routeDomain": {
           "title": "Exit route domain",
           "description": "Proxy requests will leave the ADC from a Self IP in this route domain (default 0)",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65535,
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            {
+              "type": "string"
+            }
+          ],
           "default": 0,
           "f5bigComponent": "query net route-domain"
         },
@@ -13037,6 +13104,9 @@
       "title": "Access_Profile",
       "description": "Configures an Access Profile",
       "type": "object",
+      "f5modules": [
+        "apm"
+      ],
       "properties": {
         "class": {
           "type": "string",
@@ -13080,6 +13150,9 @@
       "title": "Per_Request_Access_Policy",
       "description": "Configures a Per Flow Request Access Policy",
       "type": "object",
+      "f5modules": [
+        "apm"
+      ],
       "properties": {
         "class": {
           "type": "string",
@@ -20086,6 +20159,9 @@
       "allOf": [
         {
           "if": {
+            "required": [
+              "serverType"
+            ],
             "properties": {
               "serverType": {
                 "const": "generic-host"
@@ -20114,6 +20190,9 @@
         },
         {
           "if": {
+            "required": [
+              "serverType"
+            ],
             "properties": {
               "serverType": {
                 "const": "bigip"
@@ -29241,6 +29320,44 @@
       "allOf": [
         {
           "f5bigComponent": "query ltm profile ilx"
+        }
+      ]
+    },
+    "Pointer_Integrated_Bot_Defense_Profile": {
+      "description": "Reference to a Integrated Bot Defense Profile",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Integrated Bot Defense Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query saas bd profile"
+        }
+      ]
+    },
+    "Pointer_IP_Intelligence_Policy": {
+      "description": "Reference to a IP Intelligence Policy",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP IP Intelligence Policy",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5bigComponent": "query security ip-intelligence policy"
         }
       ]
     },
