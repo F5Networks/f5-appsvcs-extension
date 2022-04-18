@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.36.0",
             "3.35.0",
             "3.34.0",
             "3.33.0",
@@ -643,7 +644,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         }
       },
       "required": [
@@ -687,7 +690,9 @@
               ]
             }
           ],
-          "f5LongSecret": true
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
         }
       },
       "required": [
@@ -2427,7 +2432,7 @@
               "properties": {
                 "ingress": {
                   "type": "object",
-                  "description": "Ingress (client-side context) HTTP2 profile. This option is only available on BIG-IP 14.1+.",
+                  "description": "Ingress (client-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -2436,7 +2441,7 @@
                 },
                 "egress": {
                   "type": "object",
-                  "description": "Egress (server-side context) HTTP2 profile. This option is only available on BIG-IP 14.1+.",
+                  "description": "Egress (server-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -2707,7 +2712,7 @@
         },
         "profileApiProtection": {
           "title": "API Protection Profile",
-          "description": "API protection profile to attach to service. This option is only available on BIG-IP 14.1+.",
+          "description": "API protection profile to attach to service. This property is available on BIGIP 14.1 and above.",
           "f5modules": [
             "apm",
             "asm"
@@ -2722,7 +2727,7 @@
           "$ref": "#/definitions/Pointer_DOS_Profile"
         },
         "profileBotDefense": {
-          "description": "Attaches a Bot Defense profile to the service. These are only available on BIG-IP 14.1+.",
+          "description": "Attaches a Bot Defense profile to the service. This property is available on BIGIP 14.1 and above.",
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_Bot_Defense_Profile"
@@ -4204,7 +4209,7 @@
         },
         "httpMrfRoutingEnabled": {
           "title": "HTTP MRF Router",
-          "description": "Specifies whether to use the HTTP message routing framework (MRF) functionality. Note: This is available in TMOS versions 14.1 and later.",
+          "description": "Specifies whether to use the HTTP message routing framework (MRF) functionality. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
@@ -4311,7 +4316,7 @@
           "$ref": "#/definitions/Pointer_Rewrite_Profile"
         },
         "profileProtocolInspection": {
-          "description": "AS3 pointer to Protocol Inspection Profile declaration. Protocol Inspection Profiles are only supported in tmos version 13.1+",
+          "description": "AS3 pointer to Protocol Inspection Profile declaration",
           "f5modules": [
             "afm"
           ],
@@ -4908,7 +4913,7 @@
         },
         "serverTechnologies": {
           "title": "Server Technologies",
-          "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Note: This is available in TMOS versions 13.0 and later.",
+          "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts",
           "type": "array",
           "items": {
             "title": "Server Technology",
@@ -5257,7 +5262,9 @@
               }
             ],
             "f5fetch": "object",
-            "f5secret": true
+            "f5PostProcess": {
+              "tag": "secret"
+            }
           }
         },
         "if": {
@@ -6254,7 +6261,9 @@
               ]
             }
           ],
-          "f5LongSecret": true
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
         }
       },
       "dependencies": {
@@ -6353,7 +6362,9 @@
               ]
             }
           ],
-          "f5LongSecret": true
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
         },
         "resourceType": {
           "description": "Type of resource identified by resourceId. This can be used in place of tagKey/tagValue.",
@@ -6497,7 +6508,9 @@
               ]
             }
           ],
-          "f5LongSecret": true
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
         },
         "projectId": {
           "title": "Project Id",
@@ -6559,7 +6572,9 @@
               ]
             }
           ],
-          "f5LongSecret": true
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
         },
         "trustCA": {
           "title": "Trusted CA bundle",
@@ -7105,7 +7120,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "filename": {
           "title": "Filename",
@@ -7167,7 +7184,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "transparent": {
           "title": "Transparent",
@@ -7339,7 +7358,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "count": {
           "title": "Count",
@@ -7422,7 +7443,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "count": {
           "title": "Count",
@@ -7730,7 +7753,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "base": {
           "title": "Base",
@@ -7941,7 +7966,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "secret": {
           "title": "Secret",
@@ -7960,7 +7987,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "nasIpAddress": {
           "title": "IP Address",
@@ -8876,7 +8905,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "chainCA": {
           "title": "CA chain",
@@ -10028,7 +10059,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "fallbackRedirect": {
           "title": "Fallback Redirect",
@@ -11130,7 +11163,7 @@
         },
         "congestionControl": {
           "title": "Congestion-control algorithm",
-          "description": "Selects TCP congestion-control algorithm (default 'woodside'). Note: bbr is only supported in tmos version 14.1+.",
+          "description": "Selects TCP congestion-control algorithm (default 'woodside'). The bbr option is available on BIGIP 14.1 and above.",
           "type": "string",
           "enum": [
             "bbr",
@@ -11374,7 +11407,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "minimumRto": {
           "title": "Minimum retransmission timeout",
@@ -12630,7 +12665,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "certificate": {
           "description": "AS3 pointer to client Certificate declaration (optional)",
@@ -13127,6 +13164,12 @@
             }
           ]
         },
+        "ssloCreated": {
+          "title": "SSL Orchestrator Created",
+          "description": "Set to true if the profile was created by SSL Orchestrator. If true the non-configurable Kerberos Request-Based Authentication (/Common/rba) and WebSSO (/Common/websso) profiles will not be attached to Services when this profile is attached",
+          "type": "boolean",
+          "default": false
+        },
         "ignoreChanges": {
           "title": "Ignore changes",
           "description": "If false (default), the system updates the profile in every AS3 declaration deployment. If true, AS3 creates the profile on first deployment, and leaves it untouched afterwards. However, if enable is set to true, the policy will be applied even if ignoreChanges is true",
@@ -13302,7 +13345,7 @@
     },
     "Cipher_Rule": {
       "title": "Cipher_Rule",
-      "description": "Configures a cipher rule. This is available in TMOS versions 13.0 and later",
+      "description": "Configures a cipher rule",
       "type": "object",
       "properties": {
         "class": {
@@ -13385,7 +13428,7 @@
     },
     "Cipher_Group": {
       "title": "Cipher_Group",
-      "description": "Configures a Cipher Group. Note: This is available in TMOS versions 13.0 and later.",
+      "description": "Configures a Cipher Group",
       "type": "object",
       "properties": {
         "class": {
@@ -14434,7 +14477,7 @@
           ]
         },
         "excludeAddresses": {
-          "description": "Specifies the set of addresses excluded from translation IP addresses available in the pool",
+          "description": "Specifies the set of addresses excluded from translation IP addresses available in the pool. This property is available on BIGIP 14.1 and above.",
           "type": "array",
           "items": {
             "oneOf": [
@@ -14598,7 +14641,7 @@
     },
     "Protocol_Inspection_Profile": {
       "title": "Protocol_Inspection_Profile",
-      "description": "Protocol Inspection Profile used for configurable BIG-IP AFM intrusion prevention. Note: Protocol Inspection Profiles are only supported in tmos version 13.1+",
+      "description": "Protocol Inspection Profile used for configurable BIG-IP AFM intrusion prevention",
       "type": "object",
       "properties": {
         "class": {
@@ -15367,7 +15410,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "publicKey": {
           "description": "The public key of the authentication algorithm (rsa, dss, etc...)",
@@ -15798,7 +15843,8 @@
               {
                 "$ref": "#/definitions/Resource_URL"
               }
-            ]
+            ],
+            "f5checkResource": true
           },
           "separator": {
             "title": "Record Key Value Separator",
@@ -16235,7 +16281,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         }
       },
       "required": [
@@ -16466,7 +16514,7 @@
           ]
         },
         "allowlist": {
-          "description": "Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention.",
+          "description": "Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention. This property is available on BIGIP 14.1 and above.",
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_Firewall_Address_List"
@@ -16474,7 +16522,7 @@
           ]
         },
         "whitelist": {
-          "description": "Deprecated. Replaced with functionally equivalent allowlist. Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention.",
+          "description": "Deprecated. Replaced with functionally equivalent allowlist. Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention. This property is available on BIGIP 14.1 and above.",
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_Firewall_Address_List"
@@ -16562,14 +16610,14 @@
           "default": false
         },
         "sourceDetectionThreshold": {
-          "description": "Specifies the number of packets per second to identify an IP address as a bad actor. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specifies the number of packets per second to identify an IP address as a bad actor",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
           "default": 4294967295
         },
         "sourceMitigationThreshold": {
-          "description": "Specifies the rate limit applied to a source IP that is identified as a bad actor. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specifies the rate limit applied to a source IP that is identified as a bad actor",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -16672,14 +16720,14 @@
           "default": true
         },
         "gracePeriod": {
-          "description": "The length of time (in seconds) before the system blocks suspected bots. The grace period allows web application pages with both HTML and non-HTML (like images, JS, and CSS) to load completely without being blocked. The grace period starts after client validation, a configuration change, or when proactive bot defense is activated as a result of a detected attack or high latency.",
+          "description": "The length of time (in seconds) before the system blocks suspected bots. The grace period allows web application pages with both HTML and non-HTML (like images, JS, and CSS) to load completely without being blocked. The grace period starts after client validation, a configuration change, or when proactive bot defense is activated as a result of a detected attack or high latency. This property is available on BIGIP 14.1 and above.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
           "default": 300
         },
         "crossDomainRequests": {
-          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain.",
+          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
           "type": "string",
           "enum": [
             "allow-all",
@@ -16689,14 +16737,14 @@
           "default": "allow-all"
         },
         "siteDomains": {
-          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain",
+          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "externalDomains": {
-          "description": "Specifies the external referring domains (that are not part of your website) that are allowed to link to resources in your website. These domains are not protected with proactive bot defense, but the system allows them if they pass the system’s redirect-cookie challenge.",
+          "description": "Specifies the external referring domains (that are not part of your website) that are allowed to link to resources in your website. These domains are not protected with proactive bot defense, but the system allows them if they pass the system’s redirect-cookie challenge. This property is available on BIGIP 14.1 and above.",
           "type": "array",
           "items": {
             "type": "string"
@@ -17269,7 +17317,7 @@
           "default": false
         },
         "tlsSignaturesEnabled": {
-          "description": "Enables tls signature detection before the connection establishment",
+          "description": "Enables tls signature detection before the connection establishment. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         }
@@ -17460,7 +17508,7 @@
           "default": false
         },
         "singlePageApplicationEnabled": {
-          "description": "Specifies that your website is a Single Page Application, meaning a web application that loads new content without triggering a full page-reload",
+          "description": "Specifies that your website is a Single Page Application, meaning a web application that loads new content without triggering a full page-reload. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
@@ -17704,7 +17752,7 @@
           "default": {}
         },
         "autoAttackFloor": {
-          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17718,7 +17766,7 @@
           "default": 4294967295
         },
         "rateThreshold": {
-          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17732,7 +17780,7 @@
           "default": 500
         },
         "rateLimit": {
-          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17835,7 +17883,7 @@
           "default": {}
         },
         "autoAttackFloor": {
-          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17849,21 +17897,21 @@
           "default": 4294967295
         },
         "rateThreshold": {
-          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
           "default": 4294967295
         },
         "rateIncreaseThreshold": {
-          "description": "Specify percent of rate increase the system must discover in traffic in order to detect this attack. BIG-IP version 13.1.x clamps this value to a maximum of 2147483647",
+          "description": "Specify percent of rate increase the system must discover in traffic in order to detect this attack",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
           "default": 500
         },
         "rateLimit": {
-          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17967,7 +18015,7 @@
           "default": {}
         },
         "autoAttackFloor": {
-          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17981,7 +18029,7 @@
           "default": 4294967295
         },
         "rateThreshold": {
-          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -17995,7 +18043,7 @@
           "default": 500
         },
         "rateLimit": {
-          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit. BIG-IP versions below 13.1.0 clamp this value to a maximum of 2147483647",
+          "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -21373,92 +21421,92 @@
           "default": false
         },
         "logAlarm": {
-          "description": "This option enables or disables the logging of requests with alarm mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with alarm mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logBlock": {
-          "description": "This option enables or disables the logging of requests with block mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with block mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logBrowser": {
-          "description": "This option enables or disables the logging of requests with browser classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with browser classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logBrowserVerificationAction": {
-          "description": "This option enables or disables the logging of requests by browser verification action. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests by browser verification action. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logCaptcha": {
-          "description": "This option enables or disables the logging of requests with captcha mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with captcha mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logDeviceIdCollectionRequest": {
-          "description": "This option enables or disables the logging of requests by device ID collection. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests by device ID collection. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logMaliciousBot": {
-          "description": "This option enables or disables the logging of requests with malicious bot classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with malicious bot classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logMobileApplication": {
-          "description": "This option enables or disables the logging of requests with mobile application classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with mobile application classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logNone": {
-          "description": "This option enables or disables the logging of requests with no mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with no mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logRateLimit": {
-          "description": "This option enables or disables the logging of requests with rate limit mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with rate limit mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logSuspiciousBrowser": {
-          "description": "This option enables or disables the logging of requests with suspicious browser classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with suspicious browser classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logTcpReset": {
-          "description": "This option enables or disables the logging of requests with TCP reset mitigation. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with TCP reset mitigation. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logTrustedBot": {
-          "description": "This option enables or disables the logging of requests with trusted bot classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with trusted bot classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logUnknown": {
-          "description": "This option enables or disables the logging of requests with unknown classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with unknown classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": true
         },
         "logUntrustedBot": {
-          "description": "This option enables or disables the logging of requests with untrusted bot classification. This feature is only supported in TMOS versions 14.1+",
+          "description": "This option enables or disables the logging of requests with untrusted bot classification. This property is available on BIGIP 14.1 and above.",
           "type": "boolean",
           "default": false
         },
         "logHoneyPotPage": {
-          "description": "This option enables or disables the logging of requests with honey pot page mitigation. This feature is only supported in TMOS versions 15.0+",
+          "description": "This option enables or disables the logging of requests with honey pot page mitigation. This property is available on BIGIP 15.0 and above.",
           "type": "boolean",
           "default": false
         },
         "logRedirectToPool": {
-          "description": "This option enables or disables the logging of requests with redirect to pool mitigation. This feature is only supported in TMOS versions 15.0+",
+          "description": "This option enables or disables the logging of requests with redirect to pool mitigation. This property is available on BIGIP 15.0 and above.",
           "type": "boolean",
           "default": false
         },
         "logChallengeFailureRequest": {
-          "description": "This option enables or disables the logging of requests by challenge failure. This feature is only supported in TMOS versions 15.0+",
+          "description": "This option enables or disables the logging of requests by challenge failure. This property is available on BIGIP 15.0 and above.",
           "type": "boolean",
           "default": false
         }
@@ -24794,7 +24842,7 @@
           "type": "object",
           "properties": {
             "event": {
-              "description": "When to evaluate this condition in the request-response cycle. 'client-accepted', 'server-connected', 'proxy-connect', 'proxy-request', 'proxy-response', and 'ssl-client-serverhello-send' require TMOS v13.1+.",
+              "description": "When to evaluate this condition in the request-response cycle",
               "type": "string",
               "enum": [
                 "request",
@@ -24859,7 +24907,7 @@
       "type": "object",
       "properties": {
         "operand": {
-          "description": "Specifies the comparison that the system should perform with values. exists/does-not-exist does not accept values is only supported on BIG-IP 15.0+",
+          "description": "Specifies the comparison that the system should perform with values. The operands exists and does-not-exist do not accept values and are available on BIGIP 15.0 and above.",
           "type": "string",
           "enum": [
             "equals",
@@ -26553,7 +26601,7 @@
           "type": "string"
         },
         "protocolProfileGx": {
-          "description": "Specifies the protocol profile to be used when you enable subscriber discovery. The PEM protocol profile defines mapping of Diameter Gx AVPs to subscriber ID and other PEM subscriber session attributes. Note: The default BIG-IP reference values vary between versions. BIG-IP versions before 14.1 begin with ‘sys_gx’ (e.g. _sys_gx_proto_default). Versions 14.1 and later begin with ‘sys_diam’ (e.g. _sys_diam_proto_default).",
+          "description": "Specifies the protocol profile to be used when you enable subscriber discovery. The PEM protocol profile defines mapping of Diameter Gx AVPs to subscriber ID and other PEM subscriber session attributes. The default BIG-IP reference values vary between versions. BIGIP versions 14.1 and above begin with ‘sys_diam’ (e.g. _sys_diam_proto_default).",
           "allOf": [
             {
               "$ref": "#/definitions/Pointer_Enforcement_Profile_Gx"
@@ -26671,7 +26719,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "password": {
           "description": "The password of the RADIUS AAA profile for RADIUS server authentication",
@@ -26689,7 +26739,9 @@
             }
           ],
           "f5fetch": "object",
-          "f5secret": true
+          "f5PostProcess": {
+            "tag": "secret"
+          }
         },
         "transactionTimeout": {
           "description": "The number of seconds to wait before resending authentication or accounting transaction messages to the RADIUS server",
