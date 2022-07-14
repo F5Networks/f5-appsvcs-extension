@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.38.0",
             "3.37.0",
             "3.36.0",
             "3.35.0",
@@ -4426,6 +4427,9 @@
         {
           "if": {
             "not": {
+              "required": [
+                "virtualType"
+              ],
               "properties": {
                 "virtualType": {
                   "const": "internal"
@@ -8316,6 +8320,16 @@
             "require"
           ]
         },
+        "smtpsStartTLS": {
+          "title": "Simple Mail Transfer Protocol Security (SMTPS) profile",
+          "description": "Creates a SMTPS profile with the specified activation mode STARTTTLS. Because HTTP profile is not compatible with SMTPS use with Service_TCP instead of Service_HTTPS. Also incompatible with ldapStartTLS. Use only one of the two.",
+          "type": "string",
+          "enum": [
+            "none",
+            "allow",
+            "require"
+          ]
+        },
         "staplerOCSPEnabled": {
           "description": "Specifies whether to enable OCSP stapling",
           "type": "boolean",
@@ -8389,6 +8403,74 @@
           "description": "Allow SSL v3 protocol",
           "type": "boolean",
           "default": true
+        },
+        "proxySslEnabled": {
+          "title": "Proxy SSL Enabled",
+          "description": "When enabled, further modification of application traffic within an SSL tunnel is allowed while still allowing the server to perform necessary authorization, authentication, and auditing steps. Requires a corresponding TLS_Client with this enabled to perform transparent SSL decryption.",
+          "type": "boolean",
+          "default": false
+        },
+        "proxySslPassthroughEnabled": {
+          "title": "Proxy SSL Passthrough Enabled",
+          "description": "When enabled, it allows Proxy SSL to passthrough the traffic when ciphersuite negotiated between the client and server is not supported. Requires a corresponding TLS_Client with this enabled to perform transparent SSL decryption.",
+          "type": "boolean",
+          "default": false
+        },
+        "secureRenegotiation": {
+          "title": "Secure Renegotiation",
+          "description": "Specifies the secure renegotiation mode. When set to require, any client attempting to renegotiate that does not support secure renegotiation will have its connection aborted. When set to require-strict, any client attempting to connect that does not support secure renegotiation will have its initial handshake denied. When set to request, unpatched clients will be permitted to renegotiate. Setting to request is not recommended as it is subject to active man-in-the-middle attacks.",
+          "type": "string",
+          "enum": [
+            "request",
+            "require",
+            "require-strict"
+          ],
+          "default": "require"
+        },
+        "uncleanShutdownEnabled": {
+          "title": "Unclean Shutdown Enabled",
+          "description": "When enabled, the profile performs unclean shutdowns of all SSL connections, which means the underlying TCP connections are closed without exchanging the required SSL shutdown alerts.",
+          "type": "boolean",
+          "default": true
+        },
+        "dtlsEnabled": {
+          "title": "DTLS Enabled",
+          "description": "Allows the DTLS protocol.",
+          "type": "boolean",
+          "default": true
+        },
+        "dtls1_2Enabled": {
+          "title": "DTLS1.2 Enabled",
+          "description": "Allows the DTLS 1.2 protocol.",
+          "type": "boolean",
+          "default": true
+        },
+        "certificateExtensions": {
+          "title": "Certificate Extensions",
+          "description": "Specifies the extensions of the web server certificates to be included in the generated certificates using SSL Forward Proxy.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "authority-key-identifier",
+              "basic-constraints",
+              "certificate-policies",
+              "crl-distribution-points",
+              "extended-key-usage",
+              "fresh-crl",
+              "issuer-alternative-name",
+              "key-usage",
+              "subject-alternative-name",
+              "subject-directory-attribute",
+              "subject-key-identifier"
+            ]
+          }
+        },
+        "nonSslConnectionsEnabled": {
+          "title": "Allow Non-SSL Connections",
+          "description": "Specifies if non-SSL connections are allowed.",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false,
@@ -8401,6 +8483,13 @@
             "forwardProxyBypassEnabled": {
               "const": true
             }
+          }
+        },
+        "smtpsStartTLS": {
+          "not": {
+            "required": [
+              "ldapStartTLS"
+            ]
           }
         }
       },
@@ -8789,6 +8878,47 @@
         "ssl3Enabled": {
           "title": "SSL v3",
           "description": "Allow SSL v3 protocol",
+          "type": "boolean",
+          "default": true
+        },
+        "proxySslEnabled": {
+          "title": "Proxy SSL Enabled",
+          "description": "When enabled, further modification of application traffic within an SSL tunnel is allowed while still allowing the server to perform necessary authorization, authentication, and auditing steps. Requires a corresponding TLS_Server with this enabled to perform transparent SSL decryption.",
+          "type": "boolean",
+          "default": false
+        },
+        "proxySslPassthroughEnabled": {
+          "title": "Proxy SSL Passthrough Enabled",
+          "description": "When enabled, it allows Proxy SSL to passthrough the traffic when ciphersuite negotiated between the client and server is not supported. Requires a corresponding TLS_Server with this enabled to perform transparent SSL decryption.",
+          "type": "boolean",
+          "default": false
+        },
+        "secureRenegotiation": {
+          "title": "Secure Renegotiation",
+          "description": "Specifies the secure renegotiation mode. When set to require, any connection to an unpatched server will be aborted. For TLS_Client, require and require-strict are the same. When set to request, connections to unpatched servers will be permitted. Setting to request is not recommended as it is subject to active man-in-the-middle attacks.",
+          "type": "string",
+          "enum": [
+            "request",
+            "require",
+            "require-strict"
+          ],
+          "default": "require-strict"
+        },
+        "uncleanShutdownEnabled": {
+          "title": "Unclean Shutdown Enabled",
+          "description": "When enabled, the profile performs unclean shutdowns of all SSL connections, which means the underlying TCP connections are closed without exchanging the required SSL shutdown alerts.",
+          "type": "boolean",
+          "default": true
+        },
+        "dtlsEnabled": {
+          "title": "DTLS Enabled",
+          "description": "Allows the DTLS protocol.",
+          "type": "boolean",
+          "default": true
+        },
+        "dtls1_2Enabled": {
+          "title": "DTLS1.2 Enabled",
+          "description": "Allows the DTLS 1.2 protocol.",
           "type": "boolean",
           "default": true
         }
