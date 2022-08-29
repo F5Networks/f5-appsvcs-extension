@@ -20,7 +20,7 @@ Currently supported versions:
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
 | AS 3.32.1        | LTS           |  13-Dec-2021        | 13-Dec-2022     |
-| AS 3.36.1        | LTS           |  31-May-2022        | 31-Aug-2022     |
+| AS 3.36.1        | LTS           |  31-May-2022        | 31-Aug-2023     |
 | AS 3.37.0        | Feature       |  31-May-2022        | 31-Aug-2022     |
 | AS 3.38.0        | Feature       |  14-Jul-2022        | 14-Oct-2022     |
 | AS 3.39.0        | Feature       |  22-Aug-2022        | 22-Nov-2022     |
