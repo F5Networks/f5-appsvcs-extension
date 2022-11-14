@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.41.0",
             "3.40.0",
             "3.39.0",
             "3.38.0",
@@ -995,6 +996,7 @@
               "Certificate_Validator_OCSP",
               "FIX_Profile",
               "SIP_Profile",
+              "Statistics_Profile",
               "Analytics_Profile",
               "Analytics_TCP_Profile",
               "FTP_Profile",
@@ -1030,6 +1032,7 @@
               "SSH_Proxy_Profile",
               "Data_Group",
               "DNS_Cache",
+              "DNS_Logging_Profile",
               "DNS_Profile",
               "DNS_TSIG_Key",
               "DNS_Zone",
@@ -1343,6 +1346,18 @@
             },
             "then": {
               "$ref": "#/definitions/SIP_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Statistics_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Statistics_Profile"
             }
           },
           {
@@ -1763,6 +1778,18 @@
             },
             "then": {
               "$ref": "#/definitions/DNS_Cache"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "DNS_Logging_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/DNS_Logging_Profile"
             }
           },
           {
@@ -3299,6 +3326,30 @@
         "required": [
           "virtualPort"
         ]
+      },
+      "dependencies": {
+        "virtualType": {
+          "if": {
+            "properties": {
+              "virtualType": {
+                "const": "stateless"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "translateClientPort": {
+                "const": false
+              },
+              "translateServerPort": {
+                "const": false
+              }
+            },
+            "required": [
+              "pool"
+            ]
+          }
+        }
       }
     },
     "Service_UDP_Core": {
@@ -3312,7 +3363,8 @@
           "type": "string",
           "enum": [
             "standard",
-            "internal"
+            "internal",
+            "stateless"
           ],
           "default": "standard"
         },
@@ -4260,12 +4312,6 @@
         },
         "policyNAT": {
           "description": "BIG-IP AS3 pointer to NAT policy declaration",
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query security nat policy"
-            ]
-          },
           "type": "object",
           "properties": {
             "bigip": {
@@ -4296,7 +4342,25 @@
           },
           "additionalProperties": false,
           "minProperties": 1,
-          "maxProperties": 1
+          "maxProperties": 1,
+          "allOf": [
+            {
+              "f5PostProcess": {
+                "tag": "modules",
+                "data": [
+                  "afm"
+                ]
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": [
+                  "query security nat policy"
+                ]
+              }
+            }
+          ]
         },
         "policyIdleTimeout": {
           "$ref": "#/definitions/Pointer_Idle_Timeout_Policy"
@@ -4510,6 +4574,9 @@
         },
         "profileDNS": {
           "$ref": "#/definitions/Pointer_DNS_Profile"
+        },
+        "profileStatistics": {
+          "$ref": "#/definitions/Pointer_Statistics_Profile"
         },
         "profileTrafficLog": {
           "$ref": "#/definitions/Pointer_Traffic_Log_Profile"
@@ -8810,25 +8877,25 @@
         },
         "tls1_3Enabled": {
           "title": "TLS 1.3",
-          "description": "Allow TLS 1.3 Ciphers. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
+          "description": "Allow TLS 1.3 Protocol. Note: tls1_3Enabled is only supported in tmos version 14.0+.",
           "type": "boolean",
           "default": false
         },
         "tls1_2Enabled": {
           "title": "TLS 1.2",
-          "description": "Allow TLS 1.2 Ciphers.",
+          "description": "Allow TLS 1.2 Protocol.",
           "type": "boolean",
           "default": true
         },
         "tls1_1Enabled": {
           "title": "TLS 1.1",
-          "description": "Allow TLS 1.1 Ciphers.",
+          "description": "Allow TLS 1.1 Protocol.",
           "type": "boolean",
           "default": true
         },
         "tls1_0Enabled": {
           "title": "TLS 1.0",
-          "description": "Allow TLS 1.0 Ciphers.",
+          "description": "Allow TLS 1.0 Protocol.",
           "type": "boolean",
           "default": true
         },
@@ -8932,6 +8999,47 @@
           "description": "Specifies if non-SSL connections are allowed.",
           "type": "boolean",
           "default": false
+        },
+        "allowDynamicRecordSizing": {
+          "title": "Allow Dynamic Record Sizing",
+          "description": "Enables or disables dynamic application record sizing.",
+          "type": "boolean",
+          "default": false
+        },
+        "dataZeroRoundTripTime": {
+          "title": "Data Zero Round Trip Time",
+          "description": "Specifies if TLSv1.3 should accept 0-RTT with early data, with or without anti-replay. To protect against packet replay, F5 recommends that you enable anti-replay. The default value is disabled, which means TLSv1.3 will discard any early data.",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled-with-anti-replay",
+            "enabled-no-anti-replay"
+          ],
+          "default": "disabled"
+        },
+        "renegotiateMaxRecordDelay": {
+          "title": "Renegotiate Max Record Delay",
+          "description": "Specifies the maximum number of SSL records that the traffic management system can receive before it renegotiates an SSL session. After the system receives this number of SSL records, it closes the connection. This setting applies to client profiles only.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 4294967295
+        },
+        "renegotiatePeriod": {
+          "title": "Renegotiate Period",
+          "description": "Specifies the number of seconds required to renegotiate an SSL session.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 4294967295
+        },
+        "renegotiateSize": {
+          "title": "Renegotiate Size",
+          "description": "Specifies the size of the application data, in megabytes, that is transmitted over the secure channel. If the size of the data is higher than this value, the traffic management system must renegotiate the SSL session.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 4294967295
         }
       },
       "additionalProperties": false,
@@ -9396,6 +9504,28 @@
           "description": "Allows the DTLS 1.2 protocol.",
           "type": "boolean",
           "default": true
+        },
+        "dataZeroRoundTripTime": {
+          "title": "Data Zero Round Trip Time",
+          "description": "Specifies if TLSv1.3 should send 0-RTT early data when available.",
+          "type": "boolean",
+          "default": false
+        },
+        "renegotiatePeriod": {
+          "title": "Renegotiate Period",
+          "description": "Specifies the number of seconds from the initial connect time after which the system renegotiates an SSL session. The default value is indefinite, which means that you do not want the system to renegotiate SSL sessions.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 4294967295
+        },
+        "renegotiateSize": {
+          "title": "Renegotiate Size",
+          "description": "Specifies a throughput size, in megabytes, of SSL renegotiation. This option forces the traffic management system to renegotiate an SSL session based on the size, in megabytes, of application data that is transmitted over the secure channel. The default value is indefinite, which specifies that you do not want a throughput size.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 4294967295
         }
       },
       "allOf": [
@@ -9969,6 +10099,35 @@
           "title": "Class",
           "type": "string",
           "const": "SIP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ]
+    },
+    "Statistics_Profile": {
+      "title": "Statistics Profile",
+      "type": "object",
+      "description": "User-defined statistics fields. This object assigns field names for up to 32 fields. You can then use these field names from an iRule to record values.",
+      "patternProperties": {
+        "^field(3[0-2]|[1-2][0-9]|[1-9])$": {
+          "title": "Field Name",
+          "description": "This regular expression represents 32 field properties named 'field1' through 'field32'.",
+          "type": "string"
+        }
+      },
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Statistics_Profile"
         },
         "label": {
           "$ref": "#/definitions/Label"
@@ -16883,6 +17042,66 @@
         }
       }
     },
+    "DNS_Logging_Profile": {
+      "title": "DNS_Logging_Profile",
+      "description": "Configures a Domain Name System (DNS) logging profile",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "DNS_Logging_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "includeCompleteAnswer": {
+          "description": "Specifies whether the system logs the complete answer from the query",
+          "type": "boolean",
+          "default": true
+        },
+        "includeQueryId": {
+          "description": "Specifies whether the system logs the ID of the query",
+          "type": "boolean",
+          "default": false
+        },
+        "includeSource": {
+          "description": "Specifies whether the system logs the source (the BIG-IP system that receives the packet)",
+          "type": "boolean",
+          "default": true
+        },
+        "includeTimestamp": {
+          "description": "Specifies whether the system logs the timestamp of when the query was created",
+          "type": "boolean",
+          "default": true
+        },
+        "includeView": {
+          "description": "Specifies whether the system includes the view in the log",
+          "type": "boolean",
+          "default": true
+        },
+        "logPublisher": {
+          "$ref": "#/definitions/Pointer_Log_Publisher"
+        },
+        "logQueriesEnabled": {
+          "description": "Specifies whether the system logs queries",
+          "type": "boolean",
+          "default": true
+        },
+        "logResponsesEnabled": {
+          "description": "Specifies whether the systems logs responses",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "class",
+        "logPublisher"
+      ]
+    },
     "DNS_Profile": {
       "title": "DNS_Profile",
       "description": "Configures a Domain Name System (DNS) profile",
@@ -19801,6 +20020,36 @@
             }
           },
           "$comment": "uniqueItems: true"
+        },
+        "persistenceEnabled": {
+          "title": "Persistence",
+          "description": "Specifies that when a local DNS server makes repetitive requests on behalf of a client, the system reconnects the client to the same resource as previous requests. Set to true to enable.",
+          "type": "boolean",
+          "default": false
+        },
+        "persistCidrIpv4": {
+          "title": "PersistCidrIpv4",
+          "description": "Specifies a mask used to group IPv4 LDNS addresses.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32,
+          "default": 32
+        },
+        "persistCidrIpv6": {
+          "title": "PersistCidrIpv6",
+          "description": "Specifies a mask used to group IPv6 LDNS addresses.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128,
+          "default": 128
+        },
+        "ttlPersistence": {
+          "title": "TTL Persistence",
+          "description": "Specifies, in seconds, the length of time for which a persistence entry is valid.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 3600
         }
       },
       "if": {
@@ -29215,6 +29464,26 @@
       "description": "Reference to a DNS logging profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to DNS logging profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "DNS_Logging_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP DNS logging profile",
           "type": "string",
@@ -32052,6 +32321,50 @@
             "tag": "bigComponent",
             "data": [
               "query security protocol-inspection profile"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_Statistics_Profile": {
+      "description": "Reference to a Statistics Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Statistics Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Statistics_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Statistics Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile statistics"
             ]
           }
         }
