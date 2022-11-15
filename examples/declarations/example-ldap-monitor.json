@@ -1,0 +1,81 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.6.0",
+    "id": "TEST_MONITOR_LDAP",
+    "remark": "Test LDAP Monitor",
+    "Sample_monitor_01": {
+      "class": "Tenant",
+      "TEST_Monitor_LDAP": {
+        "class": "Application",
+        "monitorLDAP_simple": {
+          "class": "Monitor",
+          "monitorType": "ldap"
+        },
+        "monitorLDAP_default": {
+          "class": "Monitor",
+          "monitorType": "ldap",
+          "targetAddress": "",
+          "targetPort": 0,
+          "interval": 5,
+          "upInterval": 0,
+          "timeUntilUp": 0,
+          "timeout": 16,
+          "security": "none",
+          "mandatoryAttributes": false,
+          "chaseReferrals": true
+        },
+        "monitorLDAP_nonDefault1": {
+          "class": "Monitor",
+          "monitorType": "ldap",
+          "targetAddress": "192.0.2.17",
+          "targetPort": 389,
+          "interval": 10,
+          "upInterval": 15,
+          "timeUntilUp": 20,
+          "timeout": 46,
+          "security": "ssl",
+          "mandatoryAttributes": true,
+          "chaseReferrals": false,
+          "username": "Adm-nM+nkey",
+          "passphrase": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "base": "dc=bigip-test,dc=org",
+          "filter": "objectClass=employee"
+        },
+        "monitorLDAP_nonDefault2": {
+          "class": "Monitor",
+          "monitorType": "ldap",
+          "targetAddress": "192.0.2.18",
+          "targetPort": 389,
+          "username": "B*zzL!ghtyear",
+          "passphrase": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "base": "dc=bigip-test,dc=net",
+          "filter": "objectClass=person",
+          "security": "tls"
+        },
+        "monitorLDAP_pool": {
+          "class": "Pool",
+          "members": [
+            {
+              "servicePort": 443,
+              "serverAddresses": [
+                "192.0.2.19"
+              ],
+              "minimumMonitors": 1,
+              "monitors": [
+                { "use": "monitorLDAP_nonDefault1" },
+                { "use": "monitorLDAP_nonDefault2" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }

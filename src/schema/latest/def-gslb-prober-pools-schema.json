@@ -1,0 +1,64 @@
+{
+    "definitions": {
+        "GSLB_Prober_Pool": {
+            "title": "GSLB_Prober_Pool",
+            "description": "Declares a pool of BIG-IP devices that will monitor server resources for health and performance. Note: Prober pools are not used by the bigip monitor",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["gtm"]
+            },
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Prober_Pool"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "Specifies whether this pool is available for conducting probes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "lbMode": {
+                    "title": "Load Balancing Mode",
+                    "description": "Specifies the load balancing mode the system uses to select the members of this pool",
+                    "type": "string",
+                    "enum": [
+                        "global-availability", "round-robin"
+                    ]
+                },
+                "members": {
+                    "title": "Members",
+                    "description": "Specifies the members of the prober pool",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/GSLB_Prober_Pool_Member" }
+                }
+            }
+        },
+
+        "GSLB_Prober_Pool_Member": {
+            "title": "GSLB Prober Pool Member",
+            "description": "Declares member of the GSLB prober pool",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "title": "Prober Pool Member Enabled",
+                    "description": "Specifies whether the server can be used as a member of a prober pool",
+                    "type": "boolean",
+                    "default": true
+                },
+                "memberOrder": {
+                    "title": "Prober Pool Member Order",
+                    "description": "Specifies the order in which this server appears in the prober pool",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "maximum": 65535
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.18.0",
+    "Sample_HTTPS": {
+        "class": "Tenant",
+        "MyHttps": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "allowVlans": [
+                    {
+                        "bigip": "/Common/internal"
+                    }
+                ],
+                "layer4": "tcp",
+                "snat": "none",
+                "lastHop": "disable",
+                "translateServerAddress": false,
+                "translateServerPort": false,
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "virtualPort": 8080,
+                "clientTLS": [
+                    {
+                        "bigip": "/Common/serverssl1"
+                    },
+                    {
+                        "bigip": "/Common/serverssl2"
+                    }
+                ],
+                "serverTLS": [
+                    {
+                        "bigip": "/Common/clientssl1"
+                    },
+                    {
+                        "bigip": "/Common/clientssl2"
+                    }
+                ]
+            }
+        }
+    }
+}

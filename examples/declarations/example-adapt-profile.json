@@ -1,0 +1,50 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.15.0",
+    "id": "123456",
+    "tenant": {
+        "class": "Tenant",
+        "appAdapt": {
+            "class": "Application",
+            "service": {
+            	"class": "Service_HTTP",
+            	"virtualPort": 80,
+            	"virtualAddresses": ["10.10.10.10"],
+            	"profileRequestAdapt": {
+            		"use": "adaptRequestProfile"
+            	},
+            	"profileResponseAdapt": {
+            		"use": "adaptResponseProfile"
+            	}
+            },
+            "adaptRequestProfile": {
+            	"class": "Adapt_Profile",
+            	"messageType": "request",
+            	"enableHttpAdaptation": false,
+            	"previewSize": 2048,
+            	"serviceDownAction": "reset",
+            	"timeout": 1000,
+            	"allowHTTP10": true,
+            	"internalService": {
+            		"use": "internalService"
+            	}
+            },
+            "adaptResponseProfile": {
+            	"class": "Adapt_Profile",
+            	"messageType": "response",
+            	"enableHttpAdaptation": false,
+            	"previewSize": 2048,
+            	"serviceDownAction": "reset",
+            	"timeout": 1000,
+            	"allowHTTP10": true,
+            	"internalService": {
+            		"use": "internalService"
+            	}
+            },
+            "internalService": {
+            	"class": "Service_TCP",
+            	"virtualType": "internal"
+            }
+        }
+    }
+}

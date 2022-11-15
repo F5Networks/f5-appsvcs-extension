@@ -1,0 +1,21 @@
+@startuml
+
+skinparam activity {
+    ArrowColor #5aa0e1
+    BarColor #9bcbde
+    BackgroundColor #9bcbde
+    BorderColor #5aa0e1
+}
+
+(*) --> "audit.js"
+
+"audit.js" --> "map_as3.js"
+--> "audit.js (diff)"
+
+"audit.js" --> "map_mcp.js"
+--> "audit.js (diff)"
+
+--> "map_cli.js"
+--> "update.js"
+"update.js" --> (*)
+@enduml

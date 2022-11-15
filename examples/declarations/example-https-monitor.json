@@ -1,0 +1,24 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.13.0",
+    "id": "Monitor",
+    "TEST_HTTPSMonitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sampleHTTPSmonitor": {
+                "class": "Monitor",
+                "monitorType": "https",
+                "clientTLS": {
+                    "use": "webtls"
+                }
+            },
+            "webtls": {
+                "class": "TLS_Client",
+                "trustCA": {
+                     "bigip": "/Common/default.crt"
+                }
+            }
+        }
+    }
+}

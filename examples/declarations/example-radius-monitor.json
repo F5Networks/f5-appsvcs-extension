@@ -1,0 +1,82 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.7.0",
+    "id": "TEST_MONITOR_RADIUS",
+    "remark": "Test RADIUS Monitor",
+    "Sample_monitor_04": {
+      "class": "Tenant",
+      "TEST_Monitor_RADIUS": {
+        "class": "Application",
+        "monitorRADIUS_simple": {
+          "class": "Monitor",
+          "monitorType": "radius"
+        },
+        "monitorRADIUS_default": {
+          "class": "Monitor",
+          "monitorType": "radius",
+          "targetAddress": "",
+          "targetPort": 0,
+          "interval": 5,
+          "upInterval": 0,
+          "timeUntilUp": 0,
+          "timeout": 16
+        },
+        "monitorRADIUS_nonDefault1": {
+          "class": "Monitor",
+          "monitorType": "radius",
+          "targetAddress": "192.0.2.17",
+          "targetPort": 1812,
+          "interval": 10,
+          "upInterval": 15,
+          "timeUntilUp": 20,
+          "timeout": 46,
+          "username": "Adm-nM+nkey",
+          "passphrase": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "secret": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "nasIpAddress": "198.0.2.20"
+        },
+        "monitorRADIUS_nonDefault2": {
+          "class": "Monitor",
+          "monitorType": "radius",
+          "targetAddress": "192.0.2.18",
+          "targetPort": 1645,
+          "username": "B*zzL!ghtyear",
+          "passphrase": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "secret": {
+            "ciphertext": "ZjVmNQ==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "nasIpAddress": "192.0.2.20"
+        },
+        "monitorRADIUS_pool": {
+          "class": "Pool",
+          "members": [
+            {
+              "servicePort": 443,
+              "serverAddresses": [
+                "192.0.2.19"
+              ],
+              "minimumMonitors": 1,
+              "monitors": [
+                { "use": "monitorRADIUS_nonDefault1" },
+                { "use": "monitorRADIUS_nonDefault2" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }

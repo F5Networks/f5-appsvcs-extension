@@ -1,0 +1,340 @@
+{
+    "definitions": {
+        "GSLB_Monitor": {
+            "title": "GSLB_Monitor",
+            "description": "Declares a monitor that verifies the availability and/or performance status of a particular protocol, service, or application",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["gtm"]
+            },
+
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Monitor"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "monitorType": {
+                    "title": "Monitor Type",
+                    "description": "Specifies the type of monitor",
+                    "type": "string",
+                    "enum" : [ "http", "https", "gateway-icmp", "tcp", "udp", "external" ]
+                },
+                "target": {
+                    "title": "Target (Address:Port)",
+                    "description": "Specifies the IP address and service port of the resource that is the destination of this monitor. Format is ip:port",
+                    "type": "string",
+                    "default": "*:*"
+                },
+                "interval": {
+                    "title": "Interval",
+                    "description": "Specifies, in seconds, the frequency at which the system issues the monitor check when either the resource is down or the status of the resource is unknown",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86399,
+                    "default": 30
+                },
+                "timeout": {
+                    "title": "Timeout",
+                    "description": "Specifies the number of seconds the target has in which to respond to the monitor request",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86400,
+                    "default": 120
+                },
+                "probeTimeout": {
+                    "title": "Probe Timeout",
+                    "description": "Specifies the number of seconds after which the system times out the probe request to the system",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 5
+                },
+                "ignoreDownResponseEnabled": {
+                    "title": "Ignore Down Response",
+                    "description": "Specifies whether the monitor immediately marks an object down when it receives a down response. If enabled, the monitor ignores the down response for the duration of timeout. The default is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "monitorType": { "const": "http" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_HTTP" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "https" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_HTTPS" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "gateway-icmp" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_ICMP" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "udp" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_UDP" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "tcp" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_TCP" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "external" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_External" }
+                }
+            ],
+            "required": [ "class", "monitorType"]
+        },
+
+        "GSLB_Monitor_External": {
+            "description": "Additional Monitor class properties available when monitorType = external",
+            "type": "object",
+            "properties": {
+                "pathname": {
+                    "title": "pathname",
+                    "description": "Tmsh object path name of an imported existing external monitor (e.g. /Common/arg_example)",
+                    "type": "string",
+                    "minLength": 2,
+                    "f5PostProcess": {
+                        "tag": "expand"
+                    }
+                },
+
+                "expand": {
+                    "title": "Expand",
+                    "description": "If true (default), expand backquoted variables in script",
+                    "type": "boolean",
+                    "default": true
+                },
+
+                "script": {
+                    "title": "External monitor script",
+                    "description": "Bash(1) script which implements external monitor",
+                    "allOf": [
+                        { "$ref": "#/definitions/F5string" },
+                        {
+                            "f5PostProcess": {
+                                "tag": "expand",
+                                "data": { "when": "1/expand" }
+                            }
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "string"
+                            }
+                        }
+                    ]
+                },
+
+                "arguments": {
+                    "title": "Arguments",
+                    "description": "Arguments to specified external monitor (will be backquote-expanded)",
+                    "type": "string",
+                    "default": "",
+                    "f5PostProcess": {
+                        "tag": "expand"
+                    }
+                },
+
+                "environmentVariables": {
+                    "description": "Specifies user defined command line parameters that the external program requires.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "default": {}
+                }
+            },
+
+            "oneOf": [
+                { "required": [ "pathname" ] },
+                { "required": [ "script" ] }
+            ]
+        },
+
+        "GSLB_Monitor_HTTP": {
+            "description": "Additional Monitor class properties available when monitorType = http",
+            "type": "object",
+            "properties": {
+                "reverseEnabled": {
+                    "title": "Reverse Enabled",
+                    "description": "When enabled, a successful check marks the monitored object down instead of up. You can use the Reverse mode only if you configure both the send and receive options",
+                    "type": "boolean",
+                    "default": false
+                },
+                "send": {
+                    "title": "Send String",
+                    "description": "Specifies the text string that the monitor sends to the target object. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": "HEAD / HTTP/1.0\\r\\n\\r\\n",
+                    "f5PostProcess": {
+                        "tag": "expand"
+                    }
+                },
+                "receive": {
+                    "title": "Receive String",
+                    "description": "Specifies the text string that the monitor looks for in the returned resource. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": "HTTP/1.",
+                    "f5PostProcess": {
+                        "tag": "expand"
+                    }
+                },
+                "transparent": {
+                    "title": "Transparent",
+                    "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+
+        "GSLB_Monitor_HTTPS": {
+            "description": "Additional Monitor class properties available when monitorType = https",
+            "type": "object",
+            "allOf": [
+                {
+                    "properties": {
+                        "ciphers": {
+                            "title": "Ciphers",
+                            "description": "Ciphersuite selection string",
+                            "type": "string",
+                            "default": "DEFAULT"
+                        },
+                        "clientCertificate": {
+                            "title": "Client certificate",
+                            "description": "BIG-IP AS3 pointer to client Certificate declaration, for TLS authentication (optional)",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "Certificate" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/definitions/GSLB_Monitor_HTTP"
+                }
+            ]
+        },
+
+        "GSLB_Monitor_ICMP": {
+            "description": "Additional Monitor class properties available when monitorType = gateway-icmp",
+            "type": "object",
+            "properties": {
+                "probeInterval": {
+                    "title": "Probe Interval",
+                    "description": "Specifies the frequency at which the BIG-IP system probes the host server",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "probeAttempts": {
+                    "title": "Probe Attempts",
+                    "description": "Specifies the number of times the BIG-IP system attempts to probe the host server, after which the BIG-IP system considers the host server down or unavailable",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 3
+                },
+                "transparent": {
+                    "title": "Transparent",
+                    "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+
+        "GSLB_Monitor_TCP": {
+            "description": "Additional Monitor class properties available when monitorType = tcp",
+            "type": "object",
+            "properties": {
+                "reverseEnabled": {
+                    "title": "Reverse Enabled",
+                    "description": "When enabled, a successful check marks the monitored object down instead of up. You can use the Reverse mode only if you configure both the send and receive options",
+                    "type": "boolean",
+                    "default": false
+                },
+                "send": {
+                    "title": "Send String",
+                    "description": "Specifies the text string that the monitor sends to the target object. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": ""
+                },
+                "receive": {
+                    "title": "Receive String",
+                    "description": "Specifies the text string that the monitor looks for in the returned resource. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": ""
+                },
+                "transparent": {
+                    "title": "Transparent",
+                    "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+
+        "GSLB_Monitor_UDP": {
+            "description": "Additional Monitor class properties available when monitorType = udp",
+            "type": "object",
+            "properties": {
+                "debugEnabled": {
+                    "title": "Debug Enabled",
+                    "description": "When enabled, the monitor sends error messages and additional information to a log file created and labeled specifically for this monitor. The default is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "probeAttempts": {
+                    "title": "Probe Attempts",
+                    "description": "Specifies the number of times the BIG-IP system attempts to probe the host server, after which the BIG-IP system considers the host server down or unavailable",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 3
+                },
+                "probeInterval": {
+                    "title": "Probe Interval",
+                    "description": "Specifies the frequency at which the BIG-IP system probes the host server",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "reverseEnabled": {
+                    "title": "Reverse Enabled",
+                    "description": "When enabled, a successful check marks the monitored object down instead of up. You can use the Reverse mode only if you configure both the send and receive options",
+                    "type": "boolean",
+                    "default": false
+                },
+                "send": {
+                    "title": "Send String",
+                    "description": "Specifies the text string that the monitor sends to the target object. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": "default send string"
+                },
+                "receive": {
+                    "title": "Receive String",
+                    "description": "Specifies the text string that the monitor looks for in the returned resource. If you do not specify a value for both the send and receive options, the monitor performs a simple service check and connect only",
+                    "type": "string",
+                    "default": ""
+                },
+                "transparent": {
+                    "title": "Transparent",
+                    "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        }
+    }
+}

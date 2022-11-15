@@ -1,0 +1,8 @@
+awscli
+f5-sphinx-theme>=2.0.7
+sphinx<2.0
+recommonmark
+sphinxjp.themes.basicstrap
+cloud_sptheme
+sphinx_copybutton
+rst2html

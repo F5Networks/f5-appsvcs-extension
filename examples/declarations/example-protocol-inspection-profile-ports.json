@@ -1,0 +1,45 @@
+{
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.23.0",
+        "Example_PIP": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "service": {
+                    "class": "Service_HTTP",
+                    "virtualPort": 80,
+                    "virtualAddresses": [
+                        "192.0.2.1"
+                    ],
+                    "profileProtocolInspection": {
+                        "use": "InspectionProfile"
+                    }
+                },
+                "InspectionProfile": {
+                    "class": "Protocol_Inspection_Profile",
+                    "collectAVRStats": true,
+                    "enableComplianceChecks": true,
+                    "enableSignatureChecks": true,
+                    "services": [
+                        {
+                            "type": "http",
+                            "compliance": [
+                                {
+                                    "check": "http_contains_colon"
+                                }
+                            ],
+                            "signature": [
+                                {
+                                    "check": "http_app_detect_absolute_software_computrace_outbound_connection_bh_namequery_com"
+                                }
+                            ],
+                            "ports": [80, 8080]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

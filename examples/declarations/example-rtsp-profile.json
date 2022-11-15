@@ -1,0 +1,21 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.14.0",
+    "id": "Service_TCP",
+    "example_RTSP": {
+        "class": "Tenant",
+        "App1": {
+            "class": "Application",
+            "RTSP_vs": {
+                "class": "Service_TCP",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "1.1.1.10"
+                ],
+                "profileRTSP": {
+                    "bigip": "/Common/rtsp"
+                }
+            }
+        }
+    }
+}

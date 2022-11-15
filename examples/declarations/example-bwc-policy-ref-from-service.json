@@ -1,0 +1,25 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.19.0",
+    "id": "declarationId",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "myService": {
+                "class": "Service_Generic",
+                "virtualAddresses": [
+                    "1.1.1.1"
+                ],
+                "virtualPort": 1000,
+                "policyBandwidthControl": {
+                    "use": "bwcPolicy"
+                }
+            },
+            "bwcPolicy": {
+                "class": "Bandwidth_Control_Policy",
+                "maxBandwidth": 10
+            }
+        }
+    }
+}

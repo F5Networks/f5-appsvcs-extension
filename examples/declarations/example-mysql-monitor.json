@@ -1,0 +1,63 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.23.0",
+  "id": "Example_Monitor_MySQL",
+  "remark": "Example MySQL Monitor",
+  "mySQLTenant": {
+    "class": "Tenant",
+    "Application": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "10.0.14.10"
+        ],
+        "pool": "monitorMySQL_pool"
+      },
+      "monitorMySQL_Simple": {
+        "class": "Monitor",
+        "monitorType": "mysql"
+      },
+      "monitorMySQL_AllProperties": {
+        "class": "Monitor",
+        "monitorType": "mysql",
+        "remark": "This is a remark",
+        "targetAddress": "10.11.12.13",
+        "targetPort": 3456,
+        "timeUntilUp": 30,
+        "timeout": 81,
+        "upInterval": 5,
+        "count": 10,
+        "database": "test_db",
+        "interval": 10,
+        "send": "SELECT id,first_name,last_name",
+        "receive": "something received",
+        "receiveColumn": 3,
+        "receiveRow": 2,
+        "username": "sql-user",
+        "passphrase": {
+          "ciphertext": "ZjVmNQ==",
+          "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+          "ignoreChanges": true
+        }
+      },
+      "monitorMySQL_pool": {
+        "class": "Pool",
+        "monitors": [
+          {
+            "use": "monitorMySQL_AllProperties"
+          }
+        ],
+        "members": [
+          {
+            "servicePort": 443,
+            "serverAddresses": [
+              "11.12.13.14",
+              "11.12.13.15"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

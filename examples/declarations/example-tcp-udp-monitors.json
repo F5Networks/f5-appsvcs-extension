@@ -1,0 +1,52 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.30.0",
+    "id": "dda23da4-3f9b-49c3-91e8-aa6a3f88baa5",
+    "updateMode": "selective",
+    "TCPTest": {
+        "class": "Tenant",
+        "TCP_Monitor_Test": {
+            "class": "Application",
+            "template": "generic",
+            "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                    "10.0.9.10"
+                ],
+                "virtualPort": 1234,
+                "pool": "TCP_Pool"
+                },
+                "TCP_Pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "TCP_Monitor"
+                        },
+                        {
+                            "use": "UDP_Monitor"
+                        }
+                    ],
+                    "members": [
+                        {
+                            "enable": true,
+                            "adminState": "enable",
+                            "shareNodes": true,
+                            "serverAddresses": [
+                                "1.1.1.1"
+                            ],
+                            "servicePort": 1234
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member"
+                },
+            "TCP_Monitor": {
+                "class": "Monitor",
+                "monitorType": "tcp"
+            },
+            "UDP_Monitor": {
+                "class": "Monitor",
+                "monitorType": "udp"
+            }
+        }
+    }
+}

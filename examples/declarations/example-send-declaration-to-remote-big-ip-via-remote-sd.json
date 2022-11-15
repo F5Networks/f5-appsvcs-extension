@@ -1,0 +1,51 @@
+{
+    "class": "AS3",
+    "targetHost": "192.0.2.212",
+    "targetUsername": "admin",
+    "targetPassphrase": "admin",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.1.0",
+        "id": "TEST_Service_HTTP",
+        "Sample_sd_03": {
+            "class": "Tenant",
+            "Generic_Http": {
+                "class": "Application",
+                "vghSimple": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                    "10.1.88.1"
+                    ],
+                    "pool": "web_pool"
+                },
+                "web_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 8082,
+                            "addressDiscovery": "aws",
+                            "updateInterval": 10,
+                            "tagKey": "foo",
+                            "tagValue": "bar",
+                            "addressRealm": "private",
+                            "region": "us-west-2",
+                            "accessKeyId": "your-access-key",
+                            "secretAccessKey": "your-secret-key",
+                            "credentialUpdate": false
+                        },
+                        {
+                            "enable": true,
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                "10.128.0.7"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+  }

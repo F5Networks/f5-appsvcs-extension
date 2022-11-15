@@ -1,0 +1,211 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.0.0",
+        "id": "firewall",
+        "label": "Sample Network Security 1",
+        "remark": "Firewall policy, rule, and logging example",
+        "controls": {
+            "trace": true
+        },
+        "Sample_net_sec_01": {
+            "class": "Tenant",
+            "fwFastL4": {
+                "class": "Application",
+                "fwAllowedAddressList": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "10.0.0.0/8",
+                        "172.20.0.0/16",
+                        "192.168.0.0/16"
+                    ]
+                },
+                "fwLogDestinationSyslog": {
+                    "class": "Log_Destination",
+                    "type": "remote-syslog",
+                    "remoteHighSpeedLog": {
+                        "use": "fwLogDestinationHsl"
+                    },
+                    "format": "rfc5424"
+                },
+                "fwLogDestinationHsl": {
+                    "class": "Log_Destination",
+                    "type": "remote-high-speed-log",
+                    "protocol": "tcp",
+                    "pool": {
+                        "use": "hsl_pool"
+                    }
+                },
+                "fwRuleList": {
+                    "class": "Firewall_Rule_List",
+                    "rules": [
+                        {
+                            "protocol": "tcp",
+                            "name": "tcpAllow",
+                            "loggingEnabled": true,
+                            "destination": {
+                                "portLists": [
+                                    {
+                                        "use": "fwAllowedPortList"
+                                    }
+                                ]
+                            },
+                            "source": {
+                                "addressLists": [
+                                    {
+                                        "use": "fwAllowedAddressList"
+                                    }
+                                ]
+                            },
+                            "action": "accept"
+                        },
+                        {
+                            "action": "accept",
+                            "loggingEnabled": true,
+                            "protocol": "udp",
+                            "name": "udpAllow",
+                            "source": {
+                                "addressLists": [
+                                    {
+                                        "use": "fwAllowedAddressList"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "action": "drop",
+                            "loggingEnabled": true,
+                            "protocol": "any",
+                            "name": "defaultDeny",
+                            "source": {
+                                "addressLists": [
+                                    {
+                                        "use": "fwDefaultDenyAddressList"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "hsl_pool": {
+                    "class": "Pool",
+                    "members": [
+                        {
+                            "serverAddresses": [
+                                "192.168.120.6"
+                            ],
+                            "enable": true,
+                            "servicePort": 514
+                        }
+                    ],
+                    "monitors": [
+                        {
+                            "bigip": "/Common/tcp"
+                        }
+                    ]
+                },
+                "fwAllowedPortList": {
+                    "class": "Firewall_Port_List",
+                    "ports": [
+                        22,
+                        53,
+                        80,
+                        443,
+                        "8080-8081"
+                    ]
+                },
+                "fwSecurityLogProfile": {
+                    "class": "Security_Log_Profile",
+                    "network": {
+                        "publisher": {
+                            "use": "fwLogPublisher"
+                        },
+                        "storageFormat": {
+                            "fields": [
+                                "action",
+                                "dest-ip",
+                                "dest-port",
+                                "src-ip",
+                                "src-port"
+                            ]
+                        },
+                        "logTranslationFields": true,
+                        "logTcpEvents": true,
+                        "logRuleMatchRejects": true,
+                        "logTcpErrors": true,
+                        "logIpErrors": true,
+                        "logRuleMatchDrops": true,
+                        "logRuleMatchAccepts": true
+                    }
+                },
+                "fwDefaultDenyAddressList": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "0.0.0.0/0"
+                    ]
+                },
+                "fwPolicy": {
+                    "rules": [
+                        {
+                            "use": "fwRuleList"
+                        }
+                    ],
+                    "class": "Firewall_Policy"
+                },
+                "ex_L4_Profile": {
+                    "class": "L4_Profile"
+                },
+                "ex_pool": {
+                    "class": "Pool",
+                    "members": [
+                        {
+                            "serverAddresses": [
+                                "192.168.31.3"
+                            ],
+                            "enable": true,
+                            "servicePort": 0
+                        }
+                    ],
+                    "monitors": [
+                        {
+                            "bigip": "/Common/gateway_icmp"
+                        }
+                    ]
+                },
+                "service": {
+                    "translateServerAddress": false,
+                    "securityLogProfiles": [
+                        {
+                            "use": "fwSecurityLogProfile"
+                        }
+                    ],
+                    "virtualAddresses": [
+                        "0.0.0.0"
+                    ],
+                    "policyFirewallEnforced": {
+                        "use": "fwPolicy"
+                    },
+                    "translateServerPort": false,
+                    "profileL4": {
+                        "use": "ex_L4_Profile"
+                    },
+                    "virtualPort": 0,
+                    "snat": "none",
+                    "class": "Service_L4",
+                    "pool": "ex_pool"
+                },
+                "fwLogPublisher": {
+                    "class": "Log_Publisher",
+                    "destinations": [
+                        {
+                            "use": "fwLogDestinationSyslog"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

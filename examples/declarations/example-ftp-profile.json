@@ -1,0 +1,22 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "FTP_Profile",
+    "TEST_FTP_Profile": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sampleFTPprofile": {
+                "class": "FTP_Profile",
+                "remark": "description",
+                "port": 300,
+                "ftpsMode": "require",
+                "enforceTlsSessionReuseEnabled": true,
+                "activeModeEnabled": false,
+                "securityEnabled": true,
+                "translateExtendedEnabled": false,
+                "inheritParentProfileEnabled": true
+        }
+    }
+}
+}

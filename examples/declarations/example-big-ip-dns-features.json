@@ -1,0 +1,130 @@
+{
+    "class": "ADC",
+    "updateMode": "selective",
+    "schemaVersion": "3.0.0",
+    "id": "DNS",
+    "Sample_non_http_03": {
+        "class": "Tenant",
+        "TEST_DNS_Zone": {
+            "class": "Application",
+            "dnsZone": {
+                "class": "DNS_Zone",
+                "label": "dnsZone",
+                "remark": "DNS Zone test",
+                "dnsExpress": {
+                    "enabled": true,
+                    "nameserver": {
+                        "use": "dnsNameserverZone"
+                    },
+                    "notifyAction": "consume",
+                    "allowNotifyFrom": [
+                        "10.1.1.1"
+                    ],
+                    "verifyNotifyTsig": false
+                },
+                "responsePolicyEnabled": true,
+                "serverTsigKey": {
+                    "use": "tsigKeyZone"
+                },
+                "transferClients": [
+                    {
+                        "use": "dnsNameserverZone"
+                    }
+                ]
+            },
+            "dnsNameserverZone": {
+                "class": "DNS_Nameserver",
+                "label": "dnsNameserverZone",
+                "address": "10.1.1.2",
+                "port": 53,
+                "routeDomain": {
+                    "bigip": "/Common/0"
+                },
+                "tsigKey": {
+                    "use": "tsigKeyZone"
+                }
+            },
+            "tsigKeyZone": {
+                "class": "DNS_TSIG_Key",
+                "label": "tsigKeyZone",
+                "remark": "TSIG Key test",
+                "algorithm": "hmacmd5",
+                "secret": {
+                    "ciphertext": "ZjVmNQ==",
+                    "miniJWE": true,
+                    "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                    "ignoreChanges": true,
+                    "allowReuse": false
+                }
+            }
+        }
+    },
+    "DNS_PROFILE_1": {
+        "class": "Tenant",
+        "DNS_PROFILE_1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_UDP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "198.19.192.210"
+                ],
+                "profileUDP": {
+                    "use": "profileUdp"
+                },
+
+                "profileDNS": {
+                    "use": "profileDnsHW"
+                }
+            },
+            "profileDnsLogging": {
+                "class": "DNS_Logging_Profile",
+                "remark": "DNS Logging Profile test",
+                "includeCompleteAnswer": true,
+                "includeQueryId": false,
+                "includeSource": true,
+                "includeTimestamp": true,
+                "includeView": true,
+                "logPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                },
+                "logQueriesEnabled": true,
+                "logResponsesEnabled": false
+            },
+            "profileDnsHW": {
+                "class": "DNS_Profile",
+                "label": "profileDnsHW",
+                "remark": "DNS Profile test",
+                "parentProfile": {
+                    "bigip": "/Common/dns"
+                },
+                "rapidResponseEnabled": false,
+                "rapidResponseLastAction": "allow",
+                "hardwareQueryValidationEnabled": true,
+                "hardwareResponseCacheEnabled": true,
+                "dnssecEnabled": false,
+                "globalServerLoadBalancingEnabled": false,
+                "dnsExpressEnabled": false,
+                "cacheEnabled": false,
+                "dns64Mode": "secondary",
+                "dns64Prefix": "0:0:0:0:0:0:0:0",
+                "dns64AdditionalSectionRewrite": "any",
+                "unhandledQueryAction": "drop",
+                "localBindServerEnabled": false,
+                "zoneTransferEnabled": true,
+                "recursionDesiredEnabled": false,
+                "securityEnabled": false,
+                "loggingEnabled": true,
+                "loggingProfile": {
+                    "use": "profileDnsLogging"
+                },
+                "statisticsSampleRate": 20
+            },
+            "profileUdp": {
+                "class": "UDP_Profile",
+                "datagramLoadBalancing": true
+            }
+
+        }
+    }
+}

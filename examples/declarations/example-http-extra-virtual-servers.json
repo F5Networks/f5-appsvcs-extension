@@ -1,0 +1,62 @@
+{
+  "class": "AS3",
+  "action": "deploy",
+  "persist": true,
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "urn:uuid:76f06c5a-b673-430d-8df4-d817cb3b9f3c",
+    "label": "Sample 3",
+    "remark": "HTTP with extra corp-only virtual",
+    "controls": {
+      "trace": true
+    },
+    "Sample_http_03": {
+      "class": "Tenant",
+      "A1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "10.0.7.10"
+          ],
+          "pool": "web_pool",
+          "persistenceMethods": [{
+            "use": "jsessionid"
+          }]
+        },
+        "pvt_vs": {
+          "class": "Service_HTTP",
+          "remark": "Serves corporate LAN clients only",
+          "virtualAddresses": [
+            [
+              "10.1.7.10",
+              "10.0.0.0/8"
+            ]
+          ],
+          "snat": "auto",
+          "pool": "web_pool"
+        },
+        "web_pool": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [{
+            "servicePort": 80,
+            "serverAddresses": [
+              "192.0.7.10",
+              "192.0.7.11"
+            ]
+          }]
+        },
+        "jsessionid": {
+          "class": "Persist",
+          "persistenceMethod": "cookie",
+          "cookieMethod": "hash",
+          "cookieName": "JSESSIONID"
+        }
+      }
+    }
+  }
+}

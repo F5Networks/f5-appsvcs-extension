@@ -1,0 +1,127 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.37.0",
+    "id": "GSLB_Sample",
+    "Sample_non_http_05": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testDomain": {
+                "class": "GSLB_Domain",
+                "domainName": "example.edu",
+                "aliases": [
+                    "another.example*" ],
+                "resourceRecordType": "A",
+                "poolLbMode": "ratio",
+                "pools": [
+                    {
+                        "ratio": 2,
+                        "use": "testPool"
+                    },
+                    {
+                        "ratio": 3,
+                        "use": "testPool2"
+                    }
+                ],
+                "iRules": [
+                    "testGSLB_iRule"
+                ]
+            },
+            "testPool": {
+               "class": "GSLB_Pool",
+                "enabled": false,
+                "lbModeAlternate": "ratio",
+                "lbModeFallback": "ratio",
+                "manualResumeEnabled": true,
+                "verifyMemberEnabled": false,
+                "qosHitRatio": 10,
+                "qosHops": 11,
+                "qosKbps": 8,
+                "qosLinkCapacity": 35,
+                "qosPacketRate": 5,
+                "qosRoundTripTime": 75,
+                "qosTopology": 3,
+                "qosVirtualServerCapacity": 2,
+                "qosVirtualServerScore": 1,
+                "members": [
+                    {
+                        "ratio": 10,
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "0"
+                    }
+                ],
+                "bpsLimit": 5,
+                "bpsLimitEnabled": true,
+                "ppsLimit": 4,
+                "ppsLimitEnabled": true,
+                "connectionsLimit": 3,
+                "connectionsLimitEnabled": true,
+                "maxAnswersReturned": 10,
+                "monitors": [
+                    {
+                        "bigip": "/Common/http"
+                    },
+                    {
+                        "bigip": "/Common/https"
+                    }
+                ],
+                "resourceRecordType": "A",
+                "fallbackIP": "1.1.1.1"
+            },
+            "testPool2": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "A"
+            },
+            "testGSLB_iRule": {
+                "class": "GSLB_iRule",
+                "iRule": {
+                    "base64": "d2hlbiBETlNfUkVRVUVTVCB7CiAgICBsb2cgbG9jYWwyLiAiR1RNIGlydWxlOiBBIEROUyByZXF1ZXN0IHdhcyBzZWVuIGZvciBbRE5TOjpxdWVzdGlvbiBuYW1lXSBzZWVuIGZyb20gW0lQOjpjbGllbnRfYWRkcl0iCn0="
+                }
+            }
+        }
+    },
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDataCenter": {
+                "class": "GSLB_Data_Center"
+            },
+            "testProberPool": {
+                "class": "GSLB_Prober_Pool",
+                "enabled": true,
+                "lbMode": "round-robin",
+                "members": []
+            },
+            "testServer": {
+                "class": "GSLB_Server",
+                "dataCenter": {
+                    "use": "testDataCenter"
+                },
+                "devices": [
+                    {
+                        "address": "1.2.3.7"
+                    }
+                ],
+                "proberPreferred": "pool",
+                "proberPool": {
+                    "use": "testProberPool"
+                },
+                "virtualServers": [
+                    {
+                        "address": "1.2.3.8",
+                        "port": 5050
+                    },
+                    {
+                        "address": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+                        "port": 5051
+                    }
+                ]
+            }
+
+        }
+    }
+}

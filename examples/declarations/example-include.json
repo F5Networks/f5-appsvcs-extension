@@ -1,0 +1,73 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.13.0",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "wordpressWafPolicy": {
+                "class": "WAF_Policy",
+                "url": "https://example.com/wordpress_template_12.0.xml",
+                "ignoreChanges": true
+            },
+            "mobileDefenseProfile": {
+                "class": "DOS_Profile",
+                "application": {
+                    "scrubbingDuration": 42,
+                    "remoteTriggeredBlackHoleDuration": 10,
+                    "mobileDefense": {
+                        "enabled": true,
+                        "allowAndroidPublishers": [{
+                            "bigip": "/Common/default.crt"
+                        }],
+                        "allowAndroidRootedDevice": true,
+                        "allowIosPackageNames": [
+                            "theName"
+                        ],
+                        "allowJailbrokenDevices": true,
+                        "allowEmulators": true,
+                        "clientSideChallengeMode": "challenge"
+                    }
+                }
+            },
+            "constants": {
+                "class": "Constants",
+                "securityCollection": {
+                    "policyWAF": {
+                        "use": "/Common/Shared/wordpressWafPolicy"
+                    },
+                    "profileDOS": {
+                        "use": "/Common/Shared/mobileDefenseProfile"
+                    }
+                }
+            }
+        }
+    },
+    "Tenant1": {
+        "class": "Tenant",
+        "Application1": {
+            "class": "Application",
+            "vipOne": {
+                "class": "Service_HTTP",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "include": [
+                    "/Common/Shared/constants/securityCollection"
+                ]
+            },
+            "vipTwo": {
+                "class": "Service_HTTP",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "192.0.2.2"
+                ],
+                "include": [
+                    "/Common/Shared/constants/securityCollection"
+                ]
+            }
+        }
+    }
+}

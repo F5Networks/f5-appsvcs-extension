@@ -1,0 +1,85 @@
+{
+  "name": "f5-appsvcs",
+  "version": "3.41.0-1",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "./scripts/build/build.sh",
+    "buildperf": "F5_PERF_TRACING_ENABLED='true' npm run build",
+    "build-schema": "node scripts/build/schema-build.js",
+    "lint": "npx eslint .",
+    "make-api-docs": "redoc-cli bundle docs/openapi.yaml",
+    "test": "npm run build-schema && mocha test/unit/ --recursive --exit",
+    "test-no-build": "mocha test/unit/ --recursive --exit",
+    "coverage": "nyc npm test",
+    "test-mutation": "npm run build-schema && npx stryker run",
+    "build-image": "./scripts/build/image-build.sh",
+    "smoke": "mocha test/integration/bigip/ --recursive --grep '__smoke'"
+  },
+  "devDependencies": {
+    "@automation-toolchain/f5-appsvcs-schema": "^0.4.37",
+    "@f5devcentral/atg-shared-utilities-dev": "^0.2.8",
+    "@f5devcentral/eslint-config-f5-atg": "^0.1.7",
+    "aws-sdk": "^2.1231.0",
+    "chai": "^4.3.6",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "7.32.0",
+    "express": "^4.18.2",
+    "f5-schema-doc": "file:packages/f5-schema-doc-0.1.0.tgz",
+    "json-schema-faker": "^0.5.0-rcv.46",
+    "mkdirp": "^1.0.4",
+    "mocha": "^10.0.0",
+    "mocha-multi-reporters": "^1.5.1",
+    "newman": "^5.3.2",
+    "nock": "10.0.0",
+    "nyc": "^15.1.0",
+    "proxyquire": "^2.1.3",
+    "rimraf": "^3.0.2",
+    "sinon": "7.5.0",
+    "winston": "^3.8.2"
+  },
+  "optionalDependencies": {
+    "@stryker-mutator/core": "^6.2.3",
+    "@stryker-mutator/mocha-runner": "^6.2.3",
+    "error": "7.2.1",
+    "jaeger-client": "^3.19.0",
+    "redoc-cli": "0.13.20"
+  },
+  "nyc": {
+    "reporter": [
+      "html",
+      "text",
+      "json-summary"
+    ],
+    "exclude": [
+      "gulpfile.js",
+      "coverage/**",
+      "docs/**",
+      "test/**",
+      "scripts/**",
+      "test/integration/services/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/src/support/**"
+    ]
+  },
+  "dependencies": {
+    "@f5devcentral/atg-shared-utilities": "^0.4.10",
+    "@f5devcentral/atg-storage": "^1.3.3",
+    "@f5devcentral/f5-teem": "^1.5.0",
+    "ajv": "6.12.6",
+    "deep-diff": "^1.0.2",
+    "fast-deep-equal": "^3.1.3",
+    "jiff": "0.7.3",
+    "jsonpointer": "^5.0.1",
+    "node-forge": "^1.3.1",
+    "semver": "5.7.1",
+    "uuid": "3.4.0",
+    "xml2js": "^0.4.23"
+  },
+  "eslintConfig": {
+    "extends": "@f5devcentral/eslint-config-f5-atg",
+    "rules": {
+      "no-control-regex": "off"
+    }
+  }
+}

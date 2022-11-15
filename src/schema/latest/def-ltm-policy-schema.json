@@ -1,0 +1,1706 @@
+{
+    "definitions": {
+        "Endpoint_Policy_Rule": {
+            "title": "Rule",
+            "description": "A rule for an Endpoint policy that describes actions to perform on traffic matching given conditions",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "title": "Name",
+                    "description": "Name of the endpoint policy rule",
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_\\-.:%]+$",
+                    "maxLength": 64000
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "conditions": {
+                    "title": "Conditions",
+                    "description": "Specifies the conditions for the rule to apply",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Policy_Condition" },
+                    "default": []
+                },
+                "actions": {
+                    "title": "Actions",
+                    "description": "Specifies the actions for the rule to execute",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Policy_Action" },
+                    "default": []
+                }
+            },
+            "additionalProperties": false,
+            "required": ["name"]
+        },
+
+        "Endpoint_Policy": {
+            "title": "Endpoint_Policy",
+            "description": "Policy to manage connections based on metadata and content",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Endpoint_Policy"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "rules": {
+                    "title": "Rules",
+                    "description": "List of policy rules, order is significant",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Endpoint_Policy_Rule" }
+                },
+                "strategy": {
+                    "title": "Strategy",
+                    "description": "Rule-matching strategy; value 'custom' means BIG-IP AS3 requires a custom strategy (default is best-match)",
+                    "type": "string",
+                    "enum": [
+                        "all-match", "best-match", "first-match", "custom"
+                    ],
+                    "default": "best-match"
+                },
+                "customStrategy": {
+                    "title": "Custom strategy",
+                    "description": "BIG-IP AS3 pointer to custom strategy declaration",
+                    "if": { "type": "string" },
+                    "then": {
+                        "minLength": 1,
+                        "f5PostProcess": {
+                            "tag": "pointer",
+                            "data": {
+                                "properties": {
+                                    "class": { "const": "Endpoint_Strategy" }
+                                },
+                                "required": [ "class" ]
+                            }
+                        }
+                    },
+                    "else": {
+                        "type": "object",
+                        "properties": {
+                            "bigip": {
+                                "title": "BIG-IP LTM strategy",
+                                "description": "Pathname of existing BIG-IP LTM strategy",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "required": [ "bigip" ],
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query ltm policy-strategy"]
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false,
+
+            "dependencies": {
+                "strategy": {
+                    "if": { "properties": { "strategy": { "const": "custom" } } },
+                    "then": { "required": [ "customStrategy" ] }
+                }
+            },
+
+            "required": [ "class" ]
+        },
+
+        "Endpoint_Strategy": {
+            "title": "Endpoint_Strategy",
+            "description": "Strategy for evaluation of an Endpoint policy",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Endpoint_Strategy"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "matchMethod": {
+                    "title": "Match method",
+                    "description": "Specifies the match method",
+                    "type": "string",
+                    "enum": [ "all-match", "best-match", "first-match" ]
+                },
+                "operands": {
+                    "title": "Operands",
+                    "description": "Specifies the attribute for the rule to match. Sometimes this represents a specific value (for example, http-method or http-status), but frequently the operand needs a specific Selector to identify an instance (for example, http-header needs a Selectorname parameter).",
+                    "type": "array",
+                    "items": {
+                        "title": "Operand",
+                        "type": "string"
+                    }
+                }
+            },
+            "additionalProperties": false,
+
+            "required": [ "class", "matchMethod" ]
+        },
+
+        "Policy_Action": {
+            "type": "object",
+            "description": "LTM policy action",
+            "properties": {
+                "type": {
+                    "description": "Selects the LTM policy action this object describes",
+                    "type": "string",
+                    "enum": [
+                        "http",
+                        "httpCookie",
+                        "httpHeader",
+                        "httpRedirect",
+                        "httpUri",
+                        "waf",
+                        "forward",
+                        "drop",
+                        "clientSsl",
+                        "persist",
+                        "tcl",
+                        "log"
+                    ]
+                }
+            },
+
+            "allOf": [
+                {
+                    "if": { "properties": { "type": { "const": "http" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_HTTP" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "waf" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_WAF" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "forward" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Forward" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "drop" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Drop" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpRedirect" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_HTTP_Redirect" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpHeader" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_HTTP_Header" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpUri" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_HTTP_URI" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpCookie" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_HTTP_Cookie" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "serverSsl" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Client_SSL" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "persist" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Persist" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "tcl" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_TCL" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "log" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Log" }
+                }
+            ],
+
+            "required": ["type"]
+        },
+
+        "Policy_Action_HTTP": {
+            "type": "object",
+            "description": "Provides the ability to enable or disable BIG-IP's HTTP filter processing",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "client-accepted",
+                        "proxy-request",
+                        "request",
+                        "response",
+                        "server-connected"
+                    ],
+                    "default": "request"
+                },
+                "enabled": {
+                    "description": "Enable BIG-IP's HTTP filter processing",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "required": []
+        },
+
+        "Policy_Action_WAF": {
+            "type": "object",
+            "description": "Control web security",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "client-accepted",
+                        "proxy-request",
+                        "request"
+                    ],
+                    "default": "request"
+                },
+                "policy": {
+                    "$ref": "#/definitions/Pointer_WAF_Policy"
+                }
+            },
+            "required": []
+        },
+
+        "Policy_Action_Drop": {
+            "type": "object",
+            "description": "Reset connection",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "proxy-request",
+                        "request",
+                        "ssl-client-hello"
+                    ],
+                    "default": "ssl-client-hello"
+                }
+            }
+        },
+
+        "Policy_Action_Forward_Select": {
+            "description": "Select appropriate location for forwarding the connection based on specified parameters",
+            "type": "object",
+            "allOf": [
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pool": {
+                                    "$ref": "#/definitions/Pointer_Pool"
+                                }
+                            },
+                            "required": ["pool"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "service": {
+                                    "$ref": "#/definitions/Pointer_Service"
+                                }
+                            },
+                            "required": ["service"]
+                        }
+                    ]
+                },
+                {
+                    "properties": {
+                        "snat": {
+                            "description": "Controls SNAT Automap",
+                            "type": "string",
+                            "enum": [
+                                "disable",
+                                "automap"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+
+        "Policy_Action_Forward": {
+            "description": "Controls where the system forwards a connection",
+            "type": "object",
+            "allOf": [
+                {
+                    "properties": {
+                        "event": {
+                            "type": "string",
+                            "description": "When to run this event in the request-response cycle",
+                            "enum": [
+                                "ssl-client-hello",
+                                "request"
+                            ],
+                            "default": "ssl-client-hello"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "select": {
+                                    "description": "Select appropriate location for forwarding the connection based on specified parameters",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Action_Forward_Select" }
+                                    ]
+                                }
+                            },
+                            "required": ["select"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Action_HTTP_Redirect": {
+            "type": "object",
+            "description": "Redirect an HTTP request to a different URL",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "proxy-request",
+                        "request",
+                        "response"
+                    ],
+                    "default": "proxy-request"
+                },
+                "location": {
+                    "description": "The new URL for which the system will send a redirect response; you can use a Tcl command substitution for this field",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "HTTP status code for the redirect. Note: code is only supported in TMOS version 14.0+.",
+                    "type": "integer",
+                    "minimum": 300,
+                    "maximum": 399
+                }
+            },
+            "required": ["location"]
+        },
+
+        "Policy_Action_HTTP_Header": {
+            "type": "object",
+            "description": "Modify HTTP header in request or response",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "type": "string",
+                            "description": "When to run this event in the request-response cycle",
+                            "enum": [
+                                "request",
+                                "response"
+                            ],
+                            "default": "request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "replace": {
+                                    "type": "object",
+                                    "description": "Replace HTTP header in request or response",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of HTTP header"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "New value for HTTP header; you can use a Tcl command substitution for this field"
+                                        }
+                                    },
+                                    "required": ["name", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["replace"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "insert": {
+                                    "type": "object",
+                                    "description": "Insert HTTP header into request or response",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of HTTP header"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "New value for HTTP header; you can use a Tcl command substitution for this field"
+                                        }
+                                    },
+                                    "required": ["name", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["insert"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "remove": {
+                                    "type": "object",
+                                    "description": "Remove HTTP header from request or response",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of HTTP header"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["remove"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Action_HTTP_URI": {
+            "type": "object",
+            "description": "Modify the request's URI, path, or query string",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "request"
+                    ],
+                    "default": "request"
+                },
+                "replace": {
+                    "type": "object",
+                    "description": "Replace URI, path, or query string in request",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": "New value for URI; you can use a Tcl command substitution for this field"
+                                }
+                            },
+                            "required": ["value"],
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "type": "string",
+                                    "description": "New value for path; you can use a Tcl command substitution for this field"
+                                }
+                            },
+                            "required": ["path"],
+                            "additionalProperties": false
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "queryString": {
+                                    "type": "string",
+                                    "description": "New value for query string; you can use a Tcl command substitution for this field"
+                                }
+                            },
+                            "required": ["queryString"],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "required": ["replace"]
+        },
+
+        "Policy_Action_HTTP_Cookie": {
+            "type": "object",
+            "description": "Modify the request's \"Cookie:\" header",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "type": "string",
+                            "description": "When to run this event in the request-response cycle",
+                            "enum": [
+                                "request"
+                            ],
+                            "default": "request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "insert": {
+                                    "type": "object",
+                                    "description": "Insert HTTP \"Cookie:\" header into request",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of HTTP cookie"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "description": "New value for HTTP cookie; you can use a Tcl command substitution for this field"
+                                        }
+                                    },
+                                    "required": ["name", "value"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["insert"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "remove": {
+                                    "type": "object",
+                                    "description": "Remove HTTP \"Cookie:\" header from request",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Name of HTTP cookie"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["remove"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Action_Client_SSL": {
+            "type": "object",
+            "description": "Enable or disable encrypted connections to backend servers",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "client-accepted",
+                        "proxy-request",
+                        "request",
+                        "proxy-connect",
+                        "proxy-response",
+                        "server-connected"
+                    ],
+                    "default": "client-accepted"
+                },
+                "enabled": {
+                    "description": "Enable encrypted connections to backend servers",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "required": []
+        },
+
+        "Policy_Action_Persist": {
+            "type": "object",
+            "description": "Control over how a connection is persisted",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "type": "string",
+                            "description": "When to run this event in the request-response cycle",
+                            "enum": [
+                                "client-accepted",
+                                "proxy-request",
+                                "request"
+                            ],
+                            "default": "client-accepted"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "disable": {
+                                    "type": "object",
+                                    "title": "Disable",
+                                    "description": "Disable persistence. When specifying set this property to an empty object (disable: {}).",
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["disable"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "sourceAddress": {
+                                    "type": "object",
+                                    "title": "Source Address",
+                                    "description": "Persist the connection based on the source IP address",
+                                    "properties": {
+                                        "netmask": {
+                                            "title": "Network Mask",
+                                            "type": "string",
+                                            "description": "Network mask",
+                                            "format": "f5ip"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["netmask", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["sourceAddress"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "destinationAddress": {
+                                    "type": "object",
+                                    "title": "Destination Address",
+                                    "description": "Persist the connection based on the destination IP address",
+                                    "properties": {
+                                        "netmask": {
+                                            "title": "Network Mask",
+                                            "type": "string",
+                                            "description": "Network mask",
+                                            "format": "f5ip"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["netmask", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["destinationAddress"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "cookieInsert": {
+                                    "type": "object",
+                                    "title": "Cookie Insert",
+                                    "description": "Persist the connection using cookie insertion",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Name",
+                                            "description": "Name of cookie"
+                                        },
+                                        "expiry": {
+                                            "type": "string",
+                                            "title": "Expiry",
+                                            "description": "Expiration duration expressed as [Nd][HH:MM[:SS]]"
+                                        }
+                                    },
+                                    "required": ["name", "expiry"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["cookieInsert"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "cookieRewrite": {
+                                    "type": "object",
+                                    "title": "Cookie Rewrite",
+                                    "description": "Persist the connection using cookie rewrite",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Name",
+                                            "description": "Name of cookie"
+                                        },
+                                        "expiry": {
+                                            "type": "string",
+                                            "title": "Expiry",
+                                            "description": "Expiration duration expressed as [Nd][HH:MM[:SS]]"
+                                        }
+                                    },
+                                    "required": ["name", "expiry"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["cookieRewrite"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "cookiePassive": {
+                                    "type": "object",
+                                    "title": "Cookie Passive",
+                                    "description": "Persist the connection using cookie passive",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Name",
+                                            "description": "Name of cookie"
+                                        }
+                                    },
+                                    "required": ["name"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["cookiePassive"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "cookieHash": {
+                                    "type": "object",
+                                    "title": "Cookie Hash",
+                                    "description": "Persist the connection using cookie hash",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Name",
+                                            "description": "Name of cookie"
+                                        },
+                                        "offset": {
+                                            "type": "integer",
+                                            "title": "Offset",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Offset into hash"
+                                        },
+                                        "length": {
+                                            "type": "integer",
+                                            "title": "Length",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Substring length"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["name", "offset", "length", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["cookieHash"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "universal": {
+                                    "type": "object",
+                                    "title": "Universal",
+                                    "description": "Persist the connection using a user-defined key",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "title": "Key",
+                                            "description": "The key to use. Tcl command substitution is allowed"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["key", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["universal"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "hash": {
+                                    "type": "object",
+                                    "title": "Hash",
+                                    "description": "Persist the connection using the hash of a key",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "title": "Key",
+                                            "description": "The key to use. Tcl command substitution is allowed"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["key", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["hash"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "carp": {
+                                    "type": "object",
+                                    "title": "Cache Array Routing Protocol (CARP)",
+                                    "description": "Persist the connection using Cache Array Routing Protocol (CARP) algorithm",
+                                    "properties": {
+                                        "key": {
+                                            "type": "string",
+                                            "title": "Key",
+                                            "description": "The key to use. Tcl command substitution is allowed"
+                                        },
+                                        "timeout": {
+                                            "title": "Timeout",
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 65535,
+                                            "description": "Timeout value in seconds"
+                                        }
+                                    },
+                                    "required": ["key", "timeout"],
+                                    "additionalProperties": false
+                                }
+                            },
+                            "required": ["carp"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Action_TCL": {
+            "type": "object",
+            "description": "Set a Tcl variable in runtime environment",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "proxy-request",
+                        "request",
+                        "response",
+                        "ssl-client-hello",
+                        "ssl-server-hello",
+                        "ssl-server-handshake"
+                    ],
+                    "default": "request"
+                },
+                "setVariable": {
+                    "type": "object",
+                    "description": "Set a Tcl variable in the runtime environment",
+                    "properties": {
+                        "expression": {
+                            "type": "string",
+                            "description": "Tcl expression to evaluate"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Name of variable"
+                        }
+                    },
+                    "required": ["expression", "name"]
+                }
+            },
+            "required": ["setVariable"]
+        },
+
+        "Policy_Action_Log": {
+            "type": "object",
+            "description": "Writes messages to local or remote system log",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "classification-detected",
+                        "client-accepted",
+                        "proxy-connect",
+                        "proxy-request",
+                        "proxy-response",
+                        "request",
+                        "response",
+                        "server-connected",
+                        "ssl-client-hello",
+                        "ssl-client-serverhello-send",
+                        "ssl-server-handshake",
+                        "ssl-server-hello",
+                        "ws-request",
+                        "ws-response"
+                    ],
+                    "default": "ssl-client-hello"
+                },
+                "write": {
+                    "type": "object",
+                    "description": "Write a message to the system log files",
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "description": "The message to write to the system log. Can also be a Tcl command substitution",
+                            "minLength": 1
+                        },
+                        "facility": {
+                            "type" :"string",
+                            "description": "Standard syslog facility associated with the message",
+                            "enum": [
+                                "authpriv",
+                                "cron",
+                                "daemon",
+                                "ftp",
+                                "kern",
+                                "local0",
+                                "local1",
+                                "local2",
+                                "local3",
+                                "local4",
+                                "local5",
+                                "local6",
+                                "local7",
+                                "lpr",
+                                "mail",
+                                "news",
+                                "security",
+                                "user",
+                                "uucp"
+                            ],
+                            "default": "local0"
+                        },
+                        "priority": {
+                            "type": "string",
+                            "description": "Standard syslog priority associated with the message",
+                            "enum": [
+                                "crit",
+                                "debug",
+                                "error",
+                                "info",
+                                "notice",
+                                "warning"
+                            ],
+                            "default": "info"
+                        },
+                        "ipAddress": {
+                            "type": "string",
+                            "description": "The IP address of the remote syslog server",
+                            "format": "f5ip"
+                        },
+                        "port": {
+                            "type": "integer",
+                            "description": "The port number of the remote syslog server",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "default": 0
+                        }
+                    },
+                    "required": ["message"]
+                }
+            },
+            "required": ["write"]
+        },
+
+        "Policy_Condition": {
+            "type": "object",
+            "description": "LTM policy condition",
+            "properties": {
+                "type": {
+                    "description": "Selects the LTM policy condition this object describes",
+                    "type": "string",
+                    "enum": [
+                        "httpHeader",
+                        "httpMethod",
+                        "httpUri",
+                        "httpCookie",
+                        "sslExtension",
+                        "tcp"
+                    ]
+                }
+            },
+
+            "allOf": [
+                {
+                    "if": { "properties": { "type": { "const": "httpUri" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_URI" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpHeader" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Header" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpMethod" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Method" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpCookie" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Cookie" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "sslExtension" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_SSL_Extension" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "tcp" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_TCP" }
+                }
+            ],
+
+            "required": ["type"]
+        },
+
+
+        "Policy_Condition_HTTP_URI": {
+            "description": "Inspect the URI on a request and match on various parts or the entire URI",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-request",
+                                "request"
+                            ],
+                            "default": "request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "path": {
+                                    "description": "Match on the URI path",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["path"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "scheme": {
+                                    "description": "Match on the scheme (e.g. http, https, ftp, file)",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["scheme"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "description": "Match on the hostname in the URI",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["host"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "port": {
+                                    "description": "Match on the port number in the URI",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_Number" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["port"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "extension": {
+                                    "description": "Match on the file extension in the URI (e.g. jpg, html, cgi)",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["extension"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "queryString": {
+                                    "description": "Match against text in the query string",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["queryString"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "queryParameter": {
+                                    "description": "Match value of the named query parameter from the query string",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "name": {
+                                    "description": "Specify the name of the particular query parameter whose value you want to use",
+                                    "type": "string"
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["queryParameter", "name"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "unnamedQueryParameter": {
+                                    "description": "Match the value of a query parameter by a numeric index instead of by name",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "index": {
+                                    "description": "The numeric order of the item whose value you want to use, start at 1; negative values indicate counting right to left",
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["unnamedQueryParameter", "index"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pathSegment": {
+                                    "description": "Match a part of the URI path by a numeric index",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "index": {
+                                    "description": "The numeric order of the item whose value you want to use, start at 1; negative values indicate counting right to left",
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["pathSegment", "index"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "all": {
+                                    "description": "Match on the full URI",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "normalized": {
+                                    "description": "Normalizes the result to a canonical form to allow consistent comparisons",
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            },
+                            "required": ["all"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_HTTP_Header": {
+            "description": "Match against any HTTP header",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-request",
+                                "request",
+                                "proxy-connect",
+                                "proxy-response",
+                                "response"
+                            ],
+                            "default": "proxy-request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "all": {
+                                    "description": "Match on the full HTTP header",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "name": {
+                                    "description": "Specify the name of the particular HTTP header whose value you want to use",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["all", "name"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_HTTP_Method": {
+            "description": "Match against any HTTP method",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-request",
+                                "request"
+                            ],
+                            "default": "proxy-request"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "all": {
+                            "description": "Match on the full HTTP method",
+                            "allOf": [
+                                { "$ref": "#/definitions/Policy_Compare_String" }
+                            ]
+                        }
+                    },
+                    "required": ["all"]
+                }
+            ]
+        },
+
+        "Policy_Condition_HTTP_Cookie": {
+            "description": "Inspect an HTTP request Cookie: header",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-request",
+                                "request",
+                                "proxy-connect"
+                            ],
+                            "default": "proxy-request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "all": {
+                                    "description": "Match on the full HTTP cookie",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "name": {
+                                    "description": "Specify the name of the particular HTTP cookie whose value you want to use",
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["all", "name"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_SSL_Extension": {
+            "description": "Inspect SSL extensions being negotiated during HELLO phase",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": ["ssl-client-hello", "ssl-server-hello"],
+                            "default": "ssl-client-hello"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "serverName": {
+                                    "description": "Server name indication",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["serverName"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "npn": {
+                                    "description": "Server name indication",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "index": {
+                                    "description": "The numeric order of the item whose value you want to use, start at 1; negative values indicate counting right to left",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "default": 0
+                                }
+                            },
+                            "required": ["npn"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "alpn": {
+                                    "description": "Server name indication",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                },
+                                "index": {
+                                    "description": "The numeric order of the item whose value you want to use, start at 1; negative values indicate counting right to left",
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "default": 0
+                                }
+                            },
+                            "required": ["alpn"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_TCP": {
+            "description": "Match against specific TCP properties",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "request",
+                                "response",
+                                "classification-detected",
+                                "client-accepted",
+                                "proxy-connect",
+                                "proxy-request",
+                                "proxy-response",
+                                "server-connected",
+                                "ssl-client-hello",
+                                "ssl-client-serverhello-send",
+                                "ssl-server-handshake",
+                                "ssl-server-hello",
+                                "ws-request",
+                                "ws-response"
+                            ],
+                            "default": "request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "address": {
+                                    "description": "Specify the address to use",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Match_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["address"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "port": {
+                                    "description": "Specify the port to use",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_Number" }
+                                    ]
+                                }
+                            },
+                            "required": ["port"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Compare_String": {
+            "description": "Perform a comparison against string values",
+            "type": "object",
+            "properties": {
+                "operand": {
+                    "description": "Specifies the comparison the system should perform with values. The operands exists and does-not-exist do not accept values and are available on BIGIP 15.0 and above.",
+                    "type": "string",
+                    "enum": [
+                        "equals",
+                        "does-not-equal",
+                        "starts-with",
+                        "does-not-start-with",
+                        "ends-with",
+                        "does-not-end-with",
+                        "contains",
+                        "does-not-contain",
+                        "exists",
+                        "does-not-exist"
+                    ],
+                    "default": "equals"
+                },
+                "values": {
+                    "description": "A list of strings to do comparisons against",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "datagroup": {
+                    "description": "Reference to a data-group containing the values",
+                    "$ref": "#/definitions/Datagroup_Value"
+                },
+                "caseSensitive": {
+                    "description": "Specifies if the comparison the system should perform with case sensitivity",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "dependencies": {
+                "operand": {
+                    "if": {
+                        "allOf": [
+                            { "properties": { "operand": { "not": { "const": "exists" } } } },
+                            { "properties": { "operand": { "not": { "const": "does-not-exist" } } } }
+                        ]
+                    },
+                    "then": {
+                        "oneOf": [
+                            { "required": [ "values" ] },
+                            { "required": [ "datagroup" ] }
+                        ]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Policy_Compare_Number": {
+            "description": "Perform a comparison against number values",
+            "type": "object",
+            "properties": {
+                "operand": {
+                    "description": "Specifies the comparison the system should perform with values",
+                    "type": "string",
+                    "enum": [
+                        "equals",
+                        "does-not-equal",
+                        "less",
+                        "greater",
+                        "less-or-equal",
+                        "greater-or-equal"
+                    ],
+                    "default": "equals"
+                },
+                "values": {
+                    "description": "A list of numbers to do comparisons against",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["values"],
+            "additionalProperties": false
+        },
+
+        "Policy_Match_String": {
+            "description": "Perform a comparison that either matches or does-not-match",
+            "type": "object",
+            "properties": {
+                "operand": {
+                    "description": "Specifies the comparison",
+                    "type": "string",
+                    "enum": [
+                        "matches",
+                        "does-not-match"
+                    ],
+                    "default": "matches"
+                },
+                "values": {
+                    "description": "A list of strings to compare against",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "datagroup": {
+                    "description": "Reference to a data-group containing the values",
+                    "$ref": "#/definitions/Datagroup_Value"
+                }
+            },
+            "oneOf": [
+                { "required": [ "values" ] },
+                { "required": [ "datagroup" ] }
+            ],
+            "additionalProperties": false
+        },
+
+        "Datagroup_Value": {
+            "description": "Reference to a data-group containing the values",
+            "type": "object",
+            "properties": {
+                "bigip": {
+                    "title": "BIG-IP Data-Group",
+                    "description": "Pathname of existing BIG-IP Data-Group",
+                    "type": "string",
+                    "format": "f5bigip"
+                },
+                "use": {
+                    "title": "Use",
+                    "description": "BIG-IP AS3 pointer to Data_Group",
+                    "type": "string",
+                    "minLength": 1,
+                    "f5PostProcess": {
+                        "tag": "pointer",
+                        "data": {
+                            "properties": {
+                                "class": {
+                                    "const": "Data_Group"
+                                }
+                            },
+                            "required": [
+                                "class"
+                            ]
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1,
+            "maxProperties": 1,
+            "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": ["query ltm data-group internal"]
+            }
+        }
+    }
+}

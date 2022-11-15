@@ -1,0 +1,26 @@
+{
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "target": {
+            "address": "192.0.2.200"
+        },
+        "schemaVersion": "3.6.0",
+        "id": "TEST_Service_HTTP",
+        "TestApp1": {
+            "class": "Tenant",
+            "testHttpApp1": {
+                "class": "Application",
+                "schemaOverlay": "template1",
+                "service": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": ["192.0.2.10"],
+                    "pool": "pool"
+                },
+                "pool": {
+                    "class": "Pool"
+                }
+            }
+        }
+    }
+}

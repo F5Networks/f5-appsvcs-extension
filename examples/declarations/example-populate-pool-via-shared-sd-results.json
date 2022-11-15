@@ -1,0 +1,65 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.23.0",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App80": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                  "10.0.6.10"
+                ],
+                "pool": "pool1"
+            },
+            "service2": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                  "10.0.6.11"
+                ],
+                "pool": "pool2"
+            },        
+            "discoveryObject": {
+                "class": "Address_Discovery",
+                "addressDiscovery": "aws",
+                "updateInterval": 60,
+                "tagKey": "foo",
+                "tagValue": "bar",
+                "addressRealm": "private",
+                "region": "us-east-2",
+                "accessKeyId": "keyId",
+                "secretAccessKey": "secret",
+                "credentialUpdate": false
+            },
+            "pool1": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "addressDiscovery": {
+                            "use": "discoveryObject"
+                        }
+                    }
+                ]
+            },
+            "pool2": {
+                "class": "Pool",
+                "monitors": [
+                    "http",
+                    "https"
+                ],
+                "members": [
+                    {
+                        "servicePort": 8080,
+                        "addressDiscovery": {
+                            "use": "discoveryObject"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

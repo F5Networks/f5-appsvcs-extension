@@ -1,0 +1,91 @@
+[
+    {
+        "class": "ADC",
+        "id": "myid1",
+        "schemaVersion": "3.7.0",
+        "target": {
+            "address": "10.10.10.13"
+        },
+        "bigiqTenant1": {
+            "class": "Tenant",
+            "fastl4": {
+                "class": "Application",
+                "label": "simple tcp app VS_TCP",
+                "service": {
+                    "class": "Service_L4",
+                    "persistenceMethods": [],
+                    "pool": "pool",
+                    "profileL4": {
+                        "bigip": "/Common/fastL4"
+                    },
+                    "snat": "auto",
+                    "virtualAddresses": [
+                        "10.11.11.121"
+                    ],
+                    "virtualPort": 80
+                },
+                "pool": {
+                    "class": "Pool",
+                    "members": [
+                        {
+                            "serverAddresses": [
+                                "192.168.128.112"
+                            ],
+                            "servicePort": 8080
+                        }
+                    ],
+                    "monitors": [
+                        {
+                            "bigip": "/Common/tcp"
+                        }
+                    ],
+                    "remark": "fastl4"
+                }
+            }
+        }
+    },
+    {
+        "class": "ADC",
+        "id": "myid2",
+        "schemaVersion": "3.7.0",
+        "target": {
+            "address": "10.10.10.14"
+        },
+        "bigiqTenant2": {
+            "class": "Tenant",
+            "fastl4": {
+                "class": "Application",
+                "label": "simple tcp app VS_TCP",
+                "service": {
+                    "class": "Service_L4",
+                    "pool": "pool",
+                    "profileL4": {
+                        "bigip": "/Common/fastL4"
+                    },
+                    "snat": "auto",
+                    "virtualAddresses": [
+                        "10.11.11.131"
+                    ],
+                    "virtualPort": 80
+                },
+                "pool": {
+                    "class": "Pool",
+                    "members": [
+                        {
+                            "serverAddresses": [
+                                "192.168.128.113"
+                            ],
+                            "servicePort": 8080
+                        }
+                    ],
+                    "monitors": [
+                        {
+                            "bigip": "/Common/tcp"
+                        }
+                    ],
+                    "remark": "fastl4"
+                }
+            }
+        }
+    }
+]

@@ -1,0 +1,18 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "id": "WAF_Policy",
+    "TEST_WAF_Policy": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "waf_policy_example": {
+                "class": "WAF_Policy",
+                "url": {
+                    "url": "https://mycompany/asm_policy/my_waf.xml",
+                    "skipCertificateCheck": true
+                }
+            }
+        }
+    }
+}

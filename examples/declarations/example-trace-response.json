@@ -1,0 +1,26 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.18.0",
+    "id": "traceResponse",
+    "controls": {
+        "class": "Controls",
+        "traceResponse": false
+    },
+    "trace_tenant": {
+        "class": "Tenant",
+        "controls": {
+            "class": "Controls",
+            "traceResponse": true
+        },
+        "SampleApp": {
+            "class": "Application",
+            "Sample_service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "virtualPort": 100
+            }
+        }
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.35.0",
+    "id": "Pool",
+    "Sample_event_sd": {
+        "class": "Tenant",
+        "My_app": {
+            "class": "Application",
+            "My_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 8080,
+                        "addressDiscovery": "static",
+                        "serverAddresses": [
+                            "192.0.2.2",
+                            "192.0.2.3"
+                        ],
+                        "servers": [
+                            {
+                                "name": "myNode1.example.com",
+                                "address": "192.0.2.10"
+                            },
+                            {
+                                "name": "myNode2.example.com",
+                                "address": "192.0.2.11"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

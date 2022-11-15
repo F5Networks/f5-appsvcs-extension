@@ -1,0 +1,44 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.31.0",
+    "id": "HTML_Profile",
+    "TEST_HTML_Profile": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 123,
+                "virtualAddresses": [
+                    "192.0.2.100"
+                ],
+                "profileHTML": {
+                    "use": "htmlProfile"
+                }
+            },
+            "htmlProfile": {
+                "class": "HTML_Profile",
+                "contentDetectionEnabled": true,
+                "contentSelection": [
+                    "text/html",
+                    "text/xhtml"
+                ],
+                "rules": [
+                    {
+                        "use": "htmlRule"
+                    }
+                ]
+            },
+            "htmlRule": {
+                "class": "HTML_Rule",
+                "ruleType": "tag-append-html",
+                "content": "some content here",
+                "match": {
+                    "attributeName": "pie",
+                    "attributeValue": "apple",
+                    "tagName": "/dessert"
+                }
+            }
+        }
+    }
+}

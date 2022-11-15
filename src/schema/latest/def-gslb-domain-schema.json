@@ -1,0 +1,273 @@
+{
+    "definitions": {
+        "GSLB_Domain": {
+            "title": "GSLB_Domain",
+            "description": "Configures GSLB (Global Server Load Balancing) settings for a domain.",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Domain"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "domainName": {
+                    "title": "Domain Name",
+                    "description": "The name of the domain for the site content you are load balancing. If you have many domains, you can use two different wildcard characters, * and ?, to represent one or more characters in the domain alias, which reduces the number of aliases you have to add to the configuration",
+                    "type": "string",
+                    "minLength": 3
+                },
+                "aliases": {
+                    "title": "Aliases",
+                    "description": "List of alternate domain names. Each may include wildcard characters.",
+                    "type": "array",
+                    "items": {
+                        "title": "GSLB domain name",
+                        "type": "string",
+                        "minLength": 3
+                    }
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the domain and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "resourceRecordType": {
+                    "title": "Resource Record (RR) Type",
+                    "description": "Specifies the type of resource records for this domain",
+                    "type": "string",
+                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                },
+                "pools": {
+                    "title": "Pools",
+                    "description": "Specifies the pools that this domain uses for load balancing. The system evaluates the pools in the order in which they are listed, until it finds a matching pool",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to GSLB Pool declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": {
+                                                "const": "GSLB_Pool"
+                                            }
+                                        },
+                                        "required": ["class"]
+                                    }
+                                }
+                            },
+                            "ratio": {
+                                "title": "Ratio weight",
+                                "description": "Ratio weight assigned to GSLB pool",
+                                "type": "integer",
+                                "default": 1
+                            }
+                        },
+                        "additionalProperties": false,
+                        "dependencies": {
+                            "ratio": { "minProperties": 2, "maxProperties": 2 },
+                            "use": { "minProperties": 1, "maxProperties": 2 }
+                        }
+                    }
+                },
+                "poolsCname": {
+                    "title": "Pools Cname",
+                    "description": "Specifies the cname pools this domain uses for load balancing. The system evaluates the pools in the order in which they are listed, until it finds a matching pool",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_GSLB_Pool"
+                    }
+                },
+                "poolLbMode": {
+                    "title": "Pool Load Balancing Mode",
+                    "description": "Specifies the load balancing method used to select a pool in this domain",
+                    "type": "string",
+                    "enum": [ "global-availability", "ratio", "round-robin", "topology" ],
+                    "default":"round-robin"
+                },
+                "lastResortPool": {
+                    "title": "Last Resort Pool",
+                    "description": "Specifies the pools this domain uses for load balancing. The system evaluates the pools in the order in which they are listed, until it finds a matching pool",
+                    "$ref": "#/definitions/Pointer_GSLB_Pool"
+                },
+                "lastResortPoolType": {
+                    "title": "Last Resort Pool type",
+                    "description": "This is used to specify the type of pool being used for the lastResortPool",
+                    "type": "string",
+                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                },
+                "iRules": {
+                    "title": "iRules",
+                    "description": "List of GSLB iRules for this GSLB Domain (order is significant)",
+                    "type": "array",
+                    "items": {
+                        "title": "iRule",
+                        "description": "BIG-IP AS3 pointer to GSLB_iRule (declared separately)",
+                        "if": { "type": "string" },
+                        "then": {
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "GSLB_iRule" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        },
+                        "else": {
+                            "type": "object",
+                            "properties": {
+                                "bigip": {
+                                    "title": "BIG-IP GTM iRule",
+                                    "description": "Pathname of existing BIG-IP GTM iRule",
+                                    "type": "string",
+                                    "format": "f5bigip"
+                                },
+                                "use": {
+                                    "title": "Use",
+                                    "description": "BIG-IP AS3 pointer to GSLB_iRule (declared separately)",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "f5PostProcess": {
+                                        "tag": "pointer",
+                                        "data": {
+                                            "properties": {
+                                                "class": { "const": "GSLB_iRule" }
+                                            },
+                                            "required": [
+                                                "class"
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "minProperties": 1,
+                            "maxProperties": 1,
+                            "f5PostProcess": {
+                                "tag": "bigComponent",
+                                "data": ["query gtm rule"]
+                            }
+                        }
+                    },
+                    "$comment": "uniqueItems: true"
+                },
+                "persistenceEnabled": {
+                    "title": "Persistence",
+                    "description": "Specifies that when a local DNS server makes repetitive requests on behalf of a client, the system reconnects the client to the same resource as previous requests. Set to true to enable.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "persistCidrIpv4": {
+                    "title": "PersistCidrIpv4",
+                    "description": "Specifies a mask used to group IPv4 LDNS addresses.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 32,
+                    "default": 32
+                },
+                "persistCidrIpv6": {
+                    "title": "PersistCidrIpv6",
+                    "description": "Specifies a mask used to group IPv6 LDNS addresses.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 128,
+                    "default": 128
+                },
+                "ttlPersistence": {
+                    "title": "TTL Persistence",
+                    "description": "Specifies, in seconds, the length of time for which a persistence entry is valid.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 3600
+                }
+            },
+            "if": {
+                "properties": {
+                    "pools": {}
+                },
+                "required": [
+                    "pools"
+                ]
+            },
+            "then": {
+                "not": {
+                    "properties": {
+                        "poolsCname": {}
+                    },
+                    "required": [
+                        "poolsCname"
+                    ]
+                }
+            },
+            "required": [ "resourceRecordType", "domainName" ]
+        },
+
+        "GSLB_Domain_A": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for A domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_Domain_AAAA": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for AAAA domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_Domain_CNAME": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for CNAME domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_Domain_MX": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for MX domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_iRule": {
+            "title": "GSLB_iRule",
+            "description": "Specifies or configures an iRule for use in GSLB Domains",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_iRule"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "expand": {
+                    "title": "Expand",
+                    "description": "If true (default), expand backquoted variables in iRule",
+                    "type": "boolean",
+                    "default": true
+                },
+                "iRule": {
+                    "$ref": "#/definitions/iRule_Core"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class", "iRule" ]
+        }
+    }
+}

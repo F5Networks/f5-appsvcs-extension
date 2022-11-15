@@ -1,0 +1,34 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "id": "DOS_Profile",
+    "Sample_DOS_NetVector": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "DOS_NetVector": {
+                "class": "DOS_Profile",
+                "network": {
+                    "vectors": [{
+                        "type": "ip-low-ttl",
+                        "state": "learn-only",
+                        "thresholdMode": "manual",
+                        "rateThreshold": 40000,
+                        "rateIncreaseThreshold": 600,
+                        "rateLimit": 1000000,
+                        "simulateAutoThresholdEnabled": true
+                    },
+                    {
+                        "type": "non-tcp-connection",
+                        "state": "learn-only",
+                        "thresholdMode": "manual",
+                        "rateThreshold": 40000,
+                        "rateIncreaseThreshold": 600,
+                        "rateLimit": 1000000,
+                        "simulateAutoThresholdEnabled": true
+                    }]
+                }
+            }
+        }
+    }
+}

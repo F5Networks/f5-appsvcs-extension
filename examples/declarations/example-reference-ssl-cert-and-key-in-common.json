@@ -1,0 +1,55 @@
+{
+    "class": "ADC",
+    "id": "myid",
+    "schemaVersion": "3.0.0",
+    "controls": {
+      "class": "Controls",
+      "trace": true,
+      "logLevel": "debug"
+    },
+    "Sample_cert_01": {
+      "class": "Tenant",
+      "test_https": {
+        "class": "Application",
+        "pool": {
+          "class": "Pool",
+          "members": [
+            {
+              "serverAddresses": [
+                "192.0.2.100"
+              ],
+              "servicePort": 8080
+            }
+          ],
+          "monitors": [
+            "http"
+          ]
+        },
+        "service": {
+          "class": "Service_HTTPS",
+          "persistenceMethods": [],
+          "pool": "pool",
+          "serverTLS": "pTlsServer_Local",
+          "snat": "auto",
+          "virtualAddresses": [
+            "192.168.0.2"
+          ],
+          "virtualPort": 443
+        },
+        "pTlsServer_Local": {
+          "class": "TLS_Server",
+          "label": "simplest decl requires just cert",
+          "certificates": [
+            {
+              "certificate": "tlsserver_local_cert"
+            }
+          ]
+        },
+        "tlsserver_local_cert": {
+          "class": "Certificate",
+          "certificate": {"bigip":"/Common/default.crt"},
+          "privateKey": {"bigip":"/Common/default.key"}
+        }
+      }
+    }
+  }

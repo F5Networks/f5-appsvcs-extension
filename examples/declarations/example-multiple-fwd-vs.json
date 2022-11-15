@@ -1,0 +1,63 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.21.0",
+    "id": "TEST_Service_Forwarding",
+    "remark": "Example Forwarding Virtual Server",
+    "FirstAppForwarder": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "template": "generic",
+            "myService0": {
+                "class": "Service_Forwarding",
+                "remark": "Example Forwarding Virtual Server 1",
+                "virtualAddresses": [
+                    [
+                        "0.0.0.0",
+                        "1.2.3.4/32"
+                    ]
+                ],
+                "virtualPort": 0,
+                "forwardingType": "ip",
+                "layer4": "tcp",
+                "profileL4": "basic"
+            }
+        },
+        "SecondAppForwarder": {
+            "class": "Application",
+            "myService55000": {
+                "class": "Service_Forwarding",
+                "template": "generic",
+                "remark": "Example Forwarding Virtual Server 2",
+                "virtualAddresses": [
+                    [
+                        "0.0.0.0",
+                        "199.0.2.22/32"
+                    ]
+                ],
+                "virtualPort": 55000,
+                "forwardingType": "ip",
+                "layer4": "tcp",
+                "profileL4": "basic"
+            }
+        },
+        "ThirdAppForwarder": {
+            "class": "Application",
+            "myServiceAny": {
+                "class": "Service_Forwarding",
+                "template": "generic",
+                "remark": "Example Forwarding Virtual Server 3",
+                "virtualAddresses": [
+                    [
+                        "0.0.0.0",
+                        "199.0.2.22/32"
+                    ]
+                ],
+                "virtualPort": "any",
+                "forwardingType": "ip",
+                "layer4": "tcp",
+                "profileL4": "basic"
+            }
+        }
+    }
+}

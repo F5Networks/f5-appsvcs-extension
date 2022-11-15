@@ -1,0 +1,187 @@
+{
+	"info": {
+		"_postman_id": "86b59c1b-9798-4abc-85cf-5e9a7effe69f",
+		"name": "BigstartRestartTest",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Bigstart Restart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1f133fa7-13ff-4821-8b4e-31f6daf4a6d9",
+						"exec": [
+							"postman.setEnvironmentVariable(\"nextRequest\", 'Check Bigstart Restart');",
+							"postman.setNextRequest('Delay');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"command\":\"run\",\n\t\"utilCmdArgs\":\"-c \\\"bigstart restart restnoded restjavad icr_eventd\\\"\"\n}"
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/tm/util/bash",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"tm",
+						"util",
+						"bash"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "01863881-51b6-49f2-81f4-0f45d6525656",
+						"type": "text/javascript",
+						"exec": [
+							"var next = postman.getEnvironmentVariable('nextRequest');",
+							"",
+							"if(next !== ''){",
+							"    postman.setNextRequest(next);",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/20",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"20"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check Bigstart Restart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0d1294f3-e271-4a35-a635-c9a12a806592",
+						"type": "text/javascript",
+						"exec": [
+							"if (pm.response.code === 200) {",
+							"    postman.clearEnvironmentVariable('nextRequest');",
+							"    postman.setNextRequest('POST to Selftest');",
+							"} else {",
+							"    postman.setNextRequest('Delay');",
+							"}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/info",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"info"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{password}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{username}}",
+				"type": "string"
+			}
+		]
+	}
+}

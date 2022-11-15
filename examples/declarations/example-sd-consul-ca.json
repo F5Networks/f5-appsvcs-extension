@@ -1,0 +1,36 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "Consul_Service_Discovery",
+    "Sample_Consul_SD_CA": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.60"
+                ],
+                "pool": "web_pool"
+            },
+            "web_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 8080,
+                        "addressDiscovery": "consul",
+                        "updateInterval": 10,
+                        "uri": "https://192.0.2.100:8500/v1/catalog/nodes",
+                        "trustCA": {
+                            "use": "my_ca_bundle"
+                        }
+                    }
+                ]
+            },
+            "my_ca_bundle": {
+                "class": "CA_Bundle",
+                "bundle": "-----BEGIN CERTIFICATE-----\nMAAFgDFFA2gCCQC8f9aw8Cs6YDANBgjoekiG9w0BAQsFADCBgTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAk1BMQ8wDQYDVQQHDAZCb3N0b24xEzARBgNVBAoMCkV4YW1wbGUgQ28xEDAOBgNVBAsMB3RlY2hvcHMxCzAJBgNVBAMMAmNhMSAwHgYJKoZIhvcNAQkBFhFjZXJ0c0BleGFtcGxlLmNvbTAeFw0xOTA0MTAxODA0NTJaFw00NjA4MjUxODA0NTJaMIGBMQswCQYDVQQGEwJVUzELMAkGA1UECAwCTUExDzANBgNVBAcMBkJvc3RvbjETMBEGA1UECgwKRXhhbXBsZSBDbzEQMA4GA1UECwwHdGVjaG9wczELMAkGA1UEAwwCY2ExIDAeBgkqhkiG9w0BCQEWEWNlcnRzQGV4YW1wbGUuY29tMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2PAdx8/Gyceo92wU8qQT+pHBZc2ndYIB+sZ00giaKAS9ImHTtHzAgNfHHjDfrev1w5CzVq8Zd4NqmgLTfvb8TvI2Ratdpz8UiRVUo+uKy5eQHwV27Uphk0xV6aipAZCuRt4B8IMeZYJXCN9z+HlyGG2EehkLhCGXDP30o4ps67WKg8B1Qn5hVP9zx4KWIxtgVbpFO5OMjlVAQn7N+BAMAKjlhMhuok+eJCSU/cDfel2FACUngCE0N5fbJQvKXKbUHujmHE/kqBanVGIYMCktcxUC/HJxB/92cCkUc/yMYUBIH9jguixYxeKMeqmgdG3qO1PZ6y1I2uQD9RP1U/goQYaV6Jl14oHrAmz62EgG+KSu8ujMWgZQ9IKswwLjLc20OfpvxsHFiAq/B4vqcY2EFpqOhflMW+EcAeG2zXuKzZLWoDVYF1JozHdmY4NatZuNx3UKi0/4eRGjro9zVIuCCUpLmUR5zFtLoMDsriXcWRb4rTpGpO80DKUtaK5icK3L8t3V5jKt9X1sKcIDbuq+bHnXfp+eeqX6931QZzQ4XVQyOlYxKQF5+kzGE3KwJRNqF5pNDJRvXvKNh0FC54QNiVJvv9994kFdTkbAiLEWUMAqegYxVPElo8IZvL/vbonL7MUrO512trPEMa5zgYufAX5dJNQELVYfj5tRMFmQy2kCAwEAATANBgkqhkiG9w0BAQsFAAOCAgEAe1yRYbSRWorlai4/SQidERv/k1L/86drS544SmjiTBQEooOM3VZIHpeDNRd/8s0htCQoCNWNL7M0SH8G7XZjUirvFYSGigZ+ICWvDCUq1NZg7mRYGbC9W/18M5LO21LMlABUUsp8lLkc3rmOCN6/3dFhpUMyTUujI/bo+4wDo/Gw9rMcKAEJ1nWjPMo4JhlIEMe1uas91FXULU/1/Pi36YSBw0owRQasvuuKQCpkgwaTbht5dUjw+vR3WkoBSqL7EEC0mzimo0F45VblgUuU7NdBdfDQWs3f1Zw6tgB9Ucagerld1Bf4S20DiOL7CggbKNEld4txzzhBPJWQ/LP38W2hmiYvk4YcX8lVrUGhWA1a+65XJLyX60zxEoxbC495NoTHK7Ss92lZ0/6Oo+vr283RJfL3JATL6ZyH31K3PfvE/Dt0d/2cg1Sp+6G/4wJIvRoDLfvP+3vENCnyyLsGG3RO7NQHd10tTTIysP7STuhsCLP0xgdJOHUEHNSZ2070ixn8El6PgwsjRmHTwf4435kgSmzunhqToO6frYCp/i+q3BERviJPe2XrbLIETbuiKk8aXOmEIB29KKfH7GjRvZkrQMTYJp054wxG+B2ogwAUezsL8AS4BqNnVmSA23KknoRIn9UH0lF0VhzByGLb5N72H77wR1bDtBu0wZJHl4U=\n-----END CERTIFICATE-----"
+            }
+        }
+    }
+}

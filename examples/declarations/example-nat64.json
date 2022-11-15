@@ -1,0 +1,33 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.14.0",
+    "example_NAT64": {
+        "class": "Tenant",
+        "App1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "9161:7904:7539:6023:5c73:2b27:50c6:46ce"
+                ],
+                "pool": "web_pool",
+                "nat64Enabled": true
+            },
+            "web_pool": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.1.10",
+                            "192.0.1.11"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

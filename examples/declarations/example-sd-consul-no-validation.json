@@ -1,0 +1,35 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "Consul_Service_Discovery",
+    "controls": {
+        "class": "Controls",
+        "trace": true,
+        "logLevel": "debug"
+    },
+    "Sample_Consul_SD_no_validation": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.60"
+                ],
+                "pool": "web_pool"
+            },
+            "web_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 8080,
+                        "addressDiscovery": "consul",
+                        "updateInterval": 10,
+                        "uri": "https://192.0.2.100:8500/v1/catalog/nodes",
+                        "rejectUnauthorized": false
+                    }
+                ]
+            }
+        }
+    }
+}

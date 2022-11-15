@@ -1,0 +1,60 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.19.0",
+    "id": "Idle_Timeout_Policy",
+    "timeoutTenant": {
+        "class": "Tenant",
+        "timeoutApp": {
+            "class": "Application",
+            "timeoutGeneric": {
+                "class": "Service_Generic",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "192.0.2.141"
+                ],
+                "policyIdleTimeout": {
+                    "use": "my_idle_timeout_policy"
+                }
+            },
+            "my_idle_timeout_policy": {
+                "class": "Idle_Timeout_Policy",
+                "remark": "my policy remark",
+                "rules": [
+                    {
+                        "name": "rule1",
+                        "remark": "tcp all ports",
+                        "protocol": "tcp",
+                        "destinationPorts": [
+                            "all-other"
+                        ],
+                        "idleTimeout": 120
+                    },
+                    {
+                        "name": "rule2",
+                        "remark": "udp port 9090",
+                        "protocol": "udp",
+                        "destinationPorts": [
+                            9090
+                        ],
+                        "idleTimeout": 300
+                    },
+                    {
+                        "name": "rule3",
+                        "remark": "all other protocols",
+                        "protocol": "all-other",
+                        "idleTimeout": 40
+                    },
+                    {
+                        "name": "rule4",
+                        "remark": "non port 9090 udp",
+                        "protocol": "udp",
+                        "destinationPorts": [
+                            "all-other"
+                        ],
+                        "idleTimeout": 60
+                    }
+                ]
+            }
+        }
+    }
+}

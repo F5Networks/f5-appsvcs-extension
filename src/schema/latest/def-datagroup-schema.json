@@ -1,0 +1,201 @@
+{
+    "definitions": {
+        "Data_Group": {
+            "title": "Data_Group",
+            "description": "Configures a data group object which contains list of data",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Data_Group"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "storageType": {
+                    "title": "Storage Type",
+                    "description": "Toggles whether the data group is internal or external",
+                    "type": "string",
+                    "enum": [
+                        "internal",
+                        "external"
+                    ],
+                    "default": "internal"
+                },
+                "keyDataType": {
+                    "title": "Data Type",
+                    "description": "Specifies the type of record keys the data group contains. If string, the value will be escaped by default",
+                    "type": "string",
+                    "enum": [
+                        "integer",
+                        "ip",
+                        "string"
+                    ]
+                }
+            },
+
+            "if": { "properties": { "storageType": { "const": "internal" } } },
+            "then": {
+                "allOf": [
+                    {
+                        "if": { "properties": { "keyDataType": { "const": "string" } } },
+                        "then": { "$ref": "#/definitions/Data_Group_Records_String" }
+                    },
+                    {
+                        "if": { "properties": { "keyDataType": { "const": "integer" } } },
+                        "then": { "$ref": "#/definitions/Data_Group_Records_Integer" }
+                    },
+                    {
+                        "if": { "properties": { "keyDataType": { "const": "ip" } } },
+                        "then": { "$ref": "#/definitions/Data_Group_Records_IP" }
+                    }
+                ],
+                "required": [
+                    "class", "keyDataType", "records"
+                ]
+            },
+            "else": {
+                "properties": {
+                    "externalFilePath": {
+                        "title": "External File Path",
+                        "description": "Specifies the location (URI) from where the records will be copied",
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/Resource_URL"
+                            }
+                        ],
+                        "f5PostProcess": {
+                            "tag": "checkResource"
+                        }
+                    },
+                    "separator": {
+                        "title": "Record Key Value Separator",
+                        "description": "Specifies the character(s) that separate the record key and value",
+                        "type": "string",
+                        "default": ":="
+                    },
+                    "ignoreChanges": {
+                        "title": "Ignore changes",
+                        "description": "If false (default), the system updates data group in every BIG-IP AS3 declaration deployment. If true, BIG-IP AS3 creates the data group on first deployment, and leaves it untouched afterwards",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "dataGroupFile": {
+                        "$ref": "#/definitions/Pointer_Data_Group_File"
+                    }
+                },
+                "oneOf": [
+                    { "required": [  "class", "keyDataType", "externalFilePath"] },
+                    { "required": [  "class", "keyDataType", "dataGroupFile"] }
+                ],
+                "not" : { "required" : ["externalFilePath","dataGroupFile"] }
+            }
+        },
+
+        "Data_Group_Records_Base": {
+            "title": "Data Group - Records",
+            "description": "Configures data group records to store",
+            "type": "object",
+            "properties": {
+                "records": {
+                    "title": "Records",
+                    "description": "List of records",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "description": "A record object to store",
+                        "properties": {
+                            "value": {
+                                "title": "Record value",
+                                "description": "Value to store",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        "Data_Group_Records_String": {
+            "description": "A specialization of Data_Group_Records_Base where all items in the records property must be strings.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Data_Group_Records_Base"
+                },
+                {
+                    "properties": {
+                        "records": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": {
+                                        "title": "Record Key",
+                                        "description": "Record Identifier",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["key"]
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+
+        "Data_Group_Records_Integer": {
+            "description": "A specialization of Data_Group_Records_Base where all items in the records property must be integers.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Data_Group_Records_Base"
+                },
+                {
+                    "properties": {
+                        "records": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": {
+                                        "title": "Record Key",
+                                        "description": "Record Identifier",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": ["key"]
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+
+        "Data_Group_Records_IP": {
+            "description": "A specialization of Data_Group_Records_Base where all items in the records property must be IP addresses.",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Data_Group_Records_Base"
+                },
+                {
+                    "properties": {
+                        "records": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "key": {
+                                        "title": "Record Key",
+                                        "description": "Record Identifier - string can be ip address or ip address with netmask (if not provided, default is /32)",
+                                        "type": "string",
+                                        "format": "f5ip"
+                                    }
+                                },
+                                "required": ["key"]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.24.0",
+    "id": "Service_HTTP",
+    "VDI_Service_HTTP": {
+        "class": "Tenant",
+        "VDIApp": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "profileAccess": {
+                    "bigip": "/Common/accessProfile"
+                },
+                "profileConnectivity": {
+                    "bigip": "/Common/connectivityProfile"
+                },
+                "profileVdi": {
+                    "bigip": "/Common/vdi"
+                }
+            }
+        }
+    }
+}

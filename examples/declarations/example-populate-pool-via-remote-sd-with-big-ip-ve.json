@@ -1,0 +1,72 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.4.0",
+    "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab425d",
+    "label": "AWS Azure GCP Service Discovery",
+    "remark": "HTTP app with pool using local nodes and service discovery",
+    "Sample_sd_02": {
+      "class": "Tenant",
+      "A1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "192.0.192.3"
+          ],
+          "pool": "web_pool"
+        },
+        "web_pool": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [
+            {
+              "servicePort": 8080,
+              "addressDiscovery": "azure",
+              "updateInterval": 10,
+              "tagKey": "foo",
+              "tagValue": "bar",
+              "addressRealm": "private",
+              "resourceGroup": "test_group",
+              "subscriptionId": "azure subscription ID",
+              "directoryId": "azure directory ID",
+              "applicationId": "your azure application ID",
+              "apiAccessKey": "your api access key",
+              "credentialUpdate": false
+            },
+            {
+              "servicePort": 8081,
+              "addressDiscovery": "gce",
+              "updateInterval": 10,
+              "tagKey": "foo",
+              "tagValue": "bar",
+              "addressRealm": "private",
+              "region": "us-west1",
+              "encodedCredentials": "base 64 encoded credentials",
+              "credentialUpdate": false
+            },
+            {
+              "servicePort": 8082,
+              "addressDiscovery": "aws",
+              "updateInterval": 10,
+              "tagKey": "foo",
+              "tagValue": "bar",
+              "addressRealm": "private",
+              "region": "us-west-1",
+              "accessKeyId": "your key id",
+              "secretAccessKey": "your secret access key",
+              "credentialUpdate": false
+            },
+            {
+              "enable": true,
+              "servicePort": 80,
+              "serverAddresses": [
+                "10.128.0.7"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }

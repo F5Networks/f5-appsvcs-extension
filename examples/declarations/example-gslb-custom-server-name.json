@@ -1,0 +1,84 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.41.0",
+        "id": "GSLB_Sample",
+        "Example_Tenant": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "testDomain": {
+                    "class": "GSLB_Domain",
+                    "domainName": "example.edu",
+                    "aliases": [
+                        "another.example*"
+                    ],
+                    "resourceRecordType": "A",
+                    "poolLbMode": "ratio",
+                    "pools": [
+                        {
+                            "use": "testPool"
+                        }
+                    ],
+                    "persistCidrIpv4": 24,
+                    "persistenceEnabled": true,
+                    "ttlPersistence": 3600
+                },
+                "testPool": {
+                    "class": "GSLB_Pool",
+                    "members": [
+                        {
+                            "ratio": 10,
+                            "server": {
+                                "use": "/Common/Shared/testServer"
+                            },
+                            "virtualServer": "virtualAddress1"
+                        },
+                        {
+                            "ratio": 10,
+                            "server": {
+                                "use": "/Common/Shared/testServer"
+                            },
+                            "virtualServer": "1"
+                        }
+                    ],
+                    "resourceRecordType": "A"
+                }
+            }
+        },
+        "Common": {
+            "class": "Tenant",
+            "Shared": {
+                "class": "Application",
+                "template": "shared",
+                "testDataCenter": {
+                    "class": "GSLB_Data_Center"
+                },
+                "testServer": {
+                    "class": "GSLB_Server",
+                    "dataCenter": {
+                        "use": "testDataCenter"
+                    },
+                    "devices": [
+                        {
+                            "address": "1.2.3.7"
+                        }
+                    ],
+                    "virtualServers": [
+                        {
+                            "address": "1.2.3.8",
+                            "port": 5050,
+                            "name": "virtualAddress1"
+                        },
+                        {
+                            "address": "1.2.3.9",
+                            "port": 5051
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

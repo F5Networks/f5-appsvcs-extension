@@ -1,0 +1,41 @@
+{
+    "class": "AS3",
+    "action": "patch",
+    "patchBody": [
+        {
+            "target": {
+                "address": "192.0.2.200"
+            },
+            "path": "/bigiqTenant/myapp2",
+            "op": "add",
+            "value": {
+                "class": "Application",
+                "vs_myapp2": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.42.10.113"
+                    ],
+                    "snat": "auto",
+                    "pool": "pool_myapp2",
+                    "virtualPort": 8080
+                },
+                "pool_myapp2": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 8090,
+                            "serverAddresses": [
+                                "10.1.20.130",
+                                "10.1.20.131",
+                                "10.1.20.132"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

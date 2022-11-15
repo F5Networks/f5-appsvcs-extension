@@ -1,0 +1,23 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "label": "ICAP_profile_existing",
+    "remark": "ICAP_profile_existing",
+    "Sample_ICAP_profile": {
+        "class": "Tenant",
+        "TCP_Service": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualPort": 8181,
+                "virtualAddresses": [
+                    "192.0.2.100"
+                ],
+                "virtualType": "internal",
+                "profileICAP": {
+                    "bigip": "/Common/icap"
+                }
+            }
+        }
+    }
+}

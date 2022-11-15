@@ -1,0 +1,28 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.15.0",
+    "id": "ICAP_Profile",
+    "Sample_ICAP_Profile": {
+        "class": "Tenant",
+        "icapApp": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualType": "internal",
+                "sourceAddress": "192.0.2.0/24",
+                "profileICAP": {
+                    "use": "icapProfile"
+                }
+            },
+            "icapProfile": {
+                "class": "ICAP_Profile",
+                "uri": "icap://${SERVER_IP}:${SERVER_PORT}/videoOptimization",
+                "fromHeader": "admin@example.com",
+                "hostHeader": "www.example.com",
+                "refererHeader": "http://www.example.com/video/resource.html",
+                "userAgentHeader": "CERN-LineMode/2.15 libwww/2.17b3",
+                "previewLength": 100
+            }
+        }
+    }
+}

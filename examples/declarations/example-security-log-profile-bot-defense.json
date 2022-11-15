@@ -1,0 +1,36 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.26.0",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "exampleBotDefense": {
+                "class": "Security_Log_Profile",
+                "botDefense": {
+                    "localPublisher": {
+                        "bigip": "/Common/local-db-publisher"
+                    },
+                    "logAlarm": true,
+                    "logBlock": true,
+                    "logBrowser": true,
+                    "logBrowserVerificationAction": true,
+                    "logCaptcha": true,
+                    "logDeviceIdCollectionRequest": true,
+                    "logMaliciousBot": true,
+                    "logMobileApplication": true,
+                    "logNone": true,
+                    "logRateLimit": true,
+                    "logSuspiciousBrowser": true,
+                    "logTcpReset": true,
+                    "logTrustedBot": true,
+                    "logUnknown": true,
+                    "logUntrustedBot": true,
+                    "logHoneyPotPage": true,
+                    "logRedirectToPool": true,
+                    "logChallengeFailureRequest": true
+                }
+            }
+        }
+    }
+}

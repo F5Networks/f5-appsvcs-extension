@@ -1,0 +1,104 @@
+{
+  "results": [{
+    "message": "success",
+    "lineCount": 23,
+    "code": 200,
+    "host": "localhost",
+    "tenant": "Sample_03",
+    "runTime": 677
+  }],
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "789ghi",
+    "label": "Sample 3",
+    "remark": "TCP load-balanced to ICAP with custom monitor",
+    "Sample_03": {
+      "class": "Tenant",
+      "A1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_TCP",
+          "virtualAddresses": [
+            "10.0.5.10"
+          ],
+          "virtualPort": 1344,
+          "pool": "svc_pool",
+          "persistenceMethods": [
+            "source-address"
+          ],
+          "layer4": "tcp",
+          "profileTCP": "normal",
+          "enable": true,
+          "maxConnections": 0,
+          "snat": "auto",
+          "addressStatus": true,
+          "mirroring": "none",
+          "lastHop": "default",
+          "translateClientPort": false,
+          "translateServerAddress": true,
+          "translateServerPort": true
+        },
+        "svc_pool": {
+          "class": "Pool",
+          "monitors": [{
+            "use": "icap_monitor"
+          }],
+          "members": [{
+            "servicePort": 1344,
+            "serverAddresses": [
+              "192.0.5.10",
+              "192.0.5.11"
+            ],
+            "enable": true,
+            "connectionLimit": 0,
+            "rateLimit": -1,
+            "dynamicRatio": 1,
+            "ratio": 1,
+            "priorityGroup": 0,
+            "adminState": "enable",
+            "addressDiscovery": "static"
+          }],
+          "loadBalancingMode": "round-robin",
+          "minimumMembersActive": 1,
+          "reselectTries": 0,
+          "serviceDownAction": "none",
+          "slowRampTime": 10,
+          "minimumMonitors": 1
+        },
+        "icap_monitor": {
+          "class": "Monitor",
+          "monitorType": "tcp",
+          "send": "OPTIONS icap://icap.example.net/ ICAP/1.0\r\nUser-Agent: f5-ADC\r\n\r\n",
+          "receive": "ICAP/1.0 200 OK",
+          "adaptive": false,
+          "targetAddress": "",
+          "interval": 5,
+          "upInterval": 0,
+          "timeUntilUp": 0,
+          "timeout": 16,
+          "targetPort": 0,
+          "dscp": 0,
+          "receiveDown": "",
+          "reverse": false,
+          "transparent": false,
+          "adaptiveDivergenceType": "relative",
+          "adaptiveDivergenceMilliseconds": 500,
+          "adaptiveDivergencePercentage": 100,
+          "adaptiveLimitMilliseconds": 1000,
+          "adaptiveWindow": 180
+        },
+        "enable": true
+      },
+      "enable": true,
+      "defaultRouteDomain": 0
+    },
+    "updateMode": "selective",
+    "controls": {
+      "archiveTimestamp": "2018-07-03T18:24:59.623Z",
+      "class": "Controls",
+      "logLevel": "error",
+      "trace": false
+    }
+  }
+}

@@ -1,0 +1,218 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.29.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "tcpItem": {
+                "class": "Service_HTTP",
+                "policyEndpoint": "tcpPolicy",
+                "virtualAddresses": [
+                    "10.1.40.50"
+                ]
+            },
+            "tcpPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "tcpDefault",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "request",
+                                "address": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "10.10.10.11"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "response",
+                                "address": {
+                                    "operand": "does-not-match",
+                                    "values": [
+                                        "10.10.10.12"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "client-accepted",
+                                "address": {
+                                    "operand": "does-not-match",
+                                    "values": [
+                                        "10.10.10.14"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "server-connected",
+                                "address": {
+                                    "operand": "does-not-match",
+                                    "values": [
+                                        "10.10.10.18"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "httpConnectPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "httpConnectPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "proxy-response",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.17"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "proxy-connect",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.15"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "httpExplicitPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "httpExplicitPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "proxy-request",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.16"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "classificationPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "classificationPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "classification-detected",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.13"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "clientSslPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "clientSslPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "ssl-client-hello",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.19"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "ssl-client-serverhello-send",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.20"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "serverSslPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "serverSslPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "ssl-server-handshake",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.21"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "ssl-server-hello",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.22"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "websocketPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "websocketPolicy",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "event": "ws-request",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.23"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "event": "ws-response",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.24"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

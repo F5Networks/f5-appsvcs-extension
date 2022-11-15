@@ -1,0 +1,47 @@
+{
+  "class": "AS3",
+  "action": "deploy",
+  "persist": true,
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "fghijkl7890",
+    "label": "Sample 1",
+    "remark": "HTTP with custom persistence",
+    "Sample_http_01": {
+      "class": "Tenant",
+      "A1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "10.0.6.10"
+          ],
+          "pool": "web_pool",
+          "persistenceMethods": [{
+            "use": "jsessionid"
+          }]
+        },
+        "web_pool": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [{
+            "servicePort": 80,
+            "serverAddresses": [
+              "192.0.6.10",
+              "192.0.6.11"
+            ]
+          }]
+        },
+        "jsessionid": {
+          "class": "Persist",
+          "persistenceMethod": "cookie",
+          "cookieMethod": "hash",
+          "cookieName": "JSESSIONID"
+        }
+      }
+    }
+  }
+}

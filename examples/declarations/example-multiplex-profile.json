@@ -1,0 +1,30 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.7.0",
+    "id": "1234",
+    "remark": "Sample OneConnect multiplex profile",
+    "Sample_profile_02": {
+        "class": "Tenant",
+        "Tenant_1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                "10.10.1.3"
+                ],
+                "profileMultiplex": {
+                    "use": "testMux"
+                }
+            },
+            "testMux": {
+                "class": "Multiplex_Profile",
+                "maxConnections": 5000,
+                "maxConnectionAge": 3600,
+                "maxConnectionReuse": 20000,
+                "idleTimeoutOverride": 900,
+                "connectionLimitEnforcement": "idle",
+                "sharePools": true
+            }
+        }
+    }
+}

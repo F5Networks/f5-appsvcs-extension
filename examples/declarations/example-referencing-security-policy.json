@@ -1,0 +1,44 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.0.0",
+  "id": "5489432",
+  "label": "ASM_policy_existing",
+  "remark": "ASM_policy_existing",
+  "Sample_app_sec_01": {
+    "class": "Tenant",
+    "HTTP_Service": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "192.0.10.107"
+        ],
+        "snat": "auto",
+        "pool": "Pool1",
+        "policyWAF": {
+          "bigip": "/Common/test-policy"
+        }
+      },
+      "Pool1": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [
+          {
+            "servicePort": 8001,
+            "serverAddresses": [
+              "10.10.10.143"
+            ]
+          },
+          {
+            "servicePort": 8002,
+            "serverAddresses": [
+              "10.10.10.144"
+            ]
+          }
+        ]
+      }
+    }
+  }
+ }

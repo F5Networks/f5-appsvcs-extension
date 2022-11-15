@@ -1,0 +1,25 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.28.0",
+    "Example_WAF_Policy": {
+        "class": "Tenant",
+        "Example_App": {
+            "class": "Application",
+            "exampleWAF": {
+                "class": "WAF_Policy",
+                "url": {
+                    "url": "https://bigiq.example.com/mgmt/cm/asm/policy-files/download/0da5cae6-f106-3790-a72c-c58fb6b7a512/13.1.0",
+                    "authentication": {
+                        "method": "bearer-token",
+                        "token": {
+                            "ciphertext": "ZjVmNQ==",
+                            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
+                        }
+                    }
+                },
+                "ignoreChanges": false,
+                "enforcementMode": "transparent"
+            }
+        }
+    }
+}

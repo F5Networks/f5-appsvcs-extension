@@ -1,0 +1,68 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.6.0",
+    "id": "SAMPLE_ANALYTICS_PROFILE",
+    "remark": "Sample analytics profile",
+    "Sample_profile_01": {
+      "class": "Tenant",
+      "Sample_Analytics_Profile": {
+        "class": "Application",
+        "apTest": {
+          "class": "Analytics_Profile",
+          "collectedStatsInternalLogging": true,
+          "collectedStatsExternalLogging": true,
+          "capturedTrafficInternalLogging": true,
+          "capturedTrafficExternalLogging": true,
+          "externalLoggingPublisher": {"bigip": "/Common/default-ipsec-log-publisher"},
+          "notificationBySyslog": true,
+          "notificationBySnmp": false,
+          "notificationByEmail": true,
+          "notificationEmailAddresses": [
+            "aaaa@aa.a",
+            "bbbb@bb.b",
+            "cccc@cc.c"
+          ],
+          "publishIruleStatistics": true,
+          "collectMaxTpsAndThroughput": true,
+          "collectPageLoadTime": true,
+          "collectClientSideStatistics": true,
+          "collectUserSession": true,
+          "collectUrl": true,
+          "urlsForStatCollection": [
+            "a.f5test/a.htm",
+            "b.f5test/b.htm",
+            "c.f5test/c.htm"
+          ],
+          "collectGeo": true,
+          "countriesForStatCollection": [
+            "Afghanistan",
+            "Bahamas",
+            "Cambodia",
+            "Denmark",
+            "Ecuador",
+            "Falkland Islands (Malvinas)"
+          ],
+          "collectIp": true,
+          "collectSubnet": true,
+          "subnetsForStatCollection": [
+            "198.19.192.0",
+            "198.19.224.0"
+          ],
+          "collectResponseCode": true,
+          "collectUserAgent": true,
+          "collectMethod": true,
+          "collectOsAndBrowser": true,
+          "sessionCookieSecurity": "always-secure",
+          "sessionTimeoutMinutes": 30
+        },
+        "serviceHttp": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+              "192.0.2.240"
+          ],
+          "virtualPort": 8080,
+          "profileAnalytics": { "use": "apTest" }
+        }
+      }
+    }
+  }

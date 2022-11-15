@@ -1,0 +1,38 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.40.0",
+    "id": "TEST_INBAND_MONITOR",
+    "remark": "test inband monitor",
+    "Inband_Monitor_Example": {
+        "class": "Tenant",
+        "TEST_Monitor_Inband": {
+            "class": "Application",
+            "monitorInband_AllProperties": {
+                "class": "Monitor",
+                "label": "this is my label",
+                "remark": "this is my remark",
+                "monitorType": "inband",
+                "failures": 4,
+                "failureInterval": 40,
+                "responseTime": 12,
+                "retryTime": 360
+            },
+            "monitorInband_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 443,
+                        "serverAddresses": [
+                            "192.0.2.20"
+                        ],
+                        "monitors": [
+                            {
+                                "use": "monitorInband_AllProperties"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

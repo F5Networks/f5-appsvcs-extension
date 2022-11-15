@@ -1,0 +1,896 @@
+{
+    "definitions": {
+        "GSLB_Pool": {
+            "title": "GSLB_Pool",
+            "description": "Declares a pool to use for load balancing",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Pool"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "resourceRecordType": {
+                    "title": "Resource Record (RR) Type",
+                    "description": "Specifies the type of resource records for this domain",
+                    "type": "string",
+                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "Specifies whether the pool and its resources are available for load balancing",
+                    "type": "boolean",
+                    "default": true
+                },
+                "lbModePreferred": {
+                    "title": "Preferred LB Mode",
+                    "description": "Preferred Load Balancing mode",
+                    "type": "string",
+                    "enum": [
+                        "completion-rate", "cpu", "drop-packet", "fallback-ip", "fewest-hops",
+                        "global-availability", "kilobytes-per-second", "least-connections",
+                        "lowest-round-trip-time", "packet-rate", "quality-of-service",
+                        "ratio", "return-to-dns", "round-robin", "static-persistence",
+                        "topology", "virtual-server-capacity", "virtual-server-score"
+                    ],
+                    "default": "round-robin"
+                },
+                "lbModeAlternate":
+                {
+                    "title": "Alternate LB Mode",
+                    "description": "Alternate Load Balancing mode",
+                    "type": "string",
+                    "enum": [
+                        "drop-packet", "fallback-ip", "global-availability", "packet-rate",
+                        "ratio", "return-to-dns", "round-robin", "static-persistence",
+                        "topology", "virtual-server-capacity", "virtual-server-score",
+                        "none"
+                    ],
+                    "default": "round-robin"
+                },
+                "lbModeFallback": {
+                    "title": "Fallback LB mode",
+                    "description": "Fallback Load Balancing mode",
+                    "type": "string",
+                    "enum": [
+                        "completion-rate", "cpu", "drop-packet", "fallback-ip", "fewest-hops",
+                        "global-availability", "kilobytes-per-second", "least-connections",
+                        "lowest-round-trip-time", "packet-rate", "quality-of-service",
+                        "ratio", "return-to-dns", "round-robin", "static-persistence",
+                        "topology", "virtual-server-capacity", "virtual-server-score",
+                        "none"
+                    ],
+                    "default": "return-to-dns"
+                },
+                "manualResumeEnabled": {
+                    "title": "Manual Resume Enabled",
+                    "description": "Specifies whether you must manually restart a pool member that goes down",
+                    "type": "boolean",
+                    "default": false
+                },
+                "ttl": {
+                    "title": "Time-to-Live (TTL)",
+                    "description": "Specifies the number of seconds the IP address, once found, is valid. Once the time-to-live (TTL) expires, the client has to request the IP address resolution again ",
+                    "type": "integer",
+                    "default": 30,
+                    "minimum": 0,
+                    "maximum": 4294967295
+                },
+                "verifyMemberEnabled": {
+                    "title": "Verify Member Availability Enabled",
+                    "description": "Specifies the system verifies the availability of the pool members before sending a connection to those resources",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+
+            "allOf": [
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "MX" } } },
+                    "then": {
+                        "properties": {
+                            "maxAnswersReturned": {
+                                "title": "Maximum Number of Answers Returned",
+                                "description": "Specifies the maximum number of available virtual servers that the system lists in a response",
+                                "type": "integer",
+                                "minimum": 1,
+                                "default": 1,
+                                "maximum": 500
+                            },
+                            "members": {
+                                "title": "Members",
+                                "description": "Specifies the members of this pool",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/GSLB_Pool_Member_MX"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "CNAME" } } },
+                    "then": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "members": {
+                                        "title": "Members",
+                                        "description": "Specifies the members of this pool",
+                                        "type": "array",
+                                        "items": {
+                                            "$ref": "#/definitions/GSLB_Pool_Member_CNAME"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "not": { "required": [ "maxAnswersReturned", "monitors"] }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "A" } } },
+                    "then": {
+                        "properties": {
+                            "maxAnswersReturned": {
+                                "title": "Maximum Number of Answers Returned",
+                                "description": "Specifies the maximum number of available virtual servers that the system lists in a response",
+                                "type": "integer",
+                                "minimum": 1,
+                                "default": 1,
+                                "maximum": 500
+                            },
+                            "members": {
+                                "title": "Members",
+                                "description": "Specifies the members of this pool",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/GSLB_Pool_Member_A"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "AAAA" } } },
+                    "then": {
+                        "properties": {
+                            "maxAnswersReturned": {
+                                "title": "Maximum Number of Answers Returned",
+                                "description": "Specifies the maximum number of available virtual servers the system lists in a response",
+                                "type": "integer",
+                                "minimum": 1,
+                                "default": 1,
+                                "maximum": 500
+                            },
+                            "members": {
+                                "title": "Members",
+                                "description": "Specifies the members of this pool",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/GSLB_Pool_Member_AAAA"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "properties": { "resourceRecordType": { "const": "A" } } },
+                            { "properties": { "resourceRecordType": { "const": "AAAA" } } }
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "monitors": {
+                                "title": "Monitors",
+                                "description": "Specifies the health monitors the system uses to determine whether it can use this pool for load balancing",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/Pointer_GSLB_Monitor"
+                                }
+                            },
+                            "fallbackIP": {
+                                "title": "Fallback IP",
+                                "description": "Specifies the IP address of the server to which the system directs requests when it cannot use one of its pools to do so. Note that the system uses the fallback IP only if you select a Fallback load balancing method",
+                                "type": "string",
+                                "format": "f5ip"
+                            },
+                            "bpsLimit": {
+                                "title": "Maximum Bits Per Second",
+                                "description": "The maximum allowable data throughput rate, in bits per second, for the virtual servers in the pool. If the network traffic volume exceeds this value, the system marks the pool as unavailable",
+                                "type": "integer",
+                                "default": 0,
+                                "minimum": 0
+                            },
+                            "bpsLimitEnabled": {
+                                "title": "Maximum Bits Per Second - Limit Enabled",
+                                "description": "Enables or disables the maximum Bits Per Second (BPS) option for this pool. The default value is false (disabled)",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "ppsLimit": {
+                                "title": "Maximum Packets Per Second",
+                                "description": "The maximum allowable data transfer rate, in packets per second, for the virtual servers in the pool. If the network traffic volume exceeds this value, the system marks the pool as unavailable",
+                                "type": "integer",
+                                "default": 0,
+                                "minimum": 0
+                            },
+                            "ppsLimitEnabled": {
+                                "title": "Maximum Packets Per Second - Limit Enabled",
+                                "description": "Enables or disables the maximum Packets Per Second (PPS) option for this pool. The default value is false (disabled)",
+                                "type": "boolean",
+                                "default": false
+                            },
+                            "connectionsLimit": {
+                                "title": "Maximum Current Connections Per Second",
+                                "description": "The number of current connections allowed for the virtual servers in the pool. If the current connections exceed this value, the system marks the pool as unavailable",
+                                "type": "integer",
+                                "default": 0,
+                                "minimum": 0
+                            },
+                            "connectionsLimitEnabled": {
+                                "title": "Maximum Current Connections Per Second - Limit Enabled",
+                                "description": "Enables or disables the maximum current connections option for this pool. The default value is false (disabled)",
+                                "type": "boolean",
+                                "default": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "properties": { "lbModePreferred": { "const": "quality-of-service" } } },
+                            { "properties": { "lbModeFallback": { "const": "quality-of-service" } } }
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "qosHitRatio": {
+                                "title": "Quality of Service (QOS) Hit Ratio",
+                                "description": "Assigns a weight to the Hit Ratio performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 5
+                            },
+                            "qosHops": {
+                                "title": "Quality of Service (QOS) Hops",
+                                "description": "Assigns a weight to the Hops performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0
+                            },
+                            "qosKbps": {
+                                "title": "Quality of Service (QOS) Kilobytes per Second (Kbps)",
+                                "description": "Assigns a weight to the Kilobytes per Second performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 3
+                            },
+                            "qosLinkCapacity": {
+                                "title": "Quality of Service (QOS) Link Capacity",
+                                "description": "Assigns a weight to the Link Capacity performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 30
+                            },
+                            "qosPacketRate": {
+                                "title": "Quality of Service (QOS) Packet Rate",
+                                "description": "Assigns a weight to the Packet Rate performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 1
+                            },
+                            "qosRoundTripTime": {
+                                "title": "Quality of Service (QOS) Round Trip Time",
+                                "description": "Assigns a weight to the Round Trip Time performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 50
+                            },
+                            "qosTopology": {
+                                "title": "Quality of Service (QOS) Topology",
+                                "description": "Assigns a weight to the Topology performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0
+                            },
+                            "qosVirtualServerCapacity": {
+                                "title": "Quality of Service (QOS) Virtual Server Capacity",
+                                "description": "Assigns a weight to the Virtual Server performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0
+                            },
+                            "qosVirtualServerScore": {
+                                "title": "Quality of Service (QOS) Virtual Server Score",
+                                "description": "Assigns a weight to the Virtual Server Score performance factor for the Quality of Service dynamic load balancing mode",
+                                "type": "integer",
+                                "minimum": 0,
+                                "default": 0
+                            }
+                        }
+                    }
+                }
+            ],
+            "required": [ "class", "resourceRecordType" ]
+        },
+
+        "GSLB_Pool_Member_A": {
+            "title": "GSLB A rrType Pool Member",
+            "description": "Declares member of the GSLB pool",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "server": { "$ref": "#/definitions/Pointer_GSLB_Server" },
+                "virtualServer": {
+                    "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
+                    "type": "string"
+                },
+                "ratio": {
+                    "title": "Ratio",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the pool member and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "dependsOn": {
+                    "description": "Specifies the name of the virtual server on which this pool member depends.",
+                    "type": ["string", "array"],
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "none"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^\/Common\/Shared\/.*:.*"
+                            }
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "server", "virtualServer"]
+        },
+
+        "GSLB_Pool_Member_AAAA": {
+            "title": "GSLB AAAA rrType Pool Member",
+            "description": "Declares member of the GSLB pool",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "server": { "$ref": "#/definitions/Pointer_GSLB_Server" },
+                "virtualServer": {
+                    "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
+                    "type": "string"
+                },
+                "ratio": {
+                    "title": "Ratio",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the pool member and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "dependsOn": {
+                    "description": "Specifies the name of the virtual server on which this pool member depends.",
+                    "type": ["string", "array"],
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "none"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "pattern": "^\/Common\/Shared\/.*:.*"
+                            }
+                        }
+                    ]
+                }
+
+            },
+            "additionalProperties": false,
+            "required": [ "server", "virtualServer"]
+        },
+
+        "GSLB_Pool_Member_CNAME": {
+            "title": "GSLB CNAME rrType Pool Member",
+            "description": "Declares member of the GSLB pool",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "ratio": {
+                    "title": "Ratio",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the pool member and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "domainName": {
+                    "title": "Domain Name",
+                    "description": "Specifies the domain name for this pool member",
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_A"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_AAAA"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_CNAME"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_MX"
+                        }
+                    ]
+                },
+                "isDomainNameStatic": {
+                    "title": "Static DomainName/ Static Target",
+                    "description": "Specifies that the member's name specifies a static domain name rather than a name linked to a domain defined on the system. This might be required if the target domainName is not owned by the organization or configured on the BIG-IP. One side-effect of using a static target is that the member is always considered available for load balancing. The default is (false) disabled",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+
+            "additionalProperties": false,
+            "required": ["domainName"]
+        },
+
+        "GSLB_Pool_Member_MX": {
+            "title": "GSLB MX rrType Pool Member",
+            "description": "Declares member of the GSLB pool",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the pool member and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "domainName": {
+                    "title": "Domain Name",
+                    "description": "Specifies the domain name for this pool member",
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_A"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_AAAA"
+                        }
+                    ]
+                },
+                "priority": {
+                    "title": "Priority",
+                    "description": "Specifies the MX resource record priority",
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "ratio": {
+                    "title": "Ratio",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 65535
+                }
+            },
+            "additionalProperties": false,
+            "required": ["domainName"]
+        },
+
+        "GSLB_Server": {
+            "title": "GSLB_Server",
+            "description": "Declares a GSLB server object which contains configuration for a load balancer or a host server",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Server"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "Specifies whether the server is enabled or disabled",
+                    "type": "boolean",
+                    "default": true
+                },
+                "serverType": {
+                    "title": "Server Type",
+                    "description": "Specifies the server type. The server type determines the metrics that the system can collect from the server",
+                    "type": "string",
+                    "enum":[
+                        "bigip", "generic-host"
+                    ],
+                    "default": "bigip"
+                },
+                "proberPreferred": {
+                    "title": "Prober Preferred",
+                    "description": "Specifies the type of prober to use to monitor servers defined in this data center. The default value is inside-data-center. Note: Prober pools are not used by the bigip monitor",
+                    "type": "string",
+                    "enum": [
+                        "inherit", "inside-datacenter", "outside-datacenter", "pool"
+                    ],
+                    "default": "inherit"
+                },
+                "proberFallback": {
+                    "title": "Prober Fallback",
+                    "description": "Specifies the type of prober to use to monitor servers defined in this data center when the preferred type is not available. The default value is any-available",
+                    "type": "string",
+                    "enum": [
+                       "inherit", "any-available", "inside-datacenter", "none", "outside-datacenter", "pool"
+                    ],
+                    "default": "inherit"
+                },
+                "dataCenter": { "$ref": "#/definitions/Pointer_GSLB_Data_Center" },
+                "devices": {
+                    "title": "Device List",
+                    "description": "Specifies the actual device(s) that are represented by this server object",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/GSLB_Server_Device" },
+                    "minItems": 1
+                },
+
+                "virtualServers": {
+                    "title": "Virtual Server List",
+                    "description": "Specifies the virtual server(s) that are resources on this server object",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GSLB_Virtual_Server"
+                    }
+                },
+                "virtualServerDiscoveryMode": {
+                    "title": "Virtual Server Auto Discovery Mode",
+                    "description": "Specifies virtual server auto-discovery settings. Use 'enabled' (add, modify, delete), 'enabled-no-delete' (add, modify) or the default 'disabled' (manual configuration)",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled",
+                        "enabled-no-delete"
+                    ],
+                    "default": "disabled"
+                },
+                "exposeRouteDomainsEnabled": {
+                    "title": "Expose Route Domains Enabled",
+                    "description": "Allows virtual servers from all route domains to be auto-discovered. The default setting is false",
+                    "type": "boolean",
+                    "default": false
+                },
+                "monitors": {
+                    "title": "Monitor List",
+                    "description": "Specifies the health monitors the system uses to determine whether it can use this server for load balancing",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_GSLB_Monitor"
+                    },
+                    "default": [{ "bigip": "/Common/bigip" }]
+                },
+
+                "bpsLimit": {
+                    "title": "Maximum Bits Per Second",
+                    "description": "Specifies the maximum allowable data throughput rate, in bits per second, for the virtual servers on the server. If the network traffic volume exceeds this limit, the system marks the server as unavailable",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0
+                },
+                "bpsLimitEnabled": {
+                    "title": "Maximum Bits Per Second - Limit Enabled",
+                    "description": "Enables or disables the maximum Bits Per Second (BPS) option for the virtual servers on the server. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "ppsLimit": {
+                    "title": "Maximum Packets Per Second",
+                    "description": "The maximum allowable data transfer rate, in packets per second, for the virtual servers on the server. If the network traffic volume exceeds this value, the system marks the server as unavailable",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0
+                },
+                "ppsLimitEnabled": {
+                    "title": "Maximum Packets Per Second - Limit Enabled",
+                    "description": "Enables or disables the maximum Packets Per Second (PPS) option for the virtual servers on the server. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "connectionsLimit": {
+                    "title": "Maximum Current Connections Per Second",
+                    "description": "The number of current connections allowed for the virtual servers on the server. If the current connections exceed this value, the system marks the server as unavailable",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0
+                },
+                "connectionsLimitEnabled": {
+                    "title": "Maximum Current Connections Per Second - Limit Enabled",
+                    "description": "Enables or disables the maximum current connections option for the virtual servers on the server. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "cpuUsageLimit": {
+                    "title": "Maximum CPU Percent Usage",
+                    "description": "Specifies the percent of CPU usage. If percent of CPU usage goes above the limit, the system marks the server as unavailable",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "cpuUsageLimitEnabled": {
+                    "title": "Maximum CPU Percent Usage - Limit Enabled",
+                    "description": "Enables or disables the CPU Usage limit option for this pool. The default value is false (disabled)",
+                    "type": "boolean"
+                },
+                "memoryLimit": {
+                    "title": "Memory Available (KB)",
+                    "description": "Specifies the available memory in kilobytes required by the virtual servers on the server. If available memory falls below this limit, the system marks the server as unavailable",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "memoryLimitEnabled": {
+                    "title": "Memory Available - Limit Enabled",
+                    "description": "Enables or disables the maximum Bits Per Second (BPS) option for this pool. The default value is false (disabled)",
+                    "type": "boolean"
+                },
+                "serviceCheckProbeEnabled": {
+                    "title": "Path Probe - Enabled",
+                    "description": "Specifies whether this BIG-IP device will be used to conduct a service check probe before traffic will be delegated to it. The default value is (true) enabled ",
+                    "type": "boolean"
+                },
+                "pathProbeEnabled": {
+                    "title": "Service Check Probe - Enabled",
+                    "description": "Specifies whether this BIG-IP device will be used to conduct a path probe before traffic will be delegated to it. The default value is (true) enabled ",
+                    "type": "boolean"
+                },
+                "snmpProbeEnabled": {
+                    "title": "SNMP Probe - Enabled",
+                    "description": "Specifies whether this BIG-IP device will be used to conduct a SNMP probe before traffic will be delegated to it. The default value is (true) enabled ",
+                    "type": "boolean"
+                },
+                "proberPool": {
+                    "$ref": "#/definitions/Pointer_GSLB_Prober_Pool"
+                }
+            },
+
+            "dependencies": {
+                "cpuUsageLimit": { "properties": { "serverType": { "const": "generic-host" } } },
+                "cpuUsageLimitEnabled": { "properties": { "serverType": { "const": "generic-host" } } },
+                "memoryLimit": { "properties": { "serverType": { "const": "generic-host" } } },
+                "memoryLimitEnabled": { "properties": { "serverType": { "const": "generic-host" } } },
+                "serviceCheckProbeEnabled": { "properties": { "serverType": { "const": "bigip" } } },
+                "pathProbeEnabled": { "properties": { "serverType": { "const": "bigip" } } },
+                "snmpProbeEnabled": { "properties": { "serverType": { "const": "bigip" } } },
+                "proberPreferred": {
+                    "if": { "properties": { "proberPreferred": { "const": "pool" } } },
+                    "then": { "required": [ "proberPool" ] }
+                },
+                "proberFallback": {
+                    "if": { "properties": { "proberFallback": { "const": "pool" } } },
+                    "then": { "required": [ "proberPool" ] }
+                }
+            },
+
+            "allOf": [
+                {
+                    "if": {
+                        "required": ["serverType"],
+                        "properties": { "serverType": { "const": "generic-host" } }
+                    },
+                    "then": {
+                        "properties": {
+                            "devices": {
+                                "maxItems": 1
+                            },
+                            "cpuUsageLimit": { "default": 0 },
+                            "cpuUsageLimitEnabled": { "default": false },
+                            "memoryLimit": { "default": 0 },
+                            "memoryLimitEnabled": { "default": false }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "required": ["serverType"],
+                        "properties": { "serverType": { "const": "bigip" } }
+                    },
+                    "then": {
+                        "properties": {
+                            "serviceCheckProbeEnabled": { "default": true },
+                            "pathProbeEnabled": { "default": true },
+                            "snmpProbeEnabled": { "default": true }
+                        }
+                    }
+                }
+            ],
+
+            "required": [ "class", "dataCenter", "devices" ],
+            "additionalProperties": false
+        },
+
+        "GSLB_Server_Device": {
+            "description": "Configures a device for the GSLB Server",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "address": {
+                    "title": "Address",
+                    "type": "string",
+                    "description": " Specifies an external (public) address for the device. If BIG-IP DNS configuration synchronization is enabled and all existing addresses for a device are being replaced, new addresses should be added and synchronized before old addresses are removed, otherwise the changes may fail to synchronize. Alternatively, the address configuration changes can be performed on each BIG-IP DNS system",
+                    "format": "f5ip"
+                },
+                "addressTranslation": {
+                    "title": "Address Translation",
+                    "type": "string",
+                    "description": "Specifies the internal (private) address that corresponds to the external address",
+                    "format": "f5ip"
+                }
+            },
+            "required": [ "address" ]
+        },
+
+        "GSLB_Data_Center": {
+            "title": "GSLB_Data_Center",
+            "description": "Declares a GSLB Data Center configuration",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Data_Center"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "Specifies whether the data center is enabled or disabled",
+                    "type": "boolean",
+                    "default": true
+                },
+                "location": {
+                    "title": "Location",
+                    "description": "Specifies the location of the data center",
+                    "type": "string"
+                },
+                "contact": {
+                    "title": "Contact",
+                    "description": "Specifies the name of the administrator or the name of the department that manages the data center",
+                    "type": "string"
+                },
+                "proberPreferred": {
+                    "title": "Prober Preferred",
+                    "description": "Specifies the type of prober to use to monitor servers defined in this data center. The default value is inside-data-center. Note: Prober pools are not used by the bigip monitor",
+                    "type": "string",
+                    "enum": [
+                        "inside-datacenter", "outside-datacenter", "pool"
+                    ],
+                    "default": "inside-datacenter"
+                },
+                "proberFallback": {
+                    "title": "Prober Fallback",
+                    "description": "Specifies the type of prober to use to monitor servers defined in this data center when the preferred type is not available. The default value is any-available",
+                    "type": "string",
+                    "enum": [
+                       "any-available", "inside-datacenter", "none", "outside-datacenter", "pool"
+                    ],
+                    "default": "any-available"
+                },
+                "proberPool": {
+                    "$ref": "#/definitions/Pointer_GSLB_Prober_Pool"
+                }
+            },
+
+            "dependencies": {
+                "proberPool": {
+                    "anyOf": [
+                        { "properties": { "proberPreferred": { "const": "pool" } } },
+                        { "properties": { "proberFallback": { "const": "pool" } } }
+                    ]
+                }
+            },
+
+            "additionalProperties": false,
+            "required": ["class"]
+        },
+
+        "GSLB_Virtual_Server": {
+            "title": "GSLB virtual server",
+            "description": "GSLB virtual server",
+            "type": "object",
+
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "Specifies whether the virtual server is enabled or disabled",
+                    "type": "boolean",
+                    "default": true
+                },
+                "port": {
+                    "title": "Port",
+                    "description": "L4 port for service (like 443 for HTTPS)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "address": {
+                    "title": "Address",
+                    "description": "Format of address for virtual server (such as IPv4)",
+                    "type": "string",
+                    "format": "f5ip"
+                },
+                "addressTranslation": {
+                    "title": "Address Translation",
+                    "description": "Specifies the public address that this virtual server translates into when the GSLB provider communicates between the network and the Internet. The default value is disabled",
+                    "type": "string",
+                    "format": "f5ip"
+                },
+                "addressTranslationPort": {
+                    "title": "Address Translation Port",
+                    "description": "L4 port for service (like 443 for HTTPS)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "monitors": {
+                    "title": "Monitors",
+                    "description": "Specifies the health monitors that the system uses to determine whether it can use this linked virtual server for load balancing",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_GSLB_Monitor"
+                    }
+                },
+                "name": {
+                    "title": "Name",
+                    "description": "Specifies the name of the Virtual Server",
+                    "type": "string"
+                }
+            },
+
+            "required": ["address", "port"],
+            "additionalProperties": false
+        }
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.26.0",
+    "id": "Service_HTTP",
+    "API_Protection_Service_HTTP": {
+        "class": "Tenant",
+        "apiProtectionApp": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 8080,
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "profileApiProtection": {
+                    "bigip": "/Common/apiProtectionProfile"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,409 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.2.0",
+    "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab915d",
+    "controls": {
+        "logLevel": "debug",
+        "trace": true
+    },
+    "Sample_pe_01": {
+        "class": "Tenant",
+        "testApp": {
+            "class": "Application",
+            "testPemPolicy": {
+                "class": "Enforcement_Policy",
+                "remark": "Test Enforcement Policy",
+                "enable": false,
+                "allTransactions": true,
+                "rules": [
+                    {
+                        "name": "testPolicyRule1",
+                        "precedence": 1,
+                        "dscpMarkingDownlink": 0,
+                        "dscpMarkingUplink": 0,
+                        "gateStatusEnabled": true,
+                        "interceptionEndpoint": {
+                            "bigip": "/Common/testInterceptionEndpoint"
+                        },
+                        "iRule": {
+                            "bigip": "/Common/testPemIRule"
+                        },
+                        "l2MarkingDownlink": 0,
+                        "l2MarkingUplink": 0,
+                        "qosBandwidthControllerUplink": {
+                            "policy": {
+                                "bigip": "/Common/testBwcPolicy"
+                            },
+                            "category": "testCat1"
+                        },
+                        "qosBandwidthControllerDownlink": {
+                            "policy": {
+                                "bigip": "/Common/testBwcPolicy"
+                            },
+                            "category": "testCat1"
+                        },
+                        "serviceChain": {
+                            "bigip": "/Common/testServiceChain"
+                        },
+                        "tclFilter": "set str \"Hello World \";for {set i 1} {$i <= 3} {incr i} {\nappend str \"\" $i; }\n return [string match $str [ concat \"Hello World\" \"123\" ]]",
+                        "tcpAnalyticsEnabled": true,
+                        "tcpOptimizationDownlink": {
+                            "use": "testTcpProfile"
+                        },
+                        "tcpOptimizationUplink": {
+                            "use": "testTcpProfile"
+                        },
+                        "classificationFilters": [
+                            {
+                                "name": "testClassFilter1",
+                                "application": {
+                                    "bigip": "/Common/acrobat"
+                                },
+                                "invertMatch": true
+                            },
+                            {
+                                "name": "testClassFilter2",
+                                "category": {
+                                    "bigip": "/Common/Audio"
+                                },
+                                "invertMatch": true
+                            }
+                        ],
+                        "flowInfoFilters": [
+                            {
+                                "name": "testFlowFilter",
+                                "invertMatch": true,
+                                "dscpMarking": 0,
+                                "destinationAddress": "10.238.8.60/32",
+                                "destinationPort": 8080,
+                                "sourceVlan": {
+                                    "bigip": "/Common/testVlan"
+                                },
+                                "sourceAddress": "10.238.8.61/32",
+                                "sourcePort": 8081,
+                                "protocol": "tcp",
+                                "ipAddressType": "ipv4"
+                            },
+                            {
+                                "name": "testFlowFilterDefault"
+                            }
+                        ],
+                        "forwarding": {
+                            "type": "icap",
+                            "fallbackAction": "continue",
+                            "icapType": "both",
+                            "icapService": {
+                                "bigip": "/Common/testServiceTcp"
+                            }
+                        },
+                        "insertContent": {
+                            "duration": 5,
+                            "frequency": "once-every",
+                            "position": "prepend",
+                            "tagName": "testTag",
+                            "valueContent": "testContent",
+                            "valueType": "tcl-snippet"
+                        },
+                        "modifyHttpHeader": {
+                            "headerName": "testHeaderName",
+                            "operation": "insert",
+                            "valueContent": "testContent",
+                            "valueType": "tcl-snippet"
+                        },
+                        "qoeReporting": {
+                            "highSpeedLogPublisher": {
+                                "use": "testLogPublisher"
+                            },
+                            "formatScript": {
+                                "bigip": "/Common/testFormatScript"
+                            }
+                        },
+                        "quota": {
+                            "ratingGroup": {
+                                "bigip": "/Common/testRatingGroup"
+                            },
+                            "reportingLevel": "rating-group"
+                        },
+                        "ranCongestion": {
+                            "threshold": 2500,
+                            "reportDestinationHsl": {
+                                "highSpeedLogPublisher": {
+                                    "use": "testLogPublisher"
+                                },
+                                "formatScript": {
+                                    "bigip": "/Common/testFormatScript"
+                                }
+                            }
+                        },
+                        "usageReporting": {
+                            "destination": "gx",
+                            "applicationReportingEnabled": true,
+                            "monitoringKey": "testMonitoringKey",
+                            "granularity": "session",
+                            "interval": 0,
+                            "volume": {
+                                "downlink": 5000,
+                                "total": 10000,
+                                "uplink": 5000
+                            }
+                        },
+                        "urlCategorizationFilters": [
+                            {
+                                "name": "testUrlFilter",
+                                "category": {
+                                    "bigip": "/Common/Music"
+                               },
+                                "invertMatch": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "testPolicyRule2",
+                        "precedence": 1,
+                        "gateStatusEnabled": false,
+                        "DTOSTethering": {
+                            "detectDtos": true,
+                            "detectTethering": true,
+                            "reportDestinationHsl": {
+                                "highSpeedLogPublisher": {
+                                    "use": "testLogPublisher"
+                                },
+                                "formatScript": {
+                                    "bigip": "/Common/testFormatScript"
+                                }
+                            }
+                        },
+                        "quota": {
+                            "reportingLevel": "service-id"
+                        },
+                        "usageReporting": {
+                            "destination": "sd",
+                            "applicationReportingEnabled": true,
+                            "monitoringKey": "testMonitoringKey",
+                            "granularity": "session",
+                            "interval": 0,
+                            "volume": {
+                                "downlink": 5000,
+                                "total": 10000,
+                                "uplink": 5000
+                            }
+                        }
+                    },
+                    {
+                        "name": "testPolicyRule3",
+                        "precedence": 1,
+                        "qosBandwidthControllerUplink": {
+                            "policy": {
+                                "bigip": "/Common/testBwcPolicy"
+                            }
+                        },
+                        "qosBandwidthControllerDownlink": {
+                            "policy": {
+                                "bigip": "/Common/testBwcPolicy"
+                            }
+                        },
+                        "forwarding": {
+                            "type": "endpoint",
+                            "fallbackAction": "continue",
+                            "endpoint": {
+                                "bigip": "/Common/testForwardEndpoint"
+                            }
+                        },
+                        "usageReporting": {
+                            "destination": "hsl",
+                            "publisher": {
+                                "use": "testLogPublisher"
+                            },
+                            "formatScript": {
+                                "bigip": "/Common/testFormatScript"
+                            },
+                            "sessionReportingFields": [
+                                "3gpp-parameters",
+                                "application-id",
+                                "called-station-id",
+                                "calling-station-id",
+                                "concurrent-flows",
+                                "downlink-volume",
+                                "duration-seconds",
+                                "last-record-sent",
+                                "new-flows",
+                                "observation-time-seconds",
+                                "record-reason",
+                                "record-type",
+                                "report-id",
+                                "report-version",
+                                "subscriber-id",
+                                "subscriber-id-type",
+                                "successful-transactions",
+                                "terminated-flows",
+                                "timestamp-msec",
+                                "total-transactions",
+                                "uplink-volume"
+                            ],
+                            "granularity": "session",
+                            "interval": 5,
+                            "volume": {
+                                "downlink": 5000,
+                                "total": 10000,
+                                "uplink": 5000
+                            }
+                        }
+                    },
+                    {
+                        "name": "testPolicyRule4",
+                        "precedence": 1,
+                        "forwarding": {
+                            "type": "route-to-network",
+                            "fallbackAction": "continue"
+                        },
+                        "usageReporting": {
+                            "destination": "hsl",
+                            "publisher": {
+                                "use": "testLogPublisher"
+                            },
+                            "formatScript": {
+                                "bigip": "/Common/testFormatScript"
+                            },
+                           "flowReportingFields": [
+                                "application-id",
+                                "destination-ip",
+                                "destination-transport-port",
+                                "downlink-volume",
+                                "flow-end-milli-seconds",
+                                "flow-end-seconds",
+                                "flow-start-milli-seconds",
+                                "flow-start-seconds",
+                                "observation-time-seconds",
+                                "protocol-identifier",
+                                "record-type",
+                                "report-id",
+                                "report-version",
+                                "route-domain",
+                                "source-ip",
+                                "source-transport-port",
+                                "subscriber-id",
+                                "subscriber-id-type",
+                                "timestamp-msec",
+                                "total-transactions",
+                                "uplink-volume",
+                                "url-category-id",
+                                "vlan-id"
+                            ],
+                            "granularity": "flow",
+                            "interval": 5,
+                            "volume": {
+                                "downlink": 5000,
+                                "total": 10000,
+                                "uplink": 5000
+                            }
+                        }
+                    },
+                    {
+                        "name": "testPolicyRule5",
+                        "precedence": 1,
+                        "forwarding": {
+                            "type": "http",
+                            "redirectUrl": "https://localhost",
+                            "fallbackAction": "continue"
+                        },
+                        "usageReporting": {
+                            "destination": "hsl",
+                            "publisher": {
+                                "use": "testLogPublisher"
+                            },
+                            "transactionReportingFields": [
+                                "application-id",
+                                "destination-ip",
+                                "destination-transport-port",
+                                "downlink-volume",
+                                "http-hostname",
+                                "http-hostname-truncated",
+                                "http-response-code",
+                                "http-url",
+                                "http-url-truncated",
+                                "http-user-agent",
+                                "http-user-agent-truncated",
+                                "protocol-identifier",
+                                "record-type",
+                                "report-id",
+                                "report-version",
+                                "route-domain",
+                                "skipped-transactions",
+                                "source-ip",
+                                "source-transport-port",
+                                "subscriber-id",
+                                "subscriber-id-type",
+                                "transaction-classification-result",
+                                "transaction-end-milli-seconds",
+                                "transaction-end-seconds",
+                                "transaction-number",
+                                "transaction-start-milli-seconds",
+                                "transaction-start-seconds",
+                                "uplink-volume",
+                                "url-category-id",
+                                "vlan-id"
+                            ],
+                            "granularity": "transaction",
+                            "interval": 0,
+                            "transaction": {
+                                "hostname": 500,
+                                "uri": 60,
+                                "userAgent": 10
+                            }
+                        }
+                    },
+                    {
+                       "name": "testPolicyRule6",
+                        "precedence": 1,
+                        "usageReporting": {
+                            "destination": "radius-accounting",
+                            "radiusAAAService": {
+                                "bigip": "/Common/testServiceRadiusAAA"
+                            },
+                            "granularity": "session",
+                            "interval": 5,
+                            "volume": {
+                                "downlink": 5000,
+                                "total": 10000,
+                                "uplink": 5000
+                            }
+                        }
+                    }
+                ]
+            },
+            "testPemPolicyDefault": {
+                "class": "Enforcement_Policy",
+                "rules": [
+                    {
+                        "name": "testPolicyRuleDefault",
+                        "precedence": 10
+                    }
+                ]
+            },
+            "testPemPolicyDefaultNoRule": {
+                "class": "Enforcement_Policy"
+            },
+            "testTcpProfile": {
+                "class": "TCP_Profile"
+            },
+            "testLogPublisher": {
+                "class": "Log_Publisher",
+                "destinations": [
+                    {
+                        "use": "testLogDestination"
+                    }
+                ]
+            },
+            "testLogDestination": {
+                "class": "Log_Destination",
+                "type": "remote-high-speed-log",
+                "pool": {
+                    "use": "testPool"
+                }
+            },
+            "testPool": {
+                "class": "Pool"
+            }
+        }
+    }
+}

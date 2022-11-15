@@ -1,0 +1,24 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "GSLB_VS_Discovery",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDataCenter": {
+            	"class": "GSLB_Data_Center"
+            },
+            "testServer": {
+                "class": "GSLB_Server",
+                "dataCenter": {
+                    "use": "testDataCenter"
+                },
+                "devices": [{ "address": "10.10.10.10"}],
+                "virtualServerDiscoveryMode": "enabled-no-delete",
+                "exposeRouteDomainsEnabled": true
+            }
+        }
+    }
+}

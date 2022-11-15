@@ -1,0 +1,24 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.24.0",
+  "owaspTenant": {
+    "class": "Tenant",
+    "owaspApp": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "192.0.2.0"
+        ],
+        "policyWAF": {
+          "use": "asmPolicy"
+        }
+      },
+      "asmPolicy": {
+        "class": "WAF_Policy",
+        "url": "https://raw.githubusercontent.com/f5devcentral/f5-asm-policy-templates/v1.1/owasp_ready_template/owasp_policy_v1.0.json",
+        "ignoreChanges": false
+      }
+    }
+  }
+}

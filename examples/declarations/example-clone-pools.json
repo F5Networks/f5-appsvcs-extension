@@ -1,0 +1,68 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.9.0",
+    "id": "TEST_Clone_Pools",
+    "remark": "Clone Pools Support",
+    "Sample_clone_pool": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testService": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.34",
+                    "192.0.2.35"
+                ],
+                "virtualPort": 80,
+                "pool": "web_pool",
+                "clonePools": {
+                    "ingress": {
+                        "use": "testPoolIngress"
+                    },
+                    "egress": {
+                        "use": "testPoolEgress"
+                    }
+                }
+            },
+            "testPoolIngress": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 443,
+                        "serverAddresses": [
+                            "192.0.2.51",
+                            "192.0.2.52"
+                        ]
+                    }
+                ]
+            },
+            "testPoolEgress": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 443,
+                        "serverAddresses": [
+                            "192.0.2.54",
+                            "192.0.2.55"
+                        ]
+                    }
+                ]
+            },
+            "web_pool": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.2.72",
+                            "192.0.2.73"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

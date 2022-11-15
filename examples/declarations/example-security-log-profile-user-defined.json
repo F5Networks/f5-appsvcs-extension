@@ -1,0 +1,17 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Security_Log_Profile",
+    "Security_Log_Remote": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "secLogRemote": {
+                "class": "Security_Log_Profile",
+                "network": {
+                    "storageFormat": "${date_time},${bigip_hostname},${src_ip},${src_port},${action}"
+                }
+            }
+        }
+    }
+}

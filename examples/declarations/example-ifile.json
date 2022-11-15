@@ -1,0 +1,23 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.29.0",
+    "id": "iFile",
+    "TEST_iFile": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "testIFile": {
+                "class": "iFile",
+                "iFile": {
+                    "url": "https://example.com/theIFile"
+                }
+            },
+            "testIRule": {
+                "class": "iRule",
+                "iRule": {
+                    "base64": "d2hlbiBIVFRQX1JFUVVFU1QgewogICAgICAgICBzZXQgaWZpbGVDb250ZW50IFtpZmlsZSBnZXQgIi9URVNUX2lGaWxlL0FwcGxpY2F0aW9uL3Rlc3RJRmlsZSJdCiAgICAgICAgIEhUVFA6OnJlc3BvbmQgMjAwIGNvbnRlbnQgJGlmaWxlQ29udGVudAogICAgICAgICB1bnNldCBpZmlsZUNvbnRlbnQKICAgICAgfQ=="
+                }
+            }
+        }
+    }
+}

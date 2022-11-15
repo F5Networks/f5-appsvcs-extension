@@ -1,0 +1,81 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.17.0",
+    "SampleCipherGroup": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "webtls": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "webcert"
+                    }
+                ],
+                "cipherGroup": {
+                    "use": "/SampleCipherGroup/SampleApp/myCipherGroup"
+                },
+                "tls1_3Enabled": true
+            },            
+            "myCipherGroup": {
+                "class": "Cipher_Group",
+                "allowCipherRules": [
+                    {
+                        "bigip": "/Common/f5-default"
+                    },
+                    {
+                        "bigip": "/Common/f5-secure"
+                    }
+                ],
+                "excludeCipherRules": [
+                    {
+                        "use": "/SampleCipherGroup/SampleApp/customCipherRule1"
+                    }
+                ],
+                "requireCipherRules": [
+                    {
+                        "use": "/SampleCipherGroup/SampleApp/customCipherRule2"
+                    }
+                ],
+                "order": "strength"
+            },
+            "customCipherRule1": {
+                "class": "Cipher_Rule",
+                "cipherSuites": [
+                    "RSA"
+                ]
+            },
+            "customCipherRule2": {
+                "class": "Cipher_Rule",
+                "remark": "The description",
+                "cipherSuites": [
+                    "ECDHE",    
+                    "ECDHE_ECDSA",
+                    "!SSLV3",
+                    "!RC4",
+                    "!EXP",
+                    "!DES",
+                    "!3DES"
+                ],
+                "namedGroups": [
+                    "P256",
+                    "P384"
+                ],
+                "signatureAlgorithms": [
+                    "DSA-SHA256",
+                    "DSA-SHA512",
+                    "ECDSA-SHA384"
+                ]
+            },
+            "webcert": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            }
+        }   
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.30.0",
+    "id": "HTML_Rule",
+    "TEST_HTML_Rule": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sample1": {
+                "class": "HTML_Rule",
+                "ruleType": "tag-append-html",
+                "remark": "sample1",
+                "content": "<script type=\\\"text/javascript\\\" src=\\\"ProvidedJSPath\\?cache\\\"></script> <script type=\\\"text/javascript\\\" src=\\\"ShapeProvidedJSPath\\?async\\\" async></script>",
+                "match": {
+                    "tagName": "/title"
+                }
+            },
+            "sample2": {
+                "class": "HTML_Rule",
+                "ruleType": "tag-append-html",
+                "remark": "sample2",
+                "content": "some content here",
+                "match": {
+                    "attributeName": "pie",
+                    "attributeValue": "apple",
+                    "tagName": "/dessert"
+                }
+            }
+        }
+    }
+}

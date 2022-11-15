@@ -1,0 +1,32 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.29.0",
+    "Sample_pool_allow-nat_allow-snat": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.1.10.10"
+                ],
+                "pool": {
+                    "use": "web_pool"
+                }
+            },
+            "web_pool": {
+                "class": "Pool",
+                "allowNATEnabled": false,
+                "allowSNATEnabled": true,
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "10.128.0.209"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "F5 BIG-IP AS3 Settings Declaration",
+    "description": "A declarative configuration for BIG-IP AS3",
+    "type": "object",
+    "properties": {
+        "asyncTaskStorage": {
+            "title": "Asynchronous Task Storage",
+            "description": "Control where asynchronous tasks are stored. Existing tasks are not transferred when the storage type is changed. Storing tasks in a data group persists the data between restarts, but puts more pressure on the control plane.",
+            "type": "string",
+            "enum": [
+                "data-group",
+                "memory"
+            ],
+            "default": "data-group"
+        },
+        "burstHandlingEnabled": {
+            "title": "Burst Handling Enabled",
+            "description": "A boolean that controls if BIG-IP AS3 on this BIG-IP system uses the Burst Handling feature",
+            "type": "boolean",
+            "default": false
+        },
+        "performanceTracingEnabled": {
+            "title": "Performance Tracing Enabled",
+            "description": "A boolean that controls if BIG-IP AS3 records performance information. Jaeger client must be installed to enable.",
+            "type": "boolean",
+            "default": false
+        },
+        "performanceTracingEndpoint": {
+            "title": "Performance Tracing Endpoint",
+            "description": "Remote endpoint to which performance tracing will send data",
+            "type": "string",
+            "default": ""
+        },
+        "serviceDiscoveryEnabled": {
+            "title": "Service Discovery Enabled",
+            "description": "A boolean that controls if Service Discovery features are enabled",
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "additionalProperties": false
+}

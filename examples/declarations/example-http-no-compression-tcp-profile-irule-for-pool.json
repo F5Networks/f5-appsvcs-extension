@@ -1,0 +1,69 @@
+{
+  "class": "AS3",
+  "action": "deploy",
+  "persist": true,
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "urn:uuid:a858e55e-bbe6-42ce-a9b9-0f4ab33e3bf7",
+    "label": "Sample 2",
+    "remark": "HTTP with no compression, BIG-IP tcp profile, iRule for pool",
+    "constants": {
+      "myNotes": "F5 suggested I timestamp declarations, so...",
+      "timestamp": "2017-11-27T18:26:45Z",
+      "anotherProperty": "And I can put anything I want here...",
+      "someUsefulNumber": 3.14159265
+    },
+    "Sample_http_02": {
+      "class": "Tenant",
+      "A1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "10.0.3.10"
+          ],
+          "pool": "dfl_pool",
+          "profileHTTPCompression": "basic",
+          "iRules": [
+            "choose_pool"
+          ],
+          "profileTCP": {
+            "bigip": "/Common/mptcp-mobile-optimized"
+          }
+        },
+        "dfl_pool": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [{
+            "servicePort": 80,
+            "serverAddresses": [
+              "192.0.3.10",
+              "192.0.3.11"
+            ]
+          }]
+        },
+        "pvt_pool": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [{
+            "servicePort": 80,
+            "serverAddresses": [
+              "192.0.3.20",
+              "192.0.3.21"
+            ]
+          }]
+        },
+        "choose_pool": {
+          "class": "iRule",
+          "remark": "choose private pool based on IP",
+          "iRule": "when CLIENT_ACCEPTED {\nif {[IP::client_addr] starts_with \"10.\"} {\n pool `*pvt_pool`\n }\n}"
+        }
+      }
+    }
+  }
+}

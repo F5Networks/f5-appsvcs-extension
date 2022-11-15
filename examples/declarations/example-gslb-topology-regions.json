@@ -1,0 +1,72 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.23.0",
+    "id": "GSLB_Domain",
+    "label": "GSLB Configuration",
+    "remark": "A Sample Configuration of GSLB Regions",
+    "Common": {
+        "class": "Tenant",
+        "label": "The main GSLB tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "regionGSLBUnknown": {
+                "class": "GSLB_Topology_Region",
+                "members": [
+                    {
+                        "matchType": "continent",
+                        "matchOperator": "equals",
+                        "matchValue": "--"
+                    }
+                ]
+            },
+            "regionGSLB": {
+                "class": "GSLB_Topology_Region",
+                "members": [
+                    {
+                        "matchType": "region",
+                        "matchOperator": "equals",
+                        "matchValue": {
+                            "use": "/Common/Shared/regionGSLBUnknown"
+                        }
+                    },
+                    {
+                        "matchType": "continent",
+                        "matchOperator": "equals",
+                        "matchValue": "SA"
+                    },
+                    {
+                        "matchType": "country",
+                        "matchOperator": "not-equals",
+                        "matchValue": "DE"
+                    },
+                    {
+                        "matchType": "geoip-isp",
+                        "matchOperator": "not-equals",
+                        "matchValue": "some-geolocation-isp-value"
+                    },
+                    {
+                        "matchType": "isp",
+                        "matchOperator": "equals",
+                        "matchValue": "Comcast"
+                    },
+                    {
+                        "matchType": "state",
+                        "matchOperator": "equals",
+                        "matchValue": "US/New Hampshire"
+                    },
+                    {
+                        "matchType": "state",
+                        "matchOperator": "equals",
+                        "matchValue": "US/Pennsylvania"
+                    },
+                    {
+                        "matchType": "subnet",
+                        "matchOperator": "equals",
+                        "matchValue": "192.168.3.0/28"
+                    }
+                ]
+            }
+        }
+    }
+}

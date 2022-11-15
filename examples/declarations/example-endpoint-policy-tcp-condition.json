@@ -1,0 +1,64 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.20.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "ipDataGroup": {
+                "class": "Data_Group",
+                "remark": "description",
+                "keyDataType": "ip",
+                "records": [
+                    {
+                        "key": "10.10.1.1"
+                    }
+                ]
+            },
+            "myPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "default",
+                        "conditions": [
+                            {
+                                "type": "tcp",
+                                "address": {
+                                    "values": [
+                                        "10.10.10.10"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "port": {
+                                    "values": [
+                                        8080
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "address": {
+                                    "datagroup": {
+                                        "bigip": "/Common/private_net"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "tcp",
+                                "address": {
+                                    "operand": "does-not-match",
+                                    "datagroup": {
+                                        "use": "/AS3_Tenant/AS3_Application/ipDataGroup"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

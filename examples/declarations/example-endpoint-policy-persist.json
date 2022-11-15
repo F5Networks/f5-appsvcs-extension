@@ -1,0 +1,95 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "Endpoint_Policy",
+    "Example_Endpoint_Policy": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "rule",
+                        "conditions": [],
+                        "actions": [
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "sourceAddress": {
+                                    "netmask": "255.255.255.255",
+                                    "timeout": 60
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "destinationAddress": {
+                                    "netmask": "255.255.255.255",
+                                    "timeout": 60
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "cookieInsert": {
+                                    "name": "foo_bar",
+                                    "expiry": "1d01:01:01"
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "cookieRewrite": {
+                                    "name": "bar_foo",
+                                    "expiry": "2d02:02:02"
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "cookiePassive": {
+                                    "name": "theFooBaring"
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "cookieHash": {
+                                    "name": "leFooBar",
+                                    "offset": 5,
+                                    "length": 50,
+                                    "timeout": 60
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "universal": {
+                                    "key": "insertFooBar",
+                                    "timeout": 65
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "hash": {
+                                    "key": "hashFooBar",
+                                    "timeout": 55
+                                }
+                            },
+                            {
+                                "type": "persist",
+                                "event": "request",
+                                "carp": {
+                                    "key": "carpFooBar",
+                                    "timeout": 50
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

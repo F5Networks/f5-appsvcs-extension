@@ -1,0 +1,83 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.8.0",
+    "id": "Endpoint_Policy",
+    "Sample_app_sec_04": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "test1": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "sni0",
+                        "actions": [
+                            {
+                                "type": "forward",
+                                "select": {
+                                    "pool": {
+                                        "bigip": "/Common/sni1"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "http",
+                                "enabled": false
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "sslExtension",
+                                "event": "ssl-client-hello",
+                                "serverName": {
+                                    "operand": "equals",
+                                    "values": [
+                                        "test1.com"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "sni1",
+                        "actions": [
+                            {
+                                "type": "forward",
+                                "select": {
+                                    "pool": {
+                                        "bigip": "/Common/sni2"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "http",
+                                "enabled": false
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "sslExtension",
+                                "event": "ssl-client-hello",
+                                "serverName": {
+                                    "operand": "equals",
+                                    "values": [
+                                        "test2.com"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "default",
+                        "actions": [
+                            {
+                                "type": "drop",
+                                "event": "request"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

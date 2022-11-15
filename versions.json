@@ -1,0 +1,11 @@
+{
+  "versionMetaTimestamp": 1540928503,
+  "latestVersion": {
+    "name": "3.40.0 (non-LTS)",
+    "url": "/products/extensions/f5-appsvcs-extension/latest/"
+  },
+  "otherVersions": [
+    { "name": "3.36.1 (LTS)", "url": "/products/extensions/f5-appsvcs-extension/3.36/"},
+    { "name": "3.32.1 (LTS)", "url": "/products/extensions/f5-appsvcs-extension/3.32/"}
+  ]
+}

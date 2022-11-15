@@ -1,0 +1,126 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "profileFix",
+    "label": "sample 23 FIX profile",
+    "remark": "Sample Application with FIX Profile",
+    "Sample_non_http_04": {
+        "class": "Tenant",
+        "appWeb": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                    "192.0.2.21"
+                ],
+                "virtualPort": 100,
+                "pool": "poolWeb",
+                "profileTCP": "normal",
+                "profileFIX": {
+                    "use": "profileFIXcustom"
+                }
+            },
+            "poolWeb": {
+                "class": "Pool",
+                "monitors": [
+                    "tcp-half-open"
+                ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.2.12",
+                            "192.0.2.13"
+                        ]
+                    }
+                ]
+            },
+            "profileFIXcustom": {
+                "class": "FIX_Profile",
+                "label": "test",
+                "parentProfile": {
+                    "bigip": "/Common/fix"
+                },
+                "errorAction": "drop-connection",
+                "fullLogonParsingEnabled": false,
+                "messageLogPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                },
+                "reportLogPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                },
+                "quickParsingEnabled": true,
+                "responseParsingEnabled": true,
+                "statisticsSampleInterval": 45,
+                "senderTagMappingList": [
+                    {
+                        "senderId": "ExistingInternalDG",
+                        "tagDataGroup": {
+                            "bigip": "/Common/testInternalDG"
+                        }
+                    },
+                    {
+                        "senderId": "ExistingExternalDG",
+                        "tagDataGroup": {
+                            "bigip": "/Common/testExternalDG",
+                            "isExternal": true
+                        }
+                    },
+                    {
+                        "senderId": "RefInternalDG",
+                        "tagDataGroup": {
+                            "use": "dataGroupRefInternal"
+                        }
+                    },
+                    {
+                        "senderId": "RefExternalDG",
+                        "tagDataGroup": {
+                            "use": "dataGroupRefExternal"
+                        }
+                    },
+                    {
+                        "senderId": "RefExternalDGFile",
+                        "tagDataGroup": {
+                            "use": "dataGroupRefExistingFileNoDG"
+                        }
+                    }
+                ]
+            },
+            "dataGroupRefInternal": {
+                "class": "Data_Group",
+                "label": "Tag values mapping",
+                "storageType": "internal",
+                "name": "Internal Int",
+                "keyDataType": "integer",
+                "records": [
+                    {
+                        "key": 121212,
+                        "value": "Summer"
+                    },
+                    {
+                        "key": 3434,
+                        "value": "Internal Field: \"see guide\""
+                    }
+                ]
+            },
+            "dataGroupRefExternal": {
+                "class": "Data_Group",
+                "label": "From URL or file path",
+                "storageType": "external",
+                "keyDataType": "string",
+                "externalFilePath": "http://yourfile.yourdomain.com",
+                "ignoreChanges": true,
+                "separator": ":"
+            },
+            "dataGroupRefExistingFileNoDG": {
+                "class": "Data_Group",
+                "label": "From existing data-group file",
+                "storageType": "external",
+                "keyDataType": "string",
+                "dataGroupFile": {
+                    "bigip": "/Common/dataGroupFileName"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+
+    "class": "AS3",
+    "action": "deploy",
+    "targetHost": "192.0.2.76",
+    "targetUsername": "admin",
+    "targetPassphrase": "admin",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.0.0",
+        "id": "container",
+        "label": "Sample 1 in a container",
+        "remark": "Simple HTTP application with RR pool",
+        "Sample_container": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.0.1.10"
+                ],
+                "pool": "web_pool"
+                },
+                "web_pool": {
+                "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                "members": [{
+                    "servicePort": 80,
+                    "serverAddresses": [
+                        "192.0.1.10",
+                        "192.0.1.11"
+                    ]
+                }]
+                }
+            }
+        }
+    }
+}

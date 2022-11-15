@@ -1,0 +1,37 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "TLS_Client",
+        "TEST_TLS_Client": {
+            "class": "Tenant",
+            "TLS_App": {
+                "class": "Application",
+                "test.item-foo": {
+                    "class": "TLS_Client",
+                    "insertEmptyFragmentsEnabled": true,
+                    "singleUseDhEnabled": true,
+                    "tls1_3Enabled": false,
+                    "tls1_2Enabled": false,
+                    "tls1_1Enabled": true,
+                    "tls1_0Enabled": false,
+                    "cipherGroup": {
+                        "bigip": "/Common/f5-aes"
+                    },
+                    "clientCertificate": "defaultCert"
+                },
+                "defaultCert": {
+                    "class": "Certificate",
+                    "certificate": {
+                        "bigip": "/Common/default.crt"
+                    },
+                    "privateKey": {
+                        "bigip": "/Common/default.key"
+                    }
+                }
+            }
+        }
+    }
+}

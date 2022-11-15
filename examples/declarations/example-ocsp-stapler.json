@@ -1,0 +1,39 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "TLS_Server",
+    "TLS_Server_OCSP": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testItem": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "cert"
+                    }
+                ],
+                "staplerOCSPEnabled": true
+            },
+            "cert": {
+                "class": "Certificate",
+                "remark": "replace these with real certificates",
+                "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                "staplerOCSP": {
+                	"use": "testOcsp"
+                },
+                "issuerCertificate": {
+                	"bigip": "/Common/issuer.crt"
+                }
+            },
+            "testOcsp": {
+                "class": "Certificate_Validator_OCSP",
+                "dnsResolver": {
+                    "bigip": "/Common/198.168.111.22"
+                },
+                "timeout": 250,
+                "responderUrl": "http://oscp.test.com"
+            }
+        }
+    }
+}

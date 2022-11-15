@@ -1,0 +1,26 @@
+{
+    "schemaVersion": "1.0.0",
+    "class": "Device",
+    "async": "true",
+    "webhook": "http://127.0.0.1:10560",
+    "Common": {
+        "class": "Tenant",
+        "license": {
+            "class": "License",
+            "licenseType": "regKey",
+            "regKey": "$REGKEY"
+        },
+        "provisioning": {
+            "class": "Provision",
+            "afm": "nominal",
+            "asm": "nominal",
+            "avr": "nominal",
+            "apm": "nominal",
+            "gtm": "nominal",
+            "ltm": "nominal",
+            "pem": "nominal",
+            "ilx": "nominal",
+            "fps": "nominal"
+        }
+    }
+}

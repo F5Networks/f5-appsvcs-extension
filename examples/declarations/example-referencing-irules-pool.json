@@ -1,0 +1,55 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "id": "8675309",
+    "Sample_pool_irule": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.1.10.10"
+                ],
+                "pool": {
+                    "use": "web_pool"
+                },
+                "persistenceMethods": [
+                    { "use": "persistRuleEx" }
+                ],
+                "iRules": [
+                    "theRule1",
+                    { "use": "theRule2" }
+                ]
+            },
+            "web_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "10.128.0.209"
+                        ]
+                    }
+                ]
+            },
+            "theRule1": {
+                "class": "iRule",
+                "iRule": "when CLIENT_ACCEPTED { }"
+            },
+            "theRule2": {
+                "class": "iRule",
+                "iRule": "when HTTP_REQUEST { }"
+            },
+            "persistRuleEx": {
+                "class": "Persist",
+                "persistenceMethod": "hash",
+                "iRule": { "use": "ruleForPersist" }
+            },
+            "ruleForPersist": {
+                "class": "iRule",
+                "iRule": "when CLIENT_ACCEPTED { }"
+            }
+        }
+    }
+}

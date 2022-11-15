@@ -1,0 +1,43 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.6.0",
+  "id": "MONITOR_EXTERNAL",
+  "remark": "external monitor",
+  "Sample_monitor_03": {
+    "class": "Tenant",
+    "Monitors": {
+      "class": "Application",
+      "label": "simple external monitor",
+      "mNewExternalMonitorFile": {
+        "class": "Monitor",
+        "monitorType": "external",
+        "interval": 5,
+        "upInterval": 0,
+        "timeUntilUp": 0,
+        "timeout": 16,
+        "expand": false,
+        "script": {
+          "url": "https://example.com/monitor.sh"
+        },
+        "environmentVariables": {
+            "USER": "example"
+        }
+      },
+      "monitorExternal_pool": {
+        "class": "Pool",
+        "members": [
+          {
+            "servicePort": 443,
+            "serverAddresses": [
+              "192.0.2.19"
+            ],
+            "minimumMonitors": 1,
+            "monitors": [
+              { "use": "mNewExternalMonitorFile" }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
