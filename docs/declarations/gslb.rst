@@ -160,12 +160,15 @@ In this example, we show how you can specify a GSLB virtual server name in a dec
 
 For additional details and BIG-IP AS3 usage, see |gslbvip| in the Schema Reference. **Important**: A GSLB_Server must always be in /Common/Shared as shown in the example.
 
-.. IMPORTANT:: In BIG-IP AS3 3.25 and later, you can no longer rename GLSB_Server objects that reside in /Common.  If you need to rename a GSLB_Server, you must first delete the GSLB_Server, and then submit a new declaration with the new name.
+In BIG-IP AS3 3.25 and later, you can no longer rename GLSB_Server objects that reside in /Common.  If you need to rename a GSLB_Server, you must first delete the GSLB_Server, and then submit a new declaration with the new name.
 
-This declaration creates the following objects on the BIG-IP:
+**New in AS3 3.41** |br|
+AS3 3.41 adds the ability to include persistence options to a |gslbdom|. The persistence options were not available in previous versions.
+
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on a version prior to 3.41, it will fail.  On previous versions, remove the persistence properties from the GSLB Domain, highlighted in yellow):
 
 - Partition (tenant) named **Example_Tenant**. 
-- A GSLB Domain named **testDomain** that defines domain properties and references a Pool.
+- A GSLB Domain named **testDomain** that defines domain properties, including persistence options, and references a Pool.
 - A GSLB pool named **testPool** which references a virtual server later in the declaration.
 - A reference to the **Common** partition, which includes an Application named **shared** and uses the shared template
 - A GSLB Data Center named **testDataCenter**.
@@ -173,6 +176,7 @@ This declaration creates the following objects on the BIG-IP:
 
 .. literalinclude:: ../../examples/declarations/example-gslb-custom-server-name.json
    :language: json
+   :emphasize-lines: 25-27
 
 :ref:`Back to top<gslbexamples>`
 
@@ -339,6 +343,11 @@ This declaration creates the following objects on the BIG-IP (this declaration d
 .. |gslbdp| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#gslb-domain-pools">GSLB_Domain_Pools</a>
+
+.. |gslbdom| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#gslb-domain">GSLB_Domain</a>
+
 
 .. |dnslog| raw:: html
 
