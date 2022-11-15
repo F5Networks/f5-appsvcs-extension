@@ -1,0 +1,2 @@
+*.spec    text eol=lf
+src/*     text eol=lf
