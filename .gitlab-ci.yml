@@ -1,0 +1,632 @@
+# AS3 parser is pre-compiled using nodejs and
+# requires node 4.8.0 for compatibility with BIG-IP.
+image: $DOCKER_URL/node:4.8.0
+
+stages:
+  - update
+  - commands
+  - atg-shared-checks
+  - schema
+  - lint
+  - test
+  - build
+  - deploy
+  - integration test
+  - teardown
+  - post build
+  - docs
+
+variables:
+  GIT_DEPTH: "10"
+  IMAGE_NAME: f5-as3-container
+  DOCS_BUILD_DIR: "docs/_build/html"
+  TF_DIRECTORY: test/common/env/terraform
+  DO_DOWNLOAD_DIR: do_rpm
+  TF_HTTP_LOCK_METHOD: POST
+  TF_HTTP_UNLOCK_METHOD: DELETE
+  TF_HTTP_USERNAME: ${CI_REGISTRY_USER}
+  TF_HTTP_PASSWORD: ${CI_JOB_TOKEN}
+  TF_CLI_ARGS_apply: "-auto-approve"
+  TF_CLI_ARGS_destroy: "-auto-approve"
+  TF_STATE_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/terraform/state"
+  # terraform will try to update state 5(4+1) times every 3 minutes.
+  TF_HTTP_RETRY_MAX: 4
+  TF_HTTP_RETRY_WAIT_MIN: 3
+  TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
+
+# This inherits all the jobs defined in the parent template
+# Override variables in this project as needed
+include:
+# adds atg-shared-checks stage and jobs
+# adds atg_shared_checks_result job to test stage
+  - project: automation-toolchain/atg-shared-templates
+    file: security/base.gitlab-ci.yml
+
+update_autotool_deps:
+  stage: update
+  rules:
+    - if: '$UPDATE_DEPS =~ /true/i'
+  needs: []
+  image: $DOCKER_URL/node:14
+  variables:
+    UPDATE_BRANCH_NAME: update_autotool_deps
+  script:
+    - . ./scripts/dev/update-as3-deps.sh
+    - . ./scripts/dev/filter-package-lock.sh
+    - >
+      if [ "$AUTOTOOL_DIFF" = "true" ]; then
+        git push -f origin ${UPDATE_BRANCH_NAME}
+        node ./scripts/dev/createMR.js
+      fi
+  tags: [cm-official-docker-executor]
+
+schema:
+  image: $DOCKER_URL/node:10
+  stage: schema
+  needs: []
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci --no-optional
+    - npm run build-schema
+  artifacts:
+    name: f5-appsvcs-$CI_BUILD_REF
+    paths:
+      - src/schema/latest/adc-schema.json
+      - src/schema/latest/as3-schema.json
+
+lint:
+  image: $DOCKER_URL/node:10
+  stage: lint
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci
+    - npm run lint
+
+coverage:
+  image: $DOCKER_URL/node:16
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci
+    - npm run coverage
+  artifacts:
+    paths:
+      - coverage
+
+audit:
+  image: $DOCKER_URL/node:lts
+  stage: test
+  needs: []
+  allow_failure: true
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm audit
+
+node:4.6:
+  image: $DOCKER_URL/node:4.6.2
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm install mocha@5.2.0 --save-dev
+    - npm install --no-optional
+    - npm run test-no-build
+
+node:6:
+  image: $DOCKER_URL/node:6
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - currentDirectory=$(pwd)
+    - mkdir -p /tmp/npm-install-directory
+    - cd /tmp/npm-install-directory
+    - npm install npm@5.10.0
+    - rm -rf /usr/local/lib/node_modules
+    - mv node_modules /usr/local/lib/
+    - ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+    - cd $currentDirectory
+    - npm ci --no-optional
+    - npm install mocha@5.2.0
+    - npm run test-no-build -- $TEST_REPORTER_OPTIONS
+  artifacts:
+    when: always
+    reports:
+      junit: test_report.xml
+
+node:8:
+  image: $DOCKER_URL/node:8.11.1
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm install --global npm@5.10.0
+    - npm ci --no-optional
+    - npm install mocha@7
+    - npm run test-no-build -- $TEST_REPORTER_OPTIONS
+  artifacts:
+    when: always
+    reports:
+      junit: test_report.xml
+
+build_rpm:
+  image: $DOCKER_URL/node:12
+  stage: build
+  needs:
+    - schema
+  script:
+    # setup node environment
+    - apt-get update && apt-get install -y rpm --no-install-recommends
+    - npm ci --no-optional
+    # build installation package
+    - scripts/build/buildRpm.sh "cloud"
+    # ensure latest copyrights
+    - node node_modules/@f5devcentral/atg-shared-utilities-dev/scripts/dev/write-copyright.js -c -p scripts/dev/copyright.txt
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    name: f5-appsvcs-$CI_BUILD_REF
+    paths:
+      - dist
+      - src/schema/latest/adc-schema.json
+      - src/schema/latest/as3-schema.json
+
+create_source:
+  image: $DOCKER_URL/node:10
+  stage: post build
+  needs:
+    - build_rpm
+  script:
+    - scripts/build/source-package.sh
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    name: f5-appsvcs-source
+    paths:
+      - dist/*-source.tar.gz
+      - dist/*-examples.tar.gz
+
+build_api_docs:
+  image: $DOCKER_URL/node:12
+  stage: build
+  needs: []
+  script:
+    # install packages
+    - npm install
+    # generate docs
+    - npm run make-api-docs
+    - mkdir apidocs && mv redoc-static.html apidocs/index.html
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    name: docs
+    paths:
+      - apidocs
+
+.deploy_common: &deploy_common
+  image: $INTEGRATION_DEPLOY_IMAGE
+  tags:
+    - as3-test-docker-executor
+  stage: deploy
+  timeout: 2 hours
+  script:
+    - apk update
+    # Need to add bash, because included sh doen't support arrays
+    # used in build_harness_file.sh script to get IP addresses.
+    - apk add bash npm gettext
+    - cd "$TF_ROOT"
+    - terraform init
+    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+        # $SKIP_DEPLOYMENT may be undefined so we check for true
+    -   terraform destroy
+    -   terraform apply
+    - fi
+    - export AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
+    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   export TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
+    - fi
+    - export AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
+    - export AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
+    - CREDS=$AS3_USERNAME:$AS3_PASSWORD
+    - cd -
+    - if [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
+    -   echo using RPM from cross-project pipeline
+    -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+    - else
+    -   echo using RPM from our pipeline
+    -   export RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
+    - fi
+    - echo "Configuring $AS3_HOST"
+    - echo "export AS3_HOST=$AS3_HOST" >> deploy.env
+    - echo "export AS3_USERNAME=$AS3_USERNAME" >> deploy.env
+    - echo "export AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
+    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   echo "Configuring target host $TARGET_HOST"
+    -   echo "export TARGET_HOST=$TARGET_HOST" >> deploy.env
+    - fi
+    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+        # If we do NOT skip deployment DO does need installed
+    -   mkdir -p "$DO_DOWNLOAD_DIR"
+    -   DO_RPM_FILE=$(scripts/dev/download-latest-do.sh "$DO_DOWNLOAD_DIR" "${DO_INTEGRATION_VERSION}")
+    -   npm install --no-optional
+    -   scripts/dev/install-rpm.sh "$AS3_HOST" "$CREDS" "$DO_RPM_FILE"
+    -   scripts/dev/run-do.sh "$AS3_HOST" "$CREDS" $TF_ROOT/onboard.json
+    -   scripts/dev/wait-for-do.sh "$AS3_HOST" "$CREDS"
+    -   scripts/dev/install-rpm.sh "$AS3_HOST" "$CREDS" "$RPM_PACKAGE"
+    -   if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -     scripts/dev/install-rpm.sh "$TARGET_HOST" "$CREDS" "$DO_RPM_FILE"
+    -     scripts/dev/run-do.sh "$TARGET_HOST" "$CREDS" $TF_ROOT/onboard.json
+    -     scripts/dev/wait-for-do.sh "$TARGET_HOST" "$CREDS"
+    -     scripts/dev/install-rpm.sh "$TARGET_HOST" "$CREDS" "$RPM_PACKAGE"
+    -   fi
+    - else
+    -   echo "skipping DO install due to SKIP_DEPLOYMENT"
+    - fi
+  artifacts:
+    when: always
+    paths:
+      - deploy.env
+    expire_in: 1 day
+  retry:
+    max: 1
+    when: script_failure
+
+deploy_to_azure:
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+  needs:
+    - job: build_rpm
+      artifacts: true
+    - job: schema
+      artifacts: true
+  variables:
+    F5_DISABLE_CERT_VERIFY: 'true'
+    TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
+    TF_ROOT: "$TF_DIRECTORY/plans/azure"
+    REGKEY: "$BIGIP_LICENSE_AZURE"
+  before_script:
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+deploy_for_this_project:
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  needs:
+    - job: build_rpm
+      artifacts: true
+    - job: schema
+      artifacts: true
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+    REGKEY: "$BIGIP_LICENSE"
+  before_script:
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   export TF_VAR_bigip_count=2
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   export TF_VAR_performance_test=true
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - fi
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+deploy_for_other_project:
+  rules:
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+  needs:
+    - project: "$UPSTREAM_PROJECT_PATH"
+      job: "$UPSTREAM_JOB"
+      ref: "$UPSTREAM_REF"
+      artifacts: true
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+    REGKEY: "$BIGIP_LICENSE"
+  before_script:
+    - if [ -n "$UPSTREAM_RPM_PATH" ]; then
+    -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+    - fi
+    - export BIGIP_IMAGE="BIGIP-16.1.2.2-0.0.28"
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+.test_rpms_common: &test_rpms_common
+  image: $DOCKER_URL/node:12-buster
+  stage: integration test
+  tags:
+    - as3-test-docker-executor
+  script:
+    - apt-get update && apt-get install -y jq --no-install-recommends
+    - npm ci --no-optional
+    - npm install --no-optional
+    - source deploy.env
+    - echo "TESTING WITH IMAGE ${BIGIP_IMAGE}"
+    - if [ "$SMOKE_TEST" = "true" ]; then
+    -   export REGRESSION_SCHEDULE="smoke"
+    - fi
+    - export FILE_VERBOSITY=verbose
+    - if [ "$REGRESSION_SCHEDULE" = "nightly" ]; then
+    -   npx mocha test/integration/bigip/property test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    - elif [ "$REGRESSION_SCHEDULE" = "smoke" ]; then
+    -   npm run smoke -- $TEST_REPORTER_OPTIONS
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
+    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    - else
+    -   npx mocha test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    - fi
+
+test_rpms_in_azure:
+  timeout: 8 hours
+  rules:
+    - if: '$SKIP_TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+  variables:
+    TEST_RESOURCES_URL: "$TEST_RESOURCES_URL_AZURE"
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: build_rpm
+      artifacts: true
+    - job: deploy_to_azure
+      artifacts: true
+
+test_rpms_for_this_project:
+  timeout: 7 hours
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: deploy_for_this_project
+      artifacts: true
+    - job: build_rpm
+      artifacts: true
+
+test_rpms_for_other_project:
+  timeout: 7 hours
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: deploy_for_other_project
+      artifacts: true
+    - project: "$UPSTREAM_PROJECT_PATH"
+      job: "$UPSTREAM_JOB"
+      ref: "$UPSTREAM_REF"
+      artifacts: true
+
+test-bigiq-ui:
+  image: $DOCKER_URL/node:10
+  stage: integration test
+  allow_failure: true
+  needs:
+    - build_rpm
+  parallel:
+    matrix:
+      - BIGIQ_BRANCH: [master/owen, master/palisade, master/quark, master/rainier]
+  script:
+    - git clone --branch $BIGIQ_BRANCH --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@$CI_SERVER_HOST:$CI_SERVER_PORT/bigiq-mgmt/bigiq-mgmt-test
+    - cd bigiq-mgmt-test/tools/schemaTransfomerValidator
+    - npm ci --no-optional
+    - cp ../../../src/schema/latest/adc-schema.json .
+    - node validateUiSchemaTest.js &> output
+    - cat output
+    - if grep -q "New Failures per class" output; then exit 1; fi
+
+.teardown_common: &teardown_common
+  image: $INTEGRATION_DEPLOY_IMAGE
+  tags:
+      - as3-test-docker-executor
+  stage: teardown
+  script:
+      - cd "$TF_ROOT"
+      - terraform init
+      - terraform destroy --var bigip_version="${BIGIP_IMAGE}"
+  retry:
+    max: 1
+    when: script_failure
+
+teardown_azure:
+  rules:
+    - if: '$SKIP_TEARDOWN =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: on_success
+  variables:
+    F5_DISABLE_CERT_VERIFY: 'true'
+    TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
+    TF_ROOT: "$TF_DIRECTORY/plans/azure"
+  before_script:
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+  <<: *teardown_common
+
+teardown_openstack:
+  rules:
+    - if: '$SKIP_TEARDOWN =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+      when: on_success
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+  before_script:
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   export TF_VAR_bigip_count=2
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - fi
+  <<: *teardown_common
+
+# DOCS
+create_docs:
+  image: ${CONTAINTHEDOCS_IMAGE}
+  stage: post build
+  allow_failure: true
+  needs:
+    - build_api_docs
+  script:
+    - npm ci --no-optional
+    - npm run build-schema
+    - node scripts/build/schema-to-rst.js
+    - node scripts/build/create-examples-collection.js
+    - if [ "$CI_COMMIT_REF_NAME" = "docs-staging" ] || [ "$CI_COMMIT_REF_NAME" = "docs-0.0" ] || [ "$CI_COMMIT_REF_NAME" = "docs-latest" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.13.1" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.5.1" ]; then
+    -   rm -rf docs/_templates
+    - fi
+    - npm install mocha@7.2.0
+    - make html
+    - API_DOCS_INDEX=${DOCS_BUILD_DIR}/refguide/apidocs.html
+    - cp apidocs/index.html ${API_DOCS_INDEX}
+
+    - echo "Checking grammar and style"
+    # Runs the grammar check on everything except the /docs/drafts directory
+    - vale --glob='*.rst' .
+    - echo "Checking links"
+    - make linkcheck
+
+    # build developer documentation (optional)
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+    -   npm install --registry $NPM_REGISTRY_URL -g jsdoc
+    -   jsdoc src/nodejs/* -d contributing
+    - fi
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    expire_in: 1 week
+    name: sphinx-docs_$CI_BUILD_REF
+    paths:
+      - docs/_build/html
+      - contributing
+      - examples/as3.examples.collection.json
+
+# Deploy docs to Pages for review
+pages:
+  stage: docs
+  allow_failure: true
+  environment:
+    name: staging
+    url: https://${CI_PROJECT_NAMESPACE}.${PAGES_DOMAIN}/${CI_PROJECT_NAME}/
+  tags:
+    - cm-official-docker-executor
+  needs:
+    - create_docs
+    - coverage
+  script:
+    - PUBLIC_DIR='./public'
+    - PUBLIC_DOCS=${PUBLIC_DIR}/public-docs
+    - COVERAGE_DOCS=${PUBLIC_DIR}/coverage-docs
+    - mkdir -p ${PUBLIC_DIR}
+    - mkdir -p ${PUBLIC_DOCS}
+    - mkdir -p ${COVERAGE_DOCS}
+    - cp docs/index.html ${PUBLIC_DIR}/index.html
+    - cp -R docs/_build/html/* ${PUBLIC_DOCS}
+    - cp -R coverage/* ${COVERAGE_DOCS}
+  artifacts:
+    paths:
+      - public
+  only:
+    - develop
+    - doc-release-branch
+    - joes-as3-wip
+    - /^atgs-.*$/i
+
+# Publish docs to clouddocs.f5.com
+docs_to_production:
+  image: ${CONTAINTHEDOCS_IMAGE}
+  stage: docs
+  environment:
+    name: production
+    url: https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest
+  only:
+  # Currently will only deploy to clouddocs.f5.com on commits to docs-latest
+  # fill in desired release branch name and uncomment to add deployment from a branch
+    - docs-latest@automation-toolchain/f5-appsvcs
+  tags:
+    - cm-official-docker-executor
+  needs:
+    - create_docs
+  script:
+  # Uncomment and set to create desired version format
+    - aws s3 sync docs/_build/html s3://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest
+    - aws s3 cp versions.json s3://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/versions.json
+    # create invalidation to clear cloudfront cache
+    # - aws cloudfront create-invalidation --distribution-id $AWS_DIST --paths /products/extensions/f5-appsvcs-extension/latest
