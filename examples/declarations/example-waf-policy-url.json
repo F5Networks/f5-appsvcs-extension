@@ -1,0 +1,25 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.26.0",
+    "id": "WAF_Policy",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": ["10.10.20.20"],
+                "policyWAF": {
+                    "use": "wafPolicy"
+                }
+            },
+            "wafPolicy": {
+                "class": "WAF_Policy",
+                "policy": {
+                    "url": "https://example.xml"
+                },
+                "ignoreChanges": false
+            }
+        }
+    }
+}

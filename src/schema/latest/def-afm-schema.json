@@ -1,0 +1,1709 @@
+{
+    "definitions": {
+        "Firewall_Address_List": {
+            "title": "Firewall_Address_List",
+            "description": "Declares an address-list for use by firewall rules. An address list is a list of IP-address prefixes to compare against the source-IP address and/or destination-IP address in an IP packet",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "asm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Firewall_Address_List"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "addresses": {
+                    "type": "array",
+                    "description": "A list of IPv4 and IPv6 addresses and address ranges. You can specify a network with CIDR slash notation.",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "addressDiscovery": {
+                                        "title": "Address discovery",
+                                        "description": "Selects how server (node) addresses are discovered",
+                                        "type": "string",
+                                        "enum": [ "event", "aws", "gce", "azure", "consul" ],
+                                        "f5serviceDiscovery": true
+                                    },
+                                    "updateInterval": {
+                                        "title": "Update interval",
+                                        "description": "Server-discovery update interval (seconds)",
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 3600,
+                                        "default": 60
+                                    }
+                                },
+                                "required": ["addressDiscovery"],
+                                "allOf": [
+                                    {
+                                        "if": { "properties": { "addressDiscovery": { "const": "aws" } } },
+                                        "then": { "$ref": "#/definitions/Service_Discovery_AWS" }
+                                    },
+                                    {
+                                        "if": { "properties": { "addressDiscovery": { "const": "azure" } } },
+                                        "then": { "$ref": "#/definitions/Service_Discovery_Azure" }
+                                    },
+                                    {
+                                        "if": { "properties": { "addressDiscovery": { "const": "gce" } } },
+                                        "then": { "$ref": "#/definitions/Service_Discovery_GCE" }
+                                    },
+                                    {
+                                        "if": { "properties": { "addressDiscovery": { "const": "consul" } } },
+                                        "then": { "$ref": "#/definitions/Service_Discovery_Consul" }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "minItems": 1
+                },
+                "fqdns": {
+                    "type": "array",
+                    "description": "A list of fully qualified domain names.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "geo": {
+                    "type": "array",
+                    "description": "A list of geographic locations (for example, US:Washington).",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "addressLists": {
+                    "type": "array",
+                    "description": "A list of other address lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": ["class"],
+            "anyOf": [
+                { "required": [ "addresses" ] },
+                { "required": [ "fqdns" ] },
+                { "required": [ "geo" ] },
+                { "required": [ "addressLists" ] }
+            ]
+        },
+
+        "Firewall_Port_List": {
+            "title": "Firewall_Port_List",
+            "description": "Declares a port-list for use by firewall rules. A firewall rule can match a packet's source port or destination port against one of the ports in a port list, and can take some action (such as ACCEPT or DROP) for a matching packet.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Firewall_Port_List"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "ports": {
+                    "type": "array",
+                    "description": "A list of ports and port ranges (for example, 80, \"8080-8090\").",
+                    "items": {
+                        "type": ["integer", "string"]
+                    },
+                    "minItems": 1
+                },
+                "portLists": {
+                    "type": "array",
+                    "description": "A list of other port lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to firewall port list declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": { "const": "Firewall_Port_List" }
+                                        },
+                                        "required": [ "class" ]
+                                    }
+                                }
+                            },
+                            "bigip": {
+                                "title": "BIG-IP Firewall Port List",
+                                "description": "Pathname of existing BIG-IP firewall port list",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query security firewall port-list"]
+                        }
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false,
+            "required": ["class"],
+            "anyOf": [
+                { "required": [ "ports" ] },
+                { "required": [ "portLists" ] }
+            ]
+        },
+
+        "Firewall_Rule_List": {
+            "title": "Firewall_Rule_List",
+            "description": "Declares a list of network firewall rules. You can reuse a rule list in multiple firewalls, such as the firewalls for self IPs, routing domains, and the global firewall.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Firewall_Rule_List"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "rules": {
+                    "type": "array",
+                    "description": "A list of network firewall rules.",
+                    "items": {
+                        "$ref": "#/definitions/Firewall_Rule"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": ["class"]
+        },
+
+        "Firewall_Rule": {
+            "title": "Firewall Rule",
+            "description": "Declares a network firewall rule.",
+            "type": "object",
+
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "name": {
+                    "type": "string",
+                    "description": "The name of the firewall rule."
+                },
+                "action": {
+                    "type": "string",
+                    "description": "Specifies the action that the firewall rule will take on matching packets.",
+                    "enum": [
+                        "accept",
+                        "drop",
+                        "accept-decisively",
+                        "reject"
+                    ]
+                },
+                "protocol": {
+                    "type": "string",
+                    "description": "Specifies the protocol to which the firewall rule applies",
+                    "enum": [
+                        "3pc",
+                        "a/n",
+                        "ah",
+                        "any",
+                        "argus",
+                        "aris",
+                        "ax.25",
+                        "bbn-rcc",
+                        "bna",
+                        "br-sat-mon",
+                        "cbt",
+                        "cftp",
+                        "chaos",
+                        "compaq-peer",
+                        "cphb",
+                        "cpnx",
+                        "crdup",
+                        "crtp",
+                        "dccp",
+                        "dcn",
+                        "ddp",
+                        "ddx",
+                        "dgp",
+                        "dsr",
+                        "egp",
+                        "eigrp",
+                        "emcon",
+                        "encap",
+                        "esp",
+                        "etherip",
+                        "fc",
+                        "fire",
+                        "ggp",
+                        "gmtp",
+                        "gre",
+                        "hip",
+                        "hmp",
+                        "hopopt",
+                        "i-nlsp",
+                        "iatp",
+                        "icmp",
+                        "idpr",
+                        "idpr-cmtp",
+                        "idrp",
+                        "ifmp",
+                        "igmp",
+                        "igp",
+                        "il",
+                        "ip",
+                        "ipcomp",
+                        "ipcv",
+                        "ipip",
+                        "iplt",
+                        "ippc",
+                        "ipv4",
+                        "ipv6",
+                        "ipv6-auth",
+                        "ipv6-crypt",
+                        "ipv6-frag",
+                        "ipv6-icmp",
+                        "ipv6-nonxt",
+                        "ipv6-opts",
+                        "ipv6-route",
+                        "ipx-in-ip",
+                        "irtp",
+                        "isis",
+                        "iso-ip",
+                        "iso-tp4",
+                        "kryptolan",
+                        "l2tp",
+                        "larp",
+                        "leaf-1",
+                        "leaf-2",
+                        "manet",
+                        "merit-inp",
+                        "mfe-nsp",
+                        "micp",
+                        "mobile",
+                        "mobility-header",
+                        "mpls-in-ip",
+                        "mtp",
+                        "mux",
+                        "narp",
+                        "netblt",
+                        "nsfnet-igp",
+                        "nvp",
+                        "ospf",
+                        "pgm",
+                        "pim",
+                        "pipe",
+                        "pnni",
+                        "prm",
+                        "ptp",
+                        "pup",
+                        "pvp",
+                        "qnx",
+                        "rdp",
+                        "rohc",
+                        "rsvp",
+                        "rsvp-e2e-ignore",
+                        "rvd",
+                        "sat-expak",
+                        "sat-mon",
+                        "scc-sp",
+                        "scps",
+                        "sctp",
+                        "sdrp",
+                        "secure-vmtp",
+                        "shim6",
+                        "skip",
+                        "sm",
+                        "smp",
+                        "snp",
+                        "sprite-rpc",
+                        "sps",
+                        "srp",
+                        "sscopmce",
+                        "st",
+                        "stp",
+                        "sun-nd",
+                        "swipe",
+                        "tcf",
+                        "tcp",
+                        "tlsp",
+                        "tp++",
+                        "trunk-1",
+                        "trunk-2",
+                        "ttp",
+                        "udp",
+                        "udplite",
+                        "uti",
+                        "vines",
+                        "visa",
+                        "vmtp",
+                        "vrrp",
+                        "wb-expak",
+                        "wb-mon",
+                        "wesp",
+                        "wsn",
+                        "xnet",
+                        "xns-idp",
+                        "xtp"
+                    ],
+                    "default": "any"
+                },
+                "source": { "$ref": "#/definitions/Firewall_Rule_Source" },
+                "destination": { "$ref": "#/definitions/Firewall_Rule_Destination" },
+                "loggingEnabled": {
+                    "type": "boolean",
+                    "description": "Specifies whether the system enables or disables logging for the firewall rule.",
+                    "default": false
+                },
+                "iRule": {
+                    "type": "object",
+                    "description": "Specifies the name of the iRule (by BIG-IP AS3 pointer or BIG-IP pathname) that the system will trigger when a packet matches the firewall rule.",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to iRule declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "iRule" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP iRule",
+                            "description": "Pathname of existing BIG-IP iRule",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query ltm rule"]
+                    }
+                },
+                "iRuleSampleRate": {
+                    "type": "integer",
+                    "description": "Specifies the rate at which the system will trigger the specified iRule when a packet matches this firewall rule. The default value is 1 and causes the system to trigger the iRule for every packet that matches. A value of 0 disables iRule triggering."
+                }
+            },
+            "additionalProperties": false,
+
+            "dependencies": {
+                "iRuleSampleRate": ["iRule"]
+            },
+            "required": ["name", "action"]
+        },
+
+        "Firewall_Rule_Source": {
+            "title": "Firewall Rule Source",
+            "description": "Declares the packet sources to which the network firewall rule applies.",
+            "type": "object",
+
+            "properties": {
+                "addressLists": {
+                    "type": "array",
+                    "description": "A list of address lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                    }
+                },
+                "portLists": {
+                    "type": "array",
+                    "description": "A list of port lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to firewall port list declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": { "const": "Firewall_Port_List" }
+                                        },
+                                        "required": [ "class" ]
+                                    }
+                                }
+                            },
+                            "bigip": {
+                                "title": "BIG-IP Firewall Port List",
+                                "description": "Pathname of existing BIG-IP firewall port list",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query security firewall port-list"]
+                        }
+                    }
+                },
+                "vlans": {
+                    "type": "array",
+                    "description": "A list of VLANs by BIG-IP pathname",
+                    "items": {
+                        "bigip": {
+                            "title": "BIG-IP VLAN",
+                            "description": "Pathname of existing BIG-IP VLAN",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query net vlan"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Firewall_Rule_Destination": {
+            "title": "Firewall Rule Destination",
+            "description": "Declares the packet destinations to which the network firewall rule applies.",
+            "type": "object",
+
+            "properties": {
+                "addressLists": {
+                    "type": "array",
+                    "description": "A list of address lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                    }
+                },
+                "portLists": {
+                    "type": "array",
+                    "description": "A list of port lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to firewall port list declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": { "const": "Firewall_Port_List" }
+                                        },
+                                        "required": [ "class" ]
+                                    }
+                                }
+                            },
+                            "bigip": {
+                                "title": "BIG-IP Firewall Port List",
+                                "description": "Pathname of existing BIG-IP firewall port list",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query security firewall port-list"]
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Firewall_Policy": {
+            "title": "Firewall_Policy",
+            "description": "Configures firewall policy",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Firewall_Policy"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "rules": {
+                    "description": "A list of firewall policy rules",
+                    "type": "array",
+                    "items": {
+                        "if": {
+                            "oneOf": [
+                                { "required": ["use"] },
+                                { "required": ["bigip"] }
+                            ]
+                        },
+                        "then": { "$ref": "#/definitions/Pointer_Firewall_Rule_List" },
+                        "else": { "$ref": "#/definitions/Firewall_Rule" }
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "required": ["class", "rules"]
+        },
+
+        "NAT_Policy": {
+            "title": "NAT_Policy",
+            "description": "Configures network address translation policy",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "NAT_Policy"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "rules": {
+                    "description": "A list of NAT rules",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/NAT_Rule"
+                    }
+                }
+            },
+            "required": [
+                "class"
+            ],
+            "additionalProperties": false
+        },
+
+        "NAT_Rule": {
+            "description": "Network address translation rule",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "NAT rule name",
+                    "type": "string"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "source": {
+                    "$ref": "#/definitions/NAT_Rule_Source"
+                },
+                "destination": {
+                    "$ref": "#/definitions/NAT_Rule_Destination"
+                },
+                "protocol": {
+                    "description": "Specifies the IP protocol against which the packet will be compared",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "tcp",
+                        "udp"
+                    ],
+                    "default": "any"
+                },
+                "sourceTranslation": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_NAT_Source_Translation"
+                        }
+                    ]
+                },
+                "securityLogProfile": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_Security_Log_Profile"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+        },
+
+        "NAT_Rule_Destination": {
+            "description": "Network address translation destination configuration",
+            "type": "object",
+            "properties": {
+                "addressLists": {
+                    "description": "A list of address lists (each by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                    }
+                },
+                "portLists": {
+                    "description": "A list of port lists (each by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to firewall port list declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": {
+                                                "const": "Firewall_Port_List"
+                                            }
+                                        },
+                                        "required": [
+                                            "class"
+                                        ]
+                                    }
+                                }
+                            },
+                            "bigip": {
+                                "title": "BIG-IP Firewall Port List",
+                                "description": "Pathname of existing BIG-IP firewall port list",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query security firewall port-list"]
+                        }
+                    }
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+
+        "NAT_Rule_Source": {
+            "description": "Network address translation source configuration",
+            "type": "object",
+            "properties": {
+                "addressLists": {
+                    "description": "A list of address lists (each by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                    }
+                },
+                "portLists": {
+                    "description": "A list of port lists (each by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "use": {
+                                "title": "Use",
+                                "description": "BIG-IP AS3 pointer to firewall port list declaration",
+                                "type": "string",
+                                "minLength": 1,
+                                "f5PostProcess": {
+                                    "tag": "pointer",
+                                    "data": {
+                                        "properties": {
+                                            "class": {
+                                                "const": "Firewall_Port_List"
+                                            }
+                                        },
+                                        "required": [
+                                            "class"
+                                        ]
+                                    }
+                                }
+                            },
+                            "bigip": {
+                                "title": "BIG-IP Firewall Port List",
+                                "description": "Pathname of existing BIG-IP firewall port list",
+                                "type": "string",
+                                "format": "f5bigip"
+                            }
+                        },
+                        "additionalProperties": false,
+                        "minProperties": 1,
+                        "maxProperties": 1,
+                        "f5PostProcess": {
+                            "tag": "bigComponent",
+                            "data": ["query security firewall port-list"]
+                        }
+                    }
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+
+        "NAT_Source_Translation": {
+            "title": "NAT_Source_Translation",
+            "description": "Configures a Security network address translation source translation object",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "NAT_Source_Translation"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "addresses": {
+                    "description": "Specifies addresses on which source translation is performed",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "allowEgressInterfaces": {
+                    "description": "Specifies the egress interfaces (tunnels and VLANs) on which source translation is allowed",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Tunnel"
+                    }
+                },
+                "clientConnectionLimit": {
+                    "description": "Maximum number of simultaneous translated connections a client or subscriber is allowed to have",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647
+                },
+                "disallowEgressInterfaces": {
+                    "description": "Specifies the egress interfaces (tunnels and VLANs) on which source translation is not allowed",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Tunnel"
+                    }
+                },
+                "hairpinModeEnabled": {
+                    "type": "boolean",
+                    "description": "Enables or disables hairpinning for incoming connections to active translation end-points"
+                },
+                "inboundMode": {
+                    "description": "Specifies the persistence settings for NAT translation entries",
+                    "type": "string",
+                    "enum": [
+                        "endpoint-independent-filtering",
+                        "explicit",
+                        "none"
+                    ]
+                },
+                "mapping": {
+                    "$ref": "#/definitions/NAT_Source_Translation_Mapping"
+                },
+                "patMode": {
+                    "description": "Specifies whether the translation address mapping is performed in Network Address Port Translation mode, Deterministic mode, or in Port Block Allocation mode",
+                    "type": "string",
+                    "enum": [
+                        "napt",
+                        "deterministic",
+                        "pba"
+                    ]
+                },
+                "portBlockAllocation": {
+                    "$ref": "#/definitions/NAT_Source_Translation_PortBlockAllocation"
+                },
+                "ports": {
+                    "description": "Specifies source ports and port ranges on which source translation is performed",
+                    "type": "array",
+                    "items": {
+                        "type": ["integer", "string"],
+                        "minimum": 0,
+                        "maximum": 65535
+                    }
+                },
+                "routeAdvertisement": {
+                    "type": "boolean",
+                    "description": "Specifies that the traffic is advertised to dynamic routing protocols configured in the route domain",
+                    "default": false
+                },
+                "type": {
+                    "description": "Specifies the type of source translation item",
+                    "type": "string",
+                    "enum": [
+                        "dynamic-pat",
+                        "static-nat",
+                        "static-pat"
+                    ]
+                },
+                "excludeAddresses": {
+                    "description": "Specifies the set of addresses excluded from translation IP addresses available in the pool. This property is available on BIGIP 14.1 and above.",
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "$ref": "#/definitions/Pointer_Firewall_Address_List"
+                            }
+                        ]
+                    }
+                }
+            },
+
+            "dependencies": {
+                "clientConnectionLimit": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" }
+                    }
+                },
+                "hairpinModeEnabled": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" }
+                    }
+                },
+                "inboundMode": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" }
+                    }
+                },
+                "mapping": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" }
+                    }
+                },
+                "patMode": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" }
+                    }
+                },
+                "portBlockAllocation": {
+                    "properties": {
+                        "type": { "const": "dynamic-pat" },
+                        "patMode": { "const": "pba" }
+                    }
+                },
+                "ports": {
+                    "properties": {
+                        "type": { "enum": [ "static-pat", "dynamic-pat" ] }
+                    }
+                }
+            },
+
+            "if": {
+                "properties": {
+                    "allowEgressInterfaces": {}
+                },
+                "required": [
+                    "allowEgressInterfaces"
+                ]
+            },
+            "then": {
+                "not": {
+                    "properties": {
+                        "disallowEgressInterfaces": {}
+                    },
+                    "required": [
+                        "disallowEgressInterfaces"
+                    ]
+                }
+            },
+
+            "required": [
+                "type"
+            ],
+            "additionalProperties": false
+        },
+
+        "NAT_Source_Translation_Mapping": {
+            "description": "Configure the mapping settings for translation entries. It is the preservation of a public-side IP address for a client from session to session. Only available if type is dynamic-pat.",
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "description": "Specifies the mapping mode for translation entries",
+                    "type": "string",
+                    "enum": [
+                        "address-pooling-paired",
+                        "endpoint-independent-mapping",
+                        "none"
+                    ],
+                    "default": "address-pooling-paired"
+                },
+                "timeout": {
+                    "description": "Specifies the timeout (in seconds) for address and port mapping",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 300
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+
+        "NAT_Source_Translation_PortBlockAllocation": {
+            "description": "Configure the port block allocation",
+            "type": "object",
+            "properties": {
+                "blockIdleTimeout": {
+                    "description": "Specifies the amount of time in seconds that an assigned block of ports remains available when idle before it times out",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 3600
+                },
+                "blockLifetime": {
+                    "description": "Specifies the lifetime in seconds of a block of ports",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 0
+                },
+                "blockSize": {
+                    "description": "Specifies the number of ports per block.  Each block is assigned to one client.  A client can use all ports in a block multiplied by the number of blocks, up to the connection limit, if one is set",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 64
+                },
+                "clientBlockLimit": {
+                    "description": "Specifies the number of blocks that can be assigned to a client",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 1
+                },
+                "zombieTimeout": {
+                    "description": "Specifies the timeout duration for a zombie port block, which is a timed out port block with one or more active connections",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 0
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+
+        "Protocol_Inspection_Profile": {
+            "title": "Protocol_Inspection_Profile",
+            "description": "Protocol Inspection Profile used for configurable BIG-IP AFM intrusion prevention",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Protocol_Inspection_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "collectAVRStats": {
+                    "description": "If true, AVR will collect data from the intrusion prevention profile",
+                    "type": "boolean",
+                    "default": true
+                },
+                "enableComplianceChecks": {
+                    "description": "Specifies whether the compliance checks will be enabled for this profile",
+                    "type": "boolean",
+                    "default": true
+                },
+                "enableSignatureChecks": {
+                    "description": "Specifies whether the signature checks will be enabled for this profile",
+                    "type": "boolean",
+                    "default": true
+                },
+                "autoAddNewInspections": {
+                    "description": "Specifies whether new inspections delivered via IPS IM package will be automatically added to this profile",
+                    "type": "boolean",
+                    "default": false
+                },
+                "autoPublish": {
+                    "description": "Specifies whether the inspections will be automatically updated to the suggested action after the staging period",
+                    "type": "boolean",
+                    "default": false
+                },
+                "defaultFromProfile": {
+                    "description": "Specifies the parent profile. If specified, the new profile will be cloned from the parent",
+                    "type": "string"
+                },
+                "services": {
+                    "description": "Specifies the services and service checks for this profile",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "description": "The name of the service type",
+                                "type": "string",
+                                "enum": ["dhcp", "dns", "gtp", "imap", "mqtt", "netbios_ns", "nntp", "pop3", "sip", "snmp", "ssl", "telnet", "wins", "diameter", "ftp", "http", "irc", "mysql", "netbios_ssn", "other", "radius", "smtp", "ssh", "sunrpc", "tftp", "coap", "oracle", "pfcp"]
+                            },
+                            "compliance": {
+                                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Compliance_Checks"
+                            },
+                            "signature": {
+                                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Signature_Checks"
+                            },
+                            "ports": {
+                                "description": "List of ports to attach to the service.",
+                                "type": "array",
+                                "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 65535
+                                }
+                            }
+                        },
+                        "allOf": [
+                            {
+                                "if": { "properties": { "type": { "const": "dhcp" } } },
+                                "then": { "properties": { "ports": { "default": [67, 68] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "dns" } } },
+                                "then": { "properties": { "ports": { "default": [53] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "gtp" } } },
+                                "then": { "properties": { "ports": { "default": [2123, 2152, 3386] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "imap" } } },
+                                "then": { "properties": { "ports": { "default": [143, 993] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "mqtt" } } },
+                                "then": { "properties": { "ports": { "default": [1883] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "netbios_ns" } } },
+                                "then": { "properties": { "ports": { "default": [137] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "nntp" } } },
+                                "then": { "properties": { "ports": { "default": [119] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "pop3" } } },
+                                "then": { "properties": { "ports": { "default": [110] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "sip" } } },
+                                "then": { "properties": { "ports": { "default": [5060, 5061] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "snmp" } } },
+                                "then": { "properties": { "ports": { "default": [161, 162] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "ssl" } } },
+                                "then": { "properties": { "ports": { "default": [443] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "telnet" } } },
+                                "then": { "properties": { "ports": { "default": [23] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "wins" } } },
+                                "then": { "properties": { "ports": { "default": [42] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "diameter" } } },
+                                "then": { "properties": { "ports": { "default": [3868] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "ftp" } } },
+                                "then": { "properties": { "ports": { "default": [20, 21] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "http" } } },
+                                "then": { "properties": { "ports": { "default": [80, 8080] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "irc" } } },
+                                "then": { "properties": { "ports": { "default": [6663, 6667, 6668, 7000] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "mysql" } } },
+                                "then": { "properties": { "ports": { "default": [3306] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "netbios_ssn" } } },
+                                "then": { "properties": { "ports": { "default": [139, 445] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "radius" } } },
+                                "then": { "properties": { "ports": { "default": [1645, 1646, 1812, 1813] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "smtp" } } },
+                                "then": { "properties": { "ports": { "default": [25] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "ssh" } } },
+                                "then": { "properties": { "ports": { "default": [22] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "sunrpc" } } },
+                                "then": { "properties": { "ports": { "default": [111] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "tftp" } } },
+                                "then": { "properties": { "ports": { "default": [69] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "coap" } } },
+                                "then": { "properties": { "ports": { "default": [5683] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "oracle" } } },
+                                "then": { "properties": { "ports": { "default": [1521] } } }
+                            },
+                            {
+                                "if": { "properties": { "type": { "const": "pfcp" } } },
+                                "then": { "properties": { "ports": { "default": [8805] } } }
+                            }
+                        ],
+                        "required": ["type"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Protocol_Inspection_Profile_Service_Compliance_Checks": {
+            "description": "A list of compliance checks to attach to the Protocol Inspection Profile",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "check": {
+                        "type": "string",
+                        "description": "The name of the check"
+                    },
+                    "action": {
+                        "type": "string",
+                        "enum": ["accept", "drop", "reject"],
+                        "description": "Which action to perform on traffic matching the check",
+                        "default": "accept"
+                    },
+                    "log": {
+                        "type": "boolean",
+                        "description": "Specifies whether to log the check",
+                        "default": true
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "Value to use for the check. If a check accepts enumerable values, these should be delimited by spaces."
+                    }
+                },
+                "required": ["check"],
+                "additionalProperties": false
+            }
+        },
+
+        "Protocol_Inspection_Profile_Service_Signature_Checks": {
+            "description": "A list of signature checks to attach to the Protocol Inspection Profile",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "check": {
+                        "type": "string",
+                        "description": "The name of the check"
+                    },
+                    "action": {
+                        "type": "string",
+                        "enum": [
+                            "accept",
+                            "drop",
+                            "reject"
+                        ],
+                        "description": "Which action to perform on traffic matching the check",
+                        "default": "accept"
+                    },
+                    "log": {
+                        "type": "boolean",
+                        "description": "Specifies whether to log the check",
+                        "default": true
+                    }
+                },
+                "required": [
+                    "check"
+                ],
+                "additionalProperties": false
+            }
+        },
+
+        "SSH_Proxy_Profile": {
+            "title": "SSH_Proxy_Profile",
+            "description": "SSH Profile used for SSH security",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "SSH_Proxy_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "sshProfileAuthInfo": {
+                    "description": "Specifies the authentication info of public and private keys for this profile",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SSH_Proxy_Profile_Auth_Info_Collection"
+                    }
+                },
+                "sshProfileDefaultActions": {
+                    "description": "Specifies the default action values",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action_Collection"
+                        }
+                    ],
+                    "default": {}
+                },
+                "sshProfileRuleSet": {
+                    "description": "The profile's collection of rules, each rule holds a set of actions",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Collection"
+                    }
+                },
+                "timeout": {
+                    "description": "User defined timeout value",
+                    "type": "integer",
+                    "default": 0
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Auth_Info_Collection": {
+            "description": "A collection of authentication info of public and private keys",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of this set of Authorized Info",
+                    "type": "string"
+                },
+                "proxyServerAuth": {
+                    "$ref": "#/definitions/SSH_Proxy_Profile_Proxy_Auth_Info"
+                },
+                "proxyClientAuth": {
+                    "$ref": "#/definitions/SSH_Proxy_Profile_Proxy_Auth_Info"
+                },
+                "realServerAuth": {
+                    "$ref": "#/definitions/SSH_Proxy_Profile_Real_Server_Auth_Info"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Proxy_Auth_Info": {
+            "description": "The keys used to authenticate ssh connections between the big-ip and external sources",
+            "type": "object",
+            "properties": {
+                "privateKey": {
+                    "description": "The private key of the authentication algorithm (rsa, dss, etc...)",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Secret" },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "object"
+                            }
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "secret"
+                            }
+                        }
+                    ]
+                },
+                "publicKey": {
+                    "description": "The public key of the authentication algorithm (rsa, dss, etc...)",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Real_Server_Auth_Info": {
+            "description": "Public key that can be used to authenticate real host server to the proxy",
+            "type": "object",
+            "properties": {
+                "publicKey": {
+                    "description": "The public key of the authentication algorithm (rsa, dss, etc...)",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Default_Action_Collection": {
+            "description": "A collection of actions for the SSH Profile",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of this set of actions",
+                    "type": "string"
+                },
+                "agentAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "localForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "otherAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "remoteForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "rexecAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "scpUpAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "scpDownAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "sftpUpAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "sftpDownAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "shellAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "subSystemAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "x11ForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Default_Action"
+                        }
+                    ],
+                    "default": {}
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Default_Action": {
+            "description": "The action an SSH Profile will take. The default value is 'allow'.",
+            "type": "object",
+            "properties": {
+                "control": {
+                    "description": "Indicates the specific action to take",
+                    "type": "string",
+                    "enum": [ "allow", "disallow", "terminate", "unspecified" ],
+                    "default": "allow"
+                },
+                "log": {
+                    "description": "Indicates if a log will be created when the action is taken. The default value is false.",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Rule_Collection": {
+            "description": "User defined rule",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of this set of rules",
+                    "type": "string"
+                },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "sshProfileIdUsers": {
+                    "description": "Specifies the rule users identity",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "sshProfileIdGroups": {
+                    "description": "Specifies the rule groups identity",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sshProfileRuleActions": {
+                    "description": "The sets of actions in the rule",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action_Collection"
+                        }
+                    ],
+                    "default": {}
+                }
+            },
+            "anyOf": [
+                {
+                    "required": ["sshProfileIdUsers"]
+                },
+                {
+                    "required": ["sshProfileIdGroups"]
+                }
+            ],
+            "required": ["name"],
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Rule_Action_Collection": {
+            "description": "A collection of actions for the SSH Profile",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of this set of actions",
+                    "type": "string"
+                },
+                "agentAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "localForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "otherAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "remoteForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "rexecAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "scpUpAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "scpDownAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "sftpUpAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "sftpDownAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "shellAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "subSystemAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                },
+                "x11ForwardAction": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/SSH_Proxy_Profile_Rule_Action"
+                        }
+                    ],
+                    "default": {}
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "SSH_Proxy_Profile_Rule_Action": {
+            "description": "The action an SSH Profile Rule will take. The default value is 'unspecified'.",
+            "type": "object",
+            "properties": {
+                "control": {
+                    "description": "Indicates the specific action to take",
+                    "type": "string",
+                    "enum": [ "allow", "disallow", "terminate", "unspecified" ],
+                    "default": "unspecified"
+                },
+                "log": {
+                    "description": "Indicates if a log will be created when the action is taken. The default value is false.",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

@@ -1,0 +1,55 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.2.0",
+  "id": "ltm_policy",
+  "label": "",
+  "remark": "Simple HTTP application with LTM policy",
+  "Sample_http_08": {
+    "class": "Tenant",
+    "A1": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "10.0.1.10"
+        ],
+        "policyEndpoint": "forward_policy"
+      },
+      "web_pool": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [{
+          "servicePort": 80,
+          "serverAddresses": [
+            "192.0.2.10",
+            "192.0.2.11"
+          ]
+        }]
+      },
+      "forward_policy": {
+        "class": "Endpoint_Policy",
+        "rules": [{
+          "name": "forward_to_pool",
+          "conditions": [{
+            "type": "httpUri",
+            "path": {
+              "operand": "contains",
+              "values": ["example.com"]
+            }
+          }],
+          "actions": [{
+            "type": "forward",
+            "event": "request",
+            "select": {
+              "pool": {
+                "use": "web_pool"
+              }
+            }
+          }]
+        }]
+      }
+    }
+  }
+}

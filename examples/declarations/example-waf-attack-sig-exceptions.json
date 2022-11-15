@@ -1,0 +1,20 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "Example_WAF_Sig_Disable": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "exampleWAF": {
+                "class": "WAF_Policy",
+                "url": "https://example.com/files/wordpress_template_12.0.xml",
+                "ignoreChanges": false,
+                "enforcementMode": "transparent",
+                "disabledSignatures": [
+                    200000001,
+                    200000002
+                ]
+            }
+        }
+    }
+}

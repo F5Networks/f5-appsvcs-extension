@@ -1,0 +1,587 @@
+{
+    "root": [
+        {
+            "endpoint": "/mgmt/tm/auth/partition"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/data-group/internal"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/data-group/external"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/analytics",
+            "modules": ["avr"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/tcp-analytics",
+            "modules": ["avr"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/dns"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/external"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/ftp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/http"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/https"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/http2",
+            "minimumVersion": "15.1"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/gateway-icmp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/mysql"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/postgresql"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/radius"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/sip"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/smtp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/tcp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/tcp-half-open"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/udp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/inband"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/monitor/ldap"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/node"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/cookie"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/dest-addr"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/hash"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/msrdp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/source-addr"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/sip"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/ssl"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/persistence/universal"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/pool",
+            "expand": true
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/policy",
+            "expand": true
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/policy-strategy",
+            "expand": true
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/client-ldap"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/client-ssl"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/dns-logging"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/http"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/http2"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/http-compression"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/web-acceleration"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/one-connect"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/sctp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/server-ssl"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/server-ldap"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/smtps"
+        },
+        {
+            "endpoint":"/mgmt/tm/ltm/profile/statistics"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/tcp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/udp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/fastl4"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/fix"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/ipother"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/radius"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/classification",
+            "modules": ["afm", "apm", "pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/comment-raise-event"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/comment-remove"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/tag-append-html"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/tag-prepend-html"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/tag-raise-event"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/tag-remove"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/html-rule/tag-remove-attribute"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/html"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/rule"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/snatpool"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/virtual",
+            "expand": true
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/virtual-address"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/crypto/cert-validator/ocsp"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/file/data-group"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/file/ssl-cert"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/file/ssl-key"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/file/external-monitor"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/folder"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/log-config/publisher"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/log-config/destination/management-port"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/log-config/destination/remote-high-speed-log"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/log-config/destination/remote-syslog"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/log-config/destination/splunk"
+        },
+        {
+            "endpoint": "/mgmt/tm/asm/policies",
+            "select": "fullPath,name",
+            "modules": ["asm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/net/address-list",
+            "minimumVersion": "14.0"
+        },
+        {
+            "endpoint": "/mgmt/tm/security/firewall/address-list",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/firewall/port-list",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/firewall/rule-list",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/firewall/policy",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/log/profile",
+            "modules": ["afm", "asm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/nat/policy",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/nat/source-translation",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/ssh/profile",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/protocol-inspection/profile",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/icall/script"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/icall/handler/periodic"
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/profile/radius-aaa",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/profile/diameter-endpoint",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/profile/spm",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/profile/subscriber-mgmt",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/listener",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/policy",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/forwarding-endpoint",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/net/bwc/policy"
+        },
+        {
+            "endpoint": "/mgmt/tm/net/service-policy"
+        },
+        {
+            "endpoint": "/mgmt/tm/net/timer-policy"
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/interception-endpoint",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/irule",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/reporting/format-script",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/pem/service-chain-endpoint",
+            "modules": ["pem"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/dns"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/tsig-key"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/nameserver"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/zone"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/cache/transparent"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/cache/resolver"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/dns/cache/validating-resolver"
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/datacenter",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/pool/a",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/pool/aaaa",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/pool/cname",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/pool/mx",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/prober-pool",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/server",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/wideip/a",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/wideip/aaaa",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/wideip/cname",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/wideip/mx",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/region",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/rule",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/topology",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/global-settings/load-balancing",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/http",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/https",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/gateway-icmp",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/tcp",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/udp",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/external",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/security/dos/profile",
+            "modules": ["afm", "asm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/request-log"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/websocket"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/rewrite"
+        },
+        {
+            "endpoint": "/mgmt/shared/service-discovery/task"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/stream"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/ftp"
+        },
+        {
+            "endpoint": "/mgmt/tm/security/bot-defense/profile",
+            "modules": ["asm"],
+            "minimumVersion": "14.1"
+        },
+        {
+            "endpoint": "/mgmt/tm/apm/profile/access",
+            "modules": ["apm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/apm/policy/access-policy",
+            "modules": ["apm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/icap"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/request-adapt"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/response-adapt"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/cipher/rule"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/cipher/group"
+        },
+        {
+            "endpoint": "/mgmt/tm/sys/file/ifile"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/ifile"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/http-proxy-connect"
+        }
+    ],
+    "referred": [
+        {
+            "endpoint": "authInfoReference"
+        },
+        {
+            "endpoint": "membersReference"
+        },
+        {
+            "endpoint": "policiesReference"
+        },
+        {
+            "endpoint": "profilesReference"
+        },
+        {
+            "endpoint": "rulesReference"
+        },
+        {
+            "endpoint": "operandsReference"
+        },
+        {
+            "endpoint": "networkReference",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "protocolDnsReference",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "protocolSipReference",
+            "modules": ["afm"]
+        },
+        {
+            "endpoint": "devicesReference"
+        },
+        {
+            "endpoint" :"virtualServersReference"
+        },
+        {
+            "endpoint": "applicationReference"
+        },
+        {
+            "endpoint": "dosNetworkReference"
+        },
+        {
+            "endpoint": "trafficCaptureReference"
+        },
+        {
+            "endpoint": "uriRulesReference"
+        },
+        {
+            "endpoint": "externalDomainsReference"
+        },
+        {
+            "endpoint": "signatureCategoryOverridesReference"
+        },
+        {
+            "endpoint": "signatureOverridesReference"
+        },
+        {
+            "endpoint": "siteDomainsReference"
+        },
+        {
+            "endpoint": "whitelistReference"
+        },
+        {
+            "endpoint": "classOverridesReference"
+        },
+        {
+            "endpoint": "certValidatorsReference"
+        }
+    ],
+    "subReferred": [
+        "actionsReference",
+        "conditionsReference",
+        "flowInfoFiltersReference"
+    ]
+}

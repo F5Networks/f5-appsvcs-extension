@@ -1,0 +1,3034 @@
+{
+	"info": {
+		"_postman_id": "0c87c87b-1dfb-4745-afff-84f1ac194ba0",
+		"name": "BIG-IQ",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Basic Tests (single and multi)",
+			"item": [
+				{
+					"name": "GET BIG-IQ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADC BIG-IQ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"ADC\",\n    \"id\": \"single-adc\",\n    \"target\": {\n        \"address\": \"{{target1}}\"\n    },\n    \"schemaVersion\": \"3.0.0\",\n    \"controls\": {\n        \"class\": \"Controls\",\n        \"trace\": true,\n        \"logLevel\": \"debug\"\n    },\n    \"bigiqTenant1\": {\n        \"class\": \"Tenant\",\n        \"fastl4\": {\n            \"class\": \"Application\",\n            \"template\": \"l4\",\n            \"label\": \"simple tcp app VS_TCP\",\n            \"serviceMain\": {\n                \"class\": \"Service_L4\",\n                \"persistenceMethods\": [],\n                \"pool\": \"pool\",\n                \"profileL4\": {\n                    \"bigip\": \"/Common/fastL4\"\n                },\n                \"snat\": \"auto\",\n                \"virtualAddresses\": [\n                    \"10.10.10.11\"\n                ],\n                \"virtualPort\": 80\n            },\n            \"pool\": {\n                \"class\": \"Pool\",\n                \"members\": [\n                    {\n                        \"serverAddresses\": [\n                            \"192.168.128.11\"\n                        ],\n                        \"servicePort\": 8080\n                    }\n                ],\n                \"monitors\": [\n                    {\n                        \"bigip\": \"/Common/tcp\"\n                    }\n                ],\n                \"remark\": \"fastl4\"\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for Basic Tests task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Task1 Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant1 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenant1') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for Basic Tests task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Tenant1 Decl",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('bigiqTenant1 decl should exist', function () {",
+									"    const tenant1 = pm.response.json();",
+									"    const target1 = pm.environment.get('target1');",
+									"    pm.expect(tenant1.class).to.eql('ADC');",
+									"    pm.expect(tenant1.target.address).to.eql(target1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare/bigiqTenant1",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare",
+								"bigiqTenant1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADC BIG-IQ dry-run",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('taskDryRun', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"class\": \"AS3\",\n\t\"action\": \"dry-run\",\n\t\"declaration\": {\n\t    \"class\": \"ADC\",\n\t    \"id\": \"single-adc\",\n\t    \"target\": {\n\t        \"address\": \"{{target1}}\"\n\t    },\n\t    \"schemaVersion\": \"3.0.0\",\n\t    \"controls\": {\n\t        \"class\": \"Controls\",\n\t        \"trace\": true,\n\t        \"logLevel\": \"debug\"\n\t    },\n\t    \"bigiqTenant1\": {\n\t        \"class\": \"Tenant\",\n\t        \"fastl4\": {\n\t            \"class\": \"Application\",\n\t            \"template\": \"l4\",\n\t            \"label\": \"simple tcp app VS_TCP\",\n\t            \"serviceMain\": {\n\t                \"class\": \"Service_L4\",\n\t                \"persistenceMethods\": [],\n\t                \"pool\": \"pool\",\n\t                \"profileL4\": {\n\t                    \"bigip\": \"/Common/fastL4\"\n\t                },\n\t                \"snat\": \"auto\",\n\t                \"virtualAddresses\": [\n\t                    \"10.10.10.11\"\n\t                ],\n\t                \"virtualPort\": 80\n\t            },\n\t            \"pool\": {\n\t                \"class\": \"Pool\",\n\t                \"members\": [\n\t                    {\n\t                        \"serverAddresses\": [\n\t                            \"192.168.128.11\"\n\t                        ],\n\t                        \"servicePort\": 8080\n\t                    }\n\t                ],\n\t                \"monitors\": [\n\t                    {\n\t                        \"bigip\": \"/Common/tcp\"\n\t                    }\n\t                ],\n\t                \"remark\": \"fastl4\"\n\t            }\n\t        }\n\t    }\n\t}\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for dry run task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Dry-Run Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant1 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenant1') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for dry run task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"    pm.expect(result.dryRun).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{taskDryRun}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{taskDryRun}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADC Array BIG-IQ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains two tasks\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task2', jsonData.items[0].id);",
+									"    postman.setEnvironmentVariable('task3', jsonData.items[1].id);",
+									"    pm.expect(jsonData.length === 2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"bigiqTenant2\": {\n            \"class\": \"Tenant\",\n            \"fastl4\": {\n                \"class\": \"Application\",\n                \"template\": \"l4\",\n                \"label\": \"simple tcp app VS_TCP\",\n                \"serviceMain\": {\n                    \"class\": \"Service_L4\",\n                    \"persistenceMethods\": [],\n                    \"pool\": \"pool\",\n                    \"profileL4\": {\n                        \"bigip\": \"/Common/fastL4\"\n                    },\n                    \"snat\": \"auto\",\n                    \"virtualAddresses\": [\n                        \"10.10.10.12\"\n                    ],\n                    \"virtualPort\": 80\n                },\n                \"pool\": {\n                    \"class\": \"Pool\",\n                    \"members\": [\n                        {\n                            \"serverAddresses\": [\n                                \"192.168.128.112\"\n                            ],\n                            \"servicePort\": 8080\n                        }\n                    ],\n                    \"monitors\": [\n                        {\n                            \"bigip\": \"/Common/tcp\"\n                        }\n                    ],\n                    \"remark\": \"fastl4\"\n                }\n            }\n        },\n        \"bigiqTenantSame\": {\n            \"class\": \"Tenant\",\n            \"fastl4Target1\": {\n                \"class\": \"Application\",\n                \"template\": \"l4\",\n                \"label\": \"simple tcp app VS_TCP\",\n                \"serviceMain\": {\n                    \"class\": \"Service_L4\",\n                    \"persistenceMethods\": [],\n                    \"pool\": \"pool\",\n                    \"profileL4\": {\n                        \"bigip\": \"/Common/fastL4\"\n                    },\n                    \"snat\": \"auto\",\n                    \"virtualAddresses\": [\n                        \"10.12.12.1\"\n                    ],\n                    \"virtualPort\": 80\n                },\n                \"pool\": {\n                    \"class\": \"Pool\",\n                    \"members\": [\n                        {\n                            \"serverAddresses\": [\n                                \"192.168.128.200\"\n                            ],\n                            \"servicePort\": 8080\n                        }\n                    ],\n                    \"monitors\": [\n                        {\n                            \"bigip\": \"/Common/tcp\"\n                        }\n                    ],\n                    \"remark\": \"fastl4\"\n                }\n            }\n        },\n        \"target\": {\n            \"address\": \"{{target1}}\"\n        },\n        \"class\": \"ADC\",\n        \"id\": \"myid\",\n        \"schemaVersion\": \"3.0.0\",\n        \"controls\": {\n            \"class\": \"Controls\",\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        }\n    },\n    {\n        \"bigiqTenant3\": {\n            \"class\": \"Tenant\",\n            \"fastl4\": {\n                \"class\": \"Application\",\n                \"template\": \"l4\",\n                \"label\": \"simple tcp app VS_TCP\",\n                \"serviceMain\": {\n                    \"class\": \"Service_L4\",\n                    \"persistenceMethods\": [],\n                    \"pool\": \"pool\",\n                    \"profileL4\": {\n                        \"bigip\": \"/Common/fastL4\"\n                    },\n                    \"snat\": \"auto\",\n                    \"virtualAddresses\": [\n                        \"10.10.10.13\"\n                    ],\n                    \"virtualPort\": 80\n                },\n                \"pool\": {\n                    \"class\": \"Pool\",\n                    \"members\": [\n                        {\n                            \"serverAddresses\": [\n                                \"192.168.128.113\"\n                            ],\n                            \"servicePort\": 8080\n                        }\n                    ],\n                    \"monitors\": [\n                        {\n                            \"bigip\": \"/Common/tcp\"\n                        }\n                    ],\n                    \"remark\": \"fastl4\"\n                }\n            }\n        },\n        \"bigiqTenantSame\": {\n            \"class\": \"Tenant\",\n            \"fastl4Target2\": {\n                \"class\": \"Application\",\n                \"template\": \"l4\",\n                \"label\": \"simple tcp app VS_TCP\",\n                \"serviceMain\": {\n                    \"class\": \"Service_L4\",\n                    \"persistenceMethods\": [],\n                    \"pool\": \"pool\",\n                    \"profileL4\": {\n                        \"bigip\": \"/Common/fastL4\"\n                    },\n                    \"snat\": \"auto\",\n                    \"virtualAddresses\": [\n                        \"10.12.12.2\"\n                    ],\n                    \"virtualPort\": 80\n                },\n                \"pool\": {\n                    \"class\": \"Pool\",\n                    \"members\": [\n                        {\n                            \"serverAddresses\": [\n                                \"192.168.128.200\"\n                            ],\n                            \"servicePort\": 8080\n                        }\n                    ],\n                    \"monitors\": [\n                        {\n                            \"bigip\": \"/Common/tcp\"\n                        }\n                    ],\n                    \"remark\": \"fastl4\"\n                }\n            }\n        },\n        \"target\": {\n            \"address\": \"{{target2}}\"\n        },\n        \"class\": \"ADC\",\n        \"id\": \"myid\",\n        \"schemaVersion\": \"3.0.0\",\n        \"controls\": {\n            \"class\": \"Controls\",\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        }\n    }\n]"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for array to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Task2 Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant2 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenant2') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for array to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task2}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Task3 Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant3 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenant3') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for array to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task3}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Multi Target Decls",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"bigiqTenant1, bigiqTenant2 & bigiqTenantSame on target1 should exist\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const target = pm.environment.get('target1');",
+									"    const decl = jsonData.find(j => j.target.address === target);",
+									"    pm.expect(typeof decl).to.not.eql('undefined');",
+									"    pm.expect(typeof decl.bigiqTenant1).to.not.eql('undefined');",
+									"    pm.expect(typeof decl.bigiqTenant2).to.not.eql('undefined');",
+									"    pm.expect(typeof decl.bigiqTenantSame).to.not.eql('undefined');",
+									"});",
+									"",
+									"pm.test(\"bigiqTenant3 & bigiqTenantSame on target2 should exist\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const target = pm.environment.get('target2');",
+									"    const decl = jsonData.find(j => j.target.address === target);",
+									"    pm.expect(typeof decl).to.not.eql('undefined');",
+									"    pm.expect(typeof decl.bigiqTenant3).to.not.eql('undefined');",
+									"    pm.expect(typeof decl.bigiqTenantSame).to.not.eql('undefined');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Patch With Target",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task4', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"patch\",\n    \"patchBody\": [\n        {\n            \"path\": \"/bigiqTenantSame/patchApp\",\n            \"op\": \"add\",\n            \"value\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"virtualPort\": 80,\n                    \"virtualAddresses\": [\n                        \"4.5.6.7\"\n                    ],\n                    \"pool\": \"Pool\",\n                    \"profileHTTP\": {\n                        \"use\": \"HTTP_Profile\"\n                    },\n                    \"class\": \"Service_HTTP\"\n                },\n                \"Pool\": {\n                    \"members\": [\n                        {\n                            \"monitors\": [\n                                \"http\"\n                            ],\n                            \"addressDiscovery\": \"static\",\n                            \"serverAddresses\": [\n                                \"1.2.3.60\",\n                                \"1.2.3.70\"\n                            ],\n                            \"servicePort\": 80\n                        }\n                    ],\n                    \"class\": \"Pool\"\n                },\n                \"HTTP_Profile\": {\n                    \"fallbackRedirect\": \"https://1.2.3.4/error.php\",\n                    \"fallbackStatusCodes\": [\n                        404\n                    ],\n                    \"class\": \"HTTP_Profile\"\n                }\n            },\n            \"target\": {\n            \t\"address\": \"{{target2}}\"\n            }\n        }\n    ]\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for patch to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Task4 Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Patch With Target Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenantSame') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for patch to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"    const newApp = jsonData.declaration.bigiqTenantSame.patchApp;",
+									"    pm.expect(typeof newApp).not.eql('undefined');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task4}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task4}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET BIG-IQ Same Tenant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Should return same tenant from 2 targets\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare/bigiqTenantSame",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare",
+								"bigiqTenantSame"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE AS3 Array BIG-IQ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3a6017ee-9ac3-40f6-abc0-ec3af7326a88",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains two tasks\", function () {",
+									"    var jsonData = pm.response.json().items;",
+									"    postman.setEnvironmentVariable('task4', jsonData[0].id);",
+									"    postman.setEnvironmentVariable('task5', jsonData[1].id);",
+									"    pm.expect(jsonData.length === 2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"class\": \"AS3\",\n        \"action\": \"deploy\",\n        \"declaration\": {\n            \"class\": \"ADC\",\n            \"id\": \"myid\",\n            \"target\": {\n                \"address\": \"{{target1}}\"\n            },\n            \"schemaVersion\": \"3.0.0\",\n            \"controls\": {\n                \"class\": \"Controls\",\n                \"trace\": true,\n                \"logLevel\": \"debug\"\n            },\n            \"bigiqTenant1\": {\n            \t\"class\": \"Tenant\"\n            },\n            \"bigiqTenant2\": {\n                \"class\": \"Tenant\"\n            },\n            \"bigiqTenantSame\": {\n                \"class\": \"Tenant\"\n            }\n        }\n    },\n    {\n        \"class\": \"AS3\",\n        \"action\": \"deploy\",\n        \"declaration\": {\n            \"class\": \"ADC\",\n            \"id\": \"myid\",\n            \"target\": {\n                \"address\": \"{{target2}}\"\n            },\n            \"schemaVersion\": \"3.0.0\",\n            \"controls\": {\n                \"class\": \"Controls\",\n                \"trace\": true,\n                \"logLevel\": \"debug\"\n            },\n            \"bigiqTenant3\": {\n                \"class\": \"Tenant\"\n            },\n            \"bigiqTenantSame\": {\n                \"class\": \"Tenant\"\n            }\n        }\n    }\n]"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check task4 DELETE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bb50679c-835c-4904-bbb0-c175d7a46b5c",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant1 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result1 = jsonData.results.find(r => r.tenant === 'bigiqTenant1') || jsonData.results[0];",
+									"    if (result1.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for delete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result1.code).to.eql(200);",
+									"    pm.expect(result1.message).to.eql('success');",
+									"    ",
+									"    const result2 = jsonData.results.find(r => r.tenant === 'bigiqTenant2');",
+									"    pm.expect(result2.code).to.eql(200);",
+									"    pm.expect(result2.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task4}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task4}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check task5 DELETE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Tenant1 Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqTenant3') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for delete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task5}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task5}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET BIG-IQ Should return 204 With No Declaration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Patch with schemaOverlay",
+			"item": [
+				{
+					"name": "GET App Templates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test(\"Check if template exists\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const existing = jsonData.items.find(i => i.name === 'Default-as3-f5-HTTP-lb-template-v3');",
+									"    if (existing) {",
+									"pm.environment.set('templateId', existing.id);",
+									"        postman.setNextRequest('DELETE Existing App Template');",
+									"        return;   ",
+									"    } else {",
+									"        postman.setNextRequest('POST App Template');",
+									"        return;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/cm/global/appsvcs-templates",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"cm",
+								"global",
+								"appsvcs-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Existing App Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"For load balancing an HTTP application on port 80.\",\n    \"name\": \"Default-as3-f5-HTTP-lb-template-v3\",\n    \"tenant\": {\n        \"name\": \"default\",\n        \"override\": false,\n        \"editable\": true\n    },\n    \"schemaOverlay\": {\n        \"type\": \"object\",\n        \"properties\": {\n            \"class\": {\n                \"type\": \"string\",\n                \"const\": \"Application\"\n            },\n            \"template\": {},\n            \"schemaOverlay\": {},\n            \"label\": {},\n            \"remark\": {}\n        },\n        \"additionalProperties\": {\n            \"allOf\": [\n                {\n                    \"anyOf\": [\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Analytics_Profile\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Pool\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Service_HTTP\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"HTTP_Profile\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Monitor\"\n                                }\n                            }\n                        }\n                    ]\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Analytics_Profile\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Analytics_Profile\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Pool\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Pool\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Service_HTTP\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Service_HTTP\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"HTTP_Profile\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/HTTP_Profile\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Monitor\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Monitor\"\n                    }\n                }\n            ]\n        },\n        \"required\": [\n            \"class\"\n        ],\n        \"definitions\": {\n            \"Analytics_Profile\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"collectedStatsInternalLogging\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectClientSideStatistics\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectMethod\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectResponseCode\": {\n                        \"type\": \"boolean\",\n                        \"default\": false,\n                        \"const\": false\n                    },\n                    \"collectOsAndBrowser\": {\n                        \"type\": \"boolean\",\n                        \"default\": false,\n                        \"const\": false\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Pool\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"members\": {\n                        \"type\": \"array\",\n                        \"default\": [\n                            {\n                                \"monitors\": [\n                                    \"http\"\n                                ],\n                                \"addressDiscovery\": \"static\",\n                                \"serverAddresses\": [],\n                                \"servicePort\": 80\n                            }\n                        ]\n                    },\n                    \"monitors\": {\n                        \"type\": \"array\",\n                        \"default\": [\n                            \"http\"\n                        ],\n                        \"const\": [\n                            \"http\"\n                        ]\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Service_HTTP\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"virtualPort\": {\n                        \"type\": \"integer\",\n                        \"default\": 80\n                    },\n                    \"virtualAddresses\": {\n                        \"type\": \"array\"\n                    },\n                    \"profileAnalytics\": {\n                        \"type\": \"object\"\n                    },\n                    \"pool\": {\n                        \"type\": \"string\"\n                    },\n                    \"profileHTTP\": {\n                        \"type\": \"object\",\n                        \"default\": \"basic\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"HTTP_Profile\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"fallbackRedirect\": {\n                        \"type\": \"string\"\n                    },\n                    \"fallbackStatusCodes\": {\n                        \"type\": \"array\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Monitor\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"monitorType\": {\n                        \"type\": \"string\",\n                        \"default\": \"http\",\n                        \"const\": \"http\"\n                    },\n                    \"send\": {\n                        \"type\": \"string\",\n                        \"default\": \"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\"\n                    },\n                    \"receiveDown\": {\n                        \"type\": \"string\",\n                        \"default\": \"\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/cm/global/appsvcs-templates/{{templateId}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"cm",
+								"global",
+								"appsvcs-templates",
+								"{{templateId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST App Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"For load balancing an HTTP application on port 80.\",\n    \"name\": \"Default-as3-f5-HTTP-lb-template-v3\",\n    \"published\": true,\n    \"tenant\": {\n        \"name\": \"default\",\n        \"override\": false,\n        \"editable\": true\n    },\n    \"schemaOverlay\": {\n        \"type\": \"object\",\n        \"properties\": {\n            \"class\": {\n                \"type\": \"string\",\n                \"const\": \"Application\"\n            },\n            \"template\": {},\n            \"schemaOverlay\": {},\n            \"label\": {},\n            \"remark\": {}\n        },\n        \"additionalProperties\": {\n            \"allOf\": [\n                {\n                    \"anyOf\": [\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Analytics_Profile\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Pool\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Service_HTTP\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"HTTP_Profile\"\n                                }\n                            }\n                        },\n                        {\n                            \"properties\": {\n                                \"class\": {\n                                    \"const\": \"Monitor\"\n                                }\n                            }\n                        }\n                    ]\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Analytics_Profile\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Analytics_Profile\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Pool\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Pool\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Service_HTTP\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Service_HTTP\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"HTTP_Profile\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/HTTP_Profile\"\n                    }\n                },\n                {\n                    \"if\": {\n                        \"properties\": {\n                            \"class\": {\n                                \"const\": \"Monitor\"\n                            }\n                        }\n                    },\n                    \"then\": {\n                        \"$ref\": \"#/definitions/Monitor\"\n                    }\n                }\n            ]\n        },\n        \"required\": [\n            \"class\"\n        ],\n        \"definitions\": {\n            \"Analytics_Profile\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"collectedStatsInternalLogging\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectClientSideStatistics\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectMethod\": {\n                        \"type\": \"boolean\",\n                        \"default\": true,\n                        \"const\": true\n                    },\n                    \"collectResponseCode\": {\n                        \"type\": \"boolean\",\n                        \"default\": false,\n                        \"const\": false\n                    },\n                    \"collectOsAndBrowser\": {\n                        \"type\": \"boolean\",\n                        \"default\": false,\n                        \"const\": false\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Pool\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"members\": {\n                        \"type\": \"array\",\n                        \"default\": [\n                            {\n                                \"monitors\": [\n                                    \"http\"\n                                ],\n                                \"addressDiscovery\": \"static\",\n                                \"serverAddresses\": [],\n                                \"servicePort\": 80\n                            }\n                        ]\n                    },\n                    \"monitors\": {\n                        \"type\": \"array\",\n                        \"default\": [\n                            \"http\"\n                        ],\n                        \"const\": [\n                            \"http\"\n                        ]\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Service_HTTP\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"virtualPort\": {\n                        \"type\": \"integer\",\n                        \"default\": 80\n                    },\n                    \"virtualAddresses\": {\n                        \"type\": \"array\"\n                    },\n                    \"profileAnalytics\": {\n                        \"type\": \"object\"\n                    },\n                    \"pool\": {\n                        \"type\": \"string\"\n                    },\n                    \"profileHTTP\": {\n                        \"type\": \"object\",\n                        \"default\": \"basic\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"HTTP_Profile\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"fallbackRedirect\": {\n                        \"type\": \"string\"\n                    },\n                    \"fallbackStatusCodes\": {\n                        \"type\": \"array\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            },\n            \"Monitor\": {\n                \"properties\": {\n                    \"class\": {},\n                    \"monitorType\": {\n                        \"type\": \"string\",\n                        \"default\": \"http\",\n                        \"const\": \"http\"\n                    },\n                    \"send\": {\n                        \"type\": \"string\",\n                        \"default\": \"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\"\n                    },\n                    \"receiveDown\": {\n                        \"type\": \"string\",\n                        \"default\": \"\"\n                    }\n                },\n                \"type\": \"object\",\n                \"additionalProperties\": false\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/cm/global/appsvcs-templates",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"cm",
+								"global",
+								"appsvcs-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Base Configuration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"deploy\",\n    \"declaration\": {\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.9.0\",\n        \"target\": {\n            \"address\": \"{{target1}}\"\n        },\n        \"default\": {\n            \"class\": \"Tenant\",\n            \"app1\": {\n                \"class\": \"Application\",\n                \"schemaOverlay\": \"Default-as3-f5-HTTP-lb-template-v3\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"virtualPort\": 80,\n                    \"virtualAddresses\": [\n                        \"5.5.5.5\"\n                    ],\n                    \"pool\": \"Pool\",\n                    \"profileHTTP\": {\n                        \"use\": \"HTTP_Profile\"\n                    },\n                    \"class\": \"Service_HTTP\"\n                },\n                \"Pool\": {\n                    \"members\": [\n                        {\n                            \"monitors\": [\n                                \"http\"\n                            ],\n                            \"addressDiscovery\": \"static\",\n                            \"serverAddresses\": [\n                                \"1.2.3.4\",\n                                \"1.2.3.5\"\n                            ],\n                            \"servicePort\": 80\n                        }\n                    ],\n                    \"class\": \"Pool\"\n                },\n                \"HTTP_Profile\": {\n                    \"fallbackRedirect\": \"https://1.2.3.4/error.php\",\n                    \"fallbackStatusCodes\": [\n                        404\n                    ],\n                    \"class\": \"HTTP_Profile\"\n                },\n                \"Monitor\": {\n                    \"send\": \"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\",\n                    \"receiveDown\": \"HTML\",\n                    \"class\": \"Monitor\"\n                }\n            }\n        }\n    }\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for base task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Base Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'default') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for base task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Patch",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"patch\",\n    \"patchBody\": [\n        {\n            \"path\": \"/default/app2\",\n            \"op\": \"add\",\n            \"value\": {\n                \"class\": \"Application\",\n                \"schemaOverlay\": \"Default-as3-f5-HTTP-lb-template-v3\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"virtualPort\": 80,\n                    \"virtualAddresses\": [\n                        \"5.5.5.6\"\n                    ],\n                    \"pool\": \"Pool\",\n                    \"profileHTTP\": {\n                        \"use\": \"HTTP_Profile\"\n                    },\n                    \"class\": \"Service_HTTP\"\n                },\n                \"Pool\": {\n                    \"members\": [\n                        {\n                            \"monitors\": [\n                                \"http\"\n                            ],\n                            \"addressDiscovery\": \"static\",\n                            \"serverAddresses\": [\n                                \"1.2.3.40\",\n                                \"1.2.3.50\"\n                            ],\n                            \"servicePort\": 80\n                        }\n                    ],\n                    \"class\": \"Pool\"\n                },\n                \"HTTP_Profile\": {\n                    \"fallbackRedirect\": \"https://1.2.3.4/error.php\",\n                    \"fallbackStatusCodes\": [\n                        404\n                    ],\n                    \"class\": \"HTTP_Profile\"\n                },\n                \"Monitor\": {\n                    \"send\": \"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\",\n                    \"receiveDown\": \"HTML\",\n                    \"class\": \"Monitor\"\n                }\n            }\n        }\n    ]\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for patch task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Patch Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'default') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for patch task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Configuration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"deploy\",\n    \"declaration\": {\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.9.0\",\n        \"target\": {\n            \"address\": \"{{target1}}\"\n        },\n        \"default\": {\n            \"class\": \"Tenant\"\n        }\n    }\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for delete task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Delete Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'default') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for delete task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Certs",
+			"item": [
+				{
+					"name": "ADC BIG-IQ PKCS12s",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"ADC\",\n    \"id\": \"bigiqPkcs12Tenant\",\n    \"target\": {\n        \"address\": \"{{target1}}\"\n    },\n    \"schemaVersion\": \"3.0.0\",\n    \"controls\": {\n        \"class\": \"Controls\",\n        \"trace\": true,\n        \"logLevel\": \"debug\"\n    },\n    \"bigiqPkcs12Tenant\": {\n        \"class\": \"Tenant\",\n        \"app\": {\n            \"class\": \"Application\",\n            \"template\": \"generic\",\n            \"pkcs12_str\": {\n                \"class\": \"Certificate\",\n                \"passphrase\": {\n                    \"ciphertext\": \"YXMz\",\n                    \"protected\": \"eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0\"\n                },\n                \"pkcs12\": \"MIIEdAIBAzCCBDoGCSqGSIb3DQEHAaCCBCsEggQnMIIEIzCCBB8GCSqGSIb3DQEHBqCCBBAwggQMAgEAMIIEBQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQI/nEU2xuSAVcCAggAgIID2MNKbruh9PJGC3bsdOj/hsBAutS6hFtUXl1DJ8FZd2B+80ppRam4y8NKJz14Fkvr0qUOECIAPsv857EJ9PVAoYLaK6gf9jWe3nLCe8PyHv5MtJVEqORszIkQPUrI/Zsba46GLNPp1F4dEJsHXjK9XQ7yhQDIJr2yoMth+WmwBAZTx2jyoMc4m/4jcXvUTTHTOfOqqNzsS6fq3PAcYVDqC8iovWXwt7io31ix47qBvG1Vh6dCOTvupAv3KBDCJwLeSonIehobpS1SBQtLkot7LEzgLAVwpRRh4kFJ+R+dbmgH+xAxHJSb9BnSCBgW0ircrHrHFTwTHxjAd5HzGzxImPC/uuLIiKwa+7dajy2djfMgYSYkfM88zCo54hZfx1POBKQ3CF8NjFoOJZJvdi+2cQ5WO3+5xv9n6ZzyAO4W4sOvsxKQ8uwS7lL1vwFTnflvQx0y6RYsYww0nAR00D/Toq62mhpXx1Vx4ZGetVqiPU0NsLEr79l8yqZZAP4nQ68zXIYVDbKIASEFpbcCb7nDD4jExn68kWJpRINxbZ0z3hBN0RhM+LTC2Ybw5uYWezrlvxlnd2EU/ZHQGmFjWhbKH87AoWVpsGJPfcetBG4d2GhUO8X2BYitGQZuglNTZxCaWeem+QX19kCZvIkDgzp4Oi/MBpGkaS5Vjz8EQ6VhnMs2TncBVhPR6dgF3WpYOpmGOREz/Kg+8xWHqsEgI46RcEIJQ9gmVpbegmfFh6OmKXGOl0PY7bAhkLdybq2tJ23AVXKxsMOQW+5N8A4EQPp1QHFFpURsecQaKRjrj7px049zNG9Yts2Qc8KC6CGYARrxo5aeF3LK9CxsLbajcnGo1qytzn3y/1WB+rmiNQJx9e9lr63egfTWhpTMHkM9ayZX2td/mIbUDUNDZ9lsN6il7mY7EhBsdhdbGuv8wJDDS4jEdJaL8VFE2R7F1pAxSQkdF3mPFcePE0Me/vIjSv3sR+4Q44zw7dJaFU1eDAiQupLwctWKIkKeuEgEfetvZac5FqZ7KHv+MAr2AxO3jSau8cw5KR3mipzfN13cL0GdMQAKwhC6XZzZKmPJOxyhaT7V9hr7719Kqq3qX8JxVzkThHsFy5V1NjFdLvIcjQwDb0L74iwZ/mDiHdi4eKUkBQD5WiaTBBtZS8cFCXAfOZvprHFp3IuOxa2DkqKmBbTqficOxRom7gOKvaQzWlJqd/HFV4Ru0CjBXFnFXPk6FicZ6IdRzWJcVKJ/AjIDP1RUyu/NUNYbNNssK1tBW+IfGvESgaGqNzw4a/8H5G8UwSBO3bdt8kyqt+ioRjAxMCEwCQYFKw4DAhoFAAQUIvCNK3qldiHX2dfKVx7THPqQOvIECGiVUD1T1ujUAgIIAA==\"\n            },\n            \"pkcs12_b64\": {\n                \"class\": \"Certificate\",\n                \"passphrase\": {\n                    \"ciphertext\": \"ZW5jcg==\",\n                    \"protected\": \"eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0\",\n                    \"ignoreChanges\": true\n                },\n                \"pkcs12Options\": {\"keyImportFormat\":\"openssl-legacy\"},\n                \"pkcs12\": {\n                    \"base64\": \"MIIJkQIBAzCCCVcGCSqGSIb3DQEHAaCCCUgEgglEMIIJQDCCA/cGCSqGSIb3DQEHBqCCA+gwggPkAgEAMIID3QYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIbyKkeY05zrACAggAgIIDsDyydX/WjRoyyvjdI4O68RSOJtb6vr8REEI7pIgBlPYOgCaXnWlsMjLSzVI+Pj13ywA2NUy98WUj0AYxv7hbbM+Z+KM1j51lMLjSEIFM9N35N9rfRwQB6FY1vzC2bM3zbiSB8Xgrd6On0a29GqsHs7pOFwsIIHPXByDJESRVvpN/0Db8B3lvAlroCL9IqQioo5BYPxyXflY3XbiQKt/djOaNYz8zXoK0+7TGUjJDrA1+iPFdfSA8QCQErPRyZD61vrSmDo4Jwj/C6Viv5LDtIX255J/lc34tdMthgNhGE74mYfNJsCQhXr03idcmbncQau6xOm0ooA/Iv8f2tZTS8LkKGEFPs9QRoqruGP97TuLQHopB0RLoMNVepjXy0N9++AzDfg1V1ghpfhScr2tSlBzkKOc9sBT3IYYZrsQ1J7X2kYCXPdwk1Ib0mc+zQF88AjxgAn5iiMc5jCm6LeZ+snIFBjD6eTy0s4tXdql8NH4ffw6vP9ygBBw8FgYn1NESfMSa6yUyJ8fLUT4pHfR4UFQM1d9WvPjUUGJnP9VWfB7rMOks+G+pmoWEvfd8Be+XuJNWJe9RpPdL5RmKJL8rrCHN1K2qVIs+HGY3xRf/QzvCAd8wNjxT/LV5kA0vruXYm1ixPHCPodo//dIAwyJtLGZD+r8LzT1uC3iKfQg4+9zVHpEYwN4hm0KVOWCBoTI7uVu6EglLKaSKfkevC+sowsv9qex1PxLoxnoNo7Um0uxj5A//IRJfrK+fC267+XqDcszV1WYrp9juK9JHK7Mih3SlN/ka3YdIJr7OjadDpA9L6GjlgQEtx2HDHaKXoGFuejhM9kkfQPESnWsHAg3CkZG21fMn09WW5GDiktXU4JZJKDUq95bAg18O2DgaX6d8zLVgLWQh/1kbOf5V1Li/cd9drJrs84VVZBN297zToBJwPo3kxRC9SGByARH3pIdyGKZq+0o2lD14P/OeYubjVlENyc3k7EQQnbLZmOk9AIrU+3VmNnmKLtSjbBJKrR2qLSC/lsrobO1xjzH4Ddkdi+OzIzZK4eb/5hVhHbUFsE/qHJ46lt4Nz6yRg2EFMgRhmKbHnZdCCkFiWZd7/SDjAw69jbVAW/q+EHo3jON80/deZWBObkfgue+exLGLDCTIt9VsmAR7XEx5KFrxXYhnNMh4Zw0iMbAkEgdgLrHcI3do8vrhbgX0GM6AVJNfnOA/Hep/24Gt7IQFtJY1q5QTlVaaeW+2Wt8+RE6Y6X4YvxLEMIIFQQYJKoZIhvcNAQcBoIIFMgSCBS4wggUqMIIFJgYLKoZIhvcNAQwKAQKgggTuMIIE6jAcBgoqhkiG9w0BDAEDMA4ECEkU6B/SuVHgAgIIAASCBMi9oUE6JjZLDod3GgpqlXMhA5IF4UKxzcEFVIUPtJYwA2gzKhoW5kHu3XJMpqWipaJfFVXj5XcyBX5A523ObR7Std9ttCn/LlvwsjEldjKr6uLnNhrstel1itVCATlBYuoKOrnHYd8t8cf+0VN4OJ5EgQo9WLexfBpe6crU25Ot2O8j/x8UCaVZhjkYFoDQBumeTxO+3DPFnDo3q6HcARyS3YSpIw0dm8+cfJkRlynR2obOK5qWrWkGIqlB0uzUNCOl92fNM23m/rHK/bBc2bZB0mL0R3U+iNeboBTnzvBt0sNVrigi6jxhROSDsUJcHGA/dZkElGV+2yMBbgWyIZMbthGg9QujrfXISeiOO2vyeSp0qnZMaujWqh4hAHP3+OdhP1i7HTcMoDc//EJQgvHK0TAx6jOZQKebrlS8EuEk6a61yAvFXEGeEMa8uF/ijI9SUCjDPrmLPLlTqRz2obj9y9M9+EyodcZKu8o5tSzcgEkmFUaEKRLZcaSgS5dGQ/dbAybiLi3ZQl9VjrbABnZ8iCL6+7N8Mf0L1CmgQl4R6e+vbfYam61fGQMi79AMkl3NUkTN5u3tftJGD0kxsDpY4sszDDH2ECZT643riJH8VvO5dpkJy2b1sqKYhix+rHw9ZQ3gWzoocO93erAI0ZMVQGEDHlb2vSVjM5SjEwdpWBfWduTkJl/duI40yQ2emkZ+k9MCWjlqE0W0n70GaGPQGiG7QDqDtlujdJAt1tUD7j+55KausYbiDw5IVE6pYiHFIqFF8Mxvx/y1RXrT0LSW9JrnjBNrut8mcaQuOOdtW9e133imu7vTPHUpFlB9FuZFrISnLXUj7waeewHQiuz7ipyTneo7I9XaP0GrlsMelpULhffr17bhzRzN+tgbmci+vXoVSabCP6cO8duCjRDT6/VSQOc12KknhQWlAYPmlC1kQiWzuZ8jmwKUBbhK8xp4jHEvWXy8iOwFPH/jp7lV4EP5zIHFW/uZUSSIP5YdZhWqH07QyryEKUYv/sdP7uF/Z94RBDOQKo9hG5dYzUmpUiucK5XHgVylX2vFBeytHXuiqucBbxwckuHrjCyGOTTxRzAdc6dG30i9wOwCy9BOHTrFMCoHXvKJL6K57YEnlb+inniz8JceS93tVTwsdVUmN5tEr9dqu2HeoJzPZTc6beOWnmXwiiDxPbzptufg38pteg435tf3mMt9FSiPTG294pTx2vOlJs/sLSJmfyg65C9Z714CekS+TZ3Zu5RiZ2bwe2s595I2sV4ba9zmEOkDxECevwXS6dUDCWbIqJwNBawU3lS1jqee3jhrtXZWHsu5tFjeT/nyBRo6BRXKd0PgPREQIMqiT+JMdaK3f4jHhyc8TAxcSTOo32nYmF+/dh1Z9ztGNoFohlktI9bG5SLTYPmqBcCmMIz7OKdgs+cRhuUG8oXNCY0W3/mMUQvaW2uhM4UZl2j8BwWFRii3YvtRVhf1tUHPOOgHAGgA2QiVM10CKn0iWh2jD3GN+uj+dqPxz+fmlDiJHbXaCZIHdgjhFokm1YBRybbcStRy0xK5nMgPDNyyMsdvVmIuhqlEOXwl5b5+cfBfj/GyER3/6IQur/Mg1MbW2NEykHlQ486mhq48BQvLETExJTAjBgkqhkiG9w0BCRUxFgQUu1Wtw+bsg9CEIb4NGU6YL+iHm8EwMTAhMAkGBSsOAwIaBQAEFBC502d/s/yS1nzJgITKYQ99B5wtBAjziQIjMDSUzQICCAA=\"\n                }\n            },\n            \"pkcs12_url\": {\n                \"class\": \"Certificate\",\n                \"passphrase\": {\n                    \"ciphertext\": \"cGFzc3dvcmQ=\",\n                    \"protected\": \"eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0\",\n                    \"ignoreChanges\": true\n                },\n                \"pkcs12Options\": {\"keyImportFormat\": \"openssl-legacy\"},\n                \"pkcs12\": {\n                    \"url\": \"{{forge_p12}}\",\n                }\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for PKCS12 Task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET PKCS12 Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"bigiqPkcs12Tenant Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqPkcs12Tenant') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for PKCS12 Task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"    ",
+									"    // verify passphrase is encrypted",
+									"    const decl = jsonData.declaration;",
+									"    pm.expect(decl.bigiqPkcs12Tenant.app.pkcs12_str.passphrase).to.not.eql('YXMz');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All Certs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('task1', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"deploy\",\n    \"declaration\": {\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.9.0\",\n        \"target\": {\n            \"address\": \"{{target1}}\"\n        },\n        \"bigiqPkcs12Tenant\": {\n            \"class\": \"Tenant\"\n        }\n    }\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for Delete All Certs Task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Delete All Certs Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Async result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'bigiqPkcs12Tenant') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for Delete All Certs Task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{task1}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{task1}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Create New Token for localUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cf6f8e8c-a80b-4a2f-a97f-903d92a5464a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Token property exists\", function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.environment.set(\"authTokenLocal\", jsonData.token.token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\":\"{{localUser}}\",\n    \"password\":\"{{localPwd}}\",\n    \"loginProviderName\":\"tmos\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/authn/login",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"authn",
+								"login"
+							]
+						},
+						"description": "Creates a new token to be used for authenticating requests made to AS3 URI. "
+					},
+					"response": []
+				},
+				{
+					"name": "ADC BIG-IQ with localUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('authTask', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-F5-Auth-Token",
+								"value": "{{authTokenLocal}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"ADC\",\n    \"schemaVersion\": \"3.0.0\",\n    \"target\": {\n        \"address\": \"{{target1}}\"\n    },\n    \"controls\": {\n        \"class\": \"Controls\",\n        \"trace\": true,\n        \"logLevel\": \"debug\"\n    },\n    \"localUser\": {\n        \"class\": \"Tenant\",\n        \"localApp\": {\n            \"class\": \"Application\",\n            \"schemaOverlay\": \"default\",\n            \"template\": \"https\",\n            \"serviceMain\": {\n                \"serverTLS\": \"/localUser/localApp/TLS_Server\",\n                \"profileAnalytics\": {\n                    \"use\": \"/localUser/localApp/Analytics_Profile\"\n                },\n                \"virtualAddresses\": [\n                    \"121.10.10.10\"\n                ],\n                \"pool\": \"/localUser/localApp/Pool\",\n                \"virtualPort\": 443,\n                \"securityLogProfiles\": [\n                    {\n                        \"use\": \"/localUser/localApp/Security_Log_Profile\"\n                    }\n                ],\n                \"class\": \"Service_HTTPS\",\n                \"enable\": true\n            },\n            \"Analytics_Profile\": {\n                \"collectClientSideStatistics\": true,\n                \"collectOsAndBrowser\": false,\n                \"collectMethod\": false,\n                \"collectResponseCode\": true,\n                \"class\": \"Analytics_Profile\"\n            },\n            \"Pool\": {\n                \"members\": [\n                    {\n                        \"servicePort\": 80,\n                        \"adminState\": \"enable\",\n                        \"serverAddresses\": [\n                            \"10.1.20.206\",\n                            \"10.1.20.207\"\n                        ],\n                        \"monitors\": [\n                            \"http\"\n                        ],\n                        \"shareNodes\": true\n                    }\n                ],\n                \"class\": \"Pool\",\n                \"monitors\": [\n                    \"http\"\n                ]\n            },\n            \"Security_Log_Profile\": {\n                \"class\": \"Security_Log_Profile\",\n                \"application\": {\n                    \"localStorage\": false,\n                    \"maxEntryLength\": \"64k\",\n                    \"protocol\": \"tcp\",\n                    \"remoteStorage\": \"bigiq\",\n                    \"reportAnomaliesEnabled\": true,\n                    \"servers\": [\n                        {\n                            \"address\": \"10.192.75.186\",\n                            \"port\": \"8514\"\n                        }\n                    ],\n                    \"storageFilter\": {\n                        \"requestType\": \"all\"\n                    }\n                }\n            },\n            \"TLS_Server\": {\n                \"certificates\": [\n                    {\n                        \"certificate\": \"/localUser/localApp/Certificate\"\n                    }\n                ],\n                \"class\": \"TLS_Server\"\n            },\n            \"Certificate\": {\n                \"certificate\": {\n                    \"text\": \"-----BEGIN CERTIFICATE-----\\nMIID7TCCAtWgAwIBAgIJAJH4sMVzl1dMMA0GCSqGSIb3DQEBCwUAMIGMMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHU2VhdHRsZTELMAkGA1UECgwCRjUxDTALBgNVBAsMBFRlc3QxEzARBgNVBAMMCnRscy1zZXJ2ZXIxJTAjBgkqhkiG9w0BCQEWFnNvbWVib2R5QHNvbWV3aGVyZS5jb20wHhcNMTgwMjI4MTkwNzMyWhcNMjgwMjI2MTkwNzMyWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxCzAJBgNVBAoMAkY1MQ0wCwYDVQQLDARUZXN0MRMwEQYDVQQDDAp0bHMtc2VydmVyMSUwIwYJKoZIhvcNAQkBFhZzb21lYm9keUBzb21ld2hlcmUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwEMNPATg7Vz3jqInIVf2jnOi/9/HYIr8xZYgU0YHHFEiquQ6nYfX4mwezZ6zo9GJom7gHiQ3FNy3fN+RatatZmBmuyvJ+z/uZ6pbKmsuJLPLT89olO9JxMtb4a83oHDz3f6rcc2j8KwTr4lUDc452jLF4ZQ55O17s2tYMg4XW2G5DqUGzp1UKiClaDvpN23ZVOlnqDVpIlnVvJ1mz12AzFPny8xD1lhILv78yMltimdaWhyCLcFom0DbloRvYmowjGLHqLTAZ40jI3YUdw39LEqTXgfDF3DnOgZCIdRpouD9cVZBoQroXpVVfWG7sfzKLqWaAEHhjbhdK5l/p3mT7wIDAQABo1AwTjAdBgNVHQ4EFgQUBlCKIZ0+9DQ4ylW86qsyXoW8KjkwHwYDVR0jBBgwFoAUBlCKIZ0+9DQ4ylW86qsyXoW8KjkwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAuiE5MocznYDc+JHvEgSaiK9fyRBl/bitKTkiOtxWjEFpF5nH6QddV0pqQziXLb6iSbTBwlDJr9Bwzng8moOYbsD7hP2/mCKJj8o/lsRaPAk+abekWXRqYFNucct/ipBG3s+N2PH+MEpy3ioPH1OBuam6UomjE+mqoP09FrQha1hHEbabt4nN11l8fM5GW+0zRU0SwLFvnR58zUSlTMwczSPA0eUrhEU4AGPD/KN8d1fYnCcWqPF5ePcU11k7SNFl5PZQsgXv9cOc2Vq+qc/NmDBO0rQyKEAPDxbM8CK212G1M+ENTqmuePnr+mNope3AhEsqfH8IOPEoT7fIwmpqLw==\\n-----END CERTIFICATE-----\"\n                },\n                \"privateKey\": {\n                    \"text\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDAQw08BODtXPeOoichV/aOc6L/38dgivzFliBTRgccUSKq5Dqdh9fibB7NnrOj0YmibuAeJDcU3Ld835Fq1q1mYGa7K8n7P+5nqlsqay4ks8tPz2iU70nEy1vhrzegcPPd/qtxzaPwrBOviVQNzjnaMsXhlDnk7Xuza1gyDhdbYbkOpQbOnVQqIKVoO+k3bdlU6WeoNWkiWdW8nWbPXYDMU+fLzEPWWEgu/vzIyW2KZ1paHIItwWibQNuWhG9iajCMYseotMBnjSMjdhR3Df0sSpNeB8MXcOc6BkIh1Gmi4P1xVkGhCuhelVV9Ybux/MoupZoAQeGNuF0rmX+neZPvAgMBAAECggEAHm3eV9v7z4WRxtjiMZRO+Q/TQgUkdKK6y/jtR9DDClfLEVoK7ujTocnz/B48l1ZwHq3Gue6IazxdrB1kUhEFI7lpOQF+t83QCUc8o5OQG437RTfx+PSAa+21rpwBRVrrNfz7HIlsA4jwmq01CPRVUrQLfp7rpNBzbhu0u0Ngrf0ccOwXZkEUVvZ55WaPY1YADI9PBExQ2k04LvHJjoz/tJH3nsQLA/+90UXqy8ctUSMJ8Ko3crxJhnIO91BtCugkgS+U+pTEnvdAebE4pd7J5e6qqEyCu9F3DC5R6hH+K8bAj76VGwjxOr9a90o/js92HoCVAlQMHnW06Uk2RdIRmQKBgQD0uQPlA2PLBysWA+IQvd8oBfZuXWQjUZPBU9MK5k7bfuRbNeCA2kbTt1MVf15lv7vcwrwAbYo+Ur+L9CVL3lA8d/lQkz51r1ISChTPUiAMyU+CDDnXjQ1Gik/nC399AeluxS62Tur8hGPAb4rkVEyU60hPFVZTjmv13n81EjUoNwKBgQDJHyiPIgbwI+OoZYMUcGQrsr+yp1MdJrjpuFloc7+sdUpsvelyc146h3+TSAlhDce2BMH68kMUWUYHxHIooQjtDMu9S9b8VAF52F3E9osyjMzsywTri3hgBPy69j/Kr623gbZpbm6lYmdxRp/FKZyWtAbPts45GH1GPdv+9fUmCQKBgQCX7CfDy1fvWXLhBuYXuJfJs/HpT+bzmhgdA5nXgWRhFSRUj1zhASDJHFzi0qBakC3i/a1Soq4YxKwPCTECKXAsKdrHr7Etw/oyIroKfpRQ+8R1GnvqGbGtIf46k8PAaihtUNIP8Wwl+VYnx9c0qjSkmm/YUIm384mIKGlWHAiN/wKBgDV5bF5KLNASqsguXWDE1U1tFF0a8hVRI185HcSQ6gifku9Au14r4ITtW/U79QpyEISL1Uu0uDMj3WPZToUQ8/+bJFyrWnjymQXdimkBKFeDakUXYbKC/bmB+fR33tQ0S5r8CRUVQKQGevx6S6avfqvvJ9R4hXJW2ZAgiGrM2KaJAoGAPXuy4KHRmeeBZj8AT/shQ0VrDWIMNYDrhx0T6q9hVMahBS0SJaKDlQn6cSF7TX5N9PFAbwzcrvRKKfNjQVSZpQdR4l42f+N/5q0c1wihf43k9FgeYQ8jHGJ05uJnh3nj/O57FKgjlZ4FZVQdR8ieHN+rT4sHWj36a/FLHa6p1oo=\\n-----END PRIVATE KEY-----\"\n                },\n                \"class\": \"Certificate\"\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for local auth task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET local auth task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"local auth result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'localUser') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for local auth task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{authTask}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{authTask}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create New Token for radiusUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cf6f8e8c-a80b-4a2f-a97f-903d92a5464a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Token property exists\", function() {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.environment.set(\"authTokenRadius\", jsonData.token.token);",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\":\"{{radiusUser}}\",\n    \"password\":\"{{radiusPwd}}\",\n    \"loginProviderName\":\"{{radiusName}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/authn/login",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"authn",
+								"login"
+							]
+						},
+						"description": "Creates a new token to be used for authenticating requests made to AS3 URI. "
+					},
+					"response": []
+				},
+				{
+					"name": "ADC BIG-IQ with radiusUser",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('radiusTask', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-F5-Auth-Token",
+								"value": "{{authTokenRadius}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"ADC\",\n    \"schemaVersion\": \"3.0.0\",\n    \"target\": {\n        \"address\": \"{{target1}}\"\n    },\n    \"controls\": {\n        \"class\": \"Controls\",\n        \"trace\": true,\n        \"logLevel\": \"debug\"\n    },\n    \"radiusUser\": {\n        \"class\": \"Tenant\",\n        \"radiusApp\": {\n            \"class\": \"Application\",\n            \"schemaOverlay\": \"default\",\n            \"template\": \"https\",\n            \"serviceMain\": {\n                \"serverTLS\": \"/radiusUser/radiusApp/TLS_Server\",\n                \"profileAnalytics\": {\n                    \"use\": \"/radiusUser/radiusApp/Analytics_Profile\"\n                },\n                \"virtualAddresses\": [\n                    \"121.10.10.11\"\n                ],\n                \"pool\": \"/radiusUser/radiusApp/Pool\",\n                \"virtualPort\": 443,\n                \"securityLogProfiles\": [\n                    {\n                        \"use\": \"/radiusUser/radiusApp/Security_Log_Profile\"\n                    }\n                ],\n                \"class\": \"Service_HTTPS\",\n                \"enable\": true\n            },\n            \"Analytics_Profile\": {\n                \"collectClientSideStatistics\": true,\n                \"collectOsAndBrowser\": false,\n                \"collectMethod\": false,\n                \"collectResponseCode\": true,\n                \"class\": \"Analytics_Profile\"\n            },\n            \"Pool\": {\n                \"members\": [\n                    {\n                        \"servicePort\": 80,\n                        \"adminState\": \"enable\",\n                        \"serverAddresses\": [\n                            \"10.1.20.206\",\n                            \"10.1.20.207\"\n                        ],\n                        \"monitors\": [\n                            \"http\"\n                        ],\n                        \"shareNodes\": true\n                    }\n                ],\n                \"class\": \"Pool\",\n                \"monitors\": [\n                    \"http\"\n                ]\n            },\n            \"Security_Log_Profile\": {\n                \"class\": \"Security_Log_Profile\",\n                \"application\": {\n                    \"localStorage\": false,\n                    \"maxEntryLength\": \"64k\",\n                    \"protocol\": \"tcp\",\n                    \"remoteStorage\": \"bigiq\",\n                    \"reportAnomaliesEnabled\": true,\n                    \"servers\": [\n                        {\n                            \"address\": \"10.192.75.186\",\n                            \"port\": \"8514\"\n                        }\n                    ],\n                    \"storageFilter\": {\n                        \"requestType\": \"all\"\n                    }\n                }\n            },\n            \"TLS_Server\": {\n                \"certificates\": [\n                    {\n                        \"certificate\": \"/radiusUser/radiusApp/Certificate\"\n                    }\n                ],\n                \"class\": \"TLS_Server\"\n            },\n            \"Certificate\": {\n                \"certificate\": {\n                    \"text\": \"-----BEGIN CERTIFICATE-----\\nMIID7TCCAtWgAwIBAgIJAJH4sMVzl1dMMA0GCSqGSIb3DQEBCwUAMIGMMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHU2VhdHRsZTELMAkGA1UECgwCRjUxDTALBgNVBAsMBFRlc3QxEzARBgNVBAMMCnRscy1zZXJ2ZXIxJTAjBgkqhkiG9w0BCQEWFnNvbWVib2R5QHNvbWV3aGVyZS5jb20wHhcNMTgwMjI4MTkwNzMyWhcNMjgwMjI2MTkwNzMyWjCBjDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxCzAJBgNVBAoMAkY1MQ0wCwYDVQQLDARUZXN0MRMwEQYDVQQDDAp0bHMtc2VydmVyMSUwIwYJKoZIhvcNAQkBFhZzb21lYm9keUBzb21ld2hlcmUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwEMNPATg7Vz3jqInIVf2jnOi/9/HYIr8xZYgU0YHHFEiquQ6nYfX4mwezZ6zo9GJom7gHiQ3FNy3fN+RatatZmBmuyvJ+z/uZ6pbKmsuJLPLT89olO9JxMtb4a83oHDz3f6rcc2j8KwTr4lUDc452jLF4ZQ55O17s2tYMg4XW2G5DqUGzp1UKiClaDvpN23ZVOlnqDVpIlnVvJ1mz12AzFPny8xD1lhILv78yMltimdaWhyCLcFom0DbloRvYmowjGLHqLTAZ40jI3YUdw39LEqTXgfDF3DnOgZCIdRpouD9cVZBoQroXpVVfWG7sfzKLqWaAEHhjbhdK5l/p3mT7wIDAQABo1AwTjAdBgNVHQ4EFgQUBlCKIZ0+9DQ4ylW86qsyXoW8KjkwHwYDVR0jBBgwFoAUBlCKIZ0+9DQ4ylW86qsyXoW8KjkwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAuiE5MocznYDc+JHvEgSaiK9fyRBl/bitKTkiOtxWjEFpF5nH6QddV0pqQziXLb6iSbTBwlDJr9Bwzng8moOYbsD7hP2/mCKJj8o/lsRaPAk+abekWXRqYFNucct/ipBG3s+N2PH+MEpy3ioPH1OBuam6UomjE+mqoP09FrQha1hHEbabt4nN11l8fM5GW+0zRU0SwLFvnR58zUSlTMwczSPA0eUrhEU4AGPD/KN8d1fYnCcWqPF5ePcU11k7SNFl5PZQsgXv9cOc2Vq+qc/NmDBO0rQyKEAPDxbM8CK212G1M+ENTqmuePnr+mNope3AhEsqfH8IOPEoT7fIwmpqLw==\\n-----END CERTIFICATE-----\"\n                },\n                \"privateKey\": {\n                    \"text\": \"-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDAQw08BODtXPeOoichV/aOc6L/38dgivzFliBTRgccUSKq5Dqdh9fibB7NnrOj0YmibuAeJDcU3Ld835Fq1q1mYGa7K8n7P+5nqlsqay4ks8tPz2iU70nEy1vhrzegcPPd/qtxzaPwrBOviVQNzjnaMsXhlDnk7Xuza1gyDhdbYbkOpQbOnVQqIKVoO+k3bdlU6WeoNWkiWdW8nWbPXYDMU+fLzEPWWEgu/vzIyW2KZ1paHIItwWibQNuWhG9iajCMYseotMBnjSMjdhR3Df0sSpNeB8MXcOc6BkIh1Gmi4P1xVkGhCuhelVV9Ybux/MoupZoAQeGNuF0rmX+neZPvAgMBAAECggEAHm3eV9v7z4WRxtjiMZRO+Q/TQgUkdKK6y/jtR9DDClfLEVoK7ujTocnz/B48l1ZwHq3Gue6IazxdrB1kUhEFI7lpOQF+t83QCUc8o5OQG437RTfx+PSAa+21rpwBRVrrNfz7HIlsA4jwmq01CPRVUrQLfp7rpNBzbhu0u0Ngrf0ccOwXZkEUVvZ55WaPY1YADI9PBExQ2k04LvHJjoz/tJH3nsQLA/+90UXqy8ctUSMJ8Ko3crxJhnIO91BtCugkgS+U+pTEnvdAebE4pd7J5e6qqEyCu9F3DC5R6hH+K8bAj76VGwjxOr9a90o/js92HoCVAlQMHnW06Uk2RdIRmQKBgQD0uQPlA2PLBysWA+IQvd8oBfZuXWQjUZPBU9MK5k7bfuRbNeCA2kbTt1MVf15lv7vcwrwAbYo+Ur+L9CVL3lA8d/lQkz51r1ISChTPUiAMyU+CDDnXjQ1Gik/nC399AeluxS62Tur8hGPAb4rkVEyU60hPFVZTjmv13n81EjUoNwKBgQDJHyiPIgbwI+OoZYMUcGQrsr+yp1MdJrjpuFloc7+sdUpsvelyc146h3+TSAlhDce2BMH68kMUWUYHxHIooQjtDMu9S9b8VAF52F3E9osyjMzsywTri3hgBPy69j/Kr623gbZpbm6lYmdxRp/FKZyWtAbPts45GH1GPdv+9fUmCQKBgQCX7CfDy1fvWXLhBuYXuJfJs/HpT+bzmhgdA5nXgWRhFSRUj1zhASDJHFzi0qBakC3i/a1Soq4YxKwPCTECKXAsKdrHr7Etw/oyIroKfpRQ+8R1GnvqGbGtIf46k8PAaihtUNIP8Wwl+VYnx9c0qjSkmm/YUIm384mIKGlWHAiN/wKBgDV5bF5KLNASqsguXWDE1U1tFF0a8hVRI185HcSQ6gifku9Au14r4ITtW/U79QpyEISL1Uu0uDMj3WPZToUQ8/+bJFyrWnjymQXdimkBKFeDakUXYbKC/bmB+fR33tQ0S5r8CRUVQKQGevx6S6avfqvvJ9R4hXJW2ZAgiGrM2KaJAoGAPXuy4KHRmeeBZj8AT/shQ0VrDWIMNYDrhx0T6q9hVMahBS0SJaKDlQn6cSF7TX5N9PFAbwzcrvRKKfNjQVSZpQdR4l42f+N/5q0c1wihf43k9FgeYQ8jHGJ05uJnh3nj/O57FKgjlZ4FZVQdR8ieHN+rT4sHWj36a/FLHa6p1oo=\\n-----END PRIVATE KEY-----\"\n                },\n                \"class\": \"Certificate\"\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for radius auth task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET radius auth task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"local auth result should succeed\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'radiusUser') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for radius auth task to complete');",
+									"        return;   ",
+									"    }",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{authTask}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{authTask}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All AuthTenants",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a5c3c3a-7273-43e3-8c7f-c0402f91c1b8",
+								"exec": [
+									"pm.test('Status code is 202', function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									"",
+									"pm.test(\"Response contains task\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    postman.setEnvironmentVariable('authTask', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"class\": \"AS3\",\n    \"action\": \"deploy\",\n    \"declaration\": {\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.9.0\",\n        \"target\": {\n            \"address\": \"{{target1}}\"\n        },\n        \"localUser\": {\n            \"class\": \"Tenant\"\n        },\n        \"radiusUser\": {\n            \"class\": \"Tenant\"\n        }\n    }\n}\n"
+						},
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"declare"
+							],
+							"query": [
+								{
+									"key": "async",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for Delete All AuthTenants Task to complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "651d8734-0996-444c-93e9-2910297e2d73",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://postman-echo.com/delay/10",
+							"protocol": "https",
+							"host": [
+								"postman-echo",
+								"com"
+							],
+							"path": [
+								"delay",
+								"10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Delete All AuthTenants Task Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1ab4f2dc-d09b-4a73-a6b2-6a1c8695be06",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Async result should succeed\", function () {",
+									"    ",
+									"    const jsonData = pm.response.json();",
+									"    const result = jsonData.results.find(r => r.tenant === 'localUser') || jsonData.results[0];",
+									"    if (result.message === 'in progress') {",
+									"        postman.setNextRequest('Wait for Delete All AuthTenants Task to complete');",
+									"        return;   ",
+									"    }",
+									"    if (result.code == 503) {",
+									"        postman.setNextRequest(\"Delete All AuthTenants\");",
+									"        return;",
+									"    }",
+									"",
+									"    pm.expect(result.code).to.eql(200);",
+									"    pm.expect(result.message).to.eql('success');",
+									"    ",
+									"    const radiusResult = jsonData.results.find(r => r.tenant === 'radiusUser');",
+									"    pm.expect(radiusResult.code).to.eql(200);",
+									"    pm.expect(radiusResult.message).to.eql('success');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{authTask}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"mgmt",
+								"shared",
+								"appsvcs",
+								"task",
+								"{{authTask}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

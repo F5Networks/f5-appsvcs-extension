@@ -1,0 +1,35 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Stream_Profile",
+    "Stream_tenant": {
+        "class": "Tenant",
+        "Stream_app": {
+            "class": "Application",
+            "Stream_service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "5.4.3.2"
+                ],
+                "virtualPort": 100,
+                "profileStream": {
+                    "use": "testStream"
+                }
+            },
+            "testStream": {
+                "class": "Stream_Profile",
+                "remark": "Description",
+                "parentProfile": {
+                    "use": "streamProfile"
+                },
+                "chunkingEnabled": true,
+                "chunkSize": 10000,
+                "source": "The source",
+                "target": "The target"
+            },
+            "streamProfile": {
+                "class": "Stream_Profile"
+            }
+        }
+    }
+}

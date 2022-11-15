@@ -1,0 +1,41 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.34.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "policyEndpoint": {
+                    "use": "endpointPolicy"
+                }
+            },
+            "endpointPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "rule",
+                        "actions": [
+                            {
+                                "type": "log",
+                                "event": "request",
+                                "write": {
+                                    "message": "The message",
+                                    "facility": "local1",
+                                    "priority": "warning",
+                                    "ipAddress": "5.6.7.8",
+                                    "port": 123
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

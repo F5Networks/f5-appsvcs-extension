@@ -1,0 +1,86 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+       "class": "ADC",
+       "schemaVersion": "3.0.0",
+       "id": "fghijkl7890",
+       "label": "Sample 6",
+       "remark": "HTTP two applications",
+       "Sample_http_06": {
+          "class": "Tenant",
+          "A1": {
+             "class": "Application",
+             "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                   "10.0.6.100"
+                ],
+                "pool": "web_pool"
+             },
+             "web_pool": {
+                "class": "Pool",
+                "monitors": [
+                   "http"
+                ],
+                "members": [{
+                   "servicePort": 80,
+                   "serverAddresses": [
+                      "192.0.6.10",
+                      "192.0.6.11"
+                   ]
+                }]
+             }
+          },
+          "A2": {
+             "class": "Application",
+             "AnyName": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                   "10.0.6.111"
+                ],
+                "pool": "web_pool2",
+                "virtualPort": 80
+             },
+             "web_pool2": {
+                "class": "Pool",
+                "monitors": [
+                   "http"
+                ],
+                "members": [{
+                   "servicePort": 80,
+                   "serverAddresses": [
+                      "192.0.6.111",
+                      "192.0.6.121"
+                   ]
+                }]
+             }
+          },
+          "A3": {
+            "class": "Application",
+            "AnotherName": {
+               "class": "Service_TCP",
+               "virtualAddresses": [
+                  "10.0.6.14"
+               ],
+               "pool": "web_pool3",
+               "virtualPort": 80
+            },
+            "web_pool3": {
+               "class": "Pool",
+               "monitors": [
+                  "tcp"
+               ],
+               "members": [{
+                  "servicePort": 21,
+                  "serverAddresses": [
+                     "192.0.6.141",
+                     "192.0.6.142"
+                  ]
+               }]
+            }
+         }
+       }
+    }
+}

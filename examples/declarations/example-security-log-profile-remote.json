@@ -1,0 +1,58 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Security_Log_Profile",
+    "Security_Log_Remote": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "secLogRemote": {
+                "class": "Security_Log_Profile",
+                "application": {
+                    "facility": "local3",
+                    "storageFilter": {
+                        "requestType": "illegal-including-staged-signatures",
+                        "responseCodes": [
+                            "404",
+                            "201"
+                        ],
+                        "protocols": [
+                            "http"
+                        ],
+                        "httpMethods": [
+                            "PATCH",
+                            "DELETE"
+                        ],
+                        "requestContains": {
+                            "searchIn": "search-in-request",
+                            "value": "The new value"
+                        },
+                        "loginResults": [
+                            "login-result-unknown"
+                        ]
+                    },
+                    "storageFormat": {
+                        "fields": [
+                            "attack_type",
+                            "avr_id",
+                            "headers",
+                            "is_truncated"
+                        ],
+                        "delimiter": "."
+                    },
+                    "localStorage": false,
+                    "maxEntryLength": "10k",
+                    "protocol": "udp",
+                    "remoteStorage": "remote",
+                    "reportAnomaliesEnabled": true,
+                    "servers": [
+                        {
+                            "address": "9.8.7.6",
+                            "port": "9876"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

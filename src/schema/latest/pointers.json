@@ -1,0 +1,661 @@
+{
+    "Address_List": {
+        "name": "firewall address list or net address list",
+        "tmshPath": ["security firewall address-list", "net address-list"],
+        "class": ["Firewall_Address_List", "Net_Address_List"]
+    },
+    "Address_Discovery": {
+        "name": "Address Discovery",
+        "class": "Address_Discovery"
+    },
+    "API_Protection_Profile": {
+        "name": "API_Protection_Profile",
+        "tmshPath": "api-protection profile apiprotection"
+    },
+    "Bandwidth_Control_Policy": {
+        "name": "bandwidth control policy",
+        "class": "Bandwidth_Control_Policy",
+        "tmshPath": "net bwc policy"
+    },
+    "Idle_Timeout_Policy": {
+        "name": "idle timeout policy",
+        "class": "Idle_Timeout_Policy",
+        "tmshPath": "net timer-policy"
+    },
+    "Denylist_Category": {
+        "name":  "denylist category",
+        "tmshPath": "security ip-intelligence blacklist-category"
+    },
+    "Bot_Defense_Profile": {
+        "name": "bot defense profile",
+        "tmshPath": "security bot-defense profile"
+    },
+    "Bot_Signature": {
+        "name": "bot signature",
+        "tmshPath": [
+            "security dos bot-signature",
+            "security bot-defense signature"
+        ]
+    },
+    "Bot_Signature_Category": {
+        "name": "bot signature category",
+        "tmshPath": [
+            "security dos bot-signature-category",
+            "security bot-defense signature-category"
+        ]
+    },
+    "Certificate_Validator_OCSP": {
+        "name": "OCSP Cert Validator",
+        "class": "Certificate_Validator_OCSP",
+        "tmshPath": "sys crypto cert-validator ocsp"
+    },
+    "CA_Bundle": {
+        "name": "Ca Bundle",
+        "class": "CA_Bundle",
+        "tmshPath": "sys file ssl-cert"
+    },
+    "Cipher_Group": {
+        "name": "cipher group",
+        "class": "Cipher_Group",
+        "tmshPath": "ltm cipher group"
+    },
+    "Cipher_Rule": {
+        "name": "cipher rule",
+        "class": "Cipher_Rule",
+        "tmshPath": "ltm cipher rule"
+    },
+    "Classification_Application": {
+        "name": "application classification",
+        "tmshPath": "ltm classification application"
+    },
+    "Classification_Category": {
+        "name": "category classification",
+        "tmshPath": "ltm classification category"
+    },
+    "Classification_Preset": {
+        "name": "classification preset",
+        "tmshPath": "ltm classification ce"
+    },
+    "Classification_Profile": {
+        "name": "classification profile",
+        "class": "Classification_Profile",
+        "tmshPath": "ltm profile classification"
+    },
+    "DNS_Resolver": {
+        "name": "DNS resolver",
+        "tmshPath": "net dns-resolver"
+    },
+    "DNS_Cache": {
+        "name": "DNS cache",
+        "class": "DNS_Cache",
+        "tmshPath": [
+            "ltm dns cache resolver",
+            "ltm dns cache transparent",
+            "ltm dns cache validating-resolver"
+        ]
+    },
+    "Data_Group_File": {
+        "name": "Data Group File",
+        "tmshPath": "sys file data-group"
+    },
+    "Data_Group": {
+        "name": "Data Group",
+        "class": "Data_Group",
+        "tmshPath": [
+            "ltm data-group internal",
+            "ltm data-group external"
+        ]
+    },
+    "DNS_Listener": {
+        "name": "DNS Listener",
+        "class": "DNS_Listener",
+        "tmshPath": "gtm listener"
+    },
+    "DNS_Logging_Profile": {
+        "name": "DNS logging profile",
+        "class": "DNS_Logging_Profile",
+        "tmshPath": "ltm profile dns-logging"
+    },
+    "DNS_Nameserver": {
+        "name": "DNS nameserver",
+        "class": "DNS_Nameserver",
+        "tmshPath": "ltm dns nameserver"
+    },
+    "DNS_Profile": {
+        "name": "DNS profile",
+        "class": "DNS_Profile",
+        "tmshPath": "ltm profile dns"
+    },
+    "DNS_Security_Profile": {
+        "name": "DNS security profile",
+        "tmshPath": "security dns profile"
+    },
+    "DNS_TSIG_Key": {
+        "name": "DNS TSIG key",
+        "class": "DNS_TSIG_Key",
+        "tmshPath": "ltm dns tsig-key"
+    },
+    "DNS_Zone": {
+        "name": "DNS zone",
+        "class": "DNS_Zone",
+        "tmshPath": "ltm dns zone"
+    },
+    "DOS_Profile": {
+        "name": "DOS Profile",
+        "class": "DOS_Profile",
+        "tmshPath": "security dos profile"
+    },
+    "Endpoint_Policy": {
+        "name": "endpoint policy",
+        "class": "Endpoint_Policy",
+        "tmshPath": "ltm policy",
+        "bareStyle": "use"
+    },
+    "Enforcement_Format_Script": {
+        "name": "format script",
+        "class": "Enforcement_Format_Script",
+        "tmshPath": "pem reporting format-script"
+    },
+    "Enforcement_Forwarding_Endpoint": {
+        "name": "forwarding endpoint",
+        "class": "Enforcement_Forwarding_Endpoint",
+        "tmshPath": "pem forwarding-endpoint"
+    },
+    "Enforcement_Interception_Endpoint": {
+        "name": "interception endpoint",
+        "class": "Enforcement_Interception_Endpoint",
+        "tmshPath": "pem interception-endpoint"
+    },
+    "Enforcement_iRule": {
+        "name": "enforcement iRule",
+        "bigipName": "PEM iRule",
+        "class": "Enforcement_iRule",
+        "tmshPath": "pem irule"
+    },
+    "Enforcement_Policy": {
+        "name": "enforcement policy",
+        "bigipName": "PEM policy",
+        "class": "Enforcement_Policy",
+        "tmshPath": "pem policy"
+    },
+    "Enforcement_Diameter_Endpoint_Profile": {
+        "name": "enforcement profile diameter endpoint",
+        "class": "Enforcement_Diameter_Endpoint_Profile",
+        "tmshPath": "pem profile diameter-endpoint"
+    },
+    "Enforcement_Profile_Gx": {
+        "name": "enforcement profile gx",
+        "tmshPath": "pem protocol profile gx"
+    },
+    "Enforcement_Radius_AAA_Profile": {
+        "name": "enforcement profile radius aaa",
+        "class": "Enforcement_Radius_AAA_Profile",
+        "tmshPath": "pem profile radius-aaa"
+    },
+    "Enforcement_Profile": {
+        "name": "enforcement profile",
+        "bigipName": "PEM spm policy",
+        "class": "Enforcement_Profile",
+        "tmshPath": "pem profile spm"
+    },
+    "Enforcement_Rating_Group": {
+        "name": "quota rating group",
+        "tmshPath": "pem quota-mgmt rating-group"
+    },
+    "Enforcement_Service_Chain_Endpoint": {
+        "name": "service chain endpoint",
+        "class": "Enforcement_Service_Chain_Endpoint",
+        "tmshPath": "pem service-chain-endpoint"
+    },
+    "Enforcement_Subscriber_Management_Profile": {
+        "name": "enforcement subscriber management profile",
+        "bigipName": "PEM subscriber-mgmt policy",
+        "class": "Enforcement_Subscriber_Management_Profile",
+        "tmshPath": "pem profile subscriber-mgmt"
+    },
+    "Enforcement_Protocol_Profile_Radius": {
+        "name": "radius protocol profile",
+        "tmshPath": "pem protocol profile radius"
+    },
+    "Existing_TLS_Server_Profile": {
+        "name": "TLS Server profile",
+        "tmshPath": "ltm profile client-ssl"
+    },
+    "Existing_TLS_Client_Profile": {
+        "name": "TLS Client profile",
+        "tmshPath": "ltm profile server-ssl"
+    },
+    "Firewall_Address_List": {
+        "name": "firewall address list",
+        "tmshPath": "security firewall address-list",
+        "class": "Firewall_Address_List"
+    },
+    "Firewall_Policy": {
+        "name": "firewall (AFM) policy",
+        "tmshPath": "security firewall policy",
+        "class": "Firewall_Policy"
+    },
+    "Firewall_Rule_List": {
+        "name": "firewall rule list",
+        "tmshPath": "security firewall rule-list",
+        "class": "Firewall_Rule_List"
+    },
+    "FPS_Profile": {
+        "name": "FPS Profile",
+        "tmshPath": "security anti-fraud profile"
+    },
+    "FTP_Profile": {
+        "name": "FTP protocol profile",
+        "tmshPath": "ltm profile ftp",
+        "class": "FTP_Profile"
+    },
+    "GSLB_Data_Center": {
+        "name": "GSLB data center",
+        "class": "GSLB_Data_Center",
+        "tmshPath": "gtm datacenter"
+    },
+    "GSLB_Domain_A": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip a"
+    },
+    "GSLB_Domain_AAAA": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip aaaa"
+    },
+    "GSLB_Domain_CNAME": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip cname"
+    },
+    "GSLB_Domain_MX": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip mx"
+    },
+    "GSLB_Monitor": {
+        "name": "GSLB monitor",
+        "class": "GSLB_Monitor",
+        "tmshPath": [
+            "gtm monitor bigip",
+            "gtm monitor bigip-link",
+            "gtm monitor external",
+            "gtm monitor firepass",
+            "gtm monitor ftp",
+            "gtm monitor gateway-icmp",
+            "gtm monitor gtp",
+            "gtm monitor http",
+            "gtm monitor https",
+            "gtm monitor http2",
+            "gtm monitor imap",
+            "gtm monitor ldap",
+            "gtm monitor mssql",
+            "gtm monitor mysql",
+            "gtm monitor nntp",
+            "gtm monitor none",
+            "gtm monitor oracle",
+            "gtm monitor pop3",
+            "gtm monitor postgresql",
+            "gtm monitor radius",
+            "gtm monitor radius-accounting",
+            "gtm monitor real-server",
+            "gtm monitor scripted",
+            "gtm monitor sip",
+            "gtm monitor smtp",
+            "gtm monitor snmp",
+            "gtm monitor snmp-link",
+            "gtm monitor soap",
+            "gtm monitor tcp",
+            "gtm monitor tcp-half-open",
+            "gtm monitor udp",
+            "gtm monitor wap",
+            "gtm monitor wmi"
+        ]
+    },
+    "GSLB_Pool": {
+        "name": "GSLB pool",
+        "class": "GSLB_Pool",
+        "tmshPath": [
+            "gtm pool a",
+            "gtm pool aaaa",
+            "gtm pool cname",
+            "gtm pool mx"
+        ]
+    },
+    "GSLB_Prober_Pool": {
+        "name": "GSLB pool",
+        "class": "GSLB_Prober_Pool",
+        "tmshPath": "gtm prober-pool"
+    },
+    "GSLB_Server": {
+        "name": "GSLB server",
+        "class": "GSLB_Server",
+        "tmshPath": "gtm server"
+    },
+    "GSLB_Server_Device": {
+        "name": "GSLB server device",
+        "class": "GSLB_Server_Device",
+        "tmshPath": "gtm server devices"
+    },
+    "GSLB_Topology_Region": {
+        "name": "GSLB Topology Region",
+        "class": "GSLB_Topology_Region",
+        "tmshPath": "gtm region"
+    },
+    "GSLB_Virtual_Server": {
+        "name": "GSLB virtual server",
+        "class": "GSLB_Virtual_Server"
+    },
+    "HTML_Profile": {
+        "name": "HTML_Profile",
+        "class": "HTML_Profile",
+        "tmshPath": "ltm profile html"
+    },
+    "HTML_Rule": {
+        "name": "HTML_Rule",
+        "class": "HTML_Rule",
+        "tmshPath":[
+            "ltm html-rule comment-raise-event",
+            "ltm html-rule comment-remove",
+            "ltm html-rule tag-append-html",
+            "ltm html-rule tag-prepend-html",
+            "ltm html-rule tag-raise-event",
+            "ltm html-rule tag-remove",
+            "ltm html-rule tag-remove-attribute"
+        ]
+    },
+    "HTTP2_Profile": {
+        "name": "HTTP/2 Profile",
+        "class": "HTTP2_Profile",
+        "tmshPath": "ltm profile http2"
+    },
+    "HTTP_Acceleration_Profile": {
+        "name": "HTTP Acceleration Profile",
+        "class": "HTTP_Acceleration_Profile",
+        "tmshPath": "ltm profile web-acceleration"
+    },
+    "ILX_Profile": {
+        "name": "iRules LX Profile",
+        "tmshPath": "ltm profile ilx"
+    },
+    "Integrated_Bot_Defense_Profile": {
+        "name": "Integrated Bot Defense Profile",
+        "tmshPath": "saas bd profile"
+    },
+    "IP_Intelligence_Policy": {
+        "name": "IP Intelligence Policy",
+        "tmshPath": "security ip-intelligence policy"
+    },
+    "NAT_Source_Translation": {
+        "name": "NAT Source Translation",
+        "class": "NAT_Source_Translation",
+        "tmshPath": "security nat source-translation"
+    },
+    "Net_Address_List": {
+        "name": "net address list",
+        "tmshPath": "net address-list",
+        "class": "Net_Address_List"
+    },
+    "Persist_Profile": {
+        "name": "Persist Profile",
+        "class": "Persist",
+        "tmshPath": [
+            "ltm persistence cookie",
+            "ltm persistence dest-addr",
+            "ltm persistence hash",
+            "ltm persistence host",
+            "ltm persistence msrdp",
+            "ltm persistence sip",
+            "ltm persistence source-addr",
+            "ltm persistence ssl",
+            "ltm persistence universal"
+        ]
+    },
+    "RTSP_Profile": {
+        "name": "Real Time Streaming Protocol Profile",
+        "tmshPath": "ltm profile rtsp"
+    },
+    "Access_Profile": {
+        "name": "Access Profile",
+        "class": "Access_Profile",
+        "tmshPath": "apm profile access"
+    },
+    "Per_Request_Access_Policy": {
+        "name": "Per Request Access Policy",
+        "class": "Per_Request_Access_Policy",
+        "tmshPath": "apm policy access-policy"
+    },
+    "Connectivity_Profile": {
+        "name": "Connectivity Profile",
+        "tmshPath": "apm profile connectivity"
+    },
+    "IP_Other_Profile": {
+        "name": "ipother profile",
+        "class": "IP_Other_Profile",
+        "tmshPath": "ltm profile ipother"
+    },
+    "L4_Profile": {
+        "name": "fast L4 profile",
+        "class": "L4_Profile",
+        "tmshPath": "ltm profile fastl4"
+    },
+    "Log_Destination": {
+        "name": "log destination",
+        "class": "Log_Destination",
+        "tmshPath":[
+            "sys log-config destination alertd",
+            "sys log-config destination arcsight",
+            "sys log-config destination ipfix",
+            "sys log-config destination local-database",
+            "sys log-config destination local-syslog",
+            "sys log-config destination management-port",
+            "sys log-config destination remote-high-speed-log",
+            "sys log-config destination remote-syslog",
+            "sys log-config destination splunk"
+        ]
+    },
+    "Log_Publisher": {
+        "name": "log publisher",
+        "class": "Log_Publisher",
+        "tmshPath": "sys log-config publisher"
+    },
+    "Radius_Profile": {
+        "name": "radius profile",
+        "class": "Radius_Profile",
+        "tmshPath": "ltm profile radius"
+    },
+    "Persist": {
+        "name": "persistence profile",
+        "class": "Persist",
+        "tmshPath": "ltm persistence"
+    },
+    "Pool": {
+        "name": "pool",
+        "class": "Pool",
+        "tmshPath": "ltm pool"
+    },
+    "Analytics_Profile": {
+        "name": "Analytics_Profile",
+        "class": "Analytics_Profile",
+        "tmshPath": "ltm profile analytics"
+    },
+    "Analytics_TCP_Profile": {
+        "name": "Analytics_TCP_Profile",
+        "class": "Analytics_TCP_Profile",
+        "tmshPath": "ltm profile tcp-analytics"
+    },
+    "FIX_Profile": {
+        "name": "FIX profile",
+        "class": "FIX_Profile",
+        "tmshPath": "ltm profile fix"
+    },
+    "ICAP_Profile": {
+        "name": "ICAP Profile",
+        "class": "ICAP_Profile",
+        "tmshPath": "ltm profile icap"
+    },
+    "Multiplex_Profile": {
+        "name": "Multiplex profile",
+        "class": "Multiplex_Profile",
+        "tmshPath": "ltm profile one-connect"
+    },
+    "NTLM_Profile": {
+        "name": "NT LAN Manager profile",
+        "tmshPath": "ltm profile ntlm"
+    },
+    "PPTP_Profile": {
+        "name": "PPTP_Profile",
+        "tmshPath": "ltm profile pptp"
+    },
+    "Rewrite_Profile": {
+        "name": "Rewrite Profile",
+        "class": "Rewrite_Profile",
+        "tmshPath": "ltm profile rewrite"
+    },
+    "Protocol_Inspection_Profile": {
+        "name": "Protocol Inspection Profile",
+        "class": "Protocol_Inspection_Profile",
+        "tmshPath": "security protocol-inspection profile"
+    },
+    "Statistics_Profile": {
+        "name": "Statistics Profile",
+        "class": "Statistics_Profile",
+        "tmshPath": "ltm profile statistics"
+    },
+    "TCP_Profile": {
+        "name": "TCP profile",
+        "class": "TCP_Profile",
+        "tmshPath": "ltm profile tcp"
+    },
+    "TLS_Client": {
+        "name": "TLS Client",
+        "class": "TLS_Client",
+        "tmshPath": "ltm profile server-ssl"
+    },
+    "Request_Adapt_Profile": {
+        "name": "Request Adapt Profile",
+        "class": "Adapt_Profile",
+        "tmshPath": "ltm profile request-adapt"
+    },
+    "Response_Adapt_Profile": {
+        "name": "Response Adapt Profile",
+        "class": "Adapt_Profile",
+        "tmshPath": "ltm profile response-adapt"
+    },
+    "Route_Domain": {
+        "name": "route domain",
+        "tmshPath": "net route-domain"
+    },
+    "SCTP_Profile": {
+        "name": "SCTP Profile",
+        "tmshPath": "ltm profile sctp"
+    },
+    "SNAT_Pool": {
+        "name": "snat pool",
+        "class": "SNAT_Pool",
+        "tmshPath": "ltm snatpool"
+    },
+    "Security_Log_Profile": {
+        "name": "Security Log Profile",
+        "class": "Security_Log_Profile",
+        "tmshPath": "security log profile"
+    },
+    "Service": {
+        "name": "service",
+        "bigipName": "virtual server",
+        "class": [
+            "Service_Forwarding",
+            "Service_HTTPS",
+            "Service_HTTP",
+            "Service_TCP",
+            "Service_UDP",
+            "Service_L4",
+            "Service_Generic"
+        ],
+        "tmshPath": "ltm virtual"
+    },
+    "SSL_Certificate": {
+        "name": "SSL certificate",
+        "tmshPath": "sys file ssl-cert",
+        "class": "Certificate"
+    },
+    "SSL_CRL_File": {
+        "name": "SSL CRL file",
+        "tmshPath": "sys file ssl-crl"
+    },
+    "Stream_Profile": {
+        "name": "stream profile",
+        "class": "Stream_Profile",
+        "tmshPath": "ltm profile stream"
+    },
+    "TFTP_Profile": {
+        "name": "TFTP profile",
+        "tmshPath": "ltm profile tftp"
+    },
+    "Traffic_Log_Profile": {
+        "name": "traffic log profile",
+        "bigipName": "Request Logging Profile",
+        "class": "Traffic_Log_Profile",
+        "tmshPath": "ltm profile request-log"
+    },
+    "Tunnel": {
+        "name": "network tunnel",
+        "tmshPath": [
+            "net tunnels endpoint",
+            "net tunnels etherip",
+            "net tunnels fec",
+            "net tunnels fec-stat",
+            "net tunnels geneve",
+            "net tunnels gre",
+            "net tunnels ipip",
+            "net tunnels ipsec",
+            "net tunnels lw4o6",
+            "net tunnels map",
+            "net tunnels ppp",
+            "net tunnels tcp-forward",
+            "net tunnels tunnel",
+            "net tunnels v6rd",
+            "net tunnels vxlan",
+            "net tunnels wccp",
+            "net vlan"
+        ]
+    },
+    "Service_Address": {
+        "name": "Service Address",
+        "class": "Service_Address",
+        "tmshPath": "ltm virtual-address"
+    },
+    "SSH_Proxy_Profile": {
+        "name": "SSH proxy profile",
+        "tmshPath": "security ssh profile",
+        "class": "SSH_Proxy_Profile"
+    },
+    "SIP_Profile": {
+        "name": "SIP profile",
+        "tmshPath": "ltm profile sip"
+    },
+    "UDP_Profile": {
+        "name": "UDP profile",
+        "class": "UDP_Profile",
+        "tmshPath": "ltm profile udp"
+    },
+    "VDI_Profile": {
+        "name": "VDI profile",
+        "tmshPath": "apm profile vdi"
+    },
+    "VLAN": {
+        "name": "VLAN",
+        "tmshPath": "net vlan"
+    },
+    "WAF_Policy": {
+        "name": "WAF policy",
+        "class": "WAF_Policy",
+        "tmshPath": "asm policy"
+    },
+    "WebSocket_Profile": {
+        "name": "WebSocket Profile",
+        "class": "WebSocket_Profile",
+        "tmshPath": "ltm profile websocket"
+    }
+}

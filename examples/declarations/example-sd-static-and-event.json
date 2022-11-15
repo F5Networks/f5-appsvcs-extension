@@ -1,0 +1,26 @@
+{
+    "schemaVersion": "3.9.0",
+    "class": "ADC",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "addressDiscovery": "static",
+                        "serverAddresses": [
+                            "192.0.2.6"
+                        ],
+                        "servicePort": 80
+                    },
+                    {
+                        "addressDiscovery": "event",
+                        "servicePort": 80
+                    }
+                ]
+            }
+        }
+    }
+}

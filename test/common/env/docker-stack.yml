@@ -1,0 +1,36 @@
+heat_template_version: 2013-05-23
+
+description: >
+  This template defines an Ubuntu Docker server running one Consul container.
+
+resources:
+  docker_server:
+    type: OS::Nova::Server
+    properties:
+      image: Ubuntu18.04LTS-pristine
+      flavor: m1.medium
+      networks:
+        - network: AdminNetwork2
+      user_data_format: SOFTWARE_CONFIG
+      user_data: {get_resource: configuration}
+
+  configuration:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: |
+        #!/bin/bash -v
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+        add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+        apt update
+        apt install docker-ce -y
+        docker run --rm -d --name=dev-consul -e CONSUL_BIND_INTERFACE=eth0 -e 'CONSUL_LOCAL_CONFIG={"acl": {"enabled": true, "default_policy": "deny", "tokens": { "master": "h1d3m3", "agent": "h1d3m3" } } }' -p 8500:8500 consul
+
+outputs:
+  url:
+    description: Public address of Consul
+    value:
+      str_replace:
+        template: http://host:8500
+        params:
+          host: {get_attr: [docker_server, networks, AdminNetwork2, 0]}

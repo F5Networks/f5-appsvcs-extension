@@ -1,0 +1,21 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.13.0",
+    "id": "Service_HTTP",
+    "Example_FPS": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "FPSvs": {
+                "class": "Service_HTTP",
+                "virtualPort": 100,
+                "virtualAddresses": [
+                    "10.10.20.20"
+                ],
+                "profileFPS": {
+                	"bigip": "/Common/antifraud"
+                }
+            }
+        }
+    }
+}

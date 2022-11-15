@@ -1,0 +1,110 @@
+{
+    "class": "ADC",
+    "updateMode": "selective",
+    "schemaVersion": "3.0.0",
+    "id": "TEST_Rewrite_Profile",
+    "Sample_profile_06": {
+        "class": "Tenant",
+        "TEST_Rewrite_Profile": {
+            "class": "Application",
+            "virtualServer": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.1.1.2"   
+                ],
+                "virtualPort":  80,
+                "profileRewrite": {
+                    "use": "rewriteProf"
+                }
+            },
+            "rewriteProf": {
+                "class": "Rewrite_Profile",
+                "bypassList": [
+                    "https://www.google.com",
+                    "http://www.a.uri.com"
+                ],
+                "clientCachingType": "no-cache",
+                "javaCaFile": {
+                    "bigip": "/Common/default.crt"
+                },
+                "certificate": "cert_and_key",
+                "javaSignKeyPassphrase": {
+                    "ciphertext": "ZjVmNQ==",
+                    "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                    "ignoreChanges": true
+                },
+                "locationSpecificEnabled": true,
+                "requestSettings": {
+                    "insertXforwardedForEnabled": false,
+                    "insertXforwardedHostEnabled": true,
+                    "insertXforwardedProtoEnabled": true,
+                    "rewriteHeadersEnabled": false
+                },
+                "responseSettings": {
+                    "rewriteContentEnabled": false,
+                    "rewriteHeadersEnabled": false
+                },
+                "rewriteList": [
+                    "https://www.example.com",
+                    "https://www.rewritethis.net"
+                ],
+                "rewriteMode": "uri-translation",
+                "setCookieRules": [
+                    {
+                        "client": {
+                            "domain": "clientDomain1",
+                            "path": "/"
+                        },
+                        "server": {
+                            "domain": "serverDomain1",
+                            "path": "/"
+                        }
+                    },
+                    {
+                        "client": {
+                            "domain": "clientDomain2",
+                            "path": "/"
+                        },
+                        "server": {
+                            "domain": "serverDomain2",
+                            "path": "/"
+                        }
+                    }
+                ],
+                "splitTunnelingEnabled": true,
+                "uriRules": [
+                    {
+                        "type": "response",
+                        "client": {
+                            "path": "/",
+                            "host": "www.google.com",
+                            "scheme": "https",
+                            "port": "100"
+                        },
+                        "server": {
+                            "path": "/",
+                            "host": "www.example.com",
+                            "scheme": "http",
+                            "port": "80"
+                        }
+                    },
+                    {
+                        "type": "request",
+                        "client": {
+                            "path": "/"
+                        },
+                        "server": {
+                            "path": "/"
+                        }
+                    }
+                ]
+            },
+            "cert_and_key": {
+                "class": "Certificate",
+                "remark": "in practice not using a passphrase is not recommended",
+                "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                "privateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+            }
+        }
+    }
+}

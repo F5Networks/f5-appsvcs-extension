@@ -1,0 +1,13 @@
+heat_template_version: 2013-05-23
+
+description: Template to deploy BIG-IQ instances for AS3 testing.
+
+resources:
+  server-1:
+    type: OS::Nova::Server
+    properties:
+      image: BIG-IQ-7.0.0.0.0.1566
+      flavor: F5-BIGIQ-medium
+      name: as3-bigiq-1
+      networks:
+        - network: efbeecb3-042a-4587-a7c3-0b092bdf3ec6

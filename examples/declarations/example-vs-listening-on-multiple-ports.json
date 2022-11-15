@@ -1,0 +1,79 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.2.0",
+    "id": "8675309",
+    "Sample_http_07": {
+        "class": "Tenant",
+        "A1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "remark": "Defaults to port 80",
+                "virtualAddresses": [
+                    "10.1.10.10"
+                ],
+                "pool": "web_pool80"
+            },
+            "web_pool80": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "10.128.0.209"
+                        ]
+                    }
+                ]
+            },
+            "service_on_port81": {
+                "class": "Service_HTTP",
+                "remark": "Accepts HTTP connections on port 81",
+                "virtualPort": 81,
+                "virtualAddresses": [
+                    "10.1.10.10"
+                ],
+                "pool": "web_pool81"
+            },
+            "web_pool81": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 81,
+                        "serverAddresses": [
+                            "10.128.0.210"
+                        ]
+                    }
+                ]
+            },
+            "service_on_port82": {
+                "class": "Service_HTTP",
+                "remark": "Accepts HTTP connections on port 82",
+                "virtualAddresses": [
+                    "10.1.10.10"
+                ],
+                "virtualPort": 82,
+                "pool": "web_pool82"
+            },
+            "web_pool82": {
+                "class": "Pool",
+                "monitors": [
+                    "http"
+                ],
+                "members": [
+                    {
+                        "servicePort": 82,
+                        "serverAddresses": [
+                            "10.128.0.211"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

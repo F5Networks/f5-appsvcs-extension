@@ -1,0 +1,38 @@
+{
+    "class": "ADC",
+    "updateMode": "selective",
+    "schemaVersion": "3.37.0",
+    "id": "declarationId",
+    "label": "theDeclaration",
+    "remark": "Net Address List declaration",
+    "TEST_DOS_Profile": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "exampleDosProfile": {
+                "class": "DOS_Profile",
+                "remark": "description",
+                "allowlist": {
+                    "use": "netAddressList"
+                }
+            },
+            "netAddressList": {
+                "class": "Net_Address_List",
+                "addresses": [
+                    "192.0.2.0"
+                ],
+                "addressLists": [
+                    {
+                        "use": "otherNetAddressList"
+                    }
+                ]
+            },
+            "otherNetAddressList": {
+                "class": "Net_Address_List",
+                "addresses": [
+                    "198.51.100.0"
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,122 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.31.0",
+    "id": "HTML_Profile",
+    "TEST_HTML_Profile": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 123,
+                "virtualAddresses": [
+                    "192.0.2.100"
+                ],
+                "profileHTML": {
+                    "use": "htmlProfile"
+                }
+            },
+            "htmlProfile": {
+                "class": "HTML_Profile",
+                "contentDetectionEnabled": true,
+                "contentSelection": [
+                    "text/html",
+                    "text/xhtml"
+                ],
+                "rules": [
+                    {
+                        "use": "commentRaiseEventRule"
+                    },
+                    {
+                        "use": "commentRemoveRule"
+                    },
+                    {
+                        "use": "tagAppendHtmlRule"
+                    },
+                    {
+                        "use": "tagPrependHtmlRule"
+                    },
+                    {
+                        "use": "tagRaiseEventRule"
+                    },
+                    {
+                        "use": "tagRemoveRule"
+                    },
+                    {
+                        "use": "tagRemoveAttributeRule"
+                    }
+                ]
+            },
+            "commentRaiseEventRule": {
+                "class": "HTML_Rule",
+                "label": "c-r-e rule label",
+                "remark": "c-r-e rule remark",
+                "ruleType": "comment-raise-event"
+            },
+            "commentRemoveRule": {
+                "class": "HTML_Rule",
+                "label": "comment remove rule label",
+                "remark": "comment remove rule remark",
+                "ruleType": "comment-remove"
+            },
+            "tagAppendHtmlRule": {
+                "class": "HTML_Rule",
+                "label": "t-a-h rule label",
+                "remark": "t-a-h rule remark",
+                "ruleType": "tag-append-html",
+                "content": "your code here",
+                "match": {
+                    "attributeName": "pie",
+                    "attributeValue": "apple",
+                    "tagName": "/dessert"
+                }
+            },
+            "tagPrependHtmlRule": {
+                "class": "HTML_Rule",
+                "label": "t-p-h rule label",
+                "remark": "t-p-h rule remark",
+                "ruleType": "tag-prepend-html",
+                "content": "your code here",
+                "match": {
+                    "attributeName": "pie",
+                    "attributeValue": "cherry",
+                    "tagName": "/dessert"
+                }
+            },
+            "tagRaiseEventRule": {
+                "class": "HTML_Rule",
+                "label": "t-r-e rule label",
+                "remark": "t-r-e rule remark",
+                "ruleType": "tag-raise-event",
+                "match": {
+                    "attributeName": "fork",
+                    "attributeValue": "missing",
+                    "tagName": "utensil"
+                }
+            },
+            "tagRemoveRule": {
+                "class": "HTML_Rule",
+                "label": "tag remove rule label",
+                "remark": "tag remove rule remark",
+                "ruleType": "tag-remove",
+                "match": {
+                    "attributeName": "plate",
+                    "attributeValue": "dirty",
+                    "tagName": "dish"
+                }
+            },
+            "tagRemoveAttributeRule": {
+                "class": "HTML_Rule",
+                "label": "t-r-a rule label",
+                "remark": "t-r-a remove rule remark",
+                "ruleType": "tag-remove-attribute",
+                "attributeName": "removeMeAttribute",
+                "match": {
+                    "attributeName": "attribName",
+                    "attributeValue": "attribValue",
+                    "tagName": "tag"
+                }
+            }
+        }
+    }
+}

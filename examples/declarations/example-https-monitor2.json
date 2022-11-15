@@ -1,0 +1,21 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Monitor",
+    "TEST_HTTPSMonitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sampleHTTPSmonitor": {
+                "class": "Monitor",
+                "monitorType": "https",
+                "clientCertificate": "webcert"
+            },
+            "webcert": {
+                "class": "Certificate",
+                "certificate": {"bigip":"/Common/default.crt"},
+                "privateKey":{"bigip":"/Common/default.key"}
+            }
+        }
+    }
+}

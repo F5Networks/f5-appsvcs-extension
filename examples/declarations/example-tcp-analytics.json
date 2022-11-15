@@ -1,0 +1,52 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+      "class": "ADC",
+      "schemaVersion": "3.14.0",
+      "label": "TCP Analytics Example",
+      "remark": "Service_TCP with TCP Analytics",
+      "TcpAnalytics": {
+        "class": "Tenant",
+        "tcpAnalytics": {
+          "class": "Application",
+          "service": {
+            "class": "Service_TCP",
+            "virtualAddresses": [
+              "10.0.5.10"
+            ],
+            "virtualPort": 1344,
+            "pool": "svc_pool",
+            "profileAnalyticsTcp": { "use": "myAnalyticsTcp" }
+          },
+          "myAnalyticsTcp": {
+              "class": "Analytics_TCP_Profile",
+              "collectedStatsInternalLogging": true,
+              "collectedStatsExternalLogging": true,
+              "externalLoggingPublisher": { "bigip": "/Common/local-db-publisher" },
+              "collectedByClientSide": true,
+              "collectedByServerSide": true,
+              "collectRemoteHostIp": true,
+              "collectRemoteHostSubnet": true,
+              "collectNexthop": true,
+              "collectContinent": true,
+              "collectCountry": true,
+              "collectRegion": true,
+              "collectCity": true,
+              "collectPostCode": true
+          },
+          "svc_pool": {
+            "class": "Pool",
+            "members": [{
+              "servicePort": 1344,
+              "serverAddresses": [
+                "192.0.5.10",
+                "192.0.5.11"
+              ]
+            }]
+          }
+        }
+      }
+    }
+}

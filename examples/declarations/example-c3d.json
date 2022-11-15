@@ -1,0 +1,83 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "logLevel": "debug",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.9.0",
+        "id": "C3DFeatures",
+        "label": "C3D Test",
+        "remark": "test",
+        "Sample_C3D": {
+            "class": "Tenant",
+            "appC3D": {
+                "class": "Application",
+                "webtls": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "matchToSNI": "www.test.domain.com",
+                            "certificate": "webcert1"
+                        },
+                        {
+                            "certificate": "webcert2"
+                        }
+                    ],
+                    "authenticationMode": "request",
+                    "authenticationTrustCA": {
+                        "bigip": "/Common/dev_chain.crt"
+                    },
+                    "crlFile": {
+                        "bigip": "/Common/dev_crl.crl"
+                    },
+                    "allowExpiredCRL": true,
+                    "c3dOCSPUnknownStatusAction": "ignore",
+                    "c3dOCSP": {
+                        "use": "ocsp"
+                    },
+                    "c3dEnabled": true
+                },
+                "webcert1": {
+                    "class": "Certificate",
+                    "remark": "test",
+                    "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                },
+                "webcert2": {
+                    "class": "Certificate",
+                    "remark": "test",
+                    "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                },
+                "ocsp": {
+                    "class": "Certificate_Validator_OCSP",
+                    "dnsResolver": { "bigip": "/Common/10.10.10.10" },
+                    "responderUrl": "http://oscp.responder.test.com",
+                    "timeout": 299
+                },
+                "clienttls": {
+                    "class": "TLS_Client",
+                    "clientCertificate": "defaultCert",
+                    "crlFile": { "bigip": "/Common/c3d_crl.crl" },
+                    "allowExpiredCRL": true,
+                    "c3dEnabled": true,
+                    "c3dCertificateAuthority": "c3dCA",
+                    "c3dCertificateLifespan": 360,
+                    "c3dCertificateExtensions": ["subject-alternative-name"],
+                    "trustCA": { "bigip": "/Common/c3d_chain.crt"}
+                },
+                "c3dCA": {
+                    "class": "Certificate",
+                    "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
+                },
+                "defaultCert": {
+                    "class": "Certificate",
+                    "certificate": {"bigip":"/Common/default.crt"},
+                    "privateKey": {"bigip":"/Common/default.key"}
+                }
+           }
+        }
+    }
+}

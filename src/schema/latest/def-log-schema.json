@@ -1,0 +1,2164 @@
+{
+    "definitions": {
+        "Security_Log_Profile": {
+            "type": "object",
+            "title": "Security_Log_Profile",
+            "description": "Configures a Security log profile",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "asm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Security_Log_Profile"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "application": {
+                    "$ref": "#/definitions/Security_Log_Profile_Application"
+                },
+                "botDefense": {
+                    "$ref": "#/definitions/Security_Log_Profile_Bot_Defense"
+                },
+                "classification": {
+                    "$ref": "#/definitions/Security_Log_Profile_Classification"
+                },
+                "dosApplication": {
+                    "$ref": "#/definitions/Security_Log_Profile_Dos_Application"
+                },
+                "dosNetwork": {
+                    "$ref": "#/definitions/Security_Log_Profile_Dos_Network"
+                },
+                "ipIntelligence": {
+                    "$ref": "#/definitions/Security_Log_Profile_Ip_Intelligence"
+                },
+                "nat": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat"
+                },
+                "network": {
+                    "$ref": "#/definitions/Security_Log_Profile_Network"
+                },
+                "protocolDns": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Dns"
+                },
+                "protocolDnsDos": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Dns_Dos"
+                },
+                "protocolInspection": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Inspection"
+                },
+                "protocolSip": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Sip"
+                },
+                "protocolSipDos": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Sip_Dos"
+                },
+                "protocolTransfer": {
+                    "$ref": "#/definitions/Security_Log_Profile_Protocol_Transfer"
+                },
+                "sshProxy": {
+                    "$ref": "#/definitions/Security_Log_Profile_Ssh_Proxy"
+                }
+            },
+            "required": ["class"],
+            "dependencies": {
+                "application": {
+                    "not": {
+                        "oneOf": [
+                            { "required": ["protocolDns"] },
+                            { "required": ["protocolSip"] },
+                            { "required": ["sshProxy"] }
+                        ]
+                    }
+                },
+                "protocolDns": {
+                    "not": {
+                        "required": ["application"]
+                    }
+                },
+                "protocolSip": {
+                    "not": {
+                        "required": ["application"]
+                    }
+                },
+                "sshProxy": {
+                    "not": {
+                        "required": ["application"]
+                    }
+                }
+            }
+        },
+
+        "Security_Log_Profile_Application": {
+            "description": "When enabled, specifies the system logs events from applications.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["asm"]
+            },
+
+            "properties": {
+                "facility": {
+                    "description": "Specifies the facility category of the logged traffic",
+                    "type": "string",
+                    "enum": [
+                        "local0",
+                        "local1",
+                        "local2",
+                        "local3",
+                        "local4",
+                        "local5",
+                        "local6",
+                        "local7"
+                    ],
+                    "default": "local0"
+                },
+                "storageFilter": {
+                    "description": "Adds, deletes, or replaces a set of request filters",
+                    "type": "object",
+                    "properties": {
+                        "logicalOperation": {
+                            "description": "Specifies the logical operation on associated filters",
+                            "type": "string",
+                            "enum": [
+                                "and",
+                                "or"
+                            ],
+                            "default": "or"
+                        },
+                        "requestType": {
+                            "description": "Specifies which kind of requests the system or server will log",
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "illegal",
+                                "illegal-including-staged-signatures"
+                            ],
+                            "default": "illegal"
+                        },
+                        "protocols": {
+                            "description": "Specifies if request logging is dependent on the protocols",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "http",
+                                    "https",
+                                    "ws",
+                                    "wss"
+                                ]
+                            }
+                        },
+                        "responseCodes": {
+                            "description": "Specifies whether request logging is dependent on the response status codes",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "100",
+                                    "101",
+                                    "102",
+                                    "200",
+                                    "201",
+                                    "202",
+                                    "203",
+                                    "204",
+                                    "205",
+                                    "206",
+                                    "207",
+                                    "300",
+                                    "301",
+                                    "302",
+                                    "303",
+                                    "304",
+                                    "305",
+                                    "306",
+                                    "307",
+                                    "400",
+                                    "401",
+                                    "402",
+                                    "403",
+                                    "404",
+                                    "405",
+                                    "406",
+                                    "407",
+                                    "408",
+                                    "409",
+                                    "410",
+                                    "411",
+                                    "412",
+                                    "413",
+                                    "414",
+                                    "415",
+                                    "416",
+                                    "417",
+                                    "422",
+                                    "423",
+                                    "424",
+                                    "500",
+                                    "501",
+                                    "502",
+                                    "503",
+                                    "504",
+                                    "505",
+                                    "507",
+                                    "510"
+                                ]
+                            }
+                        },
+                        "httpMethods": {
+                            "description": "Specifies whether request logging is dependent on the HTTP methods",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "ACL",
+                                    "BDELETE",
+                                    "BMOVE",
+                                    "BPROPFIND",
+                                    "BPROPPATCH",
+                                    "CHECKIN",
+                                    "CHECKOUT",
+                                    "CONNECT",
+                                    "COPY",
+                                    "DELETE",
+                                    "GET",
+                                    "HEAD",
+                                    "LINK",
+                                    "LOCK",
+                                    "MERGE",
+                                    "MKCOL",
+                                    "MKWORKSPACE",
+                                    "MOVE",
+                                    "NOTIFY",
+                                    "OPTIONS",
+                                    "PATCH",
+                                    "POLL",
+                                    "POST",
+                                    "PROPFIND",
+                                    "PROPPATCH",
+                                    "PUT",
+                                    "REPORT",
+                                    "RPC_IN_DATA",
+                                    "RPC_OUT_DATA",
+                                    "SEARCH",
+                                    "SUBSCRIBE",
+                                    "TRACE",
+                                    "TRACK",
+                                    "UNLINK",
+                                    "UNLOCK",
+                                    "UNSUBSCRIBE",
+                                    "VERSION_CONTROL",
+                                    "X-MS-ENUMATTS"
+                                ]
+                            }
+                        },
+                        "requestContains": {
+                            "description": "Specifies whether the request logging is dependent on s specific string and where to look for that string",
+                            "type": "object",
+                            "properties": {
+                                "searchIn": {
+                                    "description": "Where to look for the specified string",
+                                    "type": "string",
+                                    "enum": [
+                                        "search-in-headers",
+                                        "search-in-post-data",
+                                        "search-in-query-string",
+                                        "search-in-request",
+                                        "search-in-uri"
+                                    ]
+                                },
+                                "value": {
+                                    "description": "The specified string to look for",
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "required": ["searchIn", "value"],
+                            "additionalProperties": false
+                        },
+                        "loginResults": {
+                            "description": "Specifies whether the request logging is dependent on the login results",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "login-result-successful",
+                                    "login-result-failed",
+                                    "login-result-unknown"
+                                ]
+                            }
+                        }
+                    },
+                    "default": {},
+                    "additionalProperties": false
+                },
+                "storageFormat": {
+                    "description": "Specifies a storage format",
+                    "anyOf": [
+                        {
+                            "description": "Specifies a user string",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "fields": {
+                                    "description": "Replaces a set of fields when predefined storage format. Order is important - the server will display the selected items in the log sequentially according to this",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "attack_type",
+                                            "avr_id",
+                                            "blocking_exception_reason",
+                                            "captcha_result",
+                                            "client_type",
+                                            "date_time",
+                                            "dest_ip",
+                                            "dest_port",
+                                            "device_id",
+                                            "fragment",
+                                            "geo_location",
+                                            "headers",
+                                            "http_class_name",
+                                            "ip_address_intelligence",
+                                            "ip_client",
+                                            "ip_with_route_domain",
+                                            "is_truncated",
+                                            "logic_result",
+                                            "management_ip_address",
+                                            "management_ip_address_2",
+                                            "method",
+                                            "mobile_application_name",
+                                            "mobile_application_version",
+                                            "password",
+                                            "policy_apply_date",
+                                            "policy_name",
+                                            "protocol",
+                                            "query_string",
+                                            "request",
+                                            "request_status",
+                                            "response",
+                                            "response_code",
+                                            "route_domain",
+                                            "salt",
+                                            "session_id",
+                                            "severity",
+                                            "sig_ids",
+                                            "sig_names",
+                                            "sig_set_names",
+                                            "slot_number",
+                                            "src_port",
+                                            "staged_sig_names",
+                                            "staged_sig_set_names",
+                                            "staged_threat_campaign_names",
+                                            "sub_violations",
+                                            "support_id",
+                                            "threat_campaign_names",
+                                            "unit_hostname",
+                                            "uri",
+                                            "username",
+                                            "violation_details",
+                                            "violation_rating",
+                                            "violations",
+                                            "virus_name",
+                                            "websocket_direction",
+                                            "websocket_message_type",
+                                            "x_forwarded_for_header_value"
+                                        ]
+                                    }
+                                },
+                                "delimiter": {
+                                    "description": "Specifies a delimiter when predefined storage format",
+                                    "type": "string",
+                                    "default": ",",
+                                    "minLength": 1
+                                }
+                            },
+                            "required": ["fields"],
+                            "additionalProperties": false
+                        }
+                    ]
+                },
+                "guaranteeLoggingEnabled": {
+                    "description": "Indicates whether to guarantee local logging",
+                    "type": "boolean",
+                    "default": false
+                },
+                "guaranteeResponseLoggingEnabled": {
+                    "description": "Indicates whether to guarantee local response logging. guaranteeLoggingEnabled must be true and responseLogging must be illegal or all",
+                    "type": "boolean",
+                    "default": false
+                },
+                "localStorage": {
+                    "description": "Enables or disabled local storage",
+                    "type": "boolean",
+                    "default": true
+                },
+                "maxEntryLength": {
+                    "description": "Specifies the maximum entry length",
+                    "type": "string",
+                    "enum": [
+                        "1k",
+                        "2k",
+                        "10k",
+                        "64k"
+                    ],
+                    "default": "2k"
+                },
+                "maxHeaderSize": {
+                    "description": "Specifies the maximum headers size",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2048
+                },
+                "maxQuerySize": {
+                    "description": "Specifies the maximum query string size",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2048
+                },
+                "maxRequestSize": {
+                    "description": "Specifies the maximum request size",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2048
+                },
+                "protocol": {
+                    "description": "Specifies the protocol supported by the remote server",
+                    "type": "string",
+                    "enum": [
+                        "udp",
+                        "tcp",
+                        "tcp-rfc3195"
+                    ],
+                    "default": "tcp"
+                },
+                "remoteStorage": {
+                    "description": "Specifies a remote storage type",
+                    "type": "string",
+                    "enum": [
+                        "remote",
+                        "splunk",
+                        "arcsight",
+                        "bigiq"
+                    ]
+                },
+                "reportAnomaliesEnabled": {
+                    "description": "Indicates whether to report detected anomalies",
+                    "type": "boolean",
+                    "default": false
+                },
+                "responseLogging": {
+                    "description": "Specifies a response logging type",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "illegal",
+                        "all"
+                    ],
+                    "default": "none"
+                },
+                "servers": {
+                    "description": "Adds, deletes, or replaces a set of remote servers",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "description": "The IP address",
+                                "type": "string"
+                            },
+                            "port": {
+                                "description": "The service port",
+                                "type": "string"
+                            }
+                        },
+                        "required": ["address", "port"],
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Bot_Defense": {
+            "title": "Bot Defense Log Profile",
+            "description": "Specifies, when enabled, the system logs events from the Proactive Bot Defense mechanism.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["asm"]
+            },
+
+            "properties": {
+                "localPublisher": {
+                    "description": "Specifies, when enabled, a Log Publisher to log events to (Note: This publisher should have a single local-database destination)",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Log_Publisher" }
+                    ]
+                },
+                "remotePublisher": {
+                    "description": "Enables selecting a Log Publisher that has Splunk enabled",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Log_Publisher" }
+                    ]
+                },
+                "logBotSignatureMatchedRequests": {
+                    "description": "This option enables or disables the logging of reported bot signature requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logCaptchaChallengedRequests": {
+                    "description": "This option enables or disables the logging of captcha challenged requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logChallengedRequests": {
+                    "description": "This option enables or disables the logging of challenged requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logIllegalRequests": {
+                    "description": "This option enables or disables the logging of illegal requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "logLegalRequests": {
+                    "description": "This option enables or disables the logging of legal requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logAlarm": {
+                    "description": "This option enables or disables the logging of requests with alarm mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logBlock": {
+                    "description": "This option enables or disables the logging of requests with block mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logBrowser": {
+                    "description": "This option enables or disables the logging of requests with browser classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logBrowserVerificationAction": {
+                    "description": "This option enables or disables the logging of requests by browser verification action. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logCaptcha": {
+                    "description": "This option enables or disables the logging of requests with captcha mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logDeviceIdCollectionRequest": {
+                    "description": "This option enables or disables the logging of requests by device ID collection. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logMaliciousBot": {
+                    "description": "This option enables or disables the logging of requests with malicious bot classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logMobileApplication": {
+                    "description": "This option enables or disables the logging of requests with mobile application classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logNone": {
+                    "description": "This option enables or disables the logging of requests with no mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRateLimit": {
+                    "description": "This option enables or disables the logging of requests with rate limit mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logSuspiciousBrowser": {
+                    "description": "This option enables or disables the logging of requests with suspicious browser classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logTcpReset": {
+                    "description": "This option enables or disables the logging of requests with TCP reset mitigation. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logTrustedBot": {
+                    "description": "This option enables or disables the logging of requests with trusted bot classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logUnknown": {
+                    "description": "This option enables or disables the logging of requests with unknown classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "logUntrustedBot": {
+                    "description": "This option enables or disables the logging of requests with untrusted bot classification. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logHoneyPotPage": {
+                    "description": "This option enables or disables the logging of requests with honey pot page mitigation. This property is available on BIGIP 15.0 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRedirectToPool": {
+                    "description": "This option enables or disables the logging of requests with redirect to pool mitigation. This property is available on BIGIP 15.0 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logChallengeFailureRequest": {
+                    "description": "This option enables or disables the logging of requests by challenge failure. This property is available on BIGIP 15.0 and above.",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Classification": {
+            "title": "Classification Log Profile",
+            "description": "Specifies, when enabled, that the system logs events from the Classification engine.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies where the system sends log messages",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logAllMatches": {
+                    "description": "This option enables or disables the logging of all matches",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Dos_Application": {
+            "title": "DoS Application Log Profile",
+            "description": "Specifies, when enabled, that the system logs detected application DoS attacks",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["asm"]
+            },
+
+            "properties": {
+                "localPublisher": {
+                    "description": "Specifies the local log publisher used for Application DoS attacks (Note: This publisher should have a single local-database destination)",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "remotePublisher": {
+                    "description": "Specifies the remote log publisher used for Application DoS attacks (Note: This publisher should have ArcSight or Splunk destinations)",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Dos_Network": {
+            "title": "DoS Network Log Profile",
+            "description": "Specifies, when enabled, that the system logs detected network DoS attacks",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "dos", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging Network DoS events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "Security_Log_Profile_Nat": {
+            "title": "Network Address Translation Log Profile",
+            "description": "Specifies, when enabled, that the system logs Firewall NAT events",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging Network Address Translation events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logErrors": {
+                    "description": "Generates event log entries when a NAT translation errors occur",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logSubscriberId": {
+                    "description": "Logs the subscriber ID associated with a subscriber IP address",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logQuotaExceeded": {
+                    "description": "Generates event log entries when a NAT client exceeds allocated resources",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logStartInboundSession": {
+                    "description": "Generates event log entries at the start of the incoming connection event for a translated endpoint. Triggered when the system creates the inbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logEndInboundSession": {
+                    "description": "Generates event log entries at the end of the incoming connection event for a translated endpoint. Triggered when the system frees the inbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logStartOutboundSession": {
+                    "description": "Generates event log entries at start of the translation event for a NAT client. Triggered when the system creates the outbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logEndOutboundSession": {
+                    "description": "Generates event log entries at end of translation event for a NAT client. Triggered when the system frees the outbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitAggregate": {
+                    "description": " This option sets the aggregate rate for all the Firewall NAT log events that the system can log per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitErrors": {
+                    "description": "This option rate limits the errors the system logs per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitQuotaExceeded": {
+                    "description": "This option rate limits the quota exceeded log events per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitStartInboundSession": {
+                    "description": "This option rate limits the start inbound session log events per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitEndInboundSession": {
+                    "description": "This option rate limits the end inbound session log events per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitStartOutboundSession": {
+                    "description": "This option rate limits the start outbound session log events per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitEndOutboundSession": {
+                    "description": "This option rate limits the end outbound session log events per second",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "formatErrors": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                },
+                "formatQuotaExceeded": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                },
+                "formatStartInboundSession": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                },
+                "formatEndInboundSession": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                },
+                "formatStartOutboundSession": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                },
+                "formatEndOutboundSession": {
+                    "$ref": "#/definitions/Security_Log_Profile_Nat_Storage_Format"
+                }
+            },
+
+            "required": ["publisher"],
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Nat_Storage_Format": {
+            "description": "Specifies the format type for log messages",
+            "anyOf": [{
+                    "type": "string",
+                    "minLength": 1
+                }, {
+                    "type": "object",
+                    "properties": {
+                        "fields": {
+                            "description": "Replaces a set of fields in the predefined storage format",
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "context-name",
+                                    "duration",
+                                    "route-domain",
+                                    "sub-id",
+                                    "translated-dest-port",
+                                    "translated-src-port",
+                                    "dest-ip",
+                                    "event-name",
+                                    "src-ip",
+                                    "timestamp",
+                                    "translated-route-domain",
+                                    "dest-port",
+                                    "protocol",
+                                    "src-port",
+                                    "translated-dest-ip",
+                                    "translated-src-ip"
+                                ]
+                            }
+                        },
+                        "delimiter": {
+                            "description": "Specifies a field delimiter in the predefined storage format",
+                            "type": "string",
+                            "default": "."
+                        }
+                    },
+                    "required": ["fields"],
+                    "additionalProperties": false
+                }
+            ]
+        },
+
+        "Security_Log_Profile_Network": {
+            "title": "Network Log Profile",
+            "description": "Specifies, when enabled, that the system logs ACL rule matches, TCP events, and/or TCP/IP errors sent to the network firewall",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging Network events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logRuleMatchAccepts": {
+                    "description": "Specifies, when enabled, that the system logs packets that match ACL rules configured with action = Accept",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRuleMatchDrops": {
+                    "description": "Specifies, when enabled, that the system logs packets that match ACL rules configured with action = Drop",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRuleMatchRejects": {
+                    "description": "Specifies, when enabled, that the system logs packets that match ACL rules configured with action = Reject",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logIpErrors": {
+                    "description": "Specifies, when enabled, that the system logs IP error packets",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logTcpErrors": {
+                    "description": "Specifies, when enabled, that the system logs TCP error packets",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logTcpEvents": {
+                    "description": "Specifies, when enabled, that the system logs TCP events (open and close of TCP sessions)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logTranslationFields": {
+                    "description": "Specifies, when enabled, that the system logs translation values if and when it logs a network firewall event",
+                    "type": "boolean",
+                    "default": false
+                },
+                "alwaysLogRegion": {
+                    "description": "Specifies, when enabled, that when a geolocation event causes a network firewall event, the system logs the associated IP address",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitRuleMatchAccepts": {
+                    "description": "This option sets rate limits for the logging of packets that match ACL rules configured with action = Accept or action = Accept Decisively",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitRuleMatchDrops": {
+                    "description": "This option sets rate limits for the logging of packets that match ACL rules configured with action = Accept or action = Accept Decisively",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitRuleMatchRejects": {
+                    "description": "This option sets rate limits for the logging of packets that match ACL rules configured with action = Reject",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitIpErrors": {
+                    "description": "This option enables or disables the logging of IP error packets",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitTcpErrors": {
+                    "description": "This option sets rate limits for the logging of TCP error packets",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitTcpEvents": {
+                    "description": "This option sets rate limits for the logging of TCP events on client side",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "rateLimitAggregate": {
+                    "description": "This option sets the aggregate rate limit that applies to any network logging message",
+                    "type": "integer",
+                    "default": 4294967295
+                },
+                "storageFormat": {
+                    "description": "Specifies the format type for log messages. If it is a string it is user-defined",
+                    "anyOf": [
+                        {
+                            "description": "Use this for user-defined storage format",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "fields": {
+                                    "description": "Replaces a set of fields in the predefined storage format",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "acl-policy-name",
+                                            "acl-policy-type",
+                                            "acl-rule-name",
+                                            "action",
+                                            "bigip-hostname",
+                                            "context-name",
+                                            "context-type",
+                                            "date-time",
+                                            "dest-ip",
+                                            "dest-port",
+                                            "drop-reason",
+                                            "management-ip-address",
+                                            "protocol",
+                                            "route-domain",
+                                            "sa-translation-pool",
+                                            "sa-translation-type",
+                                            "src-ip",
+                                            "src-port",
+                                            "translated-dest-ip",
+                                            "translated-dest-port",
+                                            "translated-ip-protocol",
+                                            "translated-route-domain",
+                                            "translated-src-ip",
+                                            "translated-src-port",
+                                            "translated-vlan",
+                                            "vlan"
+                                        ]
+                                    }
+                                },
+                                "delimiter": {
+                                    "description": "Specifies a field delimiter in the predefined storage format",
+                                    "type": "string",
+                                    "default": "."
+                                }
+                            },
+                            "required": ["fields"],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Ip_Intelligence": {
+            "title": "IP Intelligence Log Profile",
+            "description": "Specifies, when enabled, that the system logs IP Intelligence events",
+            "type": "object",
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging IP Intelligence events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logTranslationFields": {
+                    "description": "Specifies, when enabled, that the system logs translation values if and when it logs a network firewall event",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitAggregate": {
+                    "description": "Defines a rate limit for all combined IP intelligence log messages per second",
+                    "type": "integer",
+                    "default": 4294967295
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Dns": {
+            "title": "Protocol DNS Log Profile",
+            "description": "Specifies, when enabled, that the system logs DNS security events",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging DNS security events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logDroppedRequests": {
+                    "description": "Specifies, when enabled, that the system logs dropped DNS requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logFilteredDroppedRequests": {
+                    "description": "Specifies, when enabled, that the system logs DNS requests dropped due to DNS query/header-opcode filtering. The system does not log DNS requests dropped due to errors in the way the system processes DNS packets.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logMalformedRequests": {
+                    "description": "Specifies, when enabled, that the system logs malformed DNS requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRejectedRequests": {
+                    "description": "Specifies, when enabled, that the system logs rejected DNS requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logMaliciousRequests": {
+                    "description": "Specifies, when enabled, that the system logs malicious DNS requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "storageFormat": {
+                    "description": "Specifies the format type for log messages",
+                    "anyOf": [{
+                            "type": "string",
+                            "minLength": 1
+                        }, {
+                            "type": "object",
+                            "properties": {
+                                "fields": {
+                                    "description": "Replaces a set of fields in the predefined storage format",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "action",
+                                            "attack-type",
+                                            "context-name",
+                                            "date-time",
+                                            "dest-ip",
+                                            "dest-port",
+                                            "dns-query-name",
+                                            "dns-query-type",
+                                            "src-ip",
+                                            "src-port",
+                                            "vlan",
+                                            "route-domain"
+                                        ]
+                                    }
+                                },
+                                "delimiter": {
+                                    "description": "Specifies a field delimiter in the predefined storage format",
+                                    "type": "string",
+                                    "default": "."
+                                }
+                            },
+                            "required": ["fields"],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Sip_Dos": {
+            "title": "Protocol SIP DoS Log Profile",
+            "description": "Specifies, when enabled, that the system logs detected SIP DoS attacks",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging SIP DoS events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Sip": {
+            "title": "Protocol SIP Log Profile",
+            "description": "Specifies, when enabled, that the system logs SIP protocol security events",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging SIP protocol security events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logDroppedRequests": {
+                    "description": "Specifies, when enabled, that the system logs dropped requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logGlobalFailures": {
+                    "description": "Specifies, when enabled, that the system logs global failures",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logMalformedRequests": {
+                    "description": "Specifies, when enabled, that the system logs malformed requests",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRedirectedResponses": {
+                    "description": "Specifies, when enabled, that the system logs redirection responses",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logRequestFailures": {
+                    "description": "Specifies, when enabled, that the system logs request failures",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logServerErrors": {
+                    "description": "Specifies, when enabled, that the system logs server errors",
+                    "type": "boolean",
+                    "default": false
+                },
+                "storageFormat": {
+                    "description": "Specifies the format type for log messages",
+                    "anyOf": [{
+                            "type": "string",
+                            "minLength": 1
+                        }, {
+                            "type": "object",
+                            "properties": {
+                                "fields": {
+                                    "description": "Replaces a set of fields in the predefined storage format",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "action",
+                                            "context-name",
+                                            "date-time",
+                                            "dest-ip",
+                                            "dest-port",
+                                            "sip-method-type",
+                                            "sip-caller",
+                                            "sip-callee",
+                                            "src-ip",
+                                            "src-port",
+                                            "vlan",
+                                            "route-domain"
+                                        ]
+                                    }
+                                },
+                                "delimiter": {
+                                    "description": "Specifies a field delimiter in the predefined storage format",
+                                    "type": "string",
+                                    "default": "."
+                                }
+                            },
+                            "required": ["fields"],
+                            "additionalProperties": false
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Dns_Dos": {
+            "title": "Protocol DNS DoS Log Profile",
+            "description": "Specifies, when enabled, that the system logs detected DNS DoS attacks",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging DNS DoS events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Inspection": {
+            "title": "Protocol Inspection Log Profile",
+            "description": "Specifies, when enabled, that the system logs events from the Protocol Inspection engine",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "$ref": "#/definitions/Pointer_Log_Publisher"
+                },
+                "logPacketPayloadEnabled": {
+                    "description": "Enable logging of the packet payload for Protocol Inspection events",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Protocol_Transfer": {
+            "title": "Protocol Transfer Log Profile",
+            "description": "Specifies, when enabled, that the system logs HTTP, FTP, and SMTP protocol security events",
+            "type": "object",
+            "properties": {
+                "publisher": {
+                    "description": "Specifies where the system sends log messages",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Security_Log_Profile_Ssh_Proxy": {
+            "title": "SSH Proxy Security Log Profile",
+            "description": "Specifies, when enabled, that the system logs SSH Proxy events",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "em"]
+            },
+
+            "properties": {
+                "publisher": {
+                    "description": "Specifies the name of the log publisher used for logging SSH Proxy events",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to log publisher declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Publisher"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP log publisher",
+                            "description": "Pathname of existing BIG-IP log publisher",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config publisher"]
+                    }
+                },
+                "logClientAuthFail": {
+                    "description": "Specifies the name of the log publisher used for logging SSH Proxy events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logClientAuthSuccess": {
+                    "description": "Specifies, when enabled, that the system logs client auth success events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logClientAuthPartial": {
+                    "description": "Specifies, when enabled, that the system logs client auth partial events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logServerAuthFail": {
+                    "description": "Specifies, when enabled, that the system logs server auth failure events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logServerAuthSuccess": {
+                    "description": "Specifies, when enabled, that the system logs server auth failure events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logServerAuthPartial": {
+                    "description": "Specifies, when enabled, that the system logs server auth partial events",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logDisallowedChannelAction": {
+                    "description": "Specifies, when enabled, that the system logs disallowed channel actions",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logAllowedChannelAction": {
+                    "description": "Specifies, when enabled, that the system logs allowed channel actions",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logSshTimeout": {
+                    "description": "Specifies, when enabled, that the system logs SSH timeouts",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logNonSshTraffic": {
+                    "description": "Specifies, when enabled, that the system logs non-SSH traffic events",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Log_Publisher": {
+            "title": "Log_Publisher",
+            "description": "Configures lists of destinations for the common logging interface",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Log_Publisher"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "destinations": {
+                    "description": "specify log destinations for this log publisher to use",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Pointer_Log_Destination" }
+                }
+
+            },
+            "required": ["class", "destinations"]
+        },
+
+        "Log_Destination": {
+            "title": "Log_Destination",
+            "description": "Configures a log destination",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Log_Destination"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "type": {
+                    "description": "The type of the log destination",
+                    "type": "string",
+                    "enum": [
+                        "management-port",
+                        "remote-high-speed-log",
+                        "remote-syslog",
+                        "splunk"
+                    ]
+                }
+            },
+            "required": ["class", "type"],
+            "allOf": [
+                {
+                    "if": { "properties": { "type": { "const": "management-port" } } },
+                    "then": { "$ref": "#/definitions/Log_Destination_Management_Port" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "remote-syslog" } } },
+                    "then": { "$ref": "#/definitions/Log_Destination_Remote_Syslog" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "remote-high-speed-log" } } },
+                    "then": { "$ref": "#/definitions/Log_Destination_Remote_High_Speed_Log" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "splunk" } } },
+                    "then": { "$ref": "#/definitions/Log_Destination_Splunk" }
+                }
+            ]
+        },
+
+        "Log_Destination_Management_Port": {
+            "description": "Sends received messages to a specified IP address and port through the management interface",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Specifies the IP address that will receive messages from the specified local Log Destination",
+                    "type": "string",
+                    "format": "f5ip"
+                },
+                "port": {
+                    "description": "Specifies the port of the IP address that will receive messages from the specified local Log Destination ",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "protocol": {
+                    "description": "Specifies the protocol for the system to use to send logs to the specified location",
+                    "type": "string",
+                    "enum": [
+                        "tcp",
+                        "udp"
+                    ],
+                    "default": "tcp"
+                }
+            },
+            "required": [
+                "address",
+                "port"
+            ]
+        },
+
+        "Log_Destination_Remote_Syslog": {
+            "description": "Configures Remote Syslog destinations to format log messages into Syslog format and forward them to a Remote High-Speed Log destination",
+            "type": "object",
+            "properties": {
+                "format": {
+                    "description": "Specifies the method to use to format the logs",
+                    "type": "string",
+                    "enum": [
+                        "legacy-bigip",
+                        "rfc3164",
+                        "rfc5424"
+                    ],
+                    "default": "rfc3164"
+                },
+                "defaultFacility": {
+                    "description": "Specifies the facility given to log messages received that do not already have a facility listed",
+                    "type": "string",
+                    "enum": [
+                        "local0",
+                        "local1",
+                        "local2",
+                        "local3",
+                        "local4",
+                        "local5",
+                        "local6",
+                        "local7"
+                    ],
+                    "default": "local0"
+                },
+                "defaultSeverity": {
+                    "description": "Specifies the severity given to log messages received that do not already have a severity listed",
+                    "type": "string",
+                    "enum": [
+                        "alert",
+                        "crit",
+                        "debug",
+                        "emerg",
+                        "err",
+                        "info",
+                        "notice",
+                        "warn"
+                    ],
+                    "default": "info"
+                },
+                "remoteHighSpeedLog": {
+                    "description": "Specifies a remote high-speed log destination, which the system uses to forward the logs to a pool of remote log servers",
+                    "type": "object",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to remote high speed log declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": {
+                                            "const": "Log_Destination"
+                                        },
+                                        "type": {
+                                            "const": "remote-high-speed-log"
+                                        }
+                                    },
+                                    "required": ["class"]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP remote high speed log",
+                            "description": "Pathname of existing BIG-IP remote high speed log",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1,
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query sys log-config destination remote-high-speed-log"]
+                    }
+                }
+            },
+            "required": ["remoteHighSpeedLog"]
+        },
+
+        "Log_Destination_Remote_High_Speed_Log": {
+            "description": "Sends received messages to a specified pool",
+            "type": "object",
+            "properties": {
+                "distribution": {
+                    "description": "Specifies the distribution method used to send messages to pool members",
+                    "type": "string",
+                    "enum": [
+                        "adaptive",
+                        "balanced",
+                        "replicated"
+                    ],
+                    "default": "adaptive"
+                },
+                "protocol": {
+                    "description": "Specifies the protocol for the system to use to send logs to the pool",
+                    "type": "string",
+                    "enum": [
+                        "tcp",
+                        "udp"
+                    ],
+                    "default": "tcp"
+                },
+                "pool": {
+                    "$ref": "#/definitions/Pointer_Pool"
+                }
+            },
+            "required": ["pool"]
+        },
+
+        "Log_Destination_Splunk": {
+            "description": "Configures Splunk formatting destinations to format incoming log messages into Splunk format",
+            "type": "object",
+            "properties": {
+                "forwardTo": {
+                    "description": "Specifies the log destination to which logs are forwarded",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Log_Destination" }
+                    ]
+                }
+            },
+            "required": ["forwardTo"]
+        },
+
+        "Traffic_Log_Profile": {
+            "title": "Traffic_Log_Profile",
+            "description": "A traffic log profile",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Traffic_Log_Profile"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Traffic_Log_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/request-log" }
+                },
+                "requestSettings": {
+                    "description": "The request settings for the profile",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Traffic_Log_Profile_Request_Settings"
+                        }
+                    ],
+                    "default": {}
+                },
+                "responseSettings": {
+                    "description": "The response settings for the profile",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Traffic_Log_Profile_Response_Settings"
+                        }
+                    ],
+                    "default": {}
+                }
+            },
+            "required": [ "class" ],
+            "additionalProperties": false
+        },
+        "Traffic_Log_Profile_Response_Settings": {
+            "description": "A traffic log profiles response settings",
+            "type": "object",
+
+            "properties": {
+                "byDefaultEnabled": {
+                    "description": "Default response action and if response logging can be overridden by iRule",
+                    "type": "boolean",
+                    "default": true
+                },
+                "responseErrorLoggingEnabled": {
+                    "description": "Enable secondary logging if insufficient bandwidth for primary. Best used to send an alert to a separate destination",
+                    "type": "boolean",
+                    "default": false
+                },
+                "responseErrorPool": {
+                    "description": "Specifies the name of the pool from which to select log servers",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Pool" }
+                    ]
+                },
+                "responseErrorProtocol": {
+                    "description": "Specifies the HighSpeedLogging protocol to use when logging",
+                    "type": "string",
+                    "enum": [
+                        "mds-tcp",
+                        "mds-udp"
+                    ],
+                    "default": "mds-udp"
+                },
+                "responseErrorTemplate": {
+                    "description": "Template to use when generating log messages",
+                    "type": "string"
+                },
+                "responsePool": {
+                    "description": "Specifies the name of the pool from which to select log servers",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Pool" }
+                    ]
+                },
+                "responseProtocol": {
+                    "description": "Specifies the HighSpeedLogging protocol to use when logging",
+                    "type": "string",
+                    "enum": [
+                        "mds-tcp",
+                        "mds-udp"
+                    ],
+                    "default": "mds-udp"
+                },
+                "responseTemplate": {
+                    "description": "Template to use when generating log messages",
+                    "type": "string"
+                },
+                "responseEnabled": {
+                    "description": "Enables or disables logging before the response is returned to the client",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "Traffic_Log_Profile_Request_Settings": {
+            "description": "A traffic log profiles request settings",
+            "type": "object",
+
+            "properties": {
+                "requestErrorLoggingEnabled": {
+                    "description": "Enable secondary logging if insufficient bandwidth for primary. Best used to send an alert to a separate destination",
+                    "type": "boolean",
+                    "default": false
+                },
+                "proxyCloseOnErrorEnabled": {
+                    "description": "Specifies, if enabled, that the logging profile will close the connection after sending its proxy-response",
+                    "type": "boolean",
+                    "default": false
+                },
+                "proxyRespondOnLoggingErrorEnabled": {
+                    "description": "Specifies that the logging profile respond directly if the logging fails",
+                    "type": "boolean",
+                    "default": false
+                },
+                "proxyResponse": {
+                    "description": "Specifies the response to send on logging errors",
+                    "type": "string"
+                },
+                "requestErrorPool": {
+                    "description": "Specifies the name of the pool from which to select log servers",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Pool" }
+                    ]
+                },
+                "requestErrorProtocol": {
+                    "description": "Specifies the HighSpeedLogging protocol to use when logging",
+                    "type": "string",
+                    "enum": [
+                        "mds-tcp",
+                        "mds-udp"
+                    ],
+                    "default": "mds-udp"
+                },
+                "requestErrorTemplate": {
+                    "description": "Template to use when generating log messages",
+                    "type": "string"
+                },
+                "requestPool": {
+                    "description": "Specifies the name of the pool from which to select log servers",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Pool" }
+                    ]
+                },
+                "requestProtocol": {
+                    "description": "Specifies the HighSpeedLogging protocol to use when logging",
+                    "type": "string",
+                    "enum": [
+                        "mds-tcp",
+                        "mds-udp"
+                    ],
+                    "default": "mds-udp"
+                },
+                "requestTemplate": {
+                    "description": "Template to use when generating log messages",
+                    "type": "string"
+                },
+                "requestEnabled": {
+                    "description": "Enables or disables logging before the response is returned to the client",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

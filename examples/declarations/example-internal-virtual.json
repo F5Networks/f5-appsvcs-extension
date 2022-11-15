@@ -1,0 +1,20 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "label": "Internal_Virtual",
+    "remark": "Internal_Virtual",
+    "Sample_Internal_Virtual": {
+        "class": "Tenant",
+        "Internal_Service": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualType": "internal",
+                "sourceAddress": "192.0.2.0/24",
+                "profileICAP": {
+                    "bigip": "/Common/icap"
+                }
+            }
+        }
+    }
+}

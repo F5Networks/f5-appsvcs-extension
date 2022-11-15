@@ -1,0 +1,30 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": false,
+    "id": "testApp",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.38.0",
+        "testTenant": {
+            "class": "Tenant",
+            "testApp": {
+                "class": "Application",
+                "template": "generic",
+                "testDG": {
+                    "class": "Data_Group",
+                    "storageType": "external",
+                    "keyDataType": "string",
+                    "separator": ":=",
+                    "externalFilePath": {
+                        "url": "https://example.url/data-group/dataGroup.txt",
+                        "authentication": {
+                            "method": "bearer-token",
+                            "token": "ZjVmNQ=="
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.20.0",
+    "id": "Security_Log_Profile",
+    "Security_Log_Protocol_Inspection": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "secLogProtocolInspection": {
+                "class": "Security_Log_Profile",
+                "protocolInspection": {
+                    "publisher": {
+                        "use": "logPub"
+                    },
+                    "logPacketPayloadEnabled": false
+                }
+            },
+            "logPub": {
+                "class": "Log_Publisher",
+                "destinations": [
+                    {
+                        "bigip": "/Common/local-db"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,55 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.6.0",
+    "id": "TEST_MONITOR_DNS",
+    "remark": "Test DNS Monitor",
+    "Sample_monitor_02": {
+      "class": "Tenant",
+      "TEST_Monitor_DNS": {
+        "class": "Application",
+        "monitorDNS_simple": {
+          "class": "Monitor",
+          "monitorType": "dns",
+          "queryName": "apple.test"
+        },
+        "monitorDNS_AllProperties": {
+          "class": "Monitor",
+          "monitorType": "dns",
+          "queryName": "radish.test",
+          "acceptRCODE": "no-error",
+          "adaptive": true,
+          "adaptiveDivergenceType": "absolute",
+          "adaptiveDivergenceMilliseconds": 200,
+          "adaptiveLimitMilliseconds": 5000,
+          "adaptiveWindow": 1500,
+          "answerContains": "query-type",
+          "queryType": "aaaa",
+          "receive": "fdf5:4153:3300::a",
+          "reverse": false,
+          "interval": 60,
+          "timeUntilUp": 1200,
+          "timeout": 600,
+          "upInterval": 2400,
+          "transparent": false,
+          "targetAddress": "fdf5:4153:3300::b",
+          "targetPort": 53
+        },
+        "monitorDNS_pool": {
+          "class": "Pool",
+          "members": [
+            {
+              "servicePort": 443,
+              "serverAddresses": [
+                "fdf5:4153:3300::c"
+            ],
+              "minimumMonitors": 1,
+              "monitors": [
+                { "use": "monitorDNS_AllProperties" },
+                { "use": "monitorDNS_simple" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }

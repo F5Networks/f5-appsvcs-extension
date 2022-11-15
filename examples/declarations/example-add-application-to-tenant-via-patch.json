@@ -1,0 +1,29 @@
+[
+  {
+    "op": "add",
+    "path": "/Sample_non_http_01/NewAPP",
+    "value": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "10.0.1.10"
+        ],
+        "pool": "web_poolnew"
+      },
+      "web_poolnew": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [{
+          "servicePort": 80,
+          "serverAddresses": [
+            "192.0.1.10",
+            "192.0.1.11"
+          ]
+        }]
+      }
+    }
+  }
+]

@@ -1,0 +1,36 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.20.0",
+        "id": "Pool",
+        "Example_Shared1": {
+            "class": "Tenant",
+            "Application1": {
+                "class": "Application",
+                "test.item1": {
+                    "class": "Service_Generic",
+                    "virtualAddresses": [
+                        "10.10.0.111",
+                        "10.10.0.1"
+                    ],
+                    "virtualPort": 8080,
+                    "shareAddresses": true
+                }
+            },
+            "Application2": {
+                "class": "Application",
+                "test.item2": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.10.0.111",
+                        "10.10.0.5"
+                    ],
+                    "virtualPort": 8079,
+                    "shareAddresses": true
+                }
+            }
+        }
+    }
+}

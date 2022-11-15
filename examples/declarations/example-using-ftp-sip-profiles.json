@@ -1,0 +1,70 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+       "class": "ADC",
+       "schemaVersion": "3.0.0",
+       "id": "fghijkl7890",
+       "label": "existing SIP and FTP profiles",
+       "Sample_profile_03": {
+          "class": "Tenant",
+          "A1": {
+             "class": "Application",
+             "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                   "10.0.6.100"
+                ],
+                "virtualPort": 443,
+                "profileSIP":  {
+                    "bigip": "/Common/testSIP"
+             },
+                "pool": "tcp_pool"
+             },
+            "tcp_pool": {
+                "class": "Pool",
+                "monitors": [
+                   "tcp"
+                ],
+                "members": [{
+                   "servicePort": 443,
+                   "serverAddresses": [
+                      "192.0.6.10",
+                      "192.0.6.11"
+                   ]
+                }]
+             }
+          },
+
+         "A2": {
+             "class": "Application",
+             "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                   "10.0.6.100"
+                ],
+                "virtualPort": 443,
+                "profileFTP":  {
+                    "bigip": "/Common/testFTP"
+             },
+                "pool": "ftp_pool"
+             },
+
+             "ftp_pool": {
+                "class": "Pool",
+                "monitors": [
+                   "tcp"
+                ],
+                "members": [{
+                   "servicePort": 21,
+                   "serverAddresses": [
+                      "192.0.6.10",
+                      "192.0.6.11"
+                   ]
+                }]
+             }
+          }
+       }     
+    }
+}

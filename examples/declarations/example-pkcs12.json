@@ -1,0 +1,50 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.7.0",
+    "id": "TEST_PKCS12",
+    "remark": "Test PKCS12",
+    "example_cert_04": {
+      "class": "Tenant",
+      "TEST_Certificate": {
+        "class": "Application",
+        "pkcs12_crt": {
+            "class": "Certificate",
+            "remark": "generated with openssl cli - empty password on prompt",
+            "passphrase": {
+            "ciphertext": "IA==",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+            "pkcs12": {
+                "base64": "MIIEdAIBAzCCBDoGCSqGSIb3DQEHAaCCBCsEggQnMIIEIzCCBB8GCSqGSIb3DQEHBqCCBBAwggQMAgEAMIIEBQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQIMFpvfHSvJ6sCAggAgIID2PQxcEhhEPgU+sTVw9UncA+U0QYK2/JWQAzfxfD30uR9hXMdFnCF8wJcuUL+4jR+xnrJ9i+F5mISD8zLPipCLs3JuBDGQ8CibTMjcbm54eEzcX6knoQ8r6WZh8tXL+Dniwsnl7FrTwE6br+V/1LQvc03NepYA+xDPgHCOj1qfIcqMyylsf7ZyqYp76nmlv2tkcQrM/f+hcA9UtDuseeRae4ugx5IKkrcIAVYPMfCwRSPkGFWJJofHZaCzeCT4Nq5+ocljogAlqtWSH9nIGEsYxDCrhj3qgZNAPODa1vfnMna3/1md4oRuqI5qe7UQF6e/eltAunZDUtT1vTW+O3vyt3Bqfl18moXocUOuVVi7CNejcA0+IhqryrkI3w4aIXxWVmZ4tl/El/OSjXCRMs+tnTwRZjiCd1dPnKJHjesygupnS4rHus31dQKMmxjyKVrhsl3N+oopbGVWAlaR7p/0DyTdUywBrExyi/c7QvVN/0D08F1TRed4ys3/AVl43dvM9IFGm+ZwsvYyBhRmYn/oL5Dr5u5/jHFhPrWTR35sE5uvcYsJR96hmMqxN57K95MggRcthsrdIvDN+86pqifZoVPTmezFgRuO7NfzhCj/uOd1l61dOKbFNT5DuE5DoyJ8IaVnTJvZ4CAq3O2Ix62LVw0t/lM7AXhkak52LsyJ8VGcaK8R9PhM/X0CYGoRgWyPzJ3GGNX6s9Pw6rV6k5gtYkUagElrsJbcmfabEMZAGwIsVmOpaxdpyuaoo2TR+tz/E1FasC9K3aJ0cEwt6Cm9/tW4qEsb65TBm7C2kXNglUHEmrxndVfMVzKG2dkxUhvJdqw3BxcPukjzk4lpBv2YrTeJs4+y+aRn7F7GUrR4r9Z903ZTbu2DiOEbFEERPq/08zO7zl9pD76KyJfrWWlNW+urwPqEz8i6eDj+/zBlCd6JfXxVgXy8ctHwqKChBNDyimVBvXDD6zIySnazdYVcYycfnSbNo4p2VWztF4C6CvqqOtN39I11LZZ1okZsxpacQEU3nhaRXHw+bMrHfRZNlt5RmCIYnNuB6qTBjL9yaaq/9BNzW2dQnRP2OkeIbfVJN3N00Sey0sbsXUlajEMJW7Efsz6iHtOXZkeTdu8ME7eGBsaRNAX5tcDqMJjnxhGsZSmxLNHW+5OnmNB54sdEMhyM/wYEbxGh6qQEPtbdBhSZIuXiSkfmtI64IdKhBYpLl2rUxDB+nLZisRgea3xCBDxHVd7c0e9u67lT3GetAmFX2GOTA5+a8k3zXnj6te+gN+9ZJhVCOasifNzKpk7WLwZXAgnFWtuXjAxMCEwCQYFKw4DAhoFAAQUL+jxIL4tVgP9Hb2ux92Idbur6QEECEfy4yQcB7vhAgIIAA==" }
+  
+        },
+        "pkcs12_crt_key_encr_url": {
+          "class": "Certificate",
+          "remark": "saves encr key in openssl format",
+          "passphrase": {
+            "ciphertext": "cGFzc3dvcmQ=",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+            "ignoreChanges": true
+          },
+          "pkcs12Options": {
+              "keyImportFormat": "openssl-legacy"
+          },
+          "pkcs12": {
+              "url": "https://mycompany/certs/my_p12.p12" }
+  
+        },
+        "pkcs12_crt_key_bundle": { 
+            "class": "Certificate",
+            "remark": "multiple certs, no passphrase, ignore change on redeploy",
+            "pkcs12Options": {
+              "keyImportFormat": "openssl-legacy",
+              "ignoreChanges": true
+            },
+            "pkcs12": {
+                "url": "http://mycompany/certs/my_pfx.pfx" }
+  
+        }
+      }
+    }
+  }

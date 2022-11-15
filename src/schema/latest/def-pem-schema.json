@@ -1,0 +1,1527 @@
+{
+    "definitions": {
+        "Enforcement_Policy": {
+            "title": "Enforcement_Policy",
+            "description": "Configures policies for the Policy Enforcement Manager (PEM)",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Policy"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "enable": {
+                    "description": "Specifies the current status of the policy",
+                    "type": "boolean",
+                    "default": true
+                },
+                "allTransactions": {
+                    "description": "Specifies, when set to true, that the system enables policy enforcement for each http transaction. When set to false, the system allows only policy enforcement of the first http transaction.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rules": {
+                    "description": "Enforcement policy rules",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Enforcement_Rule"
+                    }
+                }
+            },
+            "required": [
+                "class"
+            ],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule": {
+            "description": "A rule to match traffic flows and apply actions",
+            "type": "object",
+            "properties": {
+                "dscpMarkingDownlink": {
+                    "description": "Specifies whether to set DSCP bits in the IP header of outgoing traffic to the subscriber",
+                    "if": { "type": "string" },
+                    "then": {
+                        "const": "pass-through"
+                    },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                    },
+                    "default": "pass-through"
+                },
+                "dscpMarkingUplink": {
+                    "description": "Specifies whether to set DSCP bits in the IP header of outgoing traffic to the network",
+                    "if": { "type": "string" },
+                    "then": {
+                        "const": "pass-through"
+                    },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                    },
+                    "default": "pass-through"
+                },
+                "gateStatusEnabled": {
+                    "description": "Specifies, when set to true, that the traffic can pass through the system without being changed. Select false to drop traffic that this rule applies to.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "interceptionEndpoint": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Interception_Endpoint"
+                },
+                "iRule": {
+                    "$ref": "#/definitions/Pointer_Enforcement_iRule"
+                },
+                "l2MarkingDownlink": {
+                    "description": "Set Layer-2 Quality of Service Marking in downlink traffic that matches a rule. Setting a L2 QoS Marking affects the packet delivery priority. The range is 0 to 7, or pass-through. The default value is pass-through, indicating the L2 QoS Marking of the packet will not be changed when the packet matches the rule.",
+                    "if": { "type": "string" },
+                    "then": {
+                        "const": "pass-through"
+                    },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 7
+                    },
+                    "default": "pass-through"
+                },
+                "l2MarkingUplink": {
+                    "description": "Set Layer-2 Quality of Service Marking in uplink traffic that matches a rule. Setting a L2 QoS marking affects the packet delivery priority. The range is 0 to 7, or pass-through. The default value is pass-through, indicating the L2 QoS Marking of the packet will not be changed when the packet matches the rule.",
+                    "if": { "type": "string" },
+                    "then": {
+                        "const": "pass-through"
+                    },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 7
+                    },
+                    "default": "pass-through"
+                },
+                "name": {
+                    "description": "The name of the policy rule.",
+                    "type": "string"
+                },
+                "precedence": {
+                    "description": "Specifies an integer that indicates the precedence for the rule in relation to the other rules. Number 1 has the highest precedence. Rules with higher precedence (lower numbers) are evaluated before other rules with lower precedence (higher numbers).",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295
+                },
+                "qosBandwidthControllerUplink": {
+                    "$ref": "#/definitions/Enforcement_Rule_QOS"
+                },
+                "qosBandwidthControllerDownlink": {
+                    "$ref": "#/definitions/Enforcement_Rule_QOS"
+                },
+                "serviceChain": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Service_Chain_Endpoint"
+                },
+                "tclFilter": {
+                    "description": "Specifies the tcl expression which uses iRule commands to filter the packet. It is a match if tclFilter returns TRUE/1 or nomatch if FALSE/0.",
+                    "type": "string"
+                },
+                "tcpAnalyticsEnabled": {
+                    "description": "Specifies the action to enable tcp analytics when the traffic flow matches the rule matching criteria",
+                    "type": "boolean",
+                    "default": false
+                },
+                "tcpOptimizationDownlink": {
+                    "$ref": "#/definitions/Pointer_TCP_Profile"
+                },
+                "tcpOptimizationUplink": {
+                    "$ref": "#/definitions/Pointer_TCP_Profile"
+                },
+                "classificationFilters": {
+                    "description": "Classification filters to apply to the traffic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Enforcement_Rule_Classification_Filter"
+                    }
+                },
+                "DTOSTethering": {
+                    "allOf": [
+                        { "$ref": "#/definitions/Enforcement_Rule_DTOS_Tethering" }
+                    ],
+                    "default": {}
+                },
+                "flowInfoFilters": {
+                    "description": "Flow information filters to apply to the traffic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Enforcement_Rule_Flow_Filter"
+                    }
+                },
+                "forwarding": {
+                    "$ref": "#/definitions/Enforcement_Rule_Forwarding"
+                },
+                "insertContent": {
+                    "$ref": "#/definitions/Enforcement_Rule_Insert_Content"
+                },
+                "modifyHttpHeader": {
+                    "$ref": "#/definitions/Enforcement_Rule_Modify_HTTP_Header"
+                },
+                "qoeReporting": {
+                    "$ref": "#/definitions/Enforcement_Rule_Report_Destination_HSL"
+                },
+                "quota": {
+                    "$ref": "#/definitions/Enforcement_Rule_Quota"
+                },
+                "ranCongestion": {
+                    "$ref": "#/definitions/Enforcement_Rule_Ran_Congestion"
+                },
+                "usageReporting": {
+                    "$ref": "#/definitions/Enforcement_Rule_Usage_Reporting"
+                },
+                "urlCategorizationFilters": {
+                    "description": "URL categorization filters to apply to the traffic",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Enforcement_Rule_URL_Categorization_Filter"
+                    }
+                }
+            },
+            "required": [
+                "name",
+                "precedence"
+            ],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_QOS": {
+            "description": "Specifies a previously configured bandwidth control policy to apply to traffic that matches this rule",
+            "type": "object",
+            "properties": {
+                "policy": {
+                    "$ref": "#/definitions/Pointer_Bandwidth_Control_Policy"
+                },
+                "category": {
+                    "description": "Specifies a category of traffic within the bandwidth control policy to which to apply the rule. This option provides more specific rate control to a certain type of traffic. The category must be defined in the selected bandwidth control policy.",
+                    "type": "string"
+                }
+            },
+            "required": ["policy"],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_DTOS_Tethering": {
+            "description": "Specifies options for device type, operating system, and tethering detection",
+            "type": "object",
+            "properties": {
+                "detectDtos": {
+                    "description": "Specifies the detection of the subscriber's device and the operating system",
+                    "type": "boolean",
+                    "default": false
+                },
+                "detectTethering": {
+                    "description": "Specifies if you want to enable detection of tethering",
+                    "type": "boolean",
+                    "default": false
+                },
+                "reportDestinationHsl": {
+                    "$ref": "#/definitions/Enforcement_Rule_Report_Destination_HSL"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Report_Destination_HSL": {
+            "description": "Specifies report destination and format",
+            "type": "object",
+            "properties": {
+                "highSpeedLogPublisher": {
+                    "$ref": "#/definitions/Pointer_Log_Publisher"
+                },
+                "formatScript": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Format_Script"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Forwarding_ICAP": {
+            "description": "Specifies that the flow forwards to the ICAP virtual server",
+            "type": "object",
+            "properties": {
+                "icapType": {
+                    "description": "Specifies the ICAP adaptation type",
+                    "type": "string",
+                    "enum": [
+                        "request",
+                        "response",
+                        "both"
+                    ]
+                },
+                "icapService": {
+                    "description": "ICAP service to route to",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Service" }
+                    ]
+                }
+            },
+            "required": ["icapType", "icapService"]
+        },
+        "Enforcement_Rule_Forwarding_Endpoint": {
+            "description": "Specifies that the flow steers to a different destination",
+            "type": "object",
+            "properties": {
+                "endpoint": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Forwarding_Endpoint"
+                }
+            },
+            "required": ["endpoint"]
+        },
+        "Enforcement_Rule_Forwarding_Route_To_Network": {
+            "description": "Specifies that the system forwards the flow to the default destination",
+            "type": "object",
+            "properties": {},
+            "required": []
+        },
+        "Enforcement_Rule_Forwarding_HTTP": {
+            "description": "Specifies that traffic affected by this rule should be redirected to the specified URL",
+            "type": "object",
+            "properties": {
+                "redirectUrl": {
+                    "description": "Specifies that traffic affected by this rule should be redirected to the specified URL",
+                    "type": "string"
+                }
+            },
+            "required": ["redirectUrl"]
+        },
+        "Enforcement_Rule_Forwarding": {
+            "description": "Manages the forwarding action and its attributes",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies the type of forwarding action",
+                    "type": "string",
+                    "enum": [
+                        "icap",
+                        "endpoint",
+                        "route-to-network",
+                        "http"
+                    ]
+
+                },
+                "fallbackAction": {
+                    "description": "Specifies if the connection can remain unchanged or should be dropped if the forwarding action fails for any reason",
+                    "type": "string",
+                    "enum": [
+                        "continue",
+                        "drop"
+                    ],
+                    "default": "drop"
+                }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "type": { "const": "icap" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Forwarding_ICAP" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "endpoint" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Forwarding_Endpoint" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "route-to-network" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Forwarding_Route_To_Network" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "http" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Forwarding_HTTP" }
+                }
+            ],
+            "required": ["type"]
+        },
+        "Enforcement_Rule_Insert_Content": {
+            "description": "Specifies the action to insert content into the webpage",
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "Specifies the periodicity of the insert action in seconds",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295
+                },
+                "frequency": {
+                    "description": "Specifies the number of content insertion actions per transaction",
+                    "type": "string",
+                    "enum": [
+                        "always",
+                        "once",
+                        "once-every"
+                    ],
+                    "default": "always"
+                },
+                "position": {
+                    "description": "Specifies position with respect to the configured tagName",
+                    "type": "string",
+                    "enum": [
+                        "append",
+                        "prepend"
+                    ],
+                    "default": "append"
+                },
+                "tagName": {
+                    "description": "Specifies the tag name to which the content is either appended or prepended",
+                    "type": "string"
+                },
+                "valueContent": {
+                    "description": "Specifies the value content to be inserted into the webpage",
+                    "type": "string"
+                },
+                "valueType": {
+                    "description": "Specifies the type of content format used in the valueContent option",
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "tcl-snippet"
+                    ],
+                    "default": "string"
+                }
+            },
+            "dependencies": {
+                "duration": {
+                    "properties": { "frequency": { "const": "once-every" } }
+                },
+                "tagName": {
+                    "required": ["valueContent"]
+                },
+                "valueContent": {
+                    "required": ["tagName"]
+                },
+                "frequency": {
+                    "if": { "properties": { "frequency": { "const": "once-every" } } },
+                    "then": { "required": ["duration"] }
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Modify_HTTP_Header": {
+            "description": "Specifies the action to modify the HTTP header when the traffic flow matches the rule matching criteria",
+            "type": "object",
+            "properties": {
+                "headerName": {
+                    "description": "Specifies the HTTP header name used by the operation option to modify the HTTP header",
+                    "type": "string"
+                },
+                "operation": {
+                    "description": "Specifies the operation used to modify the HTTP header",
+                    "type": "string",
+                    "enum": [
+                        "insert",
+                        "remove"
+                    ]
+                },
+                "valueContent": {
+                    "description": "Specifies the HTTP header value content used by the insert operation to modify the HTTP header",
+                    "type": "string"
+                },
+                "valueType": {
+                    "description": "Specifies the type of content format used in the valueContent option",
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "tcl-snippet"
+                    ],
+                    "default": "string"
+                }
+            },
+
+            "dependencies": {
+                "valueContent": { "properties": { "operation": { "const": "insert" } } },
+                "valueType": { "properties": { "operation": { "const": "insert" } } }
+            },
+
+            "if": { "properties": { "operation": { "const": "insert" } } },
+            "then": { "required": ["valueContent"] },
+
+            "required": ["headerName", "operation"],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Quota": {
+            "description": "Specify quota management options",
+            "type": "object",
+            "properties": {
+                "ratingGroup": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Rating_Group"
+                },
+                "reportingLevel": {
+                    "description": "Specifies the quota reporting level",
+                    "type": "string",
+                    "enum": [
+                        "rating-group",
+                        "service-id"
+                    ],
+                    "default": "rating-group"
+                }
+            },
+
+            "dependencies": {
+                "ratingGroup": { "properties": { "reportingLevel": { "const": "rating-group" } } }
+            },
+
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Ran_Congestion": {
+            "description": "Detect congestion in the Radio Access Network",
+            "type": "object",
+            "properties": {
+                "threshold": {
+                    "description": "Specifies lower threshold bandwidth (in kbps) for a session to be marked as congested",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 1000
+                },
+                "reportDestinationHsl": {
+                    "$ref": "#/definitions/Enforcement_Rule_Report_Destination_HSL"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Usage_Reporting": {
+            "description": "Send reporting data concerning traffic affected by this rule to either an external analytics system or to a PCRF over a Gx interface",
+            "type": "object",
+            "properties": {
+                "destination": {
+                    "description": "Specifies where to send the usage monitoring data",
+                    "type": "string",
+                    "enum": [
+                        "gx",
+                        "sd",
+                        "hsl",
+                        "radius-accounting"
+                    ]
+                },
+                "granularity": {
+                    "description": "Specifies the type of reporting that will be generated when the policy applies",
+                    "type": "string",
+                    "enum": [
+                        "flow",
+                        "session",
+                        "transaction"
+                    ],
+                    "default": "session"
+                },
+                "interval": {
+                    "description": "Specifies the time interval when the report will be generated, in seconds. A value of 0 indicates this feature is disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "volume": {
+                    "$ref": "#/definitions/Enforcement_Rule_Usage_Reporting_Volume"
+                },
+                "transaction": {
+                    "$ref": "#/definitions/Enforcement_Rule_Usage_Reporting_Transaction"
+                }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "destination": { "const": "gx" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Usage_Gx" }
+                },
+                {
+                    "if": { "properties": { "destination": { "const": "sd" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Usage_Sd" }
+                },
+                {
+                    "if": { "properties": { "destination": { "const": "hsl" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Usage_Hsl" }
+                },
+                {
+                    "if": { "properties": { "destination": { "const": "radius-accounting" } } },
+                    "then": { "$ref": "#/definitions/Enforcement_Rule_Usage_Radius" }
+                },
+                {
+                    "if": { "properties": { "destination": { "enum": ["gx", "sd", "radius-accounting"] } } },
+                    "then": { "properties": { "granularity": { "const": "session" } } }
+                },
+                {
+                    "if": { "properties": { "destination": { "enum": ["gx", "sd"] } } },
+                    "then": { "properties": { "interval": { "const": 0 } } }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "destination": { "enum": ["hsl", "radius-accounting"] },
+                            "granularity": { "enum": ["flow", "session"] }
+                        }
+                    },
+                    "then": {
+                        "anyOf": [
+                            {
+                                "properties": { "interval": { "minimum": 1 } },
+                                "required": ["interval"]
+                            },
+                            {
+                                "required": ["volume"]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "destination": { "const": "hsl" },
+                            "granularity": { "const": "transaction" }
+                        }
+                    },
+                    "then": { "properties": { "interval": { "const": 0 } } }
+                }
+            ],
+            "dependencies": {
+                "transaction": { "properties": { "granularity": { "const": "transaction" } } }
+            },
+            "required": ["destination"]
+        },
+        "Enforcement_Rule_Usage_Reporting_Volume": {
+            "description": "Configures volume threshold settings",
+            "type": "object",
+            "properties": {
+                "downlink": {
+                    "description": "Send reporting data if the number of octets to the client exceeds the threshold. A value of 0 indicates this feature is disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "total": {
+                    "description": "Send reporting data if the total number of octets both to and from the client exceeds the threshold. A value of 0 indicates this feature is disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "uplink": {
+                    "description": "Send reporting data if the number of octets from the client exceeds the threshold. A value of 0 indicates this feature is disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Usage_Reporting_Transaction": {
+            "description": "Specifies policy enforcement configuration on transaction report for each HTTP transaction",
+            "type": "object",
+            "properties": {
+                "hostname": {
+                    "description": "Specifies the maximum HTTP hostname string length option to include in the HTTP transaction report",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "uri": {
+                    "description": "Specifies the maximum HTTP URI string length option to include in the HTTP transaction report",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 256
+                },
+                "userAgent": {
+                    "description": "Specifies the maximum HTTP user agent string length to include in the HTTP transaction report",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Usage_Gx": {
+            "description": "Sends usage monitoring data to a PCRF over a Gx interface",
+            "type": "object",
+            "properties": {
+                "applicationReportingEnabled": {
+                    "description": "Report APPLICATION_START and APPLICATION_END Event-Triggers when the application start/stop is detected",
+                    "type": "boolean",
+                    "default": false
+                },
+                "monitoringKey": {
+                    "description": "Specifies a string to use for usage monitoring indicating the portion of traffic that is accounted for in this dynamic policy and charging control (PCC) rule",
+                    "type": "string"
+                }
+            },
+            "required": []
+        },
+        "Enforcement_Rule_Usage_Sd": {
+            "description": "Sends usage monitoring data to a PCRF over a Sd interface",
+            "type": "object",
+            "properties": {
+                "applicationReportingEnabled": {
+                    "description": "Report APPLICATION_START and APPLICATION_END Event-Triggers when the application start/stop is detected",
+                    "type": "boolean",
+                    "default": false
+                },
+                "monitoringKey": {
+                    "description": "Specifies a string to use for usage monitoring indicating the portion of traffic that is accounted for in this dynamic policy and charging control (PCC) rule",
+                    "type": "string"
+                }
+            },
+            "required": ["monitoringKey"]
+        },
+        "Enforcement_Rule_Usage_Hsl": {
+            "description": "Sends reporting data to remote HSL servers",
+            "type": "object",
+            "properties": {
+                "publisher": {
+                    "$ref": "#/definitions/Pointer_Log_Publisher"
+                },
+                "formatScript": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Format_Script"
+                },
+                "sessionReportingFields": {
+                    "description": "Specifies the session fields and their order based on which messages should be published",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "3gpp-parameters",
+                            "application-id",
+                            "called-station-id",
+                            "calling-station-id",
+                            "concurrent-flows",
+                            "downlink-volume",
+                            "duration-seconds",
+                            "last-record-sent",
+                            "new-flows",
+                            "observation-time-seconds",
+                            "record-reason",
+                            "record-type",
+                            "report-id",
+                            "report-version",
+                            "subscriber-id",
+                            "subscriber-id-type",
+                            "successful-transactions",
+                            "terminated-flows",
+                            "timestamp-msec",
+                            "total-transactions",
+                            "uplink-volume"
+                        ]
+                    }
+                },
+                "flowReportingFields": {
+                    "description": "Specifies the flow fields and their order based on which messages should be published",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "application-id",
+                            "destination-ip",
+                            "destination-transport-port",
+                            "downlink-volume",
+                            "flow-end-milli-seconds",
+                            "flow-end-seconds",
+                            "flow-start-milli-seconds",
+                            "flow-start-seconds",
+                            "observation-time-seconds",
+                            "protocol-identifier",
+                            "record-type",
+                            "report-id",
+                            "report-version",
+                            "route-domain",
+                            "source-ip",
+                            "source-transport-port",
+                            "subscriber-id",
+                            "subscriber-id-type",
+                            "timestamp-msec",
+                            "total-transactions",
+                            "uplink-volume",
+                            "url-category-id",
+                            "vlan-id"
+                        ]
+                    }
+                },
+                "transactionReportingFields": {
+                    "description": "Specifies the transaction fields and their order based on which messages should be published",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "application-id",
+                            "destination-ip",
+                            "destination-transport-port",
+                            "downlink-volume",
+                            "http-hostname",
+                            "http-hostname-truncated",
+                            "http-response-code",
+                            "http-url",
+                            "http-url-truncated",
+                            "http-user-agent",
+                            "http-user-agent-truncated",
+                            "protocol-identifier",
+                            "record-type",
+                            "report-id",
+                            "report-version",
+                            "route-domain",
+                            "skipped-transactions",
+                            "source-ip",
+                            "source-transport-port",
+                            "subscriber-id",
+                            "subscriber-id-type",
+                            "transaction-classification-result",
+                            "transaction-end-milli-seconds",
+                            "transaction-end-seconds",
+                            "transaction-number",
+                            "transaction-start-milli-seconds",
+                            "transaction-start-seconds",
+                            "uplink-volume",
+                            "url-category-id",
+                            "vlan-id"
+                        ]
+                    }
+                }
+            },
+            "required": ["publisher"]
+        },
+        "Enforcement_Rule_Usage_Radius": {
+            "description": "Specifies a RADIUS internal virtual server as a reporting destination",
+            "type": "object",
+            "properties": {
+                "radiusAAAService": {
+                    "$ref": "#/definitions/Pointer_Service"
+                }
+            },
+            "required": ["radiusAAAService"]
+        },
+        "Enforcement_Rule_Classification_Filter": {
+            "description": "Defines the category or application (Layer 7) conditions that the traffic must meet (or not meet) for this enforcement policy rule to apply",
+            "type": "object",
+            "properties": {
+                "application": {
+                    "$ref": "#/definitions/Pointer_Classification_Application"
+                },
+                "category": {
+                    "$ref": "#/definitions/Pointer_Classification_Category"
+                },
+                "invertMatch": {
+                    "description": "Specifies that a traffic flow should not match the condition",
+                    "type": "boolean",
+                    "default": false
+                },
+                "name": {
+                    "description": "The name of the classification filter.",
+                    "type": "string"
+                }
+            },
+            "required": ["name"],
+            "oneOf": [
+                { "required": ["application"] },
+                { "required": ["category"] }
+            ],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_URL_Categorization_Filter": {
+            "description": "Defines the category of URL, which provides information about the content type requested by the subscriber",
+            "type": "object",
+            "properties": {
+                "category": {
+                    "description": "Specifies which type of URL category you want the rule to affect",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Classification_Category" }
+                    ]
+                },
+                "invertMatch": {
+                    "description": "Specifies that a traffic flow should not match the condition",
+                    "type": "boolean",
+                    "default": false
+                },
+                "name": {
+                    "description": "The name of the URL categorization filter.",
+                    "type": "string"
+                }
+            },
+            "required": ["name", "category"],
+            "additionalProperties": false
+        },
+        "Enforcement_Rule_Flow_Filter": {
+            "description": "Defines the flow conditions (Layer 4) that the traffic must meet (or not meet) for this enforcement policy rule to apply",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the flow filter.",
+                    "type": "string"
+                },
+                "invertMatch": {
+                    "description": "Specifies that a traffic flow should not match the condition",
+                    "type": "boolean",
+                    "default": false
+                },
+                "dscpMarking": {
+                    "description": "Matches incoming traffic based on a value in the DSCP field in the IP header",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 63
+                        },
+                        {
+                            "type": "string",
+                            "const": "disabled"
+                        }
+                    ],
+                    "default": "disabled"
+                },
+                "destinationAddress": {
+                    "description": "Matches traffic going to a destination address or network",
+                    "type": "string",
+                    "default": "0.0.0.0/0"
+                },
+                "destinationPort": {
+                    "description": "Matches traffic headed to a destination port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "sourceVlan": {
+                    "description": "Matches incoming traffic from a VLAN",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_VLAN" }
+                    ]
+                },
+                "sourceAddress": {
+                    "description": "Matches traffic coming from a source address or network",
+                    "type": "string",
+                    "default": "0.0.0.0/32"
+                },
+                "sourcePort": {
+                    "description": "Matches traffic coming from a source port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "protocol": {
+                    "description": "Specifies the protocol of the traffic to which the rule applies",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "tcp",
+                        "udp"
+                    ],
+                    "default": "any"
+                },
+                "ipAddressType": {
+                    "description": "Specifies the IP address type that this rule applies to",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "ipv4",
+                        "ipv6"
+                    ],
+                    "default": "any"
+                }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+        },
+        "Enforcement_Diameter_Endpoint_Profile": {
+            "title": "Enforcement_Diameter_Endpoint_Profile",
+            "description": "Create a listener to specify how to handle traffic for policy enforcement",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Diameter_Endpoint_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Enforcement_Diameter_Endpoint_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/diameter-endpoint" }
+                },
+                "destinationHost": {
+                    "description": "Specifies the destination host name of the PCRF or external policy server, for example, pcrfdest.net.com",
+                    "type": "string"
+                },
+                "destinationRealm": {
+                    "description": "Specifies the realm name or network of the PCRF, for example, net.com",
+                    "type": "string"
+                },
+                "fatalGraceTime": {
+                    "description": "Specifies the time period in seconds that a diameter (PCRF) connection can be disconnected before the system clears all subscriber session information associated with that diameter endpoint. If the connection is re-established within the fatal grace time period, session information is not cleared. A value of 0 means if the PCRF is disconnected, session information is cleared immediately.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 500
+                },
+                "messageMaxRetransmits": {
+                    "description": "Specifies the maximum number of times that messages can be retransmitted from the BIG-IP system to the PCRF",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 2
+                },
+                "messageRetransmitDelay": {
+                    "description": "Specifies the number of milliseconds to wait before retransmitting unanswered messages in case of failure from the BIG-IP system to the PCRF over the Gx interface",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 1500
+                },
+                "originHost": {
+                    "description": "Specifies the host name of the PCRF or external policy server, for example, pcrf.xnet.com",
+                    "type": "string"
+                },
+                "originRealm": {
+                    "description": "Specifies the realm name or network in which the PCRF resides, for example, xnet.com",
+                    "type": "string"
+                },
+                "protocolProfileGx": {
+                    "description": "Specifies the protocol profile to be used when you enable subscriber discovery. The PEM protocol profile defines mapping of Diameter Gx AVPs to subscriber ID and other PEM subscriber session attributes. The default BIG-IP reference values vary between versions. BIGIP versions 14.1 and above begin with 'sys_diam' (e.g. _sys_diam_proto_default).",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Enforcement_Profile_Gx" }
+                    ]
+                },
+                "productName": {
+                    "description": "Specifies the value of the string used in the product name attribute value pair (AVP), in capabilities exchange message in the diameter when communicating with the PCRF",
+                    "type": "string",
+                    "default": "BIG-IP"
+                },
+                "supportedApps": {
+                    "description": "Specifies the diameter endpoint you would like to provision. You can select Gx, Gy or SD. Gx and SD are mutually exclusive.",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Gx",
+                            "Gy",
+                            "Sd"
+                        ]
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true
+                }
+            },
+            "required": ["class", "supportedApps"],
+            "additionalProperties": false
+        },
+        "Enforcement_iRule": {
+            "title": "Enforcement_iRule",
+            "description": "Specifies or configures an iRule for use in Enforcement Policies",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_iRule"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "expand": {
+                    "title": "Expand",
+                    "description": "If true (default), expand backquoted variables in iRule",
+                    "type": "boolean",
+                    "default": true
+                },
+                "iRule": {
+                    "$ref": "#/definitions/iRule_Core"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class", "iRule" ]
+        },
+        "Enforcement_Radius_AAA_Profile": {
+            "title": "Enforcement_Radius_AAA_Profile",
+            "description": "Configures a radius AAA profile",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Radius_AAA_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Enforcement_Radius_AAA_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/radiusaaa" }
+                },
+                "retransmissionTimeout": {
+                    "description": "The number of seconds to wait before resending authentication or accounting transaction messages to the RADIUS server",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 60,
+                    "default": 5
+                },
+                "sharedSecret": {
+                    "description": "Specifies the shared secret of the RADIUS server used for authentication or accounting",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Secret" },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "object"
+                            }
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "secret"
+                            }
+                        }
+                    ]
+                },
+                "password": {
+                    "description": "The password of the RADIUS AAA profile for RADIUS server authentication",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Secret" },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "object"
+                            }
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "secret"
+                            }
+                        }
+                    ]
+                },
+                "transactionTimeout": {
+                    "description": "The number of seconds to wait before resending authentication or accounting transaction messages to the RADIUS server",
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 300,
+                    "default": 30
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "Enforcement_Profile": {
+            "title": "Enforcement_Profile",
+            "description": "Configures a subscriber policy manager profile",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Enforcement_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/spm" }
+                },
+                "policiesGlobalHighPrecedence": {
+                    "description": "Adds, deletes, or replaces a set of the policies",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Enforcement_Policy"
+                    }
+                },
+                "policiesGlobalLowPrecedence": {
+                    "description": "Adds, deletes, or replaces a set of the policies",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Enforcement_Policy"
+                    }
+                },
+                "policiesUnknownSubscribers": {
+                    "description": "Adds, deletes, or replaces a set of the policies",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Enforcement_Policy"
+                    }
+                },
+                "connectionOptimizationEnabled": {
+                    "description": "Specifies whether connection optimization is enabled or not",
+                    "type": "boolean",
+                    "default": true
+                },
+                "connectionOptimizationService": {
+                    "$ref": "#/definitions/Pointer_Service"
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "Enforcement_Subscriber_Management_Profile": {
+            "title": "Enforcement_Subscriber_Management_Profile",
+            "description": "Configures a subscriber management profile",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Subscriber_Management_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Enforcement_Subscriber_Management_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/subscriber-mgmt" }
+                },
+                "dhcpLeaseQuery": {
+                    "$ref": "#/definitions/Enforcement_Subscriber_Management_Profile_DHCP"
+                },
+                "serverSideSessionsEnabled": {
+                    "description": "Specifies the session is created based on server side IP when the server side traffic comes and is enabled",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "Enforcement_Subscriber_Management_Profile_DHCP": {
+            "description": "Configures DHCP lease query settings for a subscriber management profile",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "enabled": {
+                    "description": "Specifies the subscriber management settings use DHCP lease query to communicate with DHCP servers to obtain DHCP lease information for the unknown IP address and creates a new policy enforcement session using the lease information received",
+                    "type": "boolean",
+                    "default": true
+                },
+                "service": {
+                    "$ref": "#/definitions/Pointer_Service"
+                }
+            },
+            "required": ["service"],
+            "additionalProperties": false
+        },
+        "Enforcement_Listener": {
+            "title": "Enforcement_Listener",
+            "description": "Configures an enforcement data plane listener",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Listener"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "enforcementProfile": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Profile"
+                },
+                "subscriberManagementProfile": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Subscriber_Management_Profile"
+                },
+                "services": {
+                    "description": "A set of virtual servers",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Service"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["class", "enforcementProfile", "services"],
+            "additionalProperties": false
+        },
+        "Enforcement_Interception_Endpoint": {
+            "title": "Enforcement_Interception_Endpoint",
+            "description": "Configures an interception endpoint to clone all traffic",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Interception_Endpoint"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "persistence": {
+                    "description": "Specifies the persistence that is based on either the source or destination IP addresses only",
+                    "type": "string",
+                    "enum": [
+                        "destination-ip",
+                        "source-ip",
+                        "disabled"
+                    ],
+                    "default": "disabled"
+                },
+                "pool": {
+                    "$ref": "#/definitions/Pointer_Pool"
+                }
+            },
+
+            "required": ["class", "pool"],
+            "additionalProperties": false
+        },
+        "Enforcement_Format_Script": {
+            "title": "Enforcement_Format_Script",
+            "description": "Specifies a script using TCL syntax that defines a custom format for HSL reporting applied in an enforcement policy rule. The format and fields available differ depending on whether you are using session-based or flow-based reporting in the rule.",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Format_Script"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "definition": {
+                    "description": "TCL script text",
+                    "type": "string"
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "Enforcement_Forwarding_Endpoint": {
+            "title": "Enforcement_Forwarding_Endpoint",
+            "description": "Configures an forwarding endpoint to specify PEM policy forwarding actions",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["pem"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Forwarding_Endpoint"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "pool": {
+                    "$ref": "#/definitions/Pointer_Pool"
+                },
+                "SNATPool": {
+                    "$ref": "#/definitions/Pointer_SNAT_Pool"
+                },
+                "sourcePortAction": {
+                    "description": "Specifies whether the system preserves the source port of the connection",
+                    "type": "string",
+                    "enum": [
+                        "change",
+                        "preserve",
+                        "preserve-strict"
+                    ],
+                    "default": "preserve"
+                },
+                "addressTranslationEnabled": {
+                    "description": "Specifies, when enabled, the system translates the original destination address of the virtual server. When disabled, specifies the system uses the address without translation.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "portTranslationEnabled": {
+                    "description": "Specifies, when enabled, the system translates the original destination port. When disabled, specifies the system uses the original destination port without translation.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "defaultPersistenceType": {
+                    "description": "Specifies a persistence method for the pool member selection. If you have multiple pool members and want specific traffic to go to the same pool member, select the appropriate IP address type.",
+                    "type": "string",
+                    "enum": [
+                        "destination-ip",
+                        "disabled",
+                        "hash",
+                        "source-ip"
+                    ],
+                    "default": "disabled"
+                },
+                "fallbackPersistenceType": {
+                    "description": "Specifies the fallback persistence method that is applied when default persistence fails. If you have multiple pool members and want specific traffic to go to the same pool member, select the appropriate IP address type.",
+                    "type": "string",
+                    "enum": [
+                        "destination-ip",
+                        "disabled",
+                        "source-ip"
+                    ],
+                    "default": "disabled"
+                },
+                "persistenceHashSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/Enforcement_Forwarding_Endpoint_Hash_Settings" }
+                    ],
+                    "default": {}
+                }
+            },
+
+            "required": ["class", "pool"],
+            "additionalProperties": false
+        },
+        "Enforcement_Forwarding_Endpoint_Hash_Settings": {
+            "description": "Specifies the settings for the hash persistence method",
+            "type": "object",
+            "properties": {
+                "length": {
+                    "description": "Specifies the length of the source string used to calculate the hash value",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1024
+                },
+                "offset": {
+                    "description": "Specifies the offset, in bytes, from start of the source string to calculate the hash value",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 0
+                },
+                "tclScript": {
+                    "description": "The results from this TCL script are used to calculate the hash value. If no script is specified, the URI is used instead.",
+                    "type": "string"
+                }
+            },
+            "required": [],
+            "additionalProperties": false
+        },
+        "Enforcement_Service_Chain_Endpoint": {
+            "title": "Enforcement_Service_Chain_Endpoint",
+            "description": "Configures service chain endpoint definitions for the Policy Enforcement Manager (PEM)",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Enforcement_Service_Chain_Endpoint"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "serviceEndpoints": {
+                    "description": "Specifies a list of forwarding endpoints that define where to send traffic on the way to its final destination. This way, the system can route traffic to other servers that can provide value-added services. Traffic goes to the endpoints in the order in which they are listed.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Enforcement_Service_Chain_Endpoint_Service_Endpoint"
+                    }
+                }
+            },
+
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "Enforcement_Service_Chain_Endpoint_Service_Endpoint": {
+            "description": "Configures an individual service chain endpoint",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Specify the name of the service endpoint where the traffic is going to",
+                    "type": "string"
+                },
+                "forwardingEndpoint": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Forwarding_Endpoint"
+                },
+                "sourceVLAN": {
+                    "$ref": "#/definitions/Pointer_VLAN"
+                },
+                "serviceOption": {
+                    "description": "Specifies the service option in case the service endpoint is not accessible through the network, for forwarding endpoint. For ICAP service endpoint, the service endpoint works as a fallback action for non-HTTP traffic. Select \"optional\" if you want to skip the service endpoint. Select \"mandatory\" if you want all traffic flows dropped.",
+                    "type": "string",
+                    "enum": [
+                        "mandatory",
+                        "optional"
+                    ],
+                    "default": "mandatory"
+                },
+                "internalService": {
+                    "description": "Specifies the internal ICAP virtual server",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Service" }
+                    ]
+                },
+                "internalServiceICAPType": {
+                    "description": "Specifies the ICAP adaptation type. Select \"request\" to send only HTTP requests to ICAP server. Select \"response\" to send only HTTP responses to ICAP server. Select \"both\" to have both requests and responses.",
+                    "type": "string",
+                    "enum": [
+                        "request",
+                        "response",
+                        "both",
+                        "none"
+                    ]
+                },
+                "steeringPolicy": {
+                    "$ref": "#/definitions/Pointer_Enforcement_Policy"
+                }
+            },
+
+            "dependencies": {
+                "internalServiceICAPType": ["internalService"]
+            },
+
+            "required": ["sourceVLAN"],
+            "additionalProperties": false
+        }
+
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.23.0",
+    "id": "Service_HTTP",
+    "Example_NTLM": {
+        "class": "Tenant",
+        "NTLM_App": {
+            "class": "Application",
+            "NTLMvs": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.10.20.20"
+                ],
+                "profileNTLM": {
+                    "bigip": "/Common/ntlm"
+                },
+                "profileMultiplex": {
+                    "use": "testMux"
+                }
+            },
+            "testMux": {
+                "class": "Multiplex_Profile",
+                "maxConnections": 5000,
+                "maxConnectionAge": 3600,
+                "maxConnectionReuse": 20000,
+                "idleTimeoutOverride": 900,
+                "connectionLimitEnforcement": "idle",
+                "sharePools": true
+            }
+        }
+    }
+}

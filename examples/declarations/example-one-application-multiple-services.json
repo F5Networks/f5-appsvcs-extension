@@ -1,0 +1,52 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "id": "example2vs",
+    "Sample_http_06a": {
+      "class": "Tenant",
+      "MyWebApp1": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "10.0.100.35"
+          ],
+          "pool": "MyWebPool1",
+          "persistenceMethods": []
+        },
+        "anotherVirtualName": {
+          "class": "Service_TCP",
+          "virtualAddresses": [
+            "10.0.0.1"
+          ],
+          "virtualPort": 1344,
+          "pool": "MyWebPool2",
+          "profileTCP": { "bigip": "/Common/tcp" }
+        },
+        "MyWebPool1": {
+          "class": "Pool",
+          "members": [
+            {
+              "servicePort": 80,
+              "serverAddresses": [
+                "10.0.2.20",
+                "10.0.2.21"
+              ]
+            }
+          ]
+        },
+        "MyWebPool2": {
+            "class": "Pool",
+            "members": [
+              {
+                "servicePort": 1344,
+                "serverAddresses": [
+                  "10.0.2.20",
+                  "10.0.2.21"
+                ]
+              }
+            ]
+          }
+      }
+    }
+  }

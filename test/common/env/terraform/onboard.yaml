@@ -1,0 +1,56 @@
+#cloud-config
+
+write_files:
+  - path: /config/initialConfig.sh
+    permissions: 0755
+    owner: root:root
+    content: |
+      #!/bin/bash
+
+      # Wait for MCPD to be up before running tmsh commands
+      source /usr/lib/bigstart/bigip-ready-functions
+      bigstart_wait mcpd ready
+
+      echo 'Setting passwords'
+      # Set passwords
+      /usr/bin/passwd admin "${AS3_PASSWORD}" >/dev/null 2>&1
+      /usr/bin/passwd root "${AS3_PASSWORD}" >/dev/null 2>&1
+
+      # Begin BIG-IP configuration
+
+      echo 'Modifying settings'
+      # Enable some more SSH ciphers
+      tmsh modify sys sshd include \
+      "Ciphers aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,\
+      aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,\
+      arcfour,rijndael-cbc@lysator.liu.se"
+      tmsh modify sys software update auto-phonehome disabled
+
+      NEEDS_RESTART=false
+
+      if tmsh list sys db icrd.timeout; then
+          echo 'Modifying icrd timeout'
+          tmsh modify sys db icrd.timeout value 180
+      fi
+      if tmsh list sys db restjavad.timeout; then
+          echo 'Modifying restjavad timeout'
+          tmsh modify sys db restjavad.timeout value 180
+          NEEDS_RESTART=true
+      fi
+      if tmsh list sys db restnoded.timeout; then
+          echo 'Modifying restnoded timeout'
+          tmsh modify sys db restnoded.timeout value 180
+          NEEDS_RESTART=true
+      fi
+
+      tmsh save /sys config
+
+      if [[ $NEEDS_RESTART == true ]]; then
+          tmsh restart sys service restjavad
+          tmsh restart sys service restnoded
+      fi
+
+runcmd:
+  # NOTE: Commands must be non-blocking
+  # so send long running commands (polling/waiting for mcpd) to the background
+  - /config/initialConfig.sh > /tmp/onboard.log &

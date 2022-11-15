@@ -1,0 +1,28 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "id": "DOS_Profile",
+    "Sample_DOS_DnsVector": {
+      "class": "Tenant",
+      "Application": {
+        "class": "Application",
+        "DOS_DnsVector": {
+          "class": "DOS_Profile",
+          "protocolDNS": {
+            "vectors": [{
+                "type": "qdcount",
+                "autoAttackFloor": 0,
+                "autoAttackCeiling": 0
+            },
+            {
+                "type": "nxdomain",
+                "state": "mitigate",
+                "thresholdMode": "fully-automatic",
+                "autoAttackFloor": 0,
+                "autoAttackCeiling": 0
+            }]
+          }
+        }
+      }
+    }
+  }

@@ -1,0 +1,49 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.2.0",
+  "id": "5489432",
+  "label": "ASM_policy_external_URL",
+  "remark": "ASM_policy_external_URL",
+  "Sample_app_sec_02": {
+    "class": "Tenant",
+    "HTTP_Service": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "192.0.10.107"
+        ],
+        "snat": "auto",
+        "pool": "Pool1",
+        "policyWAF": {
+          "use": "My_ASM_Policy"
+        }
+      },
+      "Pool1": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [
+          {
+            "servicePort": 8001,
+            "serverAddresses": [
+              "10.10.10.143"
+            ]
+          },
+          {
+            "servicePort": 8002,
+            "serverAddresses": [
+              "10.10.10.144"
+            ]
+          }
+        ]
+      },
+      "My_ASM_Policy": {
+        "class": "WAF_Policy",
+        "url": "https://example.com/asm-policy.xml",
+        "ignoreChanges": true
+      }
+    }
+  }
+}

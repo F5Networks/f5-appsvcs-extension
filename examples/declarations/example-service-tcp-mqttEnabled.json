@@ -1,0 +1,18 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.27.0",
+    "tcp_mqtt_enabled": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                    "1.1.1.1"
+                ],
+                "virtualPort": 1883,
+                "mqttEnabled": true
+            }
+        }
+    }
+}

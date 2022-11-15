@@ -1,0 +1,80 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.0.0",
+  "id": "8316914",
+  "label": "Sample 4",
+  "remark": "Simple HTTP application referencing an externally hosted iRule",
+  "Sample_04": {
+    "class": "Tenant",
+    "ApplicationA": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "iRules": [
+          "/Sample_04/ApplicationA/Maintenance_iRule"
+        ],
+        "virtualAddresses": [
+          "10.0.1.172"
+        ],
+        "pool": "/Sample_04/ApplicationA/web_pool",
+        "virtualPort": 80,
+        "persistenceMethods": [
+          "cookie"
+        ],
+        "profileHTTP": "basic",
+        "layer4": "tcp",
+        "enable": true,
+        "maxConnections": 0,
+        "snat": "auto",
+        "addressStatus": true,
+        "mirroring": "none",
+        "lastHop": "default",
+        "translateClientPort": false,
+        "translateServerAddress": true,
+        "translateServerPort": true
+      },
+      "web_pool": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [{
+          "servicePort": 80,
+          "serverAddresses": [
+            "192.0.1.170",
+            "192.0.1.171"
+          ],
+          "enable": true,
+          "connectionLimit": 0,
+          "rateLimit": -1,
+          "dynamicRatio": 1,
+          "ratio": 1,
+          "priorityGroup": 0,
+          "adminState": "enable",
+          "addressDiscovery": "static"
+        }],
+        "loadBalancingMode": "round-robin",
+        "minimumMembersActive": 1,
+        "reselectTries": 0,
+        "serviceDownAction": "none",
+        "slowRampTime": 10,
+        "minimumMonitors": 1
+      },
+      "Maintenance_iRule": {
+        "class": "iRule",
+        "iRule": "when HTTP_REQUEST {\n   HTTP::respond 200 content {\n      <html>\n         <head>\n            <title>Blocked Page</title>\n         </head>\n         <body>\n            We are sorry, but the site you are looking for is currently under Maintenance<br>\n            If you feel you have reached this page in error, please try again. Thanks for coming\n         </body>\n      </html>\n   } noserver Cache-Control no-cache Connection Close\n}\n",
+        "expand": true
+      },
+      "enable": true
+    },
+    "enable": true,
+    "defaultRouteDomain": 0
+  },
+  "controls": {
+    "archiveTimestamp": "2018-05-02T20:12:06.639Z",
+    "class": "Controls",
+    "logLevel": "error",
+    "trace": false
+  },
+  "updateMode": "selective"
+}

@@ -1,0 +1,59 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.27.0",
+  "id": "Example_Monitor_PostgresSQL",
+  "remark": "Example PostgreSQL Monitor",
+  "PostgreSQLTenant": {
+    "class": "Tenant",
+    "Application": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "10.0.14.10"
+        ],
+        "pool": "monitorPostgreSQL_pool"
+      },
+      "monitorPostgreSQL": {
+        "class": "Monitor",
+        "monitorType": "postgresql",
+        "remark": "This is a remark",
+        "targetAddress": "10.11.12.13",
+        "targetPort": 5432,
+        "timeUntilUp": 30,
+        "timeout": 81,
+        "upInterval": 5,
+        "count": 10,
+        "database": "test_db",
+        "interval": 10,
+        "send": "SELECT id,first_name,last_name",
+        "receive": "something received",
+        "receiveColumn": 3,
+        "receiveRow": 2,
+        "username": "sql-user",
+        "passphrase": {
+          "ciphertext": "ZjVmNQ==",
+          "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+          "ignoreChanges": true
+        }
+      },
+      "monitorPostgreSQL_pool": {
+        "class": "Pool",
+        "monitors": [
+          {
+            "use": "monitorPostgreSQL"
+          }
+        ],
+        "members": [
+          {
+            "servicePort": 443,
+            "serverAddresses": [
+              "11.12.13.14",
+              "11.12.13.15"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

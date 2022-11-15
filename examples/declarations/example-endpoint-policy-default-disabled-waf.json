@@ -1,0 +1,51 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.7.0",
+  "id": "Service_HTTP",
+  "Sample_app_sec_03": {
+      "class": "Tenant",
+      "Application": {
+          "class": "Application",
+          "testItem": {
+              "class": "Service_HTTP",
+              "policyEndpoint": "endpointPolicy",
+              "virtualAddresses": ["10.1.40.50"]
+          },
+          "endpointPolicy": {
+              "class": "Endpoint_Policy",
+              "rules": [
+                  {
+                    "name": "enableWAF",
+                        "conditions": [{
+                            "type": "httpUri",
+                            "path": {
+                                "values": ["example.com"]
+                            }
+                        }
+                    ],
+                    "actions": [{
+                            "type": "waf",
+                            "policy": {
+                                "use": "wafPolicy"
+                            }
+                        }
+                    ]
+                  },
+                  {
+                    "name": "disableWAF",
+                    "conditions": [],
+                    "actions": [{
+                            "type": "waf"
+                        }
+                    ]
+                  }
+              ]
+          },
+          "wafPolicy": {
+              "class": "WAF_Policy",
+              "url": "http://example.com/orchestration-as3-test/resources/asm_policy/policy.xml",
+              "ignoreChanges": true
+          }
+      }
+   }
+}

@@ -1,0 +1,26 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.35.0",
+    "id": "DNS_Nameserver",
+    "miscTenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "template": "generic",
+            "httpProfile": {
+                "class": "HTTP_Profile",
+                "proxyType": "explicit",
+                "resolver": {
+                    "bigip": "/Common/tempTest"
+                },
+                "routeDomain": "routeDomainAlpha"
+            },
+            "DNS_Nameserver": {
+                "class": "DNS_Nameserver",
+                "routeDomain": {
+                    "bigip": "/Common/3"
+                }
+            }
+        }
+    }
+}

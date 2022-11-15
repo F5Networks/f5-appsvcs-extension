@@ -1,0 +1,90 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.9.0",
+    "id": "Example_ANALYTICS_PROFILE_with_Capture_filter",
+    "remark": "Analytics example full with capture filter",
+    "Sample_analytics_capture": {
+      "class": "Tenant",
+      "TEST_ANALYTICS_Profile": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "192.0.2.19",
+            "192.0.2.20",
+            "192.0.2.21"
+          ],
+          "virtualPort": 80,
+          "profileAnalytics": { "use": "pA_Sample"},
+          "pool": "poolRoundRobin"
+        },
+        "poolRoundRobin": {
+          "class": "Pool",
+          "loadBalancingMode": "round-robin",
+          "monitors": [
+              "http"
+          ],
+          "members": [
+            {
+              "servicePort": 80,
+              "serverAddresses": [
+                "192.0.2.58",
+                "192.0.2.59",
+                "192.0.2.60"
+              ]
+            }
+          ]
+        },
+        "pA_Sample": {
+          "class": "Analytics_Profile",
+          "collectedStatsInternalLogging": true,
+          "collectedStatsExternalLogging": false,
+          "capturedTrafficInternalLogging": true,
+          "capturedTrafficExternalLogging": false,
+          "captureFilter": {
+              "requestCapturedParts": "body",
+              "responseCapturedParts": "all",
+              "dosActivity": "mitigated-by-dosl7",
+              "capturedProtocols": "http",
+              "capturedReadyForJsInjection": "enabled",
+              "requestContentFilterSearchPart": "body",
+              "requestContentFilterSearchString": "something request something",
+              "responseContentFilterSearchPart": "all",
+              "responseContentFilterSearchString": "something respone something",
+              "virtualServers": [
+                  "service-1-"
+              ],
+              "nodeAddresses": [
+                  "192.0.2.59"
+              ],
+              "responseCodes": [
+                  400,
+                  401,
+                  402
+              ],
+              "methods": [
+                  "GET",
+                  "POST",
+                  "PUT"
+              ],
+              "urlFilterType": "white-list",
+              "urlPathPrefixes": [
+                  "a.org",
+                  "b.org",
+                  "c.org"
+              ],
+              "userAgentSubstrings": [
+                  "Mozilla (01",
+                  "Mozilla (02",
+                  "Mozilla (03"
+              ],
+              "clientIps": [
+                  "10.9.10.10",
+                  "10.9.10.11",
+                  "10.9.10.12"
+              ]
+          }
+        }
+      }
+    }
+  }

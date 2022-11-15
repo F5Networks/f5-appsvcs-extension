@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "message": "success",
+      "lineCount": 20,
+      "code": 200,
+      "host": "localhost",
+      "tenant": "Sample_non_http_01",
+      "runTime": 1330
+    }
+  ],
+  "declaration": {
+    "Sample_non_http_01": {
+      "class": "Tenant",
+      "DNS_Service": {
+        "class": "Application",
+        "service": {
+          "class": "Service_UDP",
+          "virtualPort": 53,
+          "virtualAddresses": [
+            "10.1.20.121"
+          ],
+          "pool": "Pool1"
+        },
+        "Pool1": {
+          "class": "Pool",
+          "monitors": [
+            "icmp"
+          ],
+          "members": [
+            {
+              "servicePort": 53,
+              "serverAddresses": [
+                "10.1.10.100"
+              ]
+            },
+            {
+              "servicePort": 53,
+              "serverAddresses": [
+                "10.1.10.101"
+              ]
+            }
+          ]
+        }
+      },
+      "NewAPP": {
+        "class": "Application",
+        "service": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "10.0.1.10"
+          ],
+          "pool": "web_poolnew"
+        },
+        "web_poolnew": {
+          "class": "Pool",
+          "monitors": [
+            "http"
+          ],
+          "members": [
+            {
+              "servicePort": 80,
+              "serverAddresses": [
+                "192.0.1.10",
+                "192.0.1.11"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "class": "ADC",
+  "schemaVersion": "3.0.0",
+  "id": "UDP_DNS_Sample",
+  "label": "UDP_DNS_Sample",
+  "remark": "Sample of a UDP DNS Load Balancer Service",
+  "controls": {
+    "archiveTimestamp": "2018-06-04T21:54:18.255Z"
+  }
+}

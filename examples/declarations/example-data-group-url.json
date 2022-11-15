@@ -1,0 +1,59 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.34.0",
+    "tenant": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "cert",
+                        "proxyCertificate": "proxyCert"
+                    }
+                ],
+                "cacheCertificateEnabled": true,
+                "forwardProxyEnabled": true,
+                "forwardProxyBypassEnabled": true,
+                "forwardProxyBypassAllowlist": {
+                    "use": "dataGroup"
+                }
+            },
+            "cert": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "chainCA": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            },
+            "proxyCert": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "chainCA": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            },
+            "dataGroup": {
+                "class": "Data_Group",
+                "storageType": "external",
+                "keyDataType": "string",
+                "externalFilePath": {
+                    "url": "https://the.data.group",
+                    "skipCertificateCheck": true
+                },
+                "ignoreChanges": true
+            }
+        }
+    }
+}

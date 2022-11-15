@@ -1,0 +1,22 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.18.0",
+    "id": "userAgent",
+    "controls": {
+        "class": "Controls",
+        "userAgent": "BIG-IQ/7.1 Configured by API"
+    },
+    "useragentTenant": {
+        "class": "Tenant",
+        "sampleApp": {
+            "class": "Application",
+            "Stream_service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "virtualPort": 100
+            }
+        }
+    }
+}

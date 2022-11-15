@@ -1,0 +1,19 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.20.0",
+    "id": "Management_Port_Log_Destination",
+    "Management_Port_Log_Destination": {
+        "class": "Tenant",
+        "SampleApp": {
+            "class": "Application",
+            "template": "generic",
+            "mgmtLogDest": {
+                "class": "Log_Destination",
+                "type": "management-port",
+                "address": "1.2.3.4",
+                "port": 80,
+                "protocol": "tcp"
+            }
+        }
+    }
+}

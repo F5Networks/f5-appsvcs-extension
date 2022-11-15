@@ -1,0 +1,38 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.13.0",
+    "id": "Firewall_Rule_List",
+    "Example_Firewall_Rule_List": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "exampleFWRuleList": {
+                "class": "Firewall_Rule_List",
+                "remark": "description",
+                "rules": [
+                    {
+                        "remark": "description",
+                        "name": "theRule1",
+                        "action": "accept-decisively",
+                        "protocol": "tcp",
+                        "loggingEnabled": true
+                    },
+                    {
+                        "remark": "description",
+                        "name": "theRule2",
+                        "action": "reject",
+                        "protocol": "tcp",
+                        "loggingEnabled": true,
+                        "source": {
+                            "vlans": [
+                                {
+                                    "bigip": "/Common/external"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

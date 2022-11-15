@@ -1,0 +1,27 @@
+@startuml
+skinparam activity {
+    ArrowColor #5aa0e1
+    BarColor #9bcbde
+    BackgroundColor #9bcbde
+    BorderColor #5aa0e1
+}
+
+(*) --> "restWorker.js"
+"restWorker.js" -right-> "requestContext.js"
+"restWorker.js" -right-> "hostContext.js"
+"restWorker.js"--> "declareHandler.js"
+--> "asyncHandler.js (create record)"
+--> "cloudLibUtil.js"
+
+--> "declarationHandler.js"
+-right-> "targetContext.js"
+"declarationHandler.js"--> "adcparser.js"
+--> "Configuration Auditing"
+"declarationHandler.js"--> "mutex.js"
+--> "Configuration Auditing"
+"declarationHandler.js"--> "bigiq.js"
+--> "Configuration Auditing"
+
+--> "asyncHandler.js (update record)"
+--> (*)
+@enduml

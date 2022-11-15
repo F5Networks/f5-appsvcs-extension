@@ -1,0 +1,20 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.14.0",
+    "Example_Service_UDP": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_UDP",
+                "virtualAddresses": [
+                    "1.1.1.10"
+                ],
+                "virtualPort": 10,
+                "profileTFTP": {
+                    "bigip": "/Common/tftp"
+                }
+            }
+        }
+    }
+}

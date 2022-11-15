@@ -1,0 +1,155 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "SSH_Proxy_Profile",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sshProxyExample": {
+                "class": "SSH_Proxy_Profile",
+                "sshProfileDefaultActions": {
+                    "name": "action",
+                    "agentAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "localForwardAction": {
+                        "control": "disallow",
+                        "log": false
+                    },
+                    "otherAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "remoteForwardAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "rexecAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "scpUpAction": {
+                        "control": "disallow",
+                        "log": true
+                    },
+                    "scpDownAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "sftpUpAction": {
+                        "control": "disallow",
+                        "log": true
+                    },
+                    "sftpDownAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "shellAction": {
+                        "control": "disallow",
+                        "log": true
+                    },
+                    "subSystemAction": {
+                        "control": "terminate",
+                        "log": true
+                    },
+                    "x11ForwardAction": {
+                        "control": "terminate",
+                        "log": true
+                    }
+                },
+                "sshProfileRuleSet": [
+                    {
+                        "name": "rule1",
+                        "remark": "rule1 remark",
+                        "sshProfileIdUsers": [
+                            "Good Boy",
+                            "Test"
+                        ],
+                        "sshProfileIdGroups": [
+                            "Group Test",
+                            "TestG"
+                        ],
+                        "sshProfileRuleActions": {
+                            "name": "rulesAction",
+                            "agentAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "localForwardAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "otherAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "remoteForwardAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "rexecAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "scpUpAction": {
+                                "control": "disallow",
+                                "log": true
+                            },
+                            "scpDownAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "sftpUpAction": {
+                                "control": "disallow",
+                                "log": true
+                            },
+                            "sftpDownAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "shellAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "subSystemAction": {
+                                "control": "terminate",
+                                "log": true
+                            },
+                            "x11ForwardAction": {
+                                "control": "terminate",
+                                "log": true
+                            }
+                        }
+                    }
+                ],
+                "timeout": 23,
+                "sshProfileAuthInfo": [
+                    {
+                        "name": "authInfo1",
+                        "proxyServerAuth": {
+                            "privateKey": {
+                                "ciphertext": "VGhpcyBpcyBhIFNFUlZFUiBwcml2YXRlIGtleQ==",
+                                "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                                "ignoreChanges": true
+                            },
+                            "publicKey": "This is a SERVER public key"
+                        },
+                        "proxyClientAuth": {
+                            "privateKey": {
+                                "ciphertext": "VGhpcyBpcyBhIENMSUVOVCBwcml2YXRlIGtleQ==",
+                                "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                                "ignoreChanges": true
+                            },
+                            "publicKey": "This is a CLIENT public key"
+                        },
+                        "realServerAuth": {
+                            "publicKey": "This is a REAL SERVER public key"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

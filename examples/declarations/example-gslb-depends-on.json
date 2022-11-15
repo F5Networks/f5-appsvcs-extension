@@ -1,0 +1,117 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.24.0",
+    "id": "GSLB_Sample",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDataCenter": {
+                "class": "GSLB_Data_Center"
+            },
+            "testServer": {
+                "class": "GSLB_Server",
+                "dataCenter": {
+                    "use": "testDataCenter"
+                },
+                "devices": [
+                    {
+                        "address": "1.2.3.7"
+                    }
+                ],
+                "virtualServers": [
+                    {
+                        "address": "1.2.3.8",
+                        "port": 5050
+                    },
+                    {
+                        "address": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+                        "port": 5051
+                    },
+                    {
+                        "address": "1.2.3.9",
+                        "port": 5050
+                    },
+                    {
+                        "address": "2001:0db8:85a3:0000:0000:8a2e:0370:1337",
+                        "port": 5052
+                    }
+                ]
+            }
+        }
+    },
+    "exampleTenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testDomainA": {
+                "class": "GSLB_Domain",
+                "domainName": "example.edu",
+                "resourceRecordType": "A",
+                "poolLbMode": "ratio",
+                "pools": [
+                    {
+                        "use": "testPoolA"
+                    }
+                ]
+            },
+            "testPoolA": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "A",
+                "members": [
+                    {
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "0",
+                        "dependsOn": "none"
+                    },
+                    {
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "2",
+                        "dependsOn": [
+                            "/Common/Shared/testServer:0",
+                            "/Common/Shared/testServer:1"
+                        ]
+                    }
+                ]
+            },
+            "testDomainAAAA": {
+                "class": "GSLB_Domain",
+                "domainName": "example.edu",
+                "resourceRecordType": "AAAA",
+                "poolLbMode": "ratio",
+                "pools": [
+                    {
+                        "use": "testPoolAAAA"
+                    }
+                ]
+            },
+            "testPoolAAAA": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "AAAA",
+                "members": [
+                    {
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "1",
+                        "dependsOn": [
+                            "/Common/Shared/testServer:3"
+                        ]
+                    },
+                   {
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "3",
+                        "dependsOn": "none"
+                    }
+                ]
+            }
+        }
+    }
+}

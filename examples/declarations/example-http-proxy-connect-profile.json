@@ -1,0 +1,23 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.31.0",
+    "id": "TEST",
+    "Tenant": {
+        "class": "Tenant",
+        "App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": ["1.2.3.4"],
+                "profileHTTP": {
+                    "use": "httpProfile"
+                }
+            },
+            "httpProfile": {
+                "class": "HTTP_Profile",
+                "proxyConnectEnabled": true
+            }
+        }
+    }
+}

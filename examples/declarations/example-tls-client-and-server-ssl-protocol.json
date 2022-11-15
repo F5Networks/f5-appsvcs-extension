@@ -1,0 +1,45 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.33.0",
+    "id": "TLS_SSL_Protocol",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "clientTLS": "tlsClient",
+                "serverTLS": "tlsServer",
+                "virtualPort": 443
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "cert"
+                    }
+                ],
+                "sslEnabled": true,
+                "ssl3Enabled": true
+            },
+            "tlsClient": {
+                "class": "TLS_Client",
+                "sslEnabled": false,
+                "ssl3Enabled": false
+            },
+            "cert": {
+                "class": "Certificate",
+                "remark": "in practice using a passphrase is recommended",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            }
+        }
+    }
+}

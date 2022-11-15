@@ -1,0 +1,232 @@
+{
+    "results": [
+        {
+            "code": 200,
+            "message": "success",
+            "lineCount": 22,
+            "host": "localhost",
+            "tenant": "trace_tenant",
+            "runTime": 6304
+        }
+    ],
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "id": "traceResponse",
+        "controls": {
+            "class": "Controls",
+            "traceResponse": false,
+            "archiveTimestamp": "2020-02-18T23:02:51.807Z"
+        },
+        "trace_tenant": {
+            "class": "Tenant",
+            "controls": {
+                "class": "Controls",
+                "traceResponse": true
+            },
+            "SampleApp": {
+                "class": "Application",
+                "Sample_service": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "1.2.3.4"
+                    ],
+                    "virtualPort": 100
+                }
+            }
+        },
+        "updateMode": "selective"
+    },
+    "traces": {
+        "trace_tenantDesired": {
+            "/trace_tenant/SampleApp/": {
+                "command": "sys folder",
+                "properties": {},
+                "ignore": []
+            },
+            "/trace_tenant/Service_Address-1.2.3.4": {
+                "command": "ltm virtual-address",
+                "properties": {
+                    "address": "1.2.3.4",
+                    "arp": "enabled",
+                    "icmp-echo": "enabled",
+                    "mask": "255.255.255.255",
+                    "route-advertisement": "disabled",
+                    "spanning": "disabled",
+                    "traffic-group": "default"
+                },
+                "ignore": []
+            },
+            "/trace_tenant/SampleApp/Sample_service": {
+                "command": "ltm virtual",
+                "properties": {
+                    "address-status": "yes",
+                    "auto-lasthop": "default",
+                    "connection-limit": 0,
+                    "description": "\"SampleApp\"",
+                    "destination": "/trace_tenant/1.2.3.4:100",
+                    "ip-protocol": "tcp",
+                    "last-hop-pool": "none",
+                    "mask": "255.255.255.255",
+                    "mirror": "disabled",
+                    "persist": {
+                        "/Common/cookie": {
+                            "default": "yes"
+                        }
+                    },
+                    "policies": {},
+                    "profiles": {
+                        "/Common/http": {
+                            "context": "all"
+                        },
+                        "/Common/f5-tcp-progressive": {
+                            "context": "all"
+                        }
+                    },
+                    "source": "0.0.0.0/0",
+                    "source-address-translation": {
+                        "type": "automap"
+                    },
+                    "rules": {},
+                    "security-log-profiles": {},
+                    "source-port": "preserve",
+                    "translate-address": "enabled",
+                    "translate-port": "enabled",
+                    "nat64": "disabled",
+                    "vlans": {},
+                    "vlans-disabled": " ",
+                    "metadata": {},
+                    "clone-pools": {}
+                },
+                "ignore": []
+            },
+            "/trace_tenant/": {
+                "command": "auth partition",
+                "properties": {
+                    "default-route-domain": 0
+                },
+                "ignore": []
+            }
+        },
+        "trace_tenantCurrent": {},
+        "trace_tenantDiff": [
+            {
+                "kind": "N",
+                "path": [
+                    "/trace_tenant/SampleApp/"
+                ],
+                "rhs": {
+                    "command": "sys folder",
+                    "properties": {},
+                    "ignore": []
+                },
+                "tags": [
+                    "tmsh"
+                ],
+                "command": "sys folder",
+                "lhsCommand": "",
+                "rhsCommand": "sys folder"
+            },
+            {
+                "kind": "N",
+                "path": [
+                    "/trace_tenant/1.2.3.4"
+                ],
+                "rhs": {
+                    "command": "ltm virtual-address",
+                    "properties": {
+                        "address": "1.2.3.4",
+                        "arp": "enabled",
+                        "icmp-echo": "enabled",
+                        "mask": "255.255.255.255",
+                        "route-advertisement": "disabled",
+                        "spanning": "disabled",
+                        "traffic-group": "default"
+                    },
+                    "ignore": []
+                },
+                "tags": [
+                    "tmsh"
+                ],
+                "command": "ltm virtual-address",
+                "lhsCommand": "",
+                "rhsCommand": "ltm virtual-address"
+            },
+            {
+                "kind": "N",
+                "path": [
+                    "/trace_tenant/SampleApp/Sample_service"
+                ],
+                "rhs": {
+                    "command": "ltm virtual",
+                    "properties": {
+                        "address-status": "yes",
+                        "auto-lasthop": "default",
+                        "connection-limit": 0,
+                        "description": "\"SampleApp\"",
+                        "destination": "/trace_tenant/1.2.3.4:100",
+                        "ip-protocol": "tcp",
+                        "last-hop-pool": "none",
+                        "mask": "255.255.255.255",
+                        "mirror": "disabled",
+                        "persist": {
+                            "/Common/cookie": {
+                                "default": "yes"
+                            }
+                        },
+                        "policies": {},
+                        "profiles": {
+                            "/Common/http": {
+                                "context": "all"
+                            },
+                            "/Common/f5-tcp-progressive": {
+                                "context": "all"
+                            }
+                        },
+                        "source": "0.0.0.0/0",
+                        "source-address-translation": {
+                            "type": "automap"
+                        },
+                        "rules": {},
+                        "security-log-profiles": {},
+                        "source-port": "preserve",
+                        "translate-address": "enabled",
+                        "translate-port": "enabled",
+                        "nat64": "disabled",
+                        "vlans": {},
+                        "vlans-disabled": " ",
+                        "metadata": {},
+                        "clone-pools": {}
+                    },
+                    "ignore": []
+                },
+                "tags": [
+                    "tmsh"
+                ],
+                "command": "ltm virtual",
+                "lhsCommand": "",
+                "rhsCommand": "ltm virtual"
+            },
+            {
+                "kind": "N",
+                "path": [
+                    "trace_tenant"
+                ],
+                "rhs": {
+                    "command": "auth partition",
+                    "properties": {
+                        "default-route-domain": 0
+                    },
+                    "ignore": []
+                },
+                "tags": [
+                    "tmsh"
+                ],
+                "command": "auth partition",
+                "lhsCommand": "",
+                "rhsCommand": "auth partition"
+            }
+        ],
+        "trace_tenantScript": "cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::create auth partition trace_tenant default-route-domain 0\ntmsh::create sys folder /trace_tenant/SampleApp/\ntmsh::begin_transaction\ntmsh::modify auth partition trace_tenant description \\\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\\"\ntmsh::create ltm virtual-address /trace_tenant/1.2.3.4 address 1.2.3.4 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled traffic-group default\ntmsh::create ltm virtual /trace_tenant/SampleApp/Sample_service address-status yes auto-lasthop default connection-limit 0 description \\\"SampleApp\\\" destination /trace_tenant/1.2.3.4:100 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/cookie \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/http \\{ context all \\} /Common/f5-tcp-progressive \\{ context all \\} \\} source 0.0.0.0/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {\"} $err {\\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\\"$err\\\" \\} \\}\ncatch { tmsh::delete sys folder /trace_tenant/SampleApp/ } e\ncatch { tmsh::delete auth partition trace_tenant } e\n}}\n}"
+    }
+}

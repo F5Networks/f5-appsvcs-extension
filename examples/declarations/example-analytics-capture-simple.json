@@ -1,0 +1,30 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.6.0",
+    "id": "SAMPLE_ANALYTICS_capture_simple",
+    "remark": "Sample analytics capture profile simple",
+    "Sample_analytics_capture": {
+        "class": "Tenant",
+        "Sample_Analytics_Request": {
+            "class": "Application",
+            "serviceHttp": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.241"
+                ],
+                "virtualPort": 8080,
+                "profileAnalytics": {
+                    "use": "statsProf"
+                }
+            },
+            "statsProf": {
+                "class": "Analytics_Profile",
+                "capturedTrafficInternalLogging": true,
+                "captureFilter": {
+                    "requestCapturedParts": "headers",
+                    "responseCapturedParts": "headers"
+                }
+            }
+        }
+    }
+}

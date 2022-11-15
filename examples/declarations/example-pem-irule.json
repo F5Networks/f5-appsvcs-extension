@@ -1,0 +1,47 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.16.0",
+    "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab915d",
+    "controls": {
+        "logLevel": "debug",
+        "trace": true
+    },
+    "Sample_pem_irule_01": {
+        "class": "Tenant",
+        "testApp": {
+            "class": "Application",
+            "testPemPolicy": {
+                "class": "Enforcement_Policy",
+                "remark": "Test Enforcement Policy with iRule",
+                "enable": false,
+                "allTransactions": true,
+                "rules": [
+                    {
+                        "name": "testPolicyRule1",
+                        "precedence": 1,
+                        "iRule": {
+                            "use": "pem_irule"
+                        }
+                    },
+                    {
+                        "name": "testPolicyRule2",
+                        "precedence": 1,
+                        "iRule": {
+                            "use": "pem_irule_b64"
+                        }
+                    }
+                ]
+            },
+            "pem_irule": {
+                "class": "Enforcement_iRule",
+                "iRule": "when PEM_POLICY {PEM::session create 192.0.3.10 subscriber-id a123 subscriber-type e164}"
+            },
+            "pem_irule_b64": {
+                "class": "Enforcement_iRule",
+                "iRule": {
+                    "base64": "d2hlbiBQRU1fUE9MSUNZIHtQRU06OnNlc3Npb24gY3JlYXRlIDE5Mi4wLjMuMTAgc3Vic2NyaWJlci1pZCBhMTIzIHN1YnNjcmliZXItdHlwZSBlMTY0fQo=="
+                }
+            }
+        }
+    }
+}

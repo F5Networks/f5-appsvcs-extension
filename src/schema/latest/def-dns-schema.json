@@ -1,0 +1,478 @@
+{
+    "definitions": {
+        "DNS_Cache": {
+            "title": "DNS_Cache",
+            "description": "Configures a DNS cache",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_Cache"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "type": {
+                    "description": "Type of DNS cache",
+                    "type": "string",
+                    "enum": ["transparent"]
+                }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "type": { "const": "transparent" } } },
+                    "then": { "$ref": "#/definitions/DNS_Cache_Transparent" }
+                }
+            ],
+            "required": ["class", "type"]
+        },
+        "DNS_Cache_Transparent": {
+            "description": "Properties for a DNS transparent cache",
+            "type": "object",
+            "properties": {
+                "answerDefaultZones": {
+                    "description": "Specifies whether the system answers DNS queries for the default zones localhost, reverse 127.0.0.1 and ::1, and AS112",
+                    "type": "boolean",
+                    "default": false
+                },
+                "localZones": {
+                    "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DNS_Zone_Local"
+                    }
+                },
+                "messageCacheSize": {
+                    "description": "Specifies the maximum size of the message cache in bytes",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default":  1048576
+                },
+                "recordCacheSize": {
+                    "description": "Specifies the maximum size of the resource record (RR) cache in bytes",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295,
+                    "default": 10485760
+                },
+                "recordRotationMethod": {
+                    "description": "Specifies the resource record rotation method used within cached responses",
+                    "type": "string",
+                    "enum": [ "none", "query-id" ],
+                    "default": "none"
+                }
+            }
+        },
+        "DNS_Logging_Profile": {
+            "title": "DNS_Logging_Profile",
+            "description": "Configures a Domain Name System (DNS) logging profile",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_Logging_Profile"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "includeCompleteAnswer": {
+                    "description": "Specifies whether the system logs the complete answer from the query",
+                    "type": "boolean",
+                    "default": true
+                },
+                "includeQueryId": {
+                    "description": "Specifies whether the system logs the ID of the query",
+                    "type": "boolean",
+                    "default": false
+                },
+                "includeSource": {
+                    "description": "Specifies whether the system logs the source (the BIG-IP system that receives the packet)",
+                    "type": "boolean",
+                    "default": true
+                },
+                "includeTimestamp": {
+                    "description": "Specifies whether the system logs the timestamp of when the query was created",
+                    "type": "boolean",
+                    "default": true
+                },
+                "includeView": {
+                    "description": "Specifies whether the system includes the view in the log",
+                    "type": "boolean",
+                    "default": true
+                },
+                "logPublisher": {
+                    "$ref": "#/definitions/Pointer_Log_Publisher"
+                },
+                "logQueriesEnabled": {
+                    "description": "Specifies whether the system logs queries",
+                    "type": "boolean",
+                    "default": true
+                },
+                "logResponsesEnabled": {
+                    "description": "Specifies whether the systems logs responses",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "required": ["class", "logPublisher"]
+        },
+        "DNS_Profile": {
+            "title": "DNS_Profile",
+            "description": "Configures a Domain Name System (DNS) profile",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_Profile"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "parentProfile": {
+                    "description": "Specifies the name of the object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_DNS_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/dns" }
+                },
+                "rapidResponseEnabled": {
+                    "description": "When enabled, if the query name matches a GTM wide IP name and GTM is enabled on this profile, the DNS query will bypass Rapid Response. Note: This setting is supported only on physical BIG-IP hardware because it needs a High-Speed Bridge (HSB) to work. When using BIG-IP Virtual Edition, however, the system does not prevent you from selecting an action, even though the setting is ignored.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rapidResponseLastAction": {
+                    "description": "Specifies what action the system takes when Rapid Response Mode is enabled and the incoming DNS query does not match a DNS Express Zone",
+                    "type": "string",
+                    "enum": [
+                        "allow",
+                        "drop",
+                        "noerror",
+                        "nxdomain",
+                        "refuse",
+                        "truncate"
+                    ],
+                    "default": "drop"
+                },
+                "hardwareQueryValidationEnabled": {
+                    "description": "On supported platforms, indicates whether the hardware will accelerate query validation",
+                    "type": "boolean",
+                    "default": false
+                },
+                "hardwareResponseCacheEnabled": {
+                    "description": "On supported platforms, indicates whether the hardware will cache responses",
+                    "type": "boolean",
+                    "default": false
+                },
+                "dnssecEnabled": {
+                    "description": "Specifies whether the system signs responses with DNSSEC keys and replies to DNSSEC specific queries (e.g., DNSKEY query type)",
+                    "type": "boolean",
+                    "default": true
+                },
+                "globalServerLoadBalancingEnabled": {
+                    "description": "Specifies whether the system uses Global Traffic Manager to manage the response",
+                    "type": "boolean",
+                    "default": true
+                },
+                "dnsExpressEnabled": {
+                    "description": "Specifies whether the DNS Express engine is enabled. The DNS Express engine receives zone transfers from the authoritative DNS server for the zone. If the Zone Transfer setting is also enabled on this profile, the DNS Express engine also responds to zone transfer requests made by the nameservers configured as zone transfer clients for the DNS Express zone. ",
+                    "type": "boolean",
+                    "default": true
+                },
+                "cacheEnabled": {
+                    "description": "Specifies whether the system caches DNS responses",
+                    "type": "boolean",
+                    "default": false
+                },
+                "cache": {
+                    "$ref": "#/definitions/Pointer_DNS_Cache"
+                },
+                "dns64Mode": {
+                    "description": "Specifies handling of AAAA and A DNS queries and responses",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "secondary",
+                        "immediate",
+                        "v4-only"
+                    ],
+                    "default": "disabled"
+                },
+                "dns64Prefix": {
+                    "description": "Specifies the prefix to use for the IPv6-formatted IP addresses that the system converts to IPv4-formatted IP addresses",
+                    "type": "string",
+                    "default": "0:0:0:0:0:0:0:0"
+                },
+                "dns64AdditionalSectionRewrite": {
+                    "description": "Select an option to allow improved network efficiency for both Unicast and Multicast DNS-SD responses",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "v6-only",
+                        "v4-only",
+                        "any"
+                    ],
+                    "default": "disabled"
+                },
+                "unhandledQueryAction": {
+                    "description": "Specifies whether the system uses the local BIND server on the BIG-IP system",
+                    "type": "string",
+                    "enum": [
+                        "allow",
+                        "drop",
+                        "hint",
+                        "noerror",
+                        "reject"
+                    ],
+                    "default": "allow"
+                },
+                "localBindServerEnabled": {
+                    "description": "Specifies whether the system forwards non-wide IP queries to the local BIND server on the BIG-IP system. For best performance, disable this setting when using a DNS cache.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "zoneTransferEnabled": {
+                    "description": "Specifies whether the system answers zone transfer requests for a DNS zone created on the system. The DNS Express and Zone Transfer settings on a DNS profile affect how the system responds to zone transfer requests. ",
+                    "type": "boolean",
+                    "default": false
+                },
+                "recursionDesiredEnabled": {
+                    "description": "Specifies whether to process client-side DNS packets with Recursion Desired set in the header. If set to Disabled, processing of the packet is subject to the unhandled-query-action option.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "securityEnabled": {
+                    "description": "Specifies whether DNS firewall capability is enabled.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "securityProfile": {
+                    "$ref": "#/definitions/Pointer_DNS_Security_Profile"
+                },
+                "loggingEnabled": {
+                    "description": "Specifies whether to process client-side DNS packets with Recursion Desired set in the header. If set to Disabled, processing of the packet is subject to the unhandled-query-action option.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "loggingProfile": {
+                    "$ref": "#/definitions/Pointer_DNS_Logging_Profile"
+                },
+                "statisticsSampleRate": {
+                    "description": "Sets AVR DNS statistics sampling rate. A value of 0 (zero) means that no query will be sent to the analytics database. A value of 1 means that every query will be sent. A value of n means that every nth query will be sent, and that the analytics database will count that query n times. When sampling rate is greater than one, the statistics will be inaccurate if the traffic volume is low. However, when the traffic volume is high, the system performance will benefit from sampling and the inaccuracy will be negligible. DNS statistics contain query name, query type, virtual server IP and client IP. ",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 0
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "DNS_TSIG_Key": {
+            "title": "DNS_TSIG_Key",
+            "description": "Configures a TSIG key",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_TSIG_Key"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "algorithm": {
+                    "description": "Specifies the algorithm the system uses to authenticate AXFR zone transfer requests as coming from an approved DNS nameserver, or to authenticate AXFR zone transfers as coming from an approved back-end DNS authoritative server. The algorithm involves a cryptographic hash function in combination with a secret, which is specified in the Secret field. The default is HMAC MD5 (the Hash-based Message Authentication Code MD5).",
+                    "type": "string",
+                    "enum": [
+                        "hmacmd5",
+                        "hmacsha1",
+                        "hmacsha256"
+                    ],
+                    "default": "hmacmd5"
+                },
+                "secret": {
+                    "description": "Specifies the secret used with the algorithm in the verification process. The secret must be generated by a third-party tool such as BIND's keygen utility; the BIG-IP system does not generate the TSIG key secret.",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Secret" },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "object"
+                            }
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "secret"
+                            }
+                        }
+                    ]
+                }
+            },
+            "required": ["class", "secret"],
+            "additionalProperties": false
+        },
+        "DNS_Zone": {
+            "title": "DNS_Zone",
+            "description": "Configures a DNS zone",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_Zone"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "dnsExpress": {
+                    "$ref": "#/definitions/DNS_Zone_DNS_Express"
+                },
+                "responsePolicyEnabled": {
+                    "description": "Specifies if this is a response policy zone. If this is set to yes, this zone may be assigned as an RPZ to a DNS Cache",
+                    "type": "boolean",
+                    "default": false
+                },
+                "serverTsigKey": {
+                    "$ref": "#/definitions/Pointer_DNS_TSIG_Key"
+                },
+                "transferClients": {
+                    "description": "Specifies the DNS nameservers to which the system sends NOTIFY messages. The system allows only the DNS nameservers in the Active column to initiate AXFR zone transfers for this DNS zone.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_DNS_Nameserver"
+                    }
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+        "DNS_Zone_DNS_Express": {
+            "description": "Configure zone DNS Express settings",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Specifies whether DNS Express is enabled to process queries for this zone",
+                    "type": "boolean",
+                    "default": true
+                },
+                "nameserver": {
+                    "description": "Specifies the back-end authoritative DNS server from which the BIG-IP system receives AXFR zone transfers for the DNS Express zone. The options are None and user-defined nameservers.",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_DNS_Nameserver" }
+                    ]
+                },
+                "notifyAction": {
+                    "description": "Specifies the action the system takes when a NOTIFY message is received for this DNS Express zone. NOTIFY responses are assumed to be sent by the authoritative nameserver for the zone, except when the action is Consume, and then DNS Express generates the response. Note: If a TSIG key is configured for the zone, the signature is only validated for Consume and Repeat actions.",
+                    "type": "string",
+                    "enum": [
+                        "consume",
+                        "bypass",
+                        "repeat"
+                    ],
+                    "default": "consume"
+                },
+                "allowNotifyFrom": {
+                    "description": "Specifies the IP addresses from which the system accepts NOTIFY messages for this DNS Express zone",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "format": "f5ip"
+                    }
+                },
+                "verifyNotifyTsig": {
+                    "description": "Specifies whether the system verifies the identity of the authoritative nameserver that sends updated information for this DNS Express zone",
+                    "type": "boolean",
+                    "default": true
+                }
+
+            },
+            "required": ["nameserver"],
+            "additionalProperties": false
+        },
+        "DNS_Zone_Local": {
+            "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Describes how the cache handles a non-matching query for the local zone",
+                    "type": "string",
+                    "enum": ["deny", "redirect", "refuse", "static", "transparent", "type-transparent"],
+                    "default": "transparent"
+                },
+                "records": {
+                    "description": "A or AAAA record entry",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "DNS_Nameserver": {
+            "title": "DNS_Nameserver",
+            "description": "Configures a DNS nameserver",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DNS_Nameserver"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "address": {
+                    "description": "Specifies the IP address on which the DNS nameserver (client) or back-end DNS authoritative server (DNS Express server) listens for DNS messages",
+                    "type": "string",
+                    "default": "127.0.0.1",
+                    "format": "f5ip"
+                },
+                "port": {
+                    "description": "Specifies the service port on which the DNS nameserver (client) or back-end DNS authoritative server (DNS Express server) listens for DNS messages",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 53
+                },
+                "routeDomain": {
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Route_Domain" }
+                    ],
+                    "default": { "bigip":"/Common/0" }
+                },
+                "tsigKey": {
+                    "$ref": "#/definitions/Pointer_DNS_TSIG_Key"
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        }
+    }
+}

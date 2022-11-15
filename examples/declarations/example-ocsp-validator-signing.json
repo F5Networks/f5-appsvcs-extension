@@ -1,0 +1,34 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.11.0",
+    "id": "Certificate_Validator_OCSP",
+    "TEST_Cert_Validator_OCSP": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testCertOcsp": {
+                "class": "Certificate_Validator_OCSP",
+                "dnsResolver": {
+                    "bigip": "/Common/10.1.1.10"
+                },
+                "timeout": 8,
+                "signingHashAlgorithm": "sha256",
+                "signingCertificate": {
+                    "use": "testCert"
+                }
+            },
+            "testCert": {
+                "class": "Certificate",
+                "remark": "replace these with real certificates and keys",
+                "certificate": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+                "privateKey": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----",
+                "passphrase": {
+                    "ciphertext": "ZjVmNQ==",
+                    "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                    "ignoreChanges": true
+                }
+            }
+        }
+    },
+    "updateMode": "selective"
+}

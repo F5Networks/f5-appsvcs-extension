@@ -1,0 +1,33 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.0.0",
+    "original_partition": {
+        "class": "Tenant",
+        "example_app": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                  "10.0.7.10"
+                ],
+                "pool": "web_pool1"
+                
+            },
+            "web_pool1": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "serverAddresses": [
+                            "10.244.1.58"
+                        ],
+                        "servicePort": 80,
+                        "shareNodes": true
+                    }
+                ],
+                "monitors": [
+                    "http"
+                ]   
+            }
+        }
+    }
+}

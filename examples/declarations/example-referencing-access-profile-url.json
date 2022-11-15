@@ -1,0 +1,25 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.15.0",
+    "id": "123456",
+    "Sample_Access_profile": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "APMservice": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": ["1.2.3.4"],
+                "profileAccess": {
+                    "use": "accessProfile"
+                }
+            },
+            "accessProfile": {
+            	"class": "Access_Profile",
+            	"url": "https://example.tar",
+                "ignoreChanges": true,
+                "enable": true
+            }
+        }
+    }
+}

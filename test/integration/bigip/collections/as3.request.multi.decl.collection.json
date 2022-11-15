@@ -1,0 +1,1198 @@
+{
+	"info": {
+		"_postman_id": "0d4c2aca-d25d-4da1-b1da-6bbe22ca9ae3",
+		"name": "AS3 Request Multi Decl Tests",
+		"description": "Tests that verify that handling AS3-Request Schema (aka wrapper) works as intended",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Delete all Tenants (Begin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code for each tenant is 200\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    jsonData.results.forEach((r) => pm.expect(r.code).to.eql(200));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 2 sec",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/2",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deploy Multiple Declaration - [ADC]",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "cf130b4c-d35b-416f-9df1-3150132d14ba",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 207\", function () {",
+							"    pm.response.to.have.status(207);",
+							"});",
+							"",
+							"pm.test(\"Tenant1 Deploy should succeed\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant1 = jsonData.items[0].results.find(r => r.tenant === 'AS3Request_Tenant1');",
+							"    pm.expect(tenant1.code).to.eql(200);",
+							"    pm.expect(tenant1.message).to.eql('success');",
+							"});",
+							"",
+							"pm.test(\"Tenant2 Deploy should fail\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant2 = jsonData.items[1].results.find(r => r.tenant === 'AS3Request_Tenant2');",
+							"    pm.expect(tenant2.code).to.eql(422);",
+							"    pm.expect(tenant2.message).to.eql('declaration failed');",
+							"    pm.expect(tenant2.response.indexOf('the IP address 198.19.192.114 already exists.')).to.not.eql(-1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": " [\n        {\n            \"AS3Request_Tenant1\": {\n                \"class\": \"Tenant\",\n                \"App1\": {\n                    \"class\": \"Application\",\n                    \"template\": \"http\",\n                    \"serviceMain\": {\n                        \"class\": \"Service_HTTP\",\n                        \"virtualAddresses\": [\n                            \"198.19.192.114\"\n                        ],\n                        \"pool\": \"web_pool1\"\n                    },\n                    \"web_pool1\": {\n                        \"class\": \"Pool\",\n                        \"monitors\": [\n                            \"http\"\n                        ],\n                        \"members\": [\n                            {\n                                \"servicePort\": 80,\n                                \"serverAddresses\": [\n                                    \"198.19.192.72\",\n                                    \"198.19.192.73\"\n                                ]\n                            }\n                        ]\n                    }\n                }\n            },\n            \"class\": \"ADC\",\n            \"schemaVersion\": \"3.0.0\",\n            \"id\": \"AS3Request_Tenant1\",\n            \"updateMode\": \"selective\",\n            \"controls\": {\n                \"trace\": true,\n                \"logLevel\": \"debug\"\n                \n            }\n        },\n        {\n        \"AS3Request_Tenant2\": {\n            \"class\": \"Tenant\",\n            \"App1\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"class\": \"Service_HTTP\",\n                    \"virtualAddresses\": [\n                        \"198.19.192.114\"\n                    ],\n                    \"pool\": \"web_pool1\"\n                },\n                \"web_pool1\": {\n                    \"class\": \"Pool\",\n                    \"monitors\": [\n                        \"http\"\n                    ],\n                    \"members\": [\n                        {\n                            \"servicePort\": 80,\n                            \"serverAddresses\": [\n                                \"198.19.192.172\",\n                                \"198.19.192.173\"\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.0.0\",\n        \"id\": \"AS3Request_Tenant2\",\n        \"updateMode\": \"selective\",\n        \"controls\": {\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n            \n        }\n    }\n  ]\n\n"
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deploy Multiple Declaration - [AS3]",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "cf130b4c-d35b-416f-9df1-3150132d14ba",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 207\", function () {",
+							"    pm.response.to.have.status(207);",
+							"});",
+							"",
+							"pm.test(\"Tenant1 Deploy should succeed, no change\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant1 = jsonData.items[0].results.find(r => r.tenant === 'AS3Request_Tenant1');",
+							"    pm.expect(tenant1.code).to.eql(200);",
+							"    pm.expect(tenant1.message).to.eql('no change');",
+							"});",
+							"",
+							"pm.test(\"Tenant2 Deploy should fail\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant2 = jsonData.items[1].results.find(r => r.tenant === 'AS3Request_Tenant2');",
+							"    pm.expect(tenant2.code).to.eql(422);",
+							"    pm.expect(tenant2.message).to.eql('declaration failed');",
+							"    pm.expect(tenant2.response.indexOf('the IP address 198.19.192.114 already exists.')).to.not.eql(-1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"class\": \"AS3\",\n        \"action\": \"deploy\",\n        \"declaration\": {\n            \"AS3Request_Tenant1\": {\n                \"class\": \"Tenant\",\n                \"App1\": {\n                    \"class\": \"Application\",\n                    \"template\": \"http\",\n                    \"serviceMain\": {\n                        \"class\": \"Service_HTTP\",\n                        \"virtualAddresses\": [\n                            \"198.19.192.114\"\n                        ],\n                        \"pool\": \"web_pool1\"\n                    },\n                    \"web_pool1\": {\n                        \"class\": \"Pool\",\n                        \"monitors\": [\n                            \"http\"\n                        ],\n                        \"members\": [\n                            {\n                                \"servicePort\": 80,\n                                \"serverAddresses\": [\n                                    \"198.19.192.72\",\n                                    \"198.19.192.73\"\n                                ]\n                            }\n                        ]\n                    }\n                }\n            },\n            \"class\": \"ADC\",\n            \"schemaVersion\": \"3.0.0\",\n            \"id\": \"AS3Request_Tenant1\",\n            \"updateMode\": \"selective\",\n            \"controls\": {\n                \"trace\": true,\n                \"logLevel\": \"debug\"\n            }\n        }\n    },\n    {\n        \"class\": \"AS3\",\n        \"action\": \"deploy\",\n        \"declaration\": {\n            \"AS3Request_Tenant2\": {\n                \"class\": \"Tenant\",\n                \"App1\": {\n                    \"class\": \"Application\",\n                    \"template\": \"http\",\n                    \"serviceMain\": {\n                        \"class\": \"Service_HTTP\",\n                        \"virtualAddresses\": [\n                            \"198.19.192.114\"\n                        ],\n                        \"pool\": \"web_pool1\"\n                    },\n                    \"web_pool1\": {\n                        \"class\": \"Pool\",\n                        \"monitors\": [\n                            \"http\"\n                        ],\n                        \"members\": [\n                            {\n                                \"servicePort\": 80,\n                                \"serverAddresses\": [\n                                    \"198.19.192.172\",\n                                    \"198.19.192.173\"\n                                ]\n                            }\n                        ]\n                    }\n                }\n            },\n            \"class\": \"ADC\",\n            \"schemaVersion\": \"3.0.0\",\n            \"id\": \"AS3Request_Tenant2\",\n            \"updateMode\": \"selective\",\n            \"controls\": {\n                \"trace\": true,\n                \"logLevel\": \"debug\"\n            }\n        }\n    }\n]"
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete all Tenants",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code for each tenant is 200\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    jsonData.results.forEach((r) => pm.expect(r.code).to.eql(200));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 2 sec",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/2",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Gather pending async tasks",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c9e10511-7753-4013-907d-71a4d970bd06",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"var data = pm.response.json();",
+							"if (Array.isArray(data)) {",
+							"    pm.environment.set(\"previousTasks\", data.map(task => task.record));",
+							"} else {",
+							"    pm.environment.set(\"previousTasks\", []);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete pre-existing asnyc task",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "3640c8cb-73ea-48ca-91aa-79780f3d94ef",
+						"exec": [
+							"console.log(pm.environment.get('previousTasks'));",
+							"if (pm.environment.get('previousTasks').length) {",
+							"    postman.setNextRequest('Delete pre-existing asnyc task');",
+							"    pm.environment.set('taskId', pm.environment.get('previousTasks').pop());",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "d78bbea9-3e3a-4cd8-b026-ab02fe975e80",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"var tasks = pm.environment.get('previousTasks');",
+							"var task = tasks.pop();",
+							"pm.environment.set('previousTasks', tasks);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_request_{{taskId}}",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"tm",
+						"ltm",
+						"data-group",
+						"internal",
+						"~Common~____appsvcs_request_{{taskId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 2 sec",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/2",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET async starting state",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a5c8959b-2d14-4f4d-9021-bff7fef3c7e6",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"const jsonData = pm.response.json();",
+							"console.log(JSON.stringify(jsonData));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deploy Multiple Declaration - ASYNC",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "085563a1-5c03-4e3a-8aa3-96c127d27d79",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 202\", function () {",
+							"    pm.response.to.have.status(202);",
+							"});",
+							"",
+							"pm.test(\"Tenant1 Deploy should submit decl\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant1 = jsonData.items[0];",
+							"    pm.expect(tenant1.results[0].message).to.eql(\"Declaration successfully submitted\");",
+							"    pm.environment.set(\"tenant1Task\", tenant1.id);",
+							"});",
+							"",
+							"pm.test(\"Tenant2 Deploy should submit decl\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant2 = jsonData.items[1];",
+							"    pm.expect(tenant2.results[0].message).to.eql(\"Declaration successfully submitted\");",
+							"    pm.environment.set(\"tenant2Task\", tenant2.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"AS3Request_Tenant1\": {\n            \"class\": \"Tenant\",\n            \"App1\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"class\": \"Service_HTTP\",\n                    \"virtualAddresses\": [\n                        \"198.19.192.14\"\n                    ],\n                    \"pool\": \"web_pool1\"\n                },\n                \"web_pool1\": {\n                    \"class\": \"Pool\",\n                    \"monitors\": [\n                        \"http\"\n                    ],\n                    \"members\": [\n                        {\n                            \"servicePort\": 80,\n                            \"serverAddresses\": [\n                                \"198.19.192.72\",\n                                \"198.19.192.73\"\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.0.0\",\n        \"id\": \"AS3Request_Tenant1\",\n        \"updateMode\": \"selective\",\n        \"controls\": {\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        }\n    },\n    {\n        \"AS3Request_Tenant2\": {\n            \"class\": \"Tenant\",\n            \"App1\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"class\": \"Service_HTTP\",\n                    \"virtualAddresses\": [\n                        \"198.19.192.114\"\n                    ],\n                    \"pool\": \"web_pool1\"\n                },\n                \"web_pool1\": {\n                    \"class\": \"Pool\",\n                    \"monitors\": [\n                        \"http\"\n                    ],\n                    \"members\": [\n                        {\n                            \"servicePort\": 80,\n                            \"serverAddresses\": [\n                                \"198.19.192.172\",\n                                \"198.19.192.173\"\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.0.0\",\n        \"id\": \"AS3Request_Tenant2\",\n        \"updateMode\": \"selective\",\n        \"controls\": {\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        }\n    }\n]"
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare?async=true",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					],
+					"query": [
+						{
+							"key": "async",
+							"value": "true"
+						}
+					]
+				},
+				"description": "Redeploys previous declaration of explicit proxy. Verifies no change."
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 20 sec",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"    // postman max is 10 sec",
+							"    setTimeout(function(){}, 10000);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/10",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Multiple Declaration - Tenant1 ASYNC Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "085563a1-5c03-4e3a-8aa3-96c127d27d79",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tenant1 Async result should succeed\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant1 = jsonData.results.find(r => r.tenant === 'AS3Request_Tenant1');",
+							"    pm.expect(tenant1.code).to.eql(200);",
+							"    pm.expect(tenant1.message).to.eql('success');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{tenant1Task}}",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task",
+						"{{tenant1Task}}"
+					]
+				},
+				"description": "Redeploys previous declaration of explicit proxy. Verifies no change."
+			},
+			"response": []
+		},
+		{
+			"name": "GET Multiple Declaration - Tenant2 ASYNC Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "085563a1-5c03-4e3a-8aa3-96c127d27d79",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tenant2 Async result should succeed\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const tenant2 = jsonData.results.find(r => r.tenant === 'AS3Request_Tenant2');",
+							"    pm.expect(tenant2.code).to.eql(200);",
+							"    pm.expect(tenant2.message).to.eql('success');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{tenant2Task}}",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task",
+						"{{tenant2Task}}"
+					]
+				},
+				"description": "Redeploys previous declaration of explicit proxy. Verifies no change."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete all Tenants",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code for each tenant is 200\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    jsonData.results.forEach((r) => pm.expect(r.code).to.eql(200));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 2 sec",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/2",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deploy Auto Async On Timeout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "cf130b4c-d35b-416f-9df1-3150132d14ba",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 202\", function () {",
+							"    pm.response.to.have.status(202);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Request should auto async on timeout (45s)\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.code).to.eql(202);",
+							"    jsonData.items.forEach((msg,index) => {",
+							"        pm.expect(msg.results[0].message).to.eql('Declaration successfully submitted');",
+							"        pm.expect(msg.selfLink).to.include(msg.id);",
+							"        pm.environment.set(`decl${index + 1}Task`, msg.id);",
+							"    });",
+							"",
+							"});",
+							"",
+							"pm.environment.set('isDecl1Complete', false);",
+							"pm.environment.set('isDecl2Complete', false);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"AS3Request_Tenant1\": {\n            \"class\": \"Tenant\",\n            \"App1\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"class\": \"Service_HTTP\",\n                    \"virtualAddresses\": [\n                        \"198.19.192.114\"\n                    ],\n                    \"pool\": \"web_pool1\"\n                },\n                \"web_pool1\": {\n                    \"class\": \"Pool\",\n                    \"monitors\": [\n                        \"http\"\n                    ],\n                    \"members\": [\n                        {\n                            \"servicePort\": 80,\n                            \"serverAddresses\": [\n                                \"198.19.192.72\",\n                                \"198.19.192.73\"\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.0.0\",\n        \"id\": \"AS3Request_Tenant1\",\n        \"updateMode\": \"selective\",\n        \"controls\": {\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        }\n    },\n    {\n        \"class\": \"ADC\",\n        \"schemaVersion\": \"3.0.0\",\n        \"id\": \"AS3Request_Tenant3\",\n        \"updateMode\": \"selective\",\n        \"controls\": {\n            \"trace\": true,\n            \"logLevel\": \"debug\"\n        },\n        \"AS3Request_Tenant5\": {\n            \"class\": \"Tenant\",\n            \"App1\": {\n                \"class\": \"Application\",\n                \"template\": \"http\",\n                \"serviceMain\": {\n                    \"class\": \"Service_HTTP\",\n                    \"virtualAddresses\": [\n                        \"198.19.192.15\"\n                    ],\n                    \"pool\": \"web_pool1\"\n                },\n                \"web_pool1\": {\n                    \"class\": \"Pool\",\n                    \"monitors\": [\n                        \"http\"\n                    ],\n                    \"members\": [\n                        {\n                            \"servicePort\": 80,\n                            \"serverAddresses\": [\n                                \"198.19.192.14\",\n                                \"198.19.192.15\"\n                            ]\n                        }\n                    ]\n                }\n            }\n        },\n        \"AS3Request_Tenant6\": {\n            \"class\": \"Tenant\",\n            \"Application\": {\n                \"class\": \"Application\",\n                \"template\": \"generic\",\n                \"testItem\": {\n                    \"class\": \"Service_HTTP\",\n                    \"policyEndpoint\": \"endpointPolicy\",\n                    \"virtualAddresses\": [\n                        \"10.1.40.60\"\n                    ]\n                },\n                \"endpointPolicy\": {\n                    \"class\": \"Endpoint_Policy\",\n                    \"rules\": [\n                        {\n                            \"name\": \"enableWAF\",\n                            \"conditions\": [],\n                            \"actions\": [\n                                {\n                                    \"type\": \"waf\",\n                                    \"policy\": {\n                                        \"use\": \"wafPolicy\"\n                                    }\n                                }\n                            ]\n                        },\n                        {\n                            \"name\": \"disable\",\n                            \"conditions\": [],\n                            \"actions\": [\n                                {\n                                    \"type\": \"waf\"\n                                }\n                            ]\n                        }\n                    ]\n                },\n                \"wafPolicy\": {\n                    \"class\": \"WAF_Policy\",\n                    \"url\": \"{{policy_12_0}}\",\n                    \"ignoreChanges\": true\n                },\n                \"wafPolicy2\": {\n                    \"class\": \"WAF_Policy\",\n                    \"url\": \"{{policy_12_0}}\",\n                    \"ignoreChanges\": true\n                }\n            }\n        },\n        \"AS3Request_Tenant7\": {\n            \"class\": \"Tenant\",\n            \"Application\": {\n                \"class\": \"Application\",\n                \"template\": \"generic\",\n                \"testItem\": {\n                    \"class\": \"Service_HTTP\",\n                    \"policyEndpoint\": \"endpointPolicy\",\n                    \"virtualAddresses\": [\n                        \"10.1.40.70\"\n                    ]\n                },\n                \"endpointPolicy\": {\n                    \"class\": \"Endpoint_Policy\",\n                    \"rules\": [\n                        {\n                            \"name\": \"enableWAF\",\n                            \"conditions\": [],\n                            \"actions\": [\n                                {\n                                    \"type\": \"waf\",\n                                    \"policy\": {\n                                        \"use\": \"wafPolicy\"\n                                    }\n                                }\n                            ]\n                        },\n                        {\n                            \"name\": \"disable\",\n                            \"conditions\": [],\n                            \"actions\": [\n                                {\n                                    \"type\": \"waf\"\n                                }\n                            ]\n                        }\n                    ]\n                },\n                \"wafPolicy\": {\n                    \"class\": \"WAF_Policy\",\n                    \"url\": \"{{policy_12_1}}\",\n                    \"ignoreChanges\": true\n                }\n            }\n        }\n    }\n]"
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"if (!pm.environment.get('isDecl1Complete')) {",
+							"    postman.setNextRequest('GET Multiple Declaration - Decl1 Auto ASYNC Result');",
+							"} else {",
+							"    postman.setNextRequest('GET Multiple Declaration - Decl2 Auto ASYNC Result');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://postman-echo.com/delay/10",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Multiple Declaration - Decl1 Auto ASYNC Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "085563a1-5c03-4e3a-8aa3-96c127d27d79",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.json().results[0].message !== 'in progress') {",
+							"    pm.environment.set('isDecl1Complete', true);",
+							"    pm.test(\"Is Decl1 Async finished\", function () {",
+							"        const jsonData = pm.response.json().results;",
+							"        jsonData.forEach((res) => {",
+							"            pm.test(`Request was successful for ${res.tenant}`, function () {",
+							"                pm.expect(res.code).to.equal(200);",
+							"            });",
+							"        });",
+							"    });",
+							"}",
+							"",
+							"if (pm.environment.get('isDecl1Complete') && pm.environment.get('isDecl2Complete')) {",
+							"    postman.setNextRequest('Delete all Tenants (End)');",
+							"} else if (pm.environment.get('isDecl2Complete')) {",
+							"    postman.setNextRequest('Delay');",
+							"} else {",
+							"    postman.setNextRequest('GET Multiple Declaration - Decl2 Auto ASYNC Result');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{decl1Task}}",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task",
+						"{{decl1Task}}"
+					]
+				},
+				"description": "Redeploys previous declaration of explicit proxy. Verifies no change."
+			},
+			"response": []
+		},
+		{
+			"name": "GET Multiple Declaration - Decl2 Auto ASYNC Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "085563a1-5c03-4e3a-8aa3-96c127d27d79",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.json().results[0].message !== 'in progress') {",
+							"    pm.environment.set('isDecl2Complete', true);",
+							"    pm.test(\"Is Decl2 Async finished\", function () {",
+							"        const jsonData = pm.response.json().results;",
+							"        jsonData.forEach((res) => {",
+							"            pm.test(`Request was successful for ${res.tenant}`, function () {",
+							"                pm.expect(res.code).to.equal(200);",
+							"            });",
+							"        });",
+							"    });",
+							"}",
+							"",
+							"if (pm.environment.get('isDecl1Complete') && pm.environment.get('isDecl2Complete')) {",
+							"    postman.setNextRequest('Delete all Tenants (End)');",
+							"} else {",
+							"    postman.setNextRequest('Delay');",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/task/{{decl2Task}}",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"task",
+						"{{decl2Task}}"
+					]
+				},
+				"description": "Redeploys previous declaration of explicit proxy. Verifies no change."
+			},
+			"response": []
+		},
+		{
+			"name": "Delete all Tenants (End)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "651d8734-0996-444c-93e9-2910297e2d73",
+						"exec": [
+							"let utils = eval(pm.globals.get('utils'))();",
+							"pm = utils.utils.getPM();",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Status code for each tenant is 200\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    jsonData.results.forEach((r) => pm.expect(r.code).to.eql(200));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{host}}/mgmt/shared/appsvcs/declare",
+					"protocol": "https",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"mgmt",
+						"shared",
+						"appsvcs",
+						"declare"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{password}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{username}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "7372d2b6-cd3a-4bf4-a6d6-c90c6e49b273",
+				"type": "text/javascript",
+				"exec": [
+					"pm.variables.set('retryCodes', [503]);",
+					"",
+					"const isRetrying = pm.variables.get('retrying');",
+					"",
+					"// If we are not currently retrying, reset number of retries",
+					"if (!isRetrying) {",
+					"    pm.variables.set('retriesLeft', 10);",
+					"}",
+					"",
+					"postman.setGlobalVariable('utils', () => {",
+					"    const isRetrying = pm.variables.get('retrying');",
+					"    const pmProxy = {",
+					"        get: function(pm, key) {",
+					"            if (key == 'test') {",
+					"                return (isRetrying ? pm.test.skip : pm.test);",
+					"            }",
+					"            return pm[key];",
+					"        }",
+					"    };",
+					"    const getPM = () => {",
+					"        return new Proxy(pm, pmProxy);",
+					"    }",
+					"    return {",
+					"        utils: {",
+					"            getPM",
+					"        }",
+					"    };",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "7bea9a60-11c2-471d-97ab-395fcf4fec4a",
+				"type": "text/javascript",
+				"exec": [
+					"if (pm.variables.get('retryCodes').includes(pm.response.code)) {",
+					"    pm.variables.set('retrying', true);",
+					"    let triesLeft = pm.variables.get('retriesLeft');",
+					"    if (triesLeft > 1) {",
+					"        triesLeft -= 1;",
+					"        pm.variables.set('retriesLeft', triesLeft);",
+					"        console.log(`503 - Will Retry ${triesLeft} more times`);",
+					"        postman.setNextRequest(pm.info.requestName);",
+					"    } else {",
+					"        pm.expect.fail('Max retries reached');",
+					"    }",
+					"} else {",
+					"    pm.variables.set('retrying', false);",
+					"}",
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

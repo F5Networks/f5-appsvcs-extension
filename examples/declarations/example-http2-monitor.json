@@ -1,0 +1,30 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.25.0",
+    "id": "Monitor",
+    "TEST_HTTP2Monitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sampleHTTP2monitor": {
+                "class": "Monitor",
+                "monitorType": "http2",
+                "clientTLS": {
+                    "use": "webtls"
+                },
+                "interval": 10,
+                "receiveDown": "down",
+                "receive": "HTTP/2.",
+                "send": "GET /\\r\\n\\r\\n",
+                "timeUntilUp": 15,
+                "timeout": 123
+            },
+            "webtls": {
+                "class": "TLS_Client",
+                "trustCA": {
+                    "bigip": "/Common/default.crt"
+                }
+            }
+        }
+    }
+}

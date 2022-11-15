@@ -1,0 +1,42 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.29.0",
+    "id": "Service_HTTP",
+    "Sample_ep_operands": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "policyEndpoint": "endpointPolicy",
+                "virtualAddresses": [
+                    "10.1.40.50"
+                ]
+            },
+            "endpointPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "default",
+                        "conditions": [
+                            {
+                                "type": "httpCookie",
+                                "all": {
+                                    "operand": "exists"
+                                },
+                                "name": "test"
+                            },
+                            {
+                                "type": "httpCookie",
+                                "all": {
+                                    "operand": "does-not-exist"
+                                },
+                                "name": "test2"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

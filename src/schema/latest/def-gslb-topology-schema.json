@@ -1,0 +1,232 @@
+{
+    "definitions": {
+        "GSLB_Topology_Records": {
+            "title": "GSLB_Topology_Records",
+            "description": "Defines GSLB Topology records",
+            "type": "object",
+
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Topology_Records"
+                },
+                "longestMatchEnabled": {
+                    "title": "Longest Match Algorithm Enabled",
+                    "description": "Enables the algorithm that requires the system to evaluate all records in the topology statement and use the record that most completely matches the source IP address of the name resolution request. If true, the order of the records as they appear in the array will not be preserved",
+                    "type": "boolean",
+                    "default": true
+                },
+                "records": {
+                    "title": "Record List",
+                    "description": "Specifies the actual device(s) that are represented by this server object",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/GSLB_Topology_Record" },
+                    "minItems": 1
+                }
+            },
+            "required": ["class", "records"]
+        },
+        "GSLB_Topology_Record": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "title": "Request Source",
+                    "description": "Specifies the origination section of the topology record, the local DNS",
+                    "allOf": [ { "$ref": "#/definitions/GSLB_Topology_Condition" } ]
+                },
+                "destination": {
+                    "title": "Request Destination",
+                    "description": "Specifies where the system directs the incoming DNS request",
+                    "allOf": [ { "$ref": "#/definitions/GSLB_Topology_Condition" } ]
+                },
+                "weight": {
+                    "title": "Record Weight",
+                    "description": "Specifies the weight for the topology record. The system load balances to the server object and DNS that matches the record with the highest topology weight",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 4294967295
+                }
+            },
+            "allOf": [
+                {
+                    "not": { "properties": { "source": { "properties": { "matchType": { "const": "pool" } } } } }
+                },
+                {
+                    "not": { "properties": { "source": { "properties": { "matchType": { "const": "datacenter" } } } } }
+                }
+            ],
+            "required": [ "source", "destination" ]
+        },
+        "GSLB_Topology_Region": {
+            "title": "GSLB_Topology_Region",
+            "description": "Defines a GSLB Topology region",
+            "type": "object",
+
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "GSLB_Topology_Region"
+                },
+                "members": {
+                    "title": "Region Member List",
+                    "description": "Configures the list of members for this region",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/GSLB_Topology_Condition" }
+                }
+            },
+            "required": [ "class" ]
+        },
+
+        "GSLB_Topology_Condition": {
+            "type": "object",
+            "properties": {
+                "matchType": {
+                    "title": "Match Type",
+                    "description": "Specifies the type/category of match to perform",
+                    "type": "string",
+                    "enum": [
+                        "continent",
+                        "country",
+                        "datacenter",
+                        "geoip-isp",
+                        "isp",
+                        "pool",
+                        "region",
+                        "state",
+                        "subnet"
+                     ]
+                },
+                "matchOperator": {
+                    "title": "Match Operator",
+                    "description": "Specifies the operation to perform a match. Default value is equals (matches)",
+                    "type": "string",
+                    "enum": [
+                        "equals",
+                        "not-equals"
+                    ],
+                    "default": "equals"
+                },
+                "matchValue": {
+                    "title": "Match Value",
+                    "description": "Specifies the value to match",
+                    "type": ["string", "object"]
+                }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "matchType": { "const": "continent" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Enum_Continent_Code_Alpha_2" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "country" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Enum_Country_Code_Alpha_2" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "datacenter" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Pointer_GSLB_Data_Center" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "geoip-isp" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "isp" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Enum_ISP" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "pool" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Pointer_GSLB_Pool" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "region" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": { "$ref": "#/definitions/Pointer_GSLB_Topology_Region" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "state" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": {
+                                "description": "State value in the format <Country Code>/<State Name>, for example: US/Washington",
+                                "type": "string",
+                                "minLength": 4
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "matchType": { "const": "subnet" } } },
+                    "then": {
+                        "properties": {
+                            "matchValue": {
+                                "type": "string",
+                                "format": "f5ip"
+                            }
+                        }
+                    }
+                }
+            ],
+            "required": [ "matchType", "matchValue" ]
+        },
+
+        "GSLB_Pool_A": {
+            "description": "Pointer to a Pool A object",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Pool" }
+            ]
+        },
+        "GSLB_Pool_AAAA": {
+            "description": "Pointer to a Pool AAAA object",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Pool" }
+            ]
+        },
+        "GSLB_Pool_CNAME": {
+            "description": "Pointer to a Pool CNAME object",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Pool" }
+            ]
+        },
+        "GSLB_Pool_MX": {
+            "description": "Pointer to a Pool MX object",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Pool" }
+            ]
+        }
+    }
+}

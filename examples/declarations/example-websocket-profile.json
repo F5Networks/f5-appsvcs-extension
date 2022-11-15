@@ -1,0 +1,36 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.8.0",
+    "id": "TEST_Websocket_Profile",
+    "remark": "Test Websocket profiles",
+    "Sample_WebSocket_Profile": {
+        "class": "Tenant",
+        "TEST_Websocket_Profile": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "profileHTTP": {
+                    "use": "httpProfile"
+                }
+            },
+            "httpProfile": {
+                "class": "HTTP_Profile",
+                "profileWebSocket": {
+                    "use": "webSocketProfile"
+                }
+            },
+            "webSocketProfile": {
+                "class": "WebSocket_Profile",
+                "masking": "selective",
+                "compressMode": "preserved",
+                "compression": true,
+                "maximumWindowSize": 10,
+                "noDelay": true
+            }
+        }
+    }
+}

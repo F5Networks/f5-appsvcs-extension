@@ -1,0 +1,26 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.15.0",
+  "label": "Adapt_profile_existing",
+  "remark": "Adapt_profile_existing",
+  "Sample_adapt_profile": {
+    "class": "Tenant",
+    "HTTP_Service": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "192.0.2.107"
+        ],
+        "virtualPort": 8181,
+        "snat": "auto",
+        "profileRequestAdapt": {
+          "bigip": "/Common/requestadapt"
+        },
+        "profileResponseAdapt": {
+          "bigip": "/Common/responseadapt"
+        }
+      }
+    }
+  }
+}

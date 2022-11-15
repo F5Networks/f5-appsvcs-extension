@@ -1,0 +1,17 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.35.0",
+    "tenant": {
+        "class": "Tenant",
+        "application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": ["1.2.3.4"],
+                "ipIntelligencePolicy": {
+                    "bigip": "/Common/ip-intelligence"
+                }
+            }
+        }
+    }
+}

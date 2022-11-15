@@ -1,0 +1,166 @@
+{
+    "class": "ADC",
+    "id": "cgnat",
+    "label": "Sample Network Security 2",
+    "remark": "08",
+    "schemaVersion": "3.0.0",
+    "Sample_net_sec_02": {
+        "class": "Tenant",
+        "A1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_L4",
+                "layer4": "any",
+                "policyNAT": {
+                    "use": "natPolicy"
+                },
+                "snat": "none",
+                "translateServerAddress": false,
+                "translateServerPort": false,
+                "virtualAddresses": [
+                    "0.0.0.0"
+                ],
+                "virtualPort": 0
+            },
+            "natDestinationAddressList": {
+                "addresses": [
+                    "0.0.0.0/0"
+                ],
+                "class": "Firewall_Address_List"
+            },
+            "natDestinationPortList": {
+                "class": "Firewall_Port_List",
+                "ports": [
+                    "1-65535"
+                ]
+            },
+            "natPolicy": {
+                "class": "NAT_Policy",
+                "rules": [
+                    {
+                        "destination": {
+                            "addressLists": [
+                                {
+                                    "use": "natDestinationAddressList"
+                                }
+                            ],
+                            "portLists": [
+                                {
+                                    "use": "natDestinationPortList"
+                                }
+                            ]
+                        },
+                        "name": "rule1",
+                        "protocol": "tcp",
+                        "source": {
+                            "addressLists": [
+                                {
+                                    "use": "natSourceAddressList"
+                                }
+                            ],
+                            "portLists": [
+                                {
+                                    "use": "natSourcePortList"
+                                }
+                            ]
+                        },
+                        "sourceTranslation": {
+                            "use": "natSourceTranslation"
+                        },
+                        "securityLogProfile": {
+                            "use": "secLogProfile"
+                        }
+                    }
+                ]
+            },
+            "natSourceAddressList": {
+                "addresses": [
+                    "192.168.0.0/16"
+                ],
+                "class": "Firewall_Address_List"
+            },
+            "natSourcePortList": {
+                "class": "Firewall_Port_List",
+                "ports": [
+                    "1-65535"
+                ]
+            },
+            "natSourceExcludeAddressList": {
+                "class": "Firewall_Address_List",
+                "addresses": [
+                    "192.0.2.50"
+                ]
+            },
+            "natSourceTranslation": {
+                "addresses": [
+                    "192.0.2.0/25"
+                ],
+                "class": "NAT_Source_Translation",
+                "clientConnectionLimit": 0,
+                "hairpinModeEnabled": false,
+                "inboundMode": "explicit",
+                "mapping": {
+                    "mode": "address-pooling-paired",
+                    "timeout": 300
+                },
+                "patMode": "pba",
+                "portBlockAllocation": {
+                    "blockIdleTimeout": 3600,
+                    "blockLifetime": 0,
+                    "blockSize": 64,
+                    "clientBlockLimit": 1,
+                    "zombieTimeout": 0
+                },
+                "ports": [
+                    "1-65535"
+                ],
+                "routeAdvertisement": false,
+                "type": "dynamic-pat",
+                "excludeAddresses": [
+                    "192.0.2.10",
+                    "192.0.2.20-192.0.2.30",
+                    {"use": "natSourceExcludeAddressList"}
+                ]
+            },
+            "secLogProfile": {
+                "class": "Security_Log_Profile",
+                "application": {
+                    "storageFilter": {
+                        "logicalOperation": "and",
+                        "requestType": "all",
+                        "responseCodes": [
+                            "100",
+                            "200",
+                            "300",
+                            "400"
+                        ],
+                        "protocols": [
+                            "https",
+                            "ws"
+                        ],
+                        "httpMethods": [
+                            "ACL",
+                            "GET",
+                            "POLL",
+                            "POST"
+                        ],
+                        "requestContains": {
+                            "searchIn": "search-in-headers",
+                            "value": "The header string to search for"
+                        },
+                        "loginResults": [
+                            "login-result-successful",
+                            "login-result-failed"
+                        ]
+                    },
+                    "guaranteeLoggingEnabled": true,
+                    "guaranteeResponseLoggingEnabled": true,
+                    "maxHeaderSize": 200,
+                    "maxQuerySize": 1040,
+                    "maxRequestSize": 900,
+                    "responseLogging": "all"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,44 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.23.0",
+    "id": "TLS_Alert_Timeouts",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "10.0.1.14"
+                ],
+                "clientTLS": "tlsClient",
+                "serverTLS": "tlsServer",
+                "virtualPort": 443
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "cert"
+                    }
+                ],
+                "alertTimeout": 1234
+            },
+            "tlsClient": {
+                "class": "TLS_Client",
+                "clientCertificate": "cert",
+                "alertTimeout": "indefinite"
+            },
+            "cert": {
+                "class": "Certificate",
+                "remark": "in practice using a passphrase is recommended",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            }
+        }
+    }
+}

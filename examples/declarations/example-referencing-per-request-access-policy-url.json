@@ -1,0 +1,32 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.23.0",
+    "id": "123456",
+    "Sample_Per_Request_Access_Policy": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "APMservice": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": ["1.2.3.4"],
+                "profileAccess": {
+                    "use": "accessProfile"
+                },
+                "policyPerRequestAccess": {
+                   "use": "perRequestPolicy"
+                }
+            },
+            "accessProfile": {
+                "class": "Access_Profile",
+                "url": "https://example.tar",
+                "ignoreChanges": true
+            },
+            "perRequestPolicy": {
+                "class": "Per_Request_Access_Policy",
+                "url": "https://example2.tar",
+                "ignoreChanges": true
+            }
+        }
+    }
+}

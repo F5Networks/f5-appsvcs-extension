@@ -1,0 +1,23 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Monitor",
+    "TEST_FTPMonitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "sampleFTPmonitor": {
+                "class": "Monitor",
+                "monitorType": "ftp",
+                "mode": "port",
+                "username": "testUser",
+                "passphrase": {
+                    "ciphertext": "ZjVmNQ==",
+                    "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+                    "ignoreChanges": true
+                },
+                "filename": "testpath/test/"
+            }
+        }
+    }
+}

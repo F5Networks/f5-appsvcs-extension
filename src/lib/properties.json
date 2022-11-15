@@ -1,0 +1,2746 @@
+{
+  "auth partition": [
+    { "id":"default-route-domain" }
+  ],
+  "ltm cipher group": [
+    { "id":"allow",                     "extend": "objArray", "altId": "allowCipherRules" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"exclude",                   "extend": "objArray", "altId": "excludeCipherRules" },
+    { "id":"ordering",                  "altId": "order" },
+    { "id":"require",                   "extend": "objArray", "altId": "requireCipherRules" }
+  ],
+  "ltm cipher group allow": [
+    { "id":"name" },
+    { "id":"partition" }
+  ],
+  "ltm cipher group exclude": [
+    { "id":"name" },
+    { "id":"partition" }
+  ],
+  "ltm cipher group require": [
+    { "id":"name" },
+    { "id":"partition" }
+  ],
+  "ltm data-group": [
+    { "id":"external",                  "extend": "object" },
+    { "id":"internal",                  "extend": "object" }
+  ],
+  "ltm data-group external": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"type",                      "altId": "keyDataType" },
+    { "id":"source-path",               "altId": "externalFilePath", "quotedString": true },
+    { "id":"external-file-name",        "altId": "dataGroupFile" }
+  ],
+  "ltm data-group internal": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"type",                      "altId": "keyDataType" },
+    { "id":"records",                   "extend": "objArray" }
+  ],
+  "ltm data-group internal records": [
+    { "id":"name",                      "quotedString": true, "intToString": true },
+    { "id":"data",                      "altId": "value", "quotedString": true }
+  ],
+  "ltm monitor": [
+    { "id":"accept-rcode",              "altId": "acceptRCODE"},
+    { "id":"adaptive",                  "truth": "enabled", "falsehood": "disabled" },
+    { "id":"adaptive-divergence-type" },
+    { "id":"adaptive-divergence-value", "altId": "adaptiveDivergencePercentage" },
+    { "id":"adaptive-limit",            "altId": "adaptiveLimitMilliseconds" },
+    { "id":"adaptive-sampling-timespan","altId": "adaptiveWindow" },
+    { "id":"answer-contains"},
+    { "id":"base",                      "quotedString": true},
+    { "id":"cert",                      "altId": "clientCertificate" },
+    { "id":"chase-referrals",           "truth": "yes", "falsehood": "no" },
+    { "id":"cipherlist",                "altId": "ciphers" },
+    { "id":"mandatory-attributes",      "truth": "yes", "falsehood": "no" },
+    { "id":"security" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"destination" },
+    { "id":"domain" },
+    { "id":"failure-interval" },
+    { "id":"failures" },
+    { "id":"filter",                    "altId": "codesUp", "quotedString": true },
+    { "id":"filter-neg",                "altId": "codesDown", "quotedString": true },
+    { "id":"filter-ldap",               "altId": "filter", "quotedString": true },
+    { "id":"headers",                   "quotedString": true },
+    { "id":"interval" },
+    { "id":"ip-dscp",                   "altId": "dscp" },
+    { "id":"key" },
+    { "id":"mode",                      "altId": "protocol" },
+    { "id":"password",                  "altId": "passphrase", "quotedString": true },
+    { "id":"secret",                    "quotedString": true },
+    { "id":"nas-ip-address"},
+    { "id":"qname",                     "altId": "queryName", "quotedString": true },
+    { "id":"qtype",                     "altId": "queryType"},
+    { "id":"recv",                      "altId": "receive", "quotedString": true },
+    { "id":"recv-disable",              "altId": "receiveDown", "quotedString": true },
+    { "id":"request",                   "quotedString": true },
+    { "id":"response-time" },
+    { "id":"retry-time" },
+    { "id":"reverse",                   "truth": "enabled", "falsehood": "disabled" },
+    { "id":"send",                      "quotedString": true },
+    { "id":"ssl-profile",               "altId": "clientTLS" },
+    { "id":"timeout" },
+    { "id":"time-until-up" },
+    { "id":"transparent",               "truth": "enabled", "falsehood": "disabled" },
+    { "id":"username" },
+    { "id":"up-interval" },
+    { "id":"iControl_post",             "extend": "object"},
+    { "id":"args",                      "altId": "arguments" },
+    { "id":"user-defined",              "altId": "environmentVariables" },
+    { "id":"run",                       "altId": "pathname" },
+    { "id":"filename" },
+    { "id":"count" },
+    { "id":"database" },
+    { "id":"recv-column",               "altId": "receiveColumn" },
+    { "id":"recv-row",                  "altId": "receiveRow" }
+  ],
+  "ltm node": [
+    { "id":"address" },
+    { "id":"fqdn",                      "extend": "object" },
+    { "id":"metadata",                  "extend": "objArray"},
+    { "id":"references" }
+  ],
+  "ltm node fqdn": [
+    { "id":"address-family" },
+    { "id":"autopopulate",              "truth": "enabled", "falsehood": "disabled", "altId": "autoPopulate" },
+    { "id":"down-interval" },
+    { "id":"tmName",                    "altId": "hostname" },
+    { "id":"interval",                  "altId": "queryInterval" }
+  ],
+  "ltm node metadata": [
+    { "id":"name" },
+    { "id":"value" }
+  ],
+  "ltm persistence": [
+    { "id":"always-send",               "truth": "enabled", "falsehood": "disabled", "altId": "alwaysSet" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"cookie-encryption-passphrase", "altId": "passphrase", "quotedString": true },
+    { "id":"cookie-name",               "quotedString": true },
+    { "id":"cookie-encryption",         "truth": "required", "falsehood": "disabled", "altId": "encrypt" },
+    { "id":"expiration",                "altId": "ttl" },
+    { "id":"has-session-dir",           "truth": "yes", "falsehood": "no", "altId": "sessionBroker" },
+    { "id":"hash-algorithm" },
+    { "id":"hash-offset",               "altId": "startAt" },
+    { "id":"hash-buffer-limit",         "altId": "bufferLimit" },
+    { "id":"hash-length",               "altId": "count" },
+    { "id":"hash-start-pattern",        "altId": "startPattern", "quotedString": true },
+    { "id":"hash-end-pattern",          "altId": "endPattern", "quotedString": true },
+    { "id":"httponly",                  "truth": "enabled", "falsehood": "disabled", "altId": "httpOnly" },
+    { "id":"mask",                      "altId": "addressMask" },
+    { "id":"match-across-pools",        "truth": "enabled", "falsehood": "disabled" },
+    { "id":"match-across-services",     "truth": "enabled", "falsehood": "disabled", "altId": "matchAcrossVirtualPorts" },
+    { "id":"match-across-virtuals",     "truth": "enabled", "falsehood": "disabled", "altId": "matchAcrossVirtualAddresses" },
+    { "id":"method",                    "altId": "cookieMethod" },
+    { "id":"mirror",                    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"override-connection-limit", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rule",                      "altId": "iRule" },
+    { "id":"secure",                    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"sip-info",                  "altId": "header" },
+    { "id":"timeout",                   "altId": "duration" }
+  ],
+  "ltm html-rule comment-raise-event": [
+    { "id":"description",               "altId": "remark", "quotedString": true }
+  ],
+  "ltm html-rule comment-remove": [
+    { "id":"description",               "altId": "remark", "quotedString": true }
+  ],
+  "ltm html-rule tag-append-html": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"action",                    "altId": "content", "extend": "object" },
+    { "id":"match",                     "extend": "object" }
+  ],
+  "ltm html-rule tag-append-html action": [
+    { "id":"text",                      "quotedString": true }
+  ],
+  "ltm html-rule tag-append-html match": [
+    { "id":"attribute-name",            "quotedString": true },
+    { "id":"attribute-value",           "quotedString": true },
+    { "id":"tag-name",                  "quotedString": true }
+  ],
+  "ltm html-rule tag-prepend-html": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"action",                    "altId": "content", "extend": "object" },
+    { "id":"match",                     "extend": "object" }
+  ],
+  "ltm html-rule tag-prepend-html action": [
+    { "id":"text",                      "quotedString": true }
+  ],
+  "ltm html-rule tag-prepend-html match": [
+    { "id":"attribute-name",            "quotedString": true },
+    { "id":"attribute-value",           "quotedString": true },
+    { "id":"tag-name",                  "quotedString": true }
+  ],
+  "ltm html-rule tag-raise-event": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"match",                     "extend": "object" }
+  ],
+  "ltm html-rule tag-raise-event match": [
+    { "id":"attribute-name",            "quotedString": true },
+    { "id":"attribute-value",           "quotedString": true },
+    { "id":"tag-name",                  "quotedString": true }
+  ],
+  "ltm html-rule tag-remove": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"match",                     "extend": "object" }
+  ],
+  "ltm html-rule tag-remove match": [
+    { "id":"attribute-name",            "quotedString": true },
+    { "id":"attribute-value",           "quotedString": true },
+    { "id":"tag-name",                  "quotedString": true }
+  ],
+  "ltm html-rule tag-remove-attribute": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"action",                    "altId": "attributeName", "extend": "object" },
+    { "id":"match",                     "extend": "object" }
+  ],
+  "ltm html-rule tag-remove-attribute action": [
+    { "id":"attribute-name",            "quotedString": true }
+  ],
+  "ltm html-rule tag-remove-attribute match": [
+    { "id":"attribute-name",            "quotedString": true },
+    { "id":"attribute-value",           "quotedString": true },
+    { "id":"tag-name",                  "quotedString": true }
+  ],
+  "ltm policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"rules",                     "extend": "objArray" },
+    { "id":"strategy" }
+  ],
+  "ltm policy rules": [
+    { "id": "name" },
+    { "id": "description",               "altId": "remark", "quotedString": true },
+    { "id": "ordinal" },
+    { "id": "conditions",               "extend": "objArray"},
+    { "id": "actions",                  "extend": "objArray"}
+  ],
+  "ltm policy rules conditions": [
+    { "id": "policyString" }
+  ],
+  "ltm policy rules actions": [
+    { "id": "policyString" }
+  ],
+  "ltm policy-strategy": [
+    { "id": "strategy",                 "altId": "matchMethod" },
+    { "id": "operands",                 "extend": "objArray" }
+  ],
+  "ltm policy-strategy operands": [
+    { "id": "policyString" }
+  ],
+  "ltm pool": [
+    { "id": "description",               "altId": "remark", "quotedString": true },
+    { "id": "load-balancing-mode" },
+    { "id": "members",                   "extend": "objArray", "default": null },
+    { "id": "min-active-members",        "altId": "minimumMembersActive" },
+    { "id": "minimumMonitors" },
+    { "id": "monitor",                   "altId": "monitors" },
+    { "id": "reselect-tries" },
+    { "id": "service-down-action" },
+    { "id": "slow-ramp-time" },
+    { "id": "allow-nat",                 "altId": "allowNATEnabled", "truth": "yes", "falsehood": "no" },
+    { "id": "allow-snat",                "altId": "allowSNATEnabled", "truth": "yes", "falsehood": "no" }
+  ],
+  "ltm pool members": [
+    { "id":"connection-limit" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"dynamic-ratio" },
+    { "id":"fqdn",                      "extend": "object" },
+    { "id":"minimumMonitors" },
+    { "id":"monitor",                   "altId": "monitors" },
+    { "id":"name",                      "altId": "fullPath" },
+    { "id":"priority-group" },
+    { "id":"rate-limit",                "falsehood": "disabled" },
+    { "id":"ratio" },
+    { "id":"state" },
+    { "id":"session" },
+    { "id":"metadata",                  "extend": "objArray" }
+  ],
+  "ltm pool members fqdn": [
+    { "id":"autopopulate",              "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm pool members metadata": [
+    { "id":"name" },
+    { "id":"value" }
+  ],
+  "sys config merge file": [
+    { "id":"filePath" },
+    { "id":"scriptName" },
+    { "id":"referenceObj",              "extend": "object" },
+    { "id":"iControl_post",             "extend": "object"}
+  ],
+  "sys config merge file referenceObj": [
+    { "id":"servicePort" },
+    { "id":"addressDiscovery" },
+    { "id":"updateInterval" },
+    { "id":"tagKey" },
+    { "id":"tagValue" },
+    { "id":"resourceId" },
+    { "id":"resourceType" },
+    { "id":"addressRealm" },
+    { "id":"region" },
+    { "id":"roleARN" },
+    { "id":"externalId" },
+    { "id":"resourceGroup" },
+    { "id":"subscriptionId" },
+    { "id":"useManagedIdentity" },
+    { "id":"directoryId" },
+    { "id":"applicationId" },
+    { "id":"apiAccessKey" },
+    { "id":"accessKeyId" },
+    { "id":"credentialUpdate" },
+    { "id":"undetectableAction" }
+  ],
+  "sys crypto cert-validator ocsp": [
+    { "id": "dns-resolver" },
+    { "id": "responder-url" },
+    { "id": "timeout" },
+    { "id": "sign-hash",                "altId": "signingHashAlgorithm"},
+    { "id": "signer-cert",              "altId": "signingCertificate" },
+    { "id": "signer-key",               "altId": "signingPrivateKey" },
+    { "id": "signer-key-passphrase",    "altId": "signingPassphrase", "quotedString": true }
+  ],
+  "mgmt shared service-discovery task": [
+    { "id": "schemaVersion",             "default": "1.0.0" },
+    { "id": "id" },
+    { "id": "updateInterval" },
+    { "id": "resources",                 "extend": "objArray" },
+    { "id": "provider" },
+    { "id": "providerOptions",           "extend": "object" },
+    { "id": "nodePrefix" },
+    { "id": "metadata" },
+    { "id": "routeDomain" }
+  ],
+  "mgmt shared service-discovery task resources": [
+    { "id":"name" },
+    { "id":"type" },
+    { "id":"path" },
+    { "id":"options",                   "extend": "object" }
+  ],
+  "mgmt shared service-discovery task resources options": [
+    { "id":"servicePort" },
+    { "id":"connectionLimit" },
+    { "id":"rateLimit" },
+    { "id":"dynamicRatio" },
+    { "id":"ratio" },
+    { "id":"priorityGroup" },
+    { "id":"monitor",                   "altId": "monitors"},
+    { "id":"minimumMonitors" }
+  ],
+  "mgmt shared service-discovery task providerOptions": [
+    { "id":"nodes",                     "extend": "objArray", "default": null},
+    { "id":"tagKey" },
+    { "id":"tagValue" },
+    { "id":"resourceId" },
+    { "id":"resourceType" },
+    { "id":"addressRealm" },
+    { "id":"region" },
+    { "id":"roleARN" },
+    { "id":"externalId" },
+    { "id":"accessKeyId" },
+    { "id":"secretAccessKey" },
+    { "id":"resourceGroup" },
+    { "id":"subscriptionId" },
+    { "id":"tenantId" },
+    { "id":"useManagedIdentity" },
+    { "id":"clientId" },
+    { "id":"apiAccessKey" },
+    { "id":"environment" },
+    { "id":"region" },
+    { "id":"encodedCredentials" },
+    { "id":"projectId" },
+    { "id":"uri" },
+    { "id":"encodedToken" },
+    { "id":"caBundle",                  "altId": "trustCA" },
+    { "id":"rejectUnauthorized" },
+    { "id":"jmesPathQuery" }
+  ],
+  "mgmt shared service-discovery task providerOptions nodes": [
+    { "id":"name" },
+    { "id":"id" }
+  ],
+  "ltm profile": [
+    { "id":"description",               "altId": "remark", "quotedString": true }
+  ],
+  "ltm profile rewrite": [
+    { "id":"bypass-list",               "extend": "array" },
+    { "id":"client-caching-type" },
+    { "id":"defaults-from" },
+    { "id":"java-ca-file" },
+    { "id":"java-crl",                  "default": "none" },
+    { "id":"java-sign-key" },
+    { "id":"java-sign-key-passphrase",  "quotedString": true },
+    { "id":"java-signer",               "altId": "certificate" },
+    { "id":"location-specific",         "altId": "locationSpecificEnabled", "truth": "true", "falsehood": "false" },
+    { "id":"request",                   "altId": "requestSettings", "extend": "object" },
+    { "id":"response",                  "altId": "responseSettings", "extend": "object" },
+    { "id":"rewrite-list",              "extend": "array" },
+    { "id":"rewrite-mode" },
+    { "id":"set-cookie-rules",          "extend": "objArray" },
+    { "id":"split-tunneling",           "altId": "splitTunnelingEnabled", "truth": "true", "falsehood": "false" },
+    { "id":"uri-rules",                 "extend": "objArray" }
+  ],
+  "ltm profile rewrite request": [
+    { "id":"insert-xforwarded-for",     "altId": "insertXforwardedForEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"insert-xforwarded-host",    "altId": "insertXforwardedHostEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"insert-xforwarded-proto",   "altId": "insertXforwardedProtoEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rewrite-headers",           "altId": "rewriteHeadersEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile rewrite response": [
+    { "id":"rewrite-content",           "altId": "rewriteContentEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rewrite-headers",           "altId": "rewriteHeadersEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile rewrite set-cookie-rules": [
+    { "id":"name" },
+    { "id":"client",                    "extend": "object" },
+    { "id":"server",                    "extend": "object" }
+  ],
+  "ltm profile rewrite set-cookie-rules client": [
+    { "id":"domain" },
+    { "id":"path" }
+  ],
+  "ltm profile rewrite set-cookie-rules server": [
+    { "id":"domain" },
+    { "id":"path" }
+  ],
+  "ltm profile rewrite uri-rules": [
+    { "id":"name" },
+    { "id":"type" },
+    { "id":"client",                    "extend": "object" },
+    { "id":"server",                    "extend": "object"}
+  ],
+  "ltm profile rewrite uri-rules client": [
+    { "id":"scheme",                    "default": "none" },
+    { "id":"host",                      "default": "none" },
+    { "id":"port",                      "default": "none" },
+    { "id":"path" }
+  ],
+  "ltm profile rewrite uri-rules server": [
+    { "id":"scheme",                    "default": "none" },
+    { "id":"host",                      "default": "none" },
+    { "id":"port",                      "default": "none" },
+    { "id":"path" }
+  ],
+  "ltm profile smtps": [
+    { "id":"activation-mode" }
+  ],
+  "ltm profile stream": [
+    { "id":"chunking",                  "altId": "chunkingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"chunk-size" },
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"source",                    "quotedString": true },
+    { "id":"target",                    "quotedString": true }
+  ],
+  "ltm profile websocket": [
+    { "id": "compress-mode",            "minVersion": "16.1" },
+    { "id": "compression",              "truth": "enabled", "falsehood": "disabled", "minVersion": "16.1" },
+    { "id": "description",              "altId": "remark", "quotedString": true },
+    { "id": "masking" },
+    { "id": "no-delay",                 "truth": "enabled", "falsehood": "disabled", "minVersion": "16.1" },
+    { "id": "window-bits",              "altId": "maximumWindowSize", "minVersion": "16.1" }
+  ],
+  "ltm profile http-proxy-connect": [
+    { "id": "default-state",            "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile html": [
+    { "id": "description",               "altId": "remark", "quotedString": true },
+    { "id": "content-detection",         "altId": "contentDetectionEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id": "content-selection",         "extend": "array" },
+    { "id": "rules",                     "extend": "array" }
+  ],
+  "ltm profile http": [
+    { "id":"accept-xff",                "truth": "enabled", "falsehood": "disabled", "altId": "trustXFF" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"encrypt-cookies",           "extend": "array" },
+    { "id":"encrypt-cookie-secret",     "altId": "cookiePassphrase", "quotedString": true },
+    { "id":"enforcement",               "extend": "object" },
+    { "id":"explicit-proxy",            "extend": "object" },
+    { "id":"fallback-host",             "altId": "fallbackRedirect" },
+    { "id":"fallback-status-codes",     "extend": "array" },
+    { "id":"header-erase",              "altId": "whiteOutHeader", "quotedString": true },
+    { "id":"header-insert",             "altId": "insertHeader", "quotedString": true },
+    { "id":"hsts",                      "extend": "object" },
+    { "id":"insert-xforwarded-for",     "truth": "enabled", "falsehood": "disabled", "altId": "xForwardedFor" },
+    { "id":"oneconnect-transformations","truth": "enabled", "falsehood": "disabled", "altId": "multiplexTransformations"},
+    { "id":"proxy-type" },
+    { "id":"redirect-rewrite",          "altId": "rewriteRedirects" },
+    { "id":"request-chunking" },
+    { "id":"response-chunking" },
+    { "id":"response-headers-permitted","extend": "array", "altId": "allowedResponseHeaders" },
+    { "id":"server-agent-name",         "altId": "serverHeaderValue", "quotedString": true },
+    { "id":"via-host-name",             "altId": "viaHost" },
+    { "id":"via-request" },
+    { "id":"via-response" },
+    { "id":"xff-alternative-names",     "extend": "array", "altId": "otherXFF" }
+  ],
+  "ltm profile http hsts": [
+    { "id": "include-subdomains",       "truth": "enabled", "falsehood": "disabled"},
+    { "id": "maximum-age",              "altId": "period" },
+    { "id": "mode",                     "altId": "insert", "truth": "enabled", "falsehood": "disabled"},
+    { "id": "preload",                  "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile http enforcement": [
+    { "id":"allow-ws-header-name",      "altId": "allowBlankSpaceAfterHeaderName", "truth": "enabled", "falsehood": "disabled", "minVersion": "16.1"},
+    { "id":"excess-client-headers" },
+    { "id":"excess-server-headers" },
+    { "id":"known-methods",             "extend": "array" },
+    { "id":"max-header-count" },
+    { "id":"max-header-size" },
+    { "id":"max-requests" },
+    { "id":"oversize-client-headers",   "truth": "enabled", "falsehood": "disabled"},
+    { "id":"oversize-server-headers",   "truth": "enabled", "falsehood": "disabled"},
+    { "id":"pipeline",                  "altId": "pipelineAction" },
+    { "id":"rfc-compliance",            "altId": "enforceRFCCompliance", "truth": "enabled", "falsehood": "disabled", "minVersion": "15.0"},
+    { "id":"truncated-redirects",       "truth": "enabled", "falsehood": "disabled"},
+    { "id":"unknown-method",            "altId": "unknownMethodAction" }
+  ],
+  "ltm profile http explicit-proxy": [
+    { "id": "bad-request-message",      "quotedString": true },
+    { "id": "bad-response-message",     "quotedString": true },
+    { "id": "connect-error-message",    "quotedString": true },
+    { "id": "default-connect-handling", "altId": "defaultConnectAction" },
+    { "id": "dns-resolver",             "altId": "resolver" },
+    { "id": "dns-error-message",        "quotedString": true },
+    { "id": "host-names",               "extend": "array", "altId": "doNotProxyHosts" },
+    { "id": "ipv6",                     "truth": "yes", "falsehood": "no" },
+    { "id": "route-domain" },
+    { "id": "tunnel-name" }
+  ],
+  "ltm profile http-compression": [
+    { "id":"allow-http-10",             "truth": "enabled", "falsehood": "disabled", "altId": "allowHTTP10" },
+    { "id":"buffer-size" },
+    { "id":"content-type-exclude",      "extend": "array" },
+    { "id":"content-type-include",      "extend": "array" },
+    { "id":"cpu-saver",                 "truth": "enabled", "falsehood": "disabled" },
+    { "id":"cpu-saver-high" },
+    { "id":"cpu-saver-low" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"min-size",                  "altId": "minimumSize" },
+    { "id":"method-prefer",             "altId": "preferMethod" },
+    { "id":"gzip-level" },
+    { "id":"gzip-memory-level",         "altId": "gzipMemory" },
+    { "id":"gzip-window-size" },
+    { "id":"keep-accept-encoding",      "truth": "enabled", "falsehood": "disabled" },
+    { "id":"selective",                 "truth": "enabled", "falsehood": "disabled" },
+    { "id":"vary-header",               "truth": "enabled", "falsehood": "disabled" },
+    { "id":"uri-exclude",               "extend": "array" },
+    { "id":"uri-include",               "extend": "array" }
+  ],
+  "ltm profile http2": [
+    { "id":"activation-modes",          "extend": "array", "altId": "activationMode" },
+    { "id":"concurrent-streams-per-connection" },
+    { "id":"connection-idle-timeout" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"enforce-tls-requirements",  "truth": "enabled", "falsehood": "disabled" },
+    { "id":"frame-size" },
+    { "id":"header-table-size" },
+    { "id":"include-content-length",    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"insert-header",             "truth": "enabled", "falsehood": "disabled" },
+    { "id":"insert-header-name",        "quotedString": true },
+    { "id":"receive-window" },
+    { "id":"write-size" }
+  ],
+  "ltm profile one-connect": [
+    { "id":"description",              "altId": "remark", "quotedString": true},
+    { "id":"idle-timeout-override" },
+    { "id":"limit-type",                "altId": "connectionLimitEnforcement" },
+    { "id":"max-age",                   "altId": "maxConnectionAge" },
+    { "id":"max-reuse",                 "altId": "maxConnectionReuse" },
+    { "id":"max-size",                  "altId": "maxConnections" },
+    { "id":"share-pools",               "truth": "enabled", "falsehood": "disabled"  },
+    { "id":"source-mask" }
+  ],
+  "ltm profile client-ldap": [
+    { "id":"activation-mode" }
+  ],
+  "ltm profile client-ssl": [
+    { "id":"alert-timeout",                 "intToString": true },
+    { "id":"allow-dynamic-record-sizing",   "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-expired-crl",             "altId": "allowExpiredCRL", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-non-ssl",                 "altId": "nonSslConnectionsEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"authenticate",                  "altId": "authenticationFrequency" },
+    { "id":"c3d-drop-unknown-ocsp-status",  "altId": "c3dOCSPUnknownStatusAction" },
+    { "id":"c3d-ocsp",                      "altId": "c3dOCSP" },
+    { "id":"cache-timeout" },
+    { "id":"ca-file",                       "altId": "authenticationTrustCA" },
+    { "id":"cert-extension-includes",       "altId": "certificateExtensions", "extend": "array" },
+    { "id":"cert-lookup-by-ipaddr-port",    "altId": "cacheCertificateEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"cert-key-chain",                "extend": "objArray", "altId": "certificates" },
+    { "id":"ciphers" },
+    { "id":"cipher-group" },
+    { "id":"client-cert-ca",                "altId": "authenticationInviteCA" },
+    { "id":"crl-file",                      "altId": "crlFile"},
+    { "id":"data-0rtt",                     "altId": "dataZeroRoundTripTime", "minVersion": "15.1" },
+    { "id":"description",                   "altId": "remark", "quotedString": true },
+    { "id":"mode",                          "altId": "enabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"options",                       "extend": "array" },
+    { "id":"ocsp-stapling",                 "altId": "staplerOCSPEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"peer-cert-mode",                "altId": "authenticationMode" },
+    { "id":"proxy-ca-cert" },
+    { "id":"proxy-ca-key" },
+    { "id":"proxy-ca-passphrase",           "quotedString": true },
+    { "id":"proxy-ssl",                     "altId": "proxySslEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"proxy-ssl-passthrough",         "altId": "proxySslPassthroughEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"renegotiate-max-record-delay" },
+    { "id":"renegotiate-period" },
+    { "id":"renegotiate-size" },
+    { "id":"renegotiation",                 "altId": "renegotiationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"retain-certificate",            "altId": "retainCertificateEnabled", "truth": "true", "falsehood": "false" },
+    { "id":"secure-renegotiation" },
+    { "id":"sni-default",                   "truth": "true", "falsehood": "false" },
+    { "id":"sni-require",                   "altId": "requireSNI", "truth": "true", "falsehood": "false" },
+    { "id":"server-name",                   "altId": "matchToSNI"},
+    { "id":"ssl-c3d",                       "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-forward-proxy",             "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-forward-proxy-bypass",      "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"hostname-whitelist",            "altId": "forwardProxyBypassAllowlist" },
+    { "id":"unclean-shutdown",              "altId": "uncleanShutdownEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile client-ssl cert-key-chain": [
+    { "id":"cert",                      "altId": "certificate" },
+    { "id":"key" },
+    { "id":"passphrase",                "quotedString": true },
+    { "id":"chain" },
+    { "id":"usage" }
+  ],
+  "ltm profile dns-logging": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"enable-query-logging",      "altId": "logQueriesEnabled", "truth": "yes", "falsehood": "no"},
+    { "id":"enable-response-logging",   "altId": "logResponsesEnabled", "truth": "yes", "falsehood": "no"},
+    { "id":"include-complete-answer",   "truth": "yes", "falsehood": "no"},
+    { "id":"include-query-id",          "truth": "yes", "falsehood": "no"},
+    { "id":"include-source",            "truth": "yes", "falsehood": "no"},
+    { "id":"include-timestamp",         "truth": "yes", "falsehood": "no"},
+    { "id":"include-view",              "truth": "yes", "falsehood": "no"},
+    { "id":"log-publisher"}
+  ],
+  "ltm profile request-log": [
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"log-request-logging-errors", "altId": "requestErrorLoggingEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"log-response-by-default",   "altId": "byDefaultEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"log-response-logging-errors", "altId": "responseErrorLoggingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"proxy-close-on-error",      "altId": "proxyCloseOnErrorEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"proxy-respond-on-logging-error", "altId": "proxyRespondOnLoggingErrorEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"proxy-response",            "quotedString": true },
+    { "id":"request-log-error-pool",    "altId": "requestErrorPool" },
+    { "id":"request-log-error-protocol", "altId": "requestErrorProtocol" },
+    { "id":"request-log-error-template", "altId": "requestErrorTemplate", "quotedString": true },
+    { "id":"request-log-pool",          "altId": "requestPool" },
+    { "id":"request-log-protocol",      "altId": "requestProtocol" },
+    { "id":"request-log-template",      "altId": "requestTemplate", "quotedString": true },
+    { "id":"request-logging",           "altId": "requestEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"response-log-error-pool",   "altId": "responseErrorPool" },
+    { "id":"response-log-error-protocol", "altId": "responseErrorProtocol" },
+    { "id":"response-log-error-template", "altId": "responseErrorTemplate", "quotedString": true },
+    { "id":"response-log-pool",         "altId": "responsePool" },
+    { "id":"response-log-protocol",     "altId": "responseProtocol" },
+    { "id":"response-log-template",     "altId": "responseTemplate", "quotedString": true },
+    { "id":"response-logging",          "altId": "responseEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile server-ldap": [
+    { "id":"activation-mode" }
+  ],
+  "ltm profile server-ssl": [
+    { "id":"alert-timeout",                   "intToString": true },
+    { "id":"allow-expired-crl",               "altId": "allowExpiredCRL", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"authenticate",                    "altId": "authenticationFrequency" },
+    { "id":"authenticate-name",               "altId": "serverName" },
+    { "id":"c3d-ca-cert",                     "altId": "c3dCACertificate" },
+    { "id":"c3d-ca-key",                      "altId": "c3dCAKey" },
+    { "id":"c3d-ca-passphrase",               "altId": "c3dCAPassphrase", "quotedString": true },
+    { "id":"c3d-cert-lifespan",               "altId": "c3dCertificateLifespan" },
+    { "id":"c3d-cert-extension-includes",     "altId": "c3dCertificateExtensions", "extend": "array" },
+    { "id":"cache-timeout" },
+    { "id":"ca-file",                         "altId": "trustCA" },
+    { "id":"cert",                            "default": "none", "altId": "clientCertificate" },
+    { "id":"chain" },
+    { "id":"ciphers" },
+    { "id":"cipher-group" },
+    { "id":"crl-file",                        "altId": "crlFile"},
+    { "id":"data-0rtt",                       "altId": "dataZeroRoundTripTime", "truth": "enabled", "falsehood": "disabled", "minVersion": "15.1" },
+    { "id":"description",                     "altId": "remark", "quotedString": true },
+    { "id":"key",                             "default": "none" },
+    { "id":"expire-cert-response-control",    "truth": "ignore", "falsehood": "drop", "altId": "ignoreExpired" },
+    { "id":"options",                         "extend": "array" },
+    { "id":"passphrase",                      "quotedString": true },
+    { "id":"peer-cert-mode",                  "truth": "require", "falsehood": "ignore", "altId": "validateCertificate" },
+    { "id":"proxy-ssl",                       "altId": "proxySslEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"proxy-ssl-passthrough",           "altId": "proxySslPassthroughEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"renegotiate-period" },
+    { "id":"renegotiate-size" },
+    { "id":"renegotiation",                   "altId": "renegotiationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"retain-certificate",              "altId": "retainCertificateEnabled", "truth": "true", "falsehood": "false" },
+    { "id":"secure-renegotiation" },
+    { "id":"server-name",                     "altId": "sendSNI" },
+    { "id":"session-ticket",                  "truth": "enabled", "falsehood": "disabled", "altId": "sessionTickets" },
+    { "id":"ssl-c3d",                         "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-forward-proxy",               "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-forward-proxy-bypass",        "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"unclean-shutdown",                "altId": "uncleanShutdownEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"untrusted-cert-response-control", "truth": "ignore", "falsehood": "drop", "altId": "ignoreUntrusted" }
+  ],
+  "ltm profile tcp": [
+    { "id":"abc",                       "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ack-on-push",               "truth": "enabled", "falsehood": "disabled" },
+    { "id":"auto-proxy-buffer-size",    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"auto-receive-window-size",  "truth": "enabled", "falsehood": "disabled" },
+    { "id":"auto-send-buffer-size",     "truth": "enabled", "falsehood": "disabled" },
+    { "id":"close-wait-timeout" },
+    { "id":"congestion-control" },
+    { "id":"cmetrics-cache",            "truth": "enabled", "falsehood": "disabled", "altId": "congestionMetricsCache" },
+    { "id":"cmetrics-cache-timeout",    "altId": "congestionMetricsCacheTimeout" },
+    { "id":"deferred-accept",           "truth": "enabled", "falsehood": "disabled" },
+    { "id":"delayed-acks",              "truth": "enabled", "falsehood": "disabled" },
+    { "id":"delay-window-control",      "truth": "enabled", "falsehood": "disabled" },
+    { "id":"dsack",                     "truth": "enabled", "falsehood": "disabled" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"early-retransmit",          "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ecn",                       "truth": "enabled", "falsehood": "disabled" },
+    { "id":"enhanced-loss-recovery",    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"fast-open",                 "truth": "enabled", "falsehood": "disabled" },
+    { "id":"fast-open-cookie-expiration" },
+    { "id":"fin-wait-timeout" },
+    { "id":"fin-wait-2-timeout",        "altId": "finWait2Timeout" },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"init-cwnd" },
+    { "id":"init-rwnd" },
+    { "id":"ip-df-mode" },
+    { "id":"ip-tos-to-client",          "intToString": true },
+    { "id":"ip-ttl-mode",               "altId": "ttlMode" },
+    { "id":"ip-ttl-v4",                 "altId": "ttlIPv4" },
+    { "id":"ip-ttl-v6",                 "altId": "ttlIPv6" },
+    { "id":"keep-alive-interval" },
+    { "id":"limited-transmit",          "truth": "enabled", "falsehood": "disabled" },
+    { "id":"link-qos-to-client",        "intToString": true },
+    { "id":"max-retrans" },
+    { "id":"max-segment-size" },
+    { "id":"md5-signature",             "truth": "enabled", "falsehood": "disabled" },
+    { "id":"md5-signature-passphrase",  "quotedString": true },
+    { "id":"minimum-rto" },
+    { "id":"mptcp" },
+    { "id":"mptcp-csum",                "truth": "enabled", "falsehood": "disabled" },
+    { "id":"mptcp-csum-verify",         "truth": "enabled", "falsehood": "disabled" },
+    { "id":"mptcp-fallback" },
+    { "id":"mptcp-fastjoin",            "truth": "enabled", "falsehood": "disabled", "altId": "mptcpFastJoin" },
+    { "id":"mptcp-idle-timeout" },
+    { "id":"mptcp-join-max" },
+    { "id":"mptcp-makeafterbreak",      "truth": "enabled", "falsehood": "disabled", "altId": "mptcpMakeAfterBreak" },
+    { "id":"mptcp-nojoindssack",        "truth": "enabled", "falsehood": "disabled", "altId": "mptcpNoJoinDssAck" },
+    { "id":"mptcp-rtomax",              "altId": "mptcpRtoMax" },
+    { "id":"mptcp-rxmitmin",            "altId": "mptcpRetransmitMin" },
+    { "id":"mptcp-subflowmax",          "altId": "mptcpSubflowMax" },
+    { "id":"mptcp-timeout" },
+    { "id":"nagle" },
+    { "id":"pkt-loss-ignore-burst" },
+    { "id":"pkt-loss-ignore-rate" },
+    { "id":"proxy-buffer-high" },
+    { "id":"proxy-buffer-low" },
+    { "id":"proxy-mss",                 "truth": "enabled", "falsehood": "disabled", "altId": "proxyMSS" },
+    { "id":"proxy-options",             "truth": "enabled", "falsehood": "disabled" },
+    { "id":"push-flag" },
+    { "id":"rate-pace",                 "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rate-pace-max-rate" },
+    { "id":"receive-window-size" },
+    { "id":"reset-on-timeout",          "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rexmt-thresh",              "altId": "retransmitThreshold" },
+    { "id":"selective-acks",            "truth": "enabled", "falsehood": "disabled" },
+    { "id":"selective-nack",            "truth": "enabled", "falsehood": "disabled" },
+    { "id":"send-buffer-size" },
+    { "id":"slow-start",                "truth": "enabled", "falsehood": "disabled" },
+    { "id":"syn-cookie-enable",         "truth": "enabled", "falsehood": "disabled" },
+    { "id":"syn-cookie-whitelist",      "truth": "enabled", "falsehood": "disabled", "altId": "synCookieAllowlist" },
+    { "id":"syn-max-retrans" },
+    { "id":"syn-rto-base" },
+    { "id":"tail-loss-probe",           "truth": "enabled", "falsehood": "disabled" },
+    { "id":"tcp-options" },
+    { "id":"timestamps",                "truth": "enabled", "falsehood": "disabled" },
+    { "id":"time-wait-recycle",         "truth": "enabled", "falsehood": "disabled" },
+    { "id":"time-wait-timeout",         "intToString": true },
+    { "id":"verified-accept",           "truth": "enabled", "falsehood": "disabled" },
+    { "id":"zero-window-timeout" }
+  ],
+  "ltm profile tcp tcp-options": [
+      { "id":"option" },
+      { "id":"when" }
+  ],
+  "ltm profile udp": [
+    { "id":"allow-no-payload",          "truth": "enabled", "falsehood": "disabled" },
+    { "id":"buffer-max-bytes" },
+    { "id":"buffer-max-packets" },
+    { "id":"datagram-load-balancing",   "truth": "enabled", "falsehood": "disabled" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"ip-df-mode" },
+    { "id":"ip-tos-to-client",          "intToString": true },
+    { "id":"ip-ttl-mode",               "altId": "ttlMode" },
+    { "id":"ip-ttl-v4",                 "altId": "ttlIPv4" },
+    { "id":"ip-ttl-v6",                 "altId": "ttlIPv6" },
+    { "id":"link-qos-to-client",        "intToString": true },
+    { "id":"no-checksum",               "truth": "disabled", "falsehood": "enabled", "altId": "useChecksum" },
+    { "id":"proxy-mss",                 "truth": "enabled", "falsehood": "disabled", "altId": "proxyMSS" }
+  ],
+  "ltm profile fastl4": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"client-timeout" },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"keep-alive-interval" },
+    { "id":"loose-close",               "truth": "enabled", "falsehood": "disabled"},
+    { "id":"loose-initialization",      "truth": "enabled", "falsehood": "disabled"},
+    { "id":"mss-override",              "altId": "maxSegmentSize" },
+    { "id":"reset-on-timeout",          "truth": "enabled", "falsehood": "disabled"},
+    { "id":"syn-cookie-enable",         "truth": "enabled", "falsehood": "disabled"},
+    { "id":"syn-cookie-whitelist",      "altId": "synCookieAllowlist", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"tcp-close-timeout",         "intToString": true },
+    { "id":"tcp-handshake-timeout",     "intToString": true }
+  ],
+  "ltm profile ftp": [
+    { "id":"allow-ftps",                "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-active-mode",         "altId": "activeModeEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"enforce-tls-session-reuse", "altId": "enforceTlsSessionReuseEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ftps-mode",                 "minVersion": "14.0" },
+    { "id":"inherit-parent-profile",    "altId": "inheritParentProfileEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"port" },
+    { "id":"security",                  "altId": "securityEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"translate-extended",        "altId": "translateExtendedEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "ltm profile ipother": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"defaults-from",             "altId": "parentProfile"},
+    { "id":"idle-timeout",              "intToString": true }
+  ],
+  "ltm profile radius": [
+    { "id":"description",                 "altId": "remark", "quotedString": true},
+    { "id":"defaults-from",               "altId": "parentProfile"},
+    { "id":"pem-protocol-profile-radius", "altId": "protocolProfile", "requiredModules": { "anyOf": [ "afm", "pem" ] } },
+    { "id":"persist-avp",                 "altId": "persistAttribute", "default": "none", "intToString": true},
+    { "id":"subscriber-discovery",        "altId": "subscriberDiscoveryEnabled", "truth": "enabled", "falsehood": "disabled", "requiredModules": { "anyOf": [ "afm", "pem" ] }}
+  ],
+  "ltm profile classification": [
+    { "id":"app-detection",            "altId": "appDetectionEnabled", "truth": "on", "falsehood": "off"},
+    { "id":"avr-publisher",            "altId": "statisticsPublisher", "default": "none" },
+    { "id":"avr-stat-collect",         "altId": "statisticsCollectionEnabled", "truth": "on", "falsehood": "off" },
+    { "id":"description",              "altId": "remark", "quotedString": true},
+    { "id":"defaults-from",            "altId": "parentProfile"},
+    { "id":"irule-event",              "altId": "iRuleEventEnabled", "truth": "on", "falsehood": "off"},
+    { "id":"log-publisher",            "default": "none"},
+    { "id":"log-unclassified-domain",  "truth": "on", "falsehood": "off" },
+    { "id":"preset"},
+    { "id":"urlcat",                   "altId": "urlCategorizationEnabled", "truth": "on", "falsehood": "off"}
+  ],
+  "ltm profile analytics": [
+    { "id":"description",                           "altId": "remark", "quotedString": true },
+    { "id":"captured-traffic-external-logging",     "truth": "enabled", "falsehood": "disabled"},
+    { "id":"captured-traffic-internal-logging",     "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-stats-external-logging",      "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-stats-internal-logging",      "truth": "enabled", "falsehood": "disabled"},
+    { "id":"publish-irule-statistics",              "truth": "enabled", "falsehood": "disabled"},
+    { "id":"notification-by-email",                 "truth": "enabled", "falsehood": "disabled"},
+    { "id":"notification-email-addresses",          "extend": "array"},
+    { "id":"notification-by-snmp",                  "truth": "enabled", "falsehood": "disabled"},
+    { "id":"notification-by-syslog",                "truth": "enabled", "falsehood": "disabled"},
+    { "id":"external-logging-publisher",            "default": "none"},
+    { "id":"collect-max-tps-and-throughput",        "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-page-load-time",                "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-http-timing-metrics",           "altId": "collectClientSideStatistics", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"collect-user-sessions",                 "altId": "collectUserSession", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-url",                           "truth": "enabled", "falsehood": "disabled"},
+    { "id":"urls-for-stat-collection",              "extend": "array", "minVersion": "13.1.1"},
+    { "id":"collect-geo",                           "truth": "enabled", "falsehood": "disabled"},
+    { "id":"countries-for-stat-collection",         "extend": "array", "minVersion": "13.1.1"},
+    { "id":"collect-ip",                            "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-subnets",                       "altId": "collectSubnet", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"subnets-for-stat-collection",           "extend": "array", "minVersion": "13.1.1"},
+    { "id":"collect-response-codes",                "altId": "collectResponseCode", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-user-agent",                    "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-methods",                       "altId": "collectMethod", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-os-and-browser",                "truth": "enabled", "falsehood": "disabled"},
+    { "id":"session-cookie-security",               "truth": "enabled", "falsehood": "disabled"},
+    { "id":"session-timeout-minutes",               "intToString": true},
+    { "id":"traffic-capture",                       "altId": "captureFilter", "extend": "object"}
+  ],
+  "ltm profile analytics traffic-capture": [
+    { "id": "capture-for-f5-appsvcs", "extend": "object"}
+  ],
+  "ltm profile analytics traffic-capture capture-for-f5-appsvcs": [
+    { "id":"request-captured-parts"},
+    { "id":"response-captured-parts"},
+    { "id":"dos-activity"},
+    { "id":"captured-protocols"},
+    { "id":"captured-ready-for-js-injection"},
+    { "id":"virtual-servers",                               "extend": "array"},
+    { "id":"node-addresses",                                "extend": "array"},
+    { "id":"response-codes",                                "extend": "array"},
+    { "id":"methods",                                       "extend": "array"},
+    { "id":"url-filter-type",                               "minVersion": "14.0"},
+    { "id":"url-path-prefixes",                             "extend": "array"},
+    { "id":"user-agent-substrings",                         "extend": "array"},
+    { "id":"client-ips",                                    "extend": "array"},
+    { "id":"request-content-filter-search-part"},
+    { "id":"request-content-filter-search-string",          "quotedString": true, "default": "none"},
+    { "id":"response-content-filter-search-part"},
+    { "id":"response-content-filter-search-string",         "quotedString": true, "default": "none"}
+  ],
+  "ltm profile tcp-analytics": [
+    { "id":"description",                           "altId": "remark", "quotedString": true },
+    { "id":"collect-city",                          "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-continent",                     "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-country",                       "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-nexthop",                       "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-post-code",                     "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-region",                        "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-remote-host-ip",                "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collect-remote-host-subnet",            "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-by-client-side",              "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-by-server-side",              "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-stats-external-logging",      "truth": "enabled", "falsehood": "disabled"},
+    { "id":"collected-stats-internal-logging",      "truth": "enabled", "falsehood": "disabled"},
+    { "id":"external-logging-publisher",            "default": "none"}
+  ],
+  "ltm profile web-acceleration": [
+    { "id":"cache-aging-rate",                      "altId": "agingRate" },
+    { "id":"cache-client-cache-control-mode",       "altId": "ignoreHeaders" },
+    { "id":"cache-insert-age-header",               "altId": "insertAgeHeaderEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"cache-max-age",                         "altId": "maximumAge" },
+    { "id":"cache-max-entries",                     "altId": "maximumEntries" },
+    { "id":"cache-object-max-size",                 "altId": "maximumObjectSize" },
+    { "id":"cache-object-min-size",                 "altId": "minimumObjectSize" },
+    { "id":"cache-size" },
+    { "id":"cache-uri-exclude",                     "extend": "array", "altId": "uriExcludeList" },
+    { "id":"cache-uri-include",                     "extend": "array", "altId": "uriIncludeList" },
+    { "id":"cache-uri-include-override",            "extend": "array", "altId": "uriIncludeOverrideList" },
+    { "id":"cache-uri-pinned",                      "extend": "array", "altId": "uriPinnedList" },
+    { "id":"metadata-cache-max-size",               "altId": "metadataMaxSize" },
+    { "id":"defaults-from",                         "altId": "parentProfile" }
+  ],
+  "ltm dns nameserver": [
+    { "id":"address" },
+    { "id":"port" },
+    { "id":"route-domain" },
+    { "id":"tsig-key" }
+  ],
+  "ltm dns tsig-key": [
+    { "id":"algorithm" },
+    { "id":"secret",	                  "quotedString": true }
+  ],
+  "ltm dns zone": [
+    { "id":"dns-express-enabled",	      "truth": "yes", "falsehood": "no" },
+    { "id":"dns-express-server" },
+    { "id":"dns-express-notify-action" },
+    { "id":"dns-express-allow-notify",  "extend": "array"},
+    { "id":"dns-express-notify-tsig-verify", "truth": "yes", "falsehood": "no" },
+    { "id":"response-policy",	          "altId": "responsePolicyEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"server-tsig-key" },
+    { "id":"transfer-clients",	        "extend": "array" }
+  ],
+  "ltm dns cache transparent": [
+    { "id": "description",              "altId": "remark", "quotedString": true, "minVersion": "14.0" },
+    { "id": "answer-default-zones",     "truth": "yes", "falsehood": "no" },
+    { "id": "local-zones",              "extend": "namedObject" },
+    { "id": "msg-cache-size",           "altId": "messageCacheSize" },
+    { "id": "rrset-cache-size",         "altId": "recordCacheSize" },
+    { "id": "rrset-rotate",             "altId": "recordRotationMethod" }
+  ],
+  "ltm dns cache transparent local-zones": [
+    { "id": "name" },
+    { "id": "type" },
+    { "id": "records",                  "extend": "array", "quotedString": true }
+  ],
+  "ltm profile dns": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"enable-rapid-response",     "altId": "rapidResponseEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"rapid-response-last-action" },
+    { "id":"enable-hardware-query-validation",  "altId": "hardwareQueryValidationEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-hardware-response-cache",  "altId": "hardwareResponseCacheEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-dnssec",             "altId": "dnssecEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-gtm",                "altId": "globalServerLoadBalancingEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-dns-express",        "altId": "dnsExpressEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-cache",              "altId": "cacheEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"cache" },
+    { "id":"dns64",                     "altId": "dns64Mode" },
+    { "id":"dns64-prefix" },
+    { "id":"dns64-additional-section-rewrite" },
+    { "id":"unhandled-query-action" },
+    { "id":"use-local-bind",            "altId": "localBindServerEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"process-xfr",               "altId": "zoneTransferEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"process-rd",                "altId": "recursionDesiredEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"enable-dns-firewall",       "altId": "securityEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"dns-security",              "altId": "securityProfile" },
+    { "id":"enable-logging",            "altId": "loggingEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"log-profile",               "altId": "loggingProfile", "default": "none" },
+    { "id":"avr-dnsstat-sample-rate",   "altId": "statisticsSampleRate" }
+  ],
+  "ltm profile fix": [
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"error-action" },
+    { "id":"full-logon-parsing",        "altId": "fullLogonParsingEnabled"},
+    { "id":"message-log-publisher" },
+    { "id":"quick-parsing",             "altId": "quickParsingEnabled"},
+    { "id":"report-log-publisher" },
+    { "id":"response-parsing",          "altId": "responseParsingEnabled"},
+    { "id":"sender-tag-class",          "altId": "senderTagMappingList", "extend": "objArray"},
+    { "id":"statistics-sample-interval"}
+  ],
+  "ltm profile fix sender-tag-class": [
+    { "id":"sender-id"},
+    { "id":"tag-map-class",             "altId": "tagDataGroup"}
+  ],
+  "ltm profile icap": [
+    { "id":"uri",                       "quotedString": true },
+    { "id":"header-from",               "altId": "fromHeader", "quotedString": true },
+    { "id":"host",                      "altId": "hostHeader", "quotedString": true },
+    { "id":"referer",                   "altId": "refererHeader", "quotedString": true },
+    { "id":"user-agent",                "altId": "userAgentHeader", "quotedString": true },
+    { "id":"preview-length" }
+  ],
+  "ltm profile request-adapt": [
+    { "id":"enabled",                   "altId": "enableHttpAdaptation", "truth": "yes", "falsehood": "no" },
+    { "id":"internal-virtual",          "altId": "internalService" },
+    { "id":"preview-size" },
+    { "id":"service-down-action" },
+    { "id":"timeout" },
+    { "id":"allow-http-10",             "altId": "allowHTTP10", "truth": "yes", "falsehood": "no" }
+  ],
+  "ltm profile response-adapt": [
+    { "id":"enabled",                   "altId": "enableHttpAdaptation", "truth": "yes", "falsehood": "no" },
+    { "id":"internal-virtual",          "altId": "internalService" },
+    { "id":"preview-size" },
+    { "id":"service-down-action" },
+    { "id":"timeout" },
+    { "id":"allow-http-10",             "altId": "allowHTTP10", "truth": "yes", "falsehood": "no" }
+  ],
+  "ltm profile statistics": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"field1",                    "quotedString": true },
+    { "id":"field2",                    "quotedString": true },
+    { "id":"field3",                    "quotedString": true },
+    { "id":"field4",                    "quotedString": true },
+    { "id":"field5",                    "quotedString": true },
+    { "id":"field6",                    "quotedString": true },
+    { "id":"field7",                    "quotedString": true },
+    { "id":"field8",                    "quotedString": true },
+    { "id":"field9",                    "quotedString": true },
+    { "id":"field10",                    "quotedString": true },
+    { "id":"field11",                    "quotedString": true },
+    { "id":"field12",                    "quotedString": true },
+    { "id":"field13",                    "quotedString": true },
+    { "id":"field14",                    "quotedString": true },
+    { "id":"field15",                    "quotedString": true },
+    { "id":"field16",                    "quotedString": true },
+    { "id":"field17",                    "quotedString": true },
+    { "id":"field18",                    "quotedString": true },
+    { "id":"field19",                    "quotedString": true },
+    { "id":"field20",                    "quotedString": true },
+    { "id":"field21",                    "quotedString": true },
+    { "id":"field22",                    "quotedString": true },
+    { "id":"field23",                    "quotedString": true },
+    { "id":"field24",                    "quotedString": true },
+    { "id":"field25",                    "quotedString": true },
+    { "id":"field26",                    "quotedString": true },
+    { "id":"field27",                    "quotedString": true },
+    { "id":"field28",                    "quotedString": true },
+    { "id":"field29",                    "quotedString": true },
+    { "id":"field30",                    "quotedString": true },
+    { "id":"field31",                    "quotedString": true },
+    { "id":"field32",                    "quotedString": true }
+  ],
+  "ltm rule": [
+    { "id":"api-anonymous",             "altId": "iRule" }
+  ],
+  "ltm snatpool": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"members" }
+  ],
+  "ltm virtual": [
+    { "id":"enabled",                   "altId": "adminState" },
+    { "id":"disabled" },
+    { "id":"address-status",            "truth": "yes", "falsehood": "no" },
+    { "id":"auto-lasthop" },
+    { "id":"bwc-policy",                "altId": "policyBandwidthControl" },
+    { "id":"connection-limit",          "altId": "maxConnections" },
+    { "id":"rate-limit" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"destination" },
+    { "id":"fallback-persistence",      "altId": "fallbackPersistenceMethod" },
+    { "id":"fw-enforced-policy",        "altId": "policyFirewallEnforced" },
+    { "id":"fw-staged-policy",          "altId": "policyFirewallStaged" },
+    { "id":"per-flow-request-access-policy",  "altId": "policyPerRequestAccess" },
+    { "id":"internal" },
+    { "id":"ip-forward" },
+    { "id":"l2-forward" },
+    { "id":"ip-protocol",               "altId": "layer4" },
+    { "id":"last-hop-pool" },
+    { "id":"mask" },
+    { "id":"mirror",                    "truth": "enabled", "falsehood": "disabled", "altId": "mirroring" },
+    { "id":"persist",                   "extend": "objArray", "altId": "persistenceMethods" },
+    { "id":"pool" },
+    { "id":"policies",                  "extend": "objArray" },
+    { "id":"profiles",                  "extend": "objArray" },
+    { "id":"security-nat-policy",       "extend": "object" },
+    { "id":"service-down-immediate-action" },
+    { "id":"service-policy" },
+    { "id":"source" },
+    { "id":"source-address-translation","extend": "object", "altId": "snat" },
+    { "id":"stateless" },
+    { "id":"rules",                     "extend": "array", "altId": "iRules" },
+    { "id":"security-log-profiles",     "extend": "array" },
+    { "id":"source-port",               "truth": "change", "falsehood": "preserve", "altId": "translateClientPort" },
+    { "id":"translate-address",         "truth": "enabled", "falsehood": "disabled", "altId": "translateServerAddress" },
+    { "id":"translate-port",            "truth": "enabled", "falsehood": "disabled", "altId": "translateServerPort" },
+    { "id":"nat64",                     "truth": "enabled", "falsehood": "disabled", "altId": "nat64Enabled" },
+    { "id":"vlans",                     "extend":"array" },
+    { "id":"vlans-enabled" },
+    { "id":"vlans-disabled" },
+    { "id":"metadata",                  "extend": "objArray" },
+    { "id":"clone-pools",               "extend": "objArray" },
+    { "id":"throughput-capacity",       "altId": "maximumBandwidth", "intToString": true },
+    { "id":"ip-intelligence-policy" }
+  ],
+  "ltm virtual persist": [
+    { "id":"name" },
+    { "id":"default",                   "altId": "tmDefault" }
+  ],
+  "ltm virtual policies": [
+    { "id":"name",                      "altId": "fullPath" }
+  ],
+  "ltm virtual profiles": [
+    { "id":"context" },
+    { "id":"name",                      "altId": "fullPath" }
+  ],
+  "ltm virtual source-address-translation": [
+    { "id":"type" },
+    { "id":"pool" }
+  ],
+  "ltm virtual security-nat-policy": [
+    { "id":"policy" }
+  ],
+  "ltm virtual metadata": [
+    { "id":"value",                     "quotedString": true },
+    { "id":"persist",                   "truth": "true", "falsehood": "false" }
+  ],
+  "ltm virtual clone-pools": [
+    { "id":"name" },
+    { "id":"context" }
+  ],
+  "ltm virtual-address": [
+    { "id":"address",                   "altId": "virtualAddress" },
+    { "id":"arp",                       "truth": "enabled", "falsehood": "disabled", "altId": "arpEnabled" },
+    { "id":"icmp-echo" },
+    { "id":"mask",                      "altId": "netmask" },
+    { "id":"route-advertisement" },
+    { "id":"spanning",                  "truth": "enabled", "falsehood": "disabled", "altId": "spanningEnabled" },
+    { "id":"traffic-group" }
+  ],
+  "ltm cipher rule": [
+    { "id":"cipher" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"dh-groups",                 "minVersion": "14.0" },
+    { "id":"signature-algorithms",      "minVersion": "14.0" }
+  ],
+  "ltm ifile": [
+    { "id": "description",              "altId": "remark", "quotedString": true },
+    { "id": "file-name" }
+  ],
+  "sys file ifile": [
+    { "id": "source-path" },
+    { "id": "iControl_post",            "extend": "object" }
+  ],
+  "net bwc policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"dynamic",                   "altId": "dynamicControlEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"max-rate",                  "altId": "maxBandwidth" },
+    { "id":"max-user-rate",             "altId": "maxUserBandwidth" },
+    { "id":"max-user-rate-pps",         "altId": "maxUserPPS" },
+    { "id":"measure",                   "altId": "loggingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-publisher" },
+    { "id":"log-period" },
+    { "id":"ip-tos",                    "altId": "markIP", "intToString": true },
+    { "id":"link-qos",                  "altId": "markL2", "intToString": true },
+    { "id":"categories",                "extend": "objArray" }
+  ],
+  "net bwc policy categories": [
+    { "id":"name" },
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"max-cat-rate",              "altId": "maxBandwidth" },
+    { "id":"max-cat-rate-percentage" },
+    { "id":"ip-tos",                    "altId": "markIP", "intToString": true },
+    { "id":"link-qos",                  "altId": "markL2", "intToString": true }
+  ],
+  "net service-policy": [
+    { "id":"timer-policy"}
+  ],
+  "net timer-policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"rules",                     "extend": "objArray" }
+  ],
+  "net timer-policy rules": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"name" },
+    { "id":"ip-protocol",               "altId": "protocol"},
+    { "id":"destination-ports",         "extend": "objArray"},
+    { "id":"timers",                    "extend": "objArray", "altId": "idleTimeout"}
+  ],
+  "net timer-policy rules destination-ports": [
+    { "id":"name"}
+  ],
+  "net timer-policy rules timers": [
+    { "id":"name" },
+    { "id":"value" }
+  ],
+  "net address-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"address-lists",             "extend": "array"}
+  ],
+  "pem reporting format-script": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"definition" }
+  ],
+  "pem interception-endpoint": [
+    { "id":"persistence" },
+    { "id":"pool" }
+  ],
+  "pem listener": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"profile-spm",               "altId": "enforcementProfile" },
+    { "id":"profile-subscriber-mgmt",   "altId": "subscriberManagementProfile" },
+    { "id":"virtual-servers",           "altId": "services", "extend": "array" }
+  ],
+  "pem profile diameter-endpoint": [
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"destination-host" },
+    { "id":"destination-realm" },
+    { "id":"fatal-grace-time",          "extend": "object" },
+    { "id":"msg-max-retransmits",       "altId": "messageMaxRetransmits" },
+    { "id":"msg-retransmit-delay",      "altId": "messageRetransmitDelay" },
+    { "id":"origin-host" },
+    { "id":"origin-realm" },
+    { "id":"pem-protocol-profile-gx",   "altId": "protocolProfileGx" },
+    { "id":"product-name" },
+    { "id":"supported-apps",            "extend": "array" }
+  ],
+  "pem profile diameter-endpoint fatal-grace-time": [
+    { "id":"enabled",                   "truth": "yes", "falsehood": "no" },
+    { "id":"time" }
+  ],
+  "pem profile radius-aaa": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"retransmission-timeout" },
+    { "id":"shared-secret",             "quotedString": true },
+    { "id":"password",                  "quotedString": true },
+    { "id":"transaction-timeout" }
+  ],
+  "pem profile spm": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"global-policies-high-precedence", "altId": "policiesGlobalHighPrecedence", "extend": "array" },
+    { "id":"global-policies-low-precedence",  "altId": "policiesGlobalLowPrecedence", "extend": "array" },
+    { "id":"unknown-subscriber-policies",     "altId": "policiesUnknownSubscribers", "extend": "array" },
+    { "id":"fast-pem",                  "altId": "connectionOptimizationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"fast-vs-name",              "altId": "connectionOptimizationService" }
+  ],
+  "pem profile subscriber-mgmt": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"dhcp-lease-query",          "extend": "object" },
+    { "id":"sess-creation-from-server-side",  "altId": "serverSideSessionsEnabled", "truth": "enabled", "falsehood": "disabled" }
+  ],
+  "pem profile subscriber-mgmt dhcp-lease-query": [
+    { "id":"enabled",                   "truth": "true", "falsehood": "false" },
+    { "id":"vs-name",                   "altId": "service" }
+  ],
+  "pem irule": [
+    { "id":"api-anonymous",             "altId": "iRule" }
+  ],
+  "sys file data-group": [
+    { "id":"type",                      "altId":"keyDataType"},
+    { "id":"data-group-name" },
+    { "id":"source-path",               "altId":"externalFilePath"},
+    { "id":"iControl_postFromRemote",   "extend": "object" },
+    { "id":"separator" }
+  ],
+  "sys file ssl-cert": [
+    { "id":"cert-validation-options",   "extend": "array" },
+    { "id":"cert-validators",           "extend": "array" },
+    { "id":"checksum" },
+    { "id":"issuer-cert" },
+    { "id":"source-path" },
+    { "id":"iControl_post",             "extend": "object" }
+  ],
+  "sys file ssl-key": [
+    { "id":"checksum" },
+    { "id":"passphrase",                "quotedString": true },
+    { "id":"source-path" },
+    { "id":"iControl_post",             "extend": "object" }
+  ],
+  "sys file external-monitor": [
+    { "id":"source-path" },
+    { "id":"iControl_post",             "extend": "object" }
+  ],
+  "security log profile": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"application",               "extend": "objArray", "requiredModules": { "anyOf": [ "asm", "em" ] } },
+    { "id":"bot-defense",               "extend": "objArray", "requiredModules": { "anyOf": [ "asm", "dos", "em" ] }  },
+    { "id":"classification",            "extend": "object", "default": {}, "requiredModules": { "anyOf": [ "afm" ] } },
+    { "id":"dos-application",           "extend": "objArray", "requiredModules": { "anyOf": [ "asm", "dos", "em" ] } },
+    { "id":"dos-network-publisher",     "requiredModules": { "anyOf": [ "afm", "dos", "em" ] } },
+    { "id":"ip-intelligence",           "extend": "object", "default": {} },
+    { "id":"nat",                       "extend": "object", "default": {}, "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"network",                   "extend": "objArray", "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"protocol-dns",              "extend": "objArray", "requiredModules": { "anyOf": [ "afm", "em" ] }},
+    { "id":"protocol-dns-dos-publisher", "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"protocol-inspection",       "extend": "object", "default": {}, "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"protocol-sip",              "extend": "objArray", "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"protocol-sip-dos-publisher", "requiredModules": { "anyOf": [ "afm", "em" ] } },
+    { "id":"protocol-transfer",         "extend": "objArray" },
+    { "id":"ssh-proxy",                 "extend": "objArray", "requiredModules": { "anyOf": [ "afm", "em" ] } }
+  ],
+  "security log profile application": [
+    { "id":"facility" },
+    { "id":"filter",                    "extend": "objArray" },
+    { "id":"format",                    "extend": "object" },
+    { "id":"guarantee-logging",         "altId": "guaranteeLoggingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"guarantee-response-logging", "altId": "guaranteeResponseLoggingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"local-storage",             "truth": "enabled", "falsehood": "disabled" },
+    { "id":"logic-operation" },
+    { "id":"logger-type",               "minVersion": "14.0" },
+    { "id":"maximum-entry-length",      "altId": "maxEntryLength" },
+    { "id":"maximum-header-size",       "altId": "maxHeaderSize" },
+    { "id":"maximum-query-size",        "altId": "maxQuerySize" },
+    { "id":"maximum-request-size",      "altId": "maxRequestSize" },
+    { "id":"protocol" },
+    { "id":"remote-storage" },
+    { "id":"report-anomalies",          "altId": "reportAnomaliesEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"response-logging" },
+    { "id":"servers",                   "extend": "objArray" }
+  ],
+  "security log profile application filter": [
+    { "id":"name" },
+    { "id":"values",                    "extend": "array" }
+  ],
+  "security log profile application format": [
+    { "id":"field-delimiter" },
+    { "id":"fields",                    "extend": "array", "default": null },
+    { "id":"type" },
+    { "id":"user-string",               "quotedString": true }
+  ],
+  "security log profile application servers": [
+    { "id":"name" }
+  ],
+  "security log profile bot-defense": [
+    { "id":"local-publisher" },
+    { "id":"remote-publisher" },
+    { "id":"filter",                    "extend": "object" }
+  ],
+  "security log profile bot-defense filter": [
+    { "id":"log-illegal-requests",      "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-challenged-requests",   "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-legal-requests",        "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-captcha-challenged-requests", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-bot-signature-matched-requests", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-alarm",                 "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-block",                 "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-browser",               "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-browser-verification-action", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-captcha",               "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-device-id-collection-request", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-malicious-bot",         "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-mobile-application",    "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-none",                  "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-rate-limit",            "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-suspicious-browser",    "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-tcp-reset",             "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-trusted-bot",           "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-unknown",               "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-untrusted-bot",         "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"log-honey-pot-page",        "truth": "enabled", "falsehood": "disabled", "minVersion": "15.0" },
+    { "id":"log-redirect-to-pool",      "truth": "enabled", "falsehood": "disabled", "minVersion": "15.0" },
+    { "id":"log-challenge-failure-request", "truth": "enabled", "falsehood": "disabled", "minVersion": "15.0" }
+  ],
+  "security log profile classification": [
+    { "id":"log-publisher",             "altId": "publisher"},
+    { "id":"log-all-classification-matches",
+        "altId": "logAllMatches", "truth": "enabled", "falsehood": "disabled", "default": false
+    }
+  ],
+  "security log profile dos-application": [
+    { "id":"local-publisher" },
+    { "id":"remote-publisher" }
+  ],
+  "security log profile ip-intelligence": [
+    { "id":"log-publisher",            "altId": "publisher", "default": "none"},
+    { "id":"log-translation-fields",   "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"aggregate-rate",           "altId": "rateLimitAggregate", "default": 4294967295}
+  ],
+  "security log profile nat": [
+    { "id":"log-publisher",            "altId": "publisher"},
+    { "id":"errors",                   "altId": "logErrors", "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"log-subscriber-id",        "truth": "enabled", "falsehood": "disabled", "default": false },
+    { "id":"quota-exceeded",           "altId": "logQuotaExceeded", "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"start-inbound-session",    "altId": "logStartInboundSession", "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"end-inbound-session",      "altId": "logEndInboundSession", "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"start-outbound-session",   "altId": "logStartOutboundSession", "extend": "object", "default": {}},
+    { "id":"end-outbound-session",     "altId": "logEndOutboundSession", "extend": "object", "default": {}},
+    { "id":"rate-limit",               "extend": "object", "default": {}},
+    { "id":"format",                   "extend": "object", "default": {}}
+  ],
+  "security log profile nat start-outbound-session": [
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+  ],
+  "security log profile nat end-outbound-session": [
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+  ],
+  "security log profile nat rate-limit": [
+    { "id":"errors",                     "altId": "rateLimitErrors", "default": 4294967295},
+    { "id":"quota-exceeded",             "altId": "rateLimitQuotaExceeded", "default": 4294967295},
+    { "id":"start-inbound-session",      "altId": "rateLimitStartInboundSession", "default": 4294967295},
+    { "id":"end-inbound-session",        "altId": "rateLimitEndInboundSession", "default": 4294967295},
+    { "id":"start-outbound-session",     "altId": "rateLimitStartOutboundSession", "default": 4294967295},
+    { "id":"end-outbound-session",       "altId": "rateLimitEndOutboundSession", "default": 4294967295},
+    { "id":"aggregate-rate",             "altId": "rateLimitAggregate", "default": 4294967295}
+  ],
+  "security log profile nat format": [
+    { "id":"errors",                     "altId": "formatErrors", "extend": "object", "default": {}},
+    { "id":"quota-exceeded",             "altId": "formatQuotaExceeded", "extend": "object", "default": {}},
+    { "id":"start-inbound-session",      "altId": "formatStartInboundSession", "extend": "object", "default": {}},
+    { "id":"end-inbound-session",        "altId": "formatEndInboundSession", "extend": "object", "default": {}},
+    { "id":"start-outbound-session",     "altId": "formatStartOutboundSession", "extend": "object", "default": {}},
+    { "id":"end-outbound-session",       "altId": "formatEndOutboundSession", "extend": "object", "default": {}}
+  ],
+  "security log profile nat format errors": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile nat format quota-exceeded": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile nat format start-inbound-session": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile nat format end-inbound-session": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile nat format start-outbound-session": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile nat format end-outbound-session": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type",                      "default": "none"},
+    { "id":"user-defined"}
+  ],
+  "security log profile network": [
+    { "id":"publisher" },
+    { "id":"filter",                   "extend": "object"},
+    { "id":"rate-limit",               "extend": "object"},
+    { "id":"format",                   "extend": "object"}
+  ],
+  "security log profile network format": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type"},
+    { "id":"user-defined"}
+  ],
+  "security log profile network filter": [
+    { "id":"log-acl-match-accept",     "altId": "logRuleMatchAccepts", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-acl-match-drop",       "altId": "logRuleMatchDrops", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-acl-match-reject",     "altId": "logRuleMatchRejects", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-ip-errors",            "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-tcp-errors",           "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-tcp-events",           "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-translation-fields",   "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-geo-always",           "altId": "alwaysLogRegion", "truth": "enabled", "falsehood": "disabled"}
+  ],
+  "security log profile network rate-limit": [
+    { "id":"acl-match-accept",     "altId": "rateLimitRuleMatchAccepts"},
+    { "id":"acl-match-drop",       "altId": "rateLimitRuleMatchDrops"},
+    { "id":"acl-match-reject",     "altId": "rateLimitRuleMatchRejects"},
+    { "id":"ip-errors",            "altId": "rateLimitIpErrors"},
+    { "id":"tcp-errors",           "altId": "rateLimitTcpErrors"},
+    { "id":"tcp-events",           "altId": "rateLimitTcpEvents"},
+    { "id":"aggregate-rate",       "altId": "rateLimitAggregate"}
+  ],
+  "security log profile protocol-dns": [
+    { "id":"publisher" },
+    { "id":"filter",                   "extend": "object"},
+    { "id":"format",                   "extend": "object"}
+  ],
+  "security log profile protocol-dns format": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type"},
+    { "id":"user-defined"}
+  ],
+  "security log profile protocol-dns filter": [
+    { "id":"log-dns-drop",             "altId": "logDroppedRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-dns-filtered-drop",    "altId": "logFilteredDroppedRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-dns-malformed",        "altId": "logMalformedRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-dns-malicious",        "altId": "logMaliciousRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-dns-reject",           "altId": "logRejectedRequests", "truth": "enabled", "falsehood": "disabled"}
+  ],
+  "security log profile protocol-inspection": [
+    { "id":"log-publisher",            "altId": "publisher" },
+    { "id":"log-packet",               "altId": "logPacketPayloadEnabled", "truth": "enabled", "falsehood": "disabled", "default": "disabled" }
+  ],
+  "security log profile protocol-sip": [
+    { "id":"publisher" },
+    { "id":"filter",                   "extend": "object"},
+    { "id":"format",                   "extend": "object"}
+  ],
+  "security log profile protocol-sip format": [
+    { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
+    { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
+    { "id":"type"},
+    { "id":"user-defined"}
+  ],
+  "security log profile protocol-sip filter": [
+    { "id":"log-sip-drop",             "altId": "logDroppedRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-sip-global-failures",  "altId": "logGlobalFailures", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-sip-malformed",        "altId": "logMalformedRequests", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-sip-redirection-responses", "altId": "logRedirectedResponses", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-sip-request-failures", "altId": "logRequestFailures", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"log-sip-server-errors",     "altId": "logServerErrors", "truth": "enabled", "falsehood": "disabled"}
+  ],
+  "security log profile protocol-transfer": [
+    { "id": "publisher" }
+  ],
+  "security log profile ssh-proxy": [
+    { "id":"log-publisher" },
+    { "id":"unsuccessful-client-side-auth",     "altId": "logClientAuthFail", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"successful-client-side-auth",       "altId": "logClientAuthSuccess", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"partial-client-side-auth",          "altId": "logClientAuthPartial", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"unsuccessful-server-side-auth",     "altId": "logServerAuthFail", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"successful-server-side-auth",       "altId": "logServerAuthSuccess", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"partial-server-side-auth",          "altId": "logServerAuthPartial", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"disallowed-channel-action",         "altId": "logDisallowedChannelAction", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"allowed-channel-action",            "altId": "logAllowedChannelAction", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"ssh-timeout",                       "altId": "logSshTimeout", "truth": "enabled", "falsehood": "disabled"},
+    { "id":"non-ssh-traffic",                   "altId": "logNonSshTraffic", "truth": "enabled", "falsehood": "disabled"}
+  ],
+  "security protocol-inspection profile": [
+    { "id": "description",                  "altId": "remark", "quotedString": true },
+    { "id": "avr-stat-collect",             "altId": "collectAVRStats", "truth": "on", "falsehood": "off" },
+    { "id": "compliance-enable",            "altId": "enableComplianceChecks", "truth": "on", "falsehood": "off" },
+    { "id": "signature-enable",             "altId": "enableSignatureChecks", "truth": "on", "falsehood": "off" },
+    { "id": "auto-add-new-inspections",     "altId": "autoAddNewInspections", "truth": "on", "falsehood": "off", "minVersion": "14.0"},
+    { "id": "auto-publish-suggestion",      "altId": "autoPublish", "truth": "on", "falsehood": "off", "minVersion": "14.0"},
+    { "id": "defaults-from",                "altId": "defaultFromProfile", "quotedString": false },
+    { "id": "services",                     "extend": "objArray" }
+  ],
+  "security protocol-inspection profile services": [
+    { "id": "name",             "altId": "type"},
+    { "id": "compliance",       "extend": "objArray" },
+    { "id": "signature",        "extend": "objArray" },
+    { "id": "ports",            "extend": "objArray"}
+  ],
+  "security protocol-inspection profile services compliance": [
+    { "id": "name",             "altId": "check" },
+    { "id": "action" },
+    { "id": "log",              "truth": "yes", "falsehood": "no" },
+    { "id": "value" }
+  ],
+  "security protocol-inspection profile services signature": [
+    { "id": "name",             "altId": "check" },
+    { "id": "action" },
+    { "id": "log",              "truth": "yes", "falsehood": "no" }
+  ],
+  "security protocol-inspection profile services ports": [
+    { "id": "name" }
+  ],
+  "security firewall policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"rules",                     "extend": "objArray" }
+  ],
+  "security firewall policy rules": [
+    { "id":"rule-list" },
+    { "id":"name" },
+    { "id":"action",                    "default": "none" },
+    { "id":"ip-protocol",               "altId": "protocol", "default": "any" },
+    { "id":"source",                    "extend": "object", "default": {}},
+    { "id":"destination",               "extend": "object", "default": {}},
+    { "id":"log",                       "truth": "yes", "falsehood": "no", "altId": "loggingEnabled", "default": "no"},
+    { "id":"irule",                     "altId": "iRule"},
+    { "id":"irule-sample-rate",         "altId": "iRuleSampleRate", "default": 1}
+  ],
+  "security firewall policy rules source": [
+    { "id":"address-lists",             "extend": "array"},
+    { "id":"port-lists",                "extend": "array"},
+    { "id":"vlans",                     "extend": "array"}
+  ],
+  "security firewall policy rules destination": [
+    { "id":"address-lists",             "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
+  ],
+  "security firewall address-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"fqdns",                     "extend": "array"},
+    { "id":"geo",                       "extend": "array"},
+    { "id":"address-lists",             "extend": "array"}
+  ],
+  "security firewall port-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"ports",                     "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
+  ],
+  "security firewall rule-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"rules",                     "extend": "objArray"}
+  ],
+  "security firewall rule-list rules": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"name" },
+    { "id":"action" },
+    { "id":"ip-protocol",               "altId": "protocol"},
+    { "id":"source",                    "extend": "object", "default": {}},
+    { "id":"destination",               "extend": "object", "default": {}},
+    { "id":"log",                       "truth": "yes", "falsehood": "no", "altId": "loggingEnabled"},
+    { "id":"irule",                     "altId": "iRule"},
+    { "id":"irule-sample-rate",         "altId": "iRuleSampleRate", "default": 1}
+  ],
+  "security firewall rule-list rules source": [
+    { "id":"address-lists",             "extend": "array"},
+    { "id":"port-lists",                "extend": "array"},
+    { "id":"vlans",                     "extend": "array"}
+  ],
+  "security firewall rule-list rules destination": [
+    { "id":"address-lists",             "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
+  ],
+  "security nat policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"rules",                     "extend": "objArray"}
+  ],
+  "security nat policy rules": [
+    { "id":"name" },
+    { "id":"ip-protocol",               "altId": "protocol" },
+    { "id":"source",                    "extend": "object", "default": {} },
+    { "id":"destination",               "extend": "object", "default": {} },
+    { "id":"translation",               "extend": "object" },
+    { "id":"log-profile",               "altId": "securityLogProfile" }
+  ],
+  "security nat policy rules source": [
+    { "id":"address-lists",             "extend": "array" },
+    { "id":"port-lists",                "extend": "array" }
+  ],
+  "security nat policy rules destination": [
+    { "id":"address-lists",             "extend": "array" },
+    { "id":"port-lists",                "extend": "array" }
+  ],
+  "security nat policy rules translation": [
+    { "id":"source" }
+  ],
+  "security nat source-translation": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"type" },
+    { "id":"addresses",                 "extend": "objArray"},
+    { "id":"ports",                     "extend": "objArray"},
+    { "id":"route-advertisement",       "truth": "enabled", "falsehood": "disabled"},
+    { "id":"pat-mode"},
+    { "id":"inbound-mode"},
+    { "id":"client-connection-limit",   "intToString": true},
+    { "id":"hairpin-mode",              "truth": "enabled", "falsehood": "disabled", "altId": "hairpinModeEnabled"},
+    { "id":"mapping",                   "extend": "object"},
+    { "id":"port-block-allocation",     "extend": "object"},
+    { "id":"egress-interfaces",         "extend":"array"},
+    { "id":"egress-interfaces-enabled" },
+    { "id":"egress-interfaces-disabled" },
+    { "id":"exclude-addresses",              "extend": "objArray", "minVersion": "14.1"},
+    { "id":"exclude-address-lists",          "extend": "objArray", "minVersion": "14.1"}
+  ],
+  "security nat source-translation addresses": [
+    { "id":"name" }
+  ],
+  "security nat source-translation ports": [
+    { "id":"name" }
+  ],
+  "security nat source-translation mapping": [
+    { "id":"mode"},
+    { "id":"timeout"}
+  ],
+  "security nat source-translation port-block-allocation": [
+    { "id":"block-idle-timeout" },
+    { "id":"block-lifetime" },
+    { "id":"block-size" },
+    { "id":"client-block-limit" },
+    { "id":"zombie-timeout" }
+  ],
+  "security nat source-translation exclude-address-lists": [
+    { "id":"name" }
+  ],
+  "security nat source-translation exclude-addresses": [
+    { "id":"name" }
+  ],
+  "sys folder": [],
+  "sys log-config publisher": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"destinations",              "extend": "array" }
+  ],
+  "sys log-config destination management-port": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"ip-address",                "altId": "address" },
+    { "id":"port" },
+    { "id":"protocol" }
+  ],
+  "sys log-config destination remote-high-speed-log": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"pool-name",                 "altId": "pool" },
+    { "id":"protocol" },
+    { "id":"distribution" }
+  ],
+  "sys log-config destination remote-syslog": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"format" },
+    { "id":"default-facility" },
+    { "id":"default-severity" },
+    { "id":"remote-high-speed-log" }
+  ],
+  "sys log-config destination splunk": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"forward-to" }
+  ],
+  "asm policy": [
+    { "id":"ignoreChanges" },
+    { "id":"file" },
+    { "id":"iControl_postFromRemote",   "extend": "object" },
+    { "id":"iControl_post",            "extend": "object" }
+  ],
+  "apm profile access": [
+    { "id":"ignoreChanges" },
+    { "id":"iControl_postFromRemote",   "extend": "object" }
+  ],
+  "apm policy access-policy": [
+    { "id":"ignoreChanges" },
+    { "id":"iControl_postFromRemote",   "extend": "object" }
+  ],
+  "iControl_post": [
+    { "id":"reference" },
+    { "id":"path" },
+    { "id":"method" },
+    { "id":"ctype" },
+    { "id":"send" },
+    { "id":"why" },
+    { "id":"overrides" }
+  ],
+  "iControl_postFromRemote": [
+    { "id":"get",                       "extend": "object" },
+    { "id":"post",                     "extend": "object" }
+  ],
+  "iControl_postFromRemote get": [
+    { "id":"path" },
+    { "id":"rejectUnauthorized" },
+    { "id":"method" },
+    { "id":"ctype" },
+    { "id":"why" },
+    { "id":"authentication",            "extend": "object" }
+  ],
+  "iControl_postFromRemote get authentication": [
+    { "id":"method" },
+    { "id":"username" },
+    { "id":"passphrase" },
+    { "id":"token" }
+  ],
+  "iControl_postFromRemote post": [
+    { "id":"path" },
+    { "id":"method" },
+    { "id":"ctype" },
+    { "id":"why" },
+    { "id":"overrides" }
+  ],
+  "pem policy": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"status",                    "truth": "enabled", "falsehood": "disabled", "altId": "enable"},
+    { "id":"transactional",             "truth": "enabled", "falsehood": "disabled", "altId": "allTransactions"},
+    { "id":"rules",                     "extend": "objArray"}
+  ],
+  "pem policy rules": [
+    { "id":"dscp-marking-downlink",     "intToString": true},
+    { "id":"dscp-marking-uplink",       "intToString": true},
+    { "id":"gate-status",               "truth": "enabled", "falsehood": "disabled", "altId": "gateStatusEnabled"},
+    { "id":"intercept",                 "altId": "interceptionEndpoint"},
+    { "id":"irule",                     "altId": "iRule"},
+    { "id":"l2-marking-downlink",       "intToString": true},
+    { "id":"l2-marking-uplink",         "intToString": true},
+    { "id":"name" },
+    { "id":"precedence" },
+    { "id":"qos-rate-pir-uplink",       "altId": "qosBandwidthControllerUplink"},
+    { "id":"qos-rate-pir-downlink",     "altId": "qosBandwidthControllerDownlink"},
+    { "id":"service-chain" },
+    { "id":"tcl-filter" },
+    { "id":"tcp-analytics-enable",      "truth": "enabled", "falsehood": "disabled", "altId": "tcpAnalyticsEnabled"},
+    { "id":"tcp-optimization-downlink"},
+    { "id":"tcp-optimization-uplink"},
+    { "id":"classification-filters",    "extend": "objArray"},
+    { "id":"dtos-tethering",            "extend": "object", "altId": "DTOSTethering"},
+    { "id":"flow-info-filters",         "extend": "objArray"},
+    { "id":"forwarding",                "extend": "object", "default": {}},
+    { "id":"http-redirect",             "extend": "object", "default": {}},
+    { "id":"insert-content",            "extend": "object", "default": {}},
+    { "id":"modify-http-hdr",           "extend": "object", "default": {}, "altId": "modifyHttpHeader"},
+    { "id":"qoe-reporting",             "extend": "object", "default": {}},
+    { "id":"quota",                     "extend": "object", "default": {}},
+    { "id":"ran-congestion",            "extend": "object", "default": {}},
+    { "id":"reporting",                 "extend": "object", "default": {}, "altId": "usageReporting"},
+    { "id":"url-categorization-filters","extend": "objArray"}
+  ],
+  "pem policy rules classification-filters": [
+    { "id":"name" },
+    { "id":"application" },
+    { "id":"category" },
+    { "id":"operation",                 "truth": "nomatch", "falsehood": "match", "altId": "invertMatch"}
+  ],
+  "pem policy rules dtos-tethering": [
+    { "id":"dtos-detect",               "truth": "enabled", "falsehood": "disabled", "altId": "detectDtos"},
+    { "id":"tethering-detect",          "truth": "enabled", "falsehood": "disabled", "altId": "detectTethering"},
+    { "id":"report",                    "extend": "object", "default": {}}
+  ],
+  "pem policy rules dtos-tethering report": [
+    { "id":"dest",                      "extend": "object", "default": {}}
+  ],
+  "pem policy rules dtos-tethering report dest": [
+    { "id":"hsl",                       "extend": "object", "default": {}, "altId": "reportDestinationHsl"}
+  ],
+  "pem policy rules dtos-tethering report dest hsl": [
+    { "id":"publisher",                 "altId": "highSpeedLogPublisher", "default": "none"},
+    { "id":"format-script" }
+  ],
+  "pem policy rules flow-info-filters": [
+    { "id":"name" },
+    { "id":"operation",                 "truth": "nomatch", "falsehood": "match", "altId": "invertMatch"},
+    { "id":"dscp-code",                 "intToString": true, "altId": "dscpMarking"},
+    { "id":"dst-ip-addr",               "altId": "destinationAddress"},
+    { "id":"dst-port",                  "altId": "destinationPort"},
+    { "id":"from-vlan",                 "altId": "sourceVlan"},
+    { "id":"l2-endpoint",               "truth": "vlan", "falsehood": "disabled"},
+    { "id":"src-ip-addr",               "altId": "sourceAddress"},
+    { "id":"src-port",                  "altId": "sourcePort"},
+    { "id":"proto",                     "altId": "protocol"},
+    { "id":"ip-addr-type",              "altId": "ipAddressType"}
+  ],
+  "pem policy rules forwarding": [
+    { "id":"type",                      "default": "none"},
+    { "id":"fallback-action",           "default": "drop"},
+    { "id":"icap-type",                 "default": "none"},
+    { "id":"internal-virtual",          "altId": "icapService"},
+    { "id":"endpoint" }
+  ],
+  "pem policy rules http-redirect": [
+    { "id":"redirect-url" },
+    { "id":"fallback-action",           "default": "drop"}
+  ],
+  "pem policy rules insert-content": [
+    { "id":"duration",                  "default": 0},
+    { "id":"frequency",                 "default": "always"},
+    { "id":"position",                  "default": "prepend"},
+    { "id":"tag-name" },
+    { "id":"value-content" },
+    { "id":"value-type",                "default": "string"}
+  ],
+  "pem policy rules modify-http-hdr": [
+    { "id":"tmName",                    "altId": "headerName"},
+    { "id":"operation",                 "default": "none"},
+    { "id":"value-content" },
+    { "id":"value-type",                "default": "string"}
+  ],
+  "pem policy rules qoe-reporting": [
+    { "id":"dest",                      "extend": "object", "default": {}}
+  ],
+  "pem policy rules qoe-reporting dest": [
+    { "id":"hsl",                       "extend": "object", "default": {}, "altId": "qoeReporting"}
+  ],
+  "pem policy rules qoe-reporting dest hsl": [
+    { "id":"publisher",                 "altId": "highSpeedLogPublisher", "default": "none"},
+    { "id":"format-script" }
+  ],
+  "pem policy rules quota": [
+    { "id":"rating-group" },
+    { "id":"reporting-level",           "default": "rating-group"}
+  ],
+  "pem policy rules ran-congestion": [
+    { "id":"detect",                    "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"lowerthreshold-bw",         "altId": "threshold", "default": 1000},
+    { "id":"report",                    "extend": "object", "default": {}}
+  ],
+  "pem policy rules ran-congestion report": [
+    { "id":"dest",                      "extend": "object", "default": {}}
+  ],
+  "pem policy rules ran-congestion report dest": [
+    { "id":"hsl",                       "extend": "object", "default": {}, "altId": "reportDestinationHsl"}
+  ],
+  "pem policy rules ran-congestion report dest hsl": [
+    { "id":"publisher",                 "altId": "highSpeedLogPublisher", "default": "none"},
+    { "id":"format-script" }
+  ],
+  "pem policy rules reporting": [
+    { "id":"dest",                      "extend": "object", "default": {}, "altId": "destination"},
+    { "id":"granularity",               "default": "session"},
+    { "id":"interval",                  "default": 0},
+    { "id":"volume",                    "extend": "object", "default": {}},
+    { "id":"transaction",               "extend": "object", "default": {}}
+  ],
+  "pem policy rules reporting dest": [
+    { "id":"gx",                        "extend": "object", "default": {}},
+    { "id":"sd",                        "extend": "object", "default": {}},
+    { "id":"hsl",                       "extend": "object", "default": {}},
+    { "id":"radius-accounting",         "extend": "object", "default": {}, "altId": "radiusAAAService"}
+  ],
+  "pem policy rules reporting dest gx": [
+    { "id":"application-reporting",     "truth": "enabled", "falsehood": "disabled", "default": false, "altId": "applicationReportingEnabled"},
+    { "id":"monitoring-key" }
+  ],
+  "pem policy rules reporting dest sd": [
+    { "id":"application-reporting",     "truth": "enabled", "falsehood": "disabled", "default": false, "altId": "applicationReportingEnabled"},
+    { "id":"monitoring-key" }
+  ],
+  "pem policy rules reporting dest hsl": [
+    { "id":"publisher",                 "default": "none"},
+    { "id":"format-script" },
+    { "id":"session-reporting-fields",  "extend": "array"},
+    { "id":"flow-reporting-fields",     "extend": "array"},
+    { "id":"transaction-reporting-fields", "extend": "array"}
+  ],
+  "pem policy rules reporting dest radius-accounting": [
+    { "id":"radius-aaa-virtual",        "altId": "radiusAAAService", "default": "none"}
+  ],
+  "pem policy rules reporting volume": [
+    { "id":"downlink",                  "default": 0},
+    { "id":"total",                     "default": 0},
+    { "id":"uplink",                    "default": 0}
+  ],
+  "pem policy rules reporting transaction": [
+    { "id":"http",                      "extend": "object", "default": {}}
+  ],
+  "pem policy rules reporting transaction http": [
+    { "id":"hostname-len",              "altId": "hostname", "default": 0},
+    { "id":"uri-len",                   "altId": "uri", "default": 256},
+    { "id":"user-agent-len",            "altId": "userAgent", "default": 0}
+  ],
+  "pem policy rules url-categorization-filters": [
+    { "id":"name" },
+    { "id":"url-category",              "altId": "category"},
+    { "id":"operation",                 "truth": "nomatch", "falsehood": "match", "altId": "invertMatch"}
+  ],
+  "pem forwarding-endpoint": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"pool" },
+    { "id":"snat-pool",                 "altId": "SNATPool" },
+    { "id":"source-port",               "altId": "sourcePortAction" },
+    { "id":"translate-address",         "altId": "addressTranslationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"translate-service",         "altId": "portTranslationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"persistence",               "extend": "object" }
+  ],
+  "pem forwarding-endpoint persistence": [
+    { "id":"fallback",                  "altId": "fallbackPersistenceType" },
+    { "id":"hash-settings",             "extend": "object", "altId": "persistenceHashSettings" },
+    { "id":"type",                      "altId": "defaultPersistenceType" }
+  ],
+  "pem forwarding-endpoint persistence hash-settings": [
+    { "id":"length" },
+    { "id":"offset" },
+    { "id":"source" },
+    { "id":"tcl-value",                 "altId": "tclScript" }
+  ],
+  "pem service-chain-endpoint": [
+    { "id":"service-endpoints",         "extend": "objArray" }
+  ],
+  "pem service-chain-endpoint service-endpoints": [
+    { "id":"forwarding-endpoint",       "extend": "object" },
+    { "id":"from-vlan",                 "altId": "sourceVLAN" },
+    { "id":"http-adapt-service",        "extend": "object" },
+    { "id":"name" },
+    { "id":"order" },
+    { "id":"service-option" },
+    { "id":"steering-policy" }
+  ],
+  "pem service-chain-endpoint service-endpoints forwarding-endpoint": [
+    { "id":"to-endpoint",               "altId": "forwardingEndpoint" }
+  ],
+  "pem service-chain-endpoint service-endpoints http-adapt-service": [
+    { "id":"icap-type",                 "altId": "internalServiceICAPType" },
+    { "id":"internal-virtual",          "altId": "internalService" }
+  ],
+  "gtm pool": [
+      { "id":"enabled" },
+      { "id":"disabled" },
+      { "id":"load-balancing-mode",       "altId":"lbModePreferred" },
+      { "id":"alternate-mode",            "altId":"lbModeAlternate" },
+      { "id":"fallback-mode",             "altId":"lbModeFallback" },
+      { "id":"manual-resume",             "altId":"manualResumeEnabled", "truth":"enabled", "falsehood":"disabled" },
+      { "id":"ttl" },
+      { "id":"verify-member-availability", "altId":"verifyMemberEnabled", "truth":"enabled", "falsehood":"disabled" },
+      { "id":"max-answers-returned" },
+      { "id":"members",                   "extend": "objArray" },
+      { "id":"monitor",                   "altId":"monitors" },
+      { "id":"fallback-ip",               "altId":"fallbackIP" },
+      { "id":"limit-max-bps",             "altId":"bpsLimit" },
+      { "id":"limit-max-bps-status",      "altId":"bpsLimitEnabled", "truth":"enabled", "falsehood":"disabled" },
+      { "id":"limit-max-pps",             "altId":"ppsLimit" },
+      { "id":"limit-max-pps-status",      "altId":"ppsLimitEnabled", "truth":"enabled", "falsehood":"disabled" },
+      { "id":"limit-max-connections",     "altId":"connectionsLimit" },
+      { "id":"limit-max-connections-status", "altId":"connectionsLimitEnabled", "truth":"enabled", "falsehood":"disabled" },
+      { "id":"qos-hit-ratio" },
+      { "id":"qos-hops" },
+      { "id":"qos-kilobytes-second",      "altId":"qosKbps" },
+      { "id":"qos-lcs",                   "altId":"qosLinkCapacity" },
+      { "id":"qos-packet-rate" },
+      { "id":"qos-rtt",                   "altId":"qosRoundTripTime" },
+      { "id":"qos-topology" },
+      { "id":"qos-vs-capacity",           "altId":"qosVirtualServerCapacity" },
+      { "id":"qos-vs-score",              "altId":"qosVirtualServerScore" }
+  ],
+  "gtm pool members": [
+      { "id":"enabled" },
+      { "id":"disabled" },
+      { "id":"depends-on",                "extend": "objArray" },
+      { "id":"name" },
+      { "id":"member-order" },
+      { "id":"ratio" },
+      { "id":"priority" },
+      { "id":"static-target",             "altId": "isDomainNameStatic", "truth": "yes", "falsehood": "no" }
+  ],
+  "gtm pool members depends-on": [
+      { "id":"name" }
+  ],
+  "gtm prober-pool": [
+      { "id":"description",               "altId": "remark", "quotedString": true },
+      { "id":"enabled" },
+      { "id":"load-balancing-mode",      "altId": "lbMode", "default":"global-availability" },
+      { "id":"members",                  "extend": "objArray" }
+  ],
+  "gtm prober-pool members": [
+      { "id":"name" },
+      { "id":"enabled" },
+      { "id":"order" }
+  ],
+  "gtm server": [
+    { "id":"metadata",                  "extend": "objArray" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"enabled"},
+    { "id":"disabled"},
+    { "id":"product",                   "altId": "serverType" },
+    { "id":"prober-preference",         "altId": "proberPreferred" },
+    { "id":"prober-fallback" },
+    { "id":"prober-pool",               "forceToCommon": true },
+    { "id":"addresses",                 "extend": "objArray", "default": null },
+    { "id":"monitor",                   "altId": "monitors", "default": [] },
+    { "id":"limit-max-bps",             "altId": "bpsLimit" },
+    { "id":"limit-max-bps-status",      "altId": "bpsLimitEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"limit-max-pps",             "altId": "ppsLimit" },
+    { "id":"limit-max-pps-status",      "altId": "ppsLimitEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"limit-max-connections",     "altId": "connectionsLimit" },
+    { "id":"limit-max-connections-status", "altId": "connectionsLimitEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"limit-cpu-usage",           "altId": "cpuUsageLimit" },
+    { "id":"limit-cpu-usage-status",    "altId": "cpuUsageLimitEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"limit-mem-avail",           "altId": "memoryLimit" },
+    { "id":"limit-mem-avail-status",    "altId": "memoryLimitEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"iq-allow-service-check",    "altId": "serviceCheckProbeEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"iq-allow-path",             "altId": "pathProbeEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"iq-allow-snmp",             "altId": "snmpProbeEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"datacenter",                "altId": "dataCenter", "forceToCommon": true },
+    { "id":"devices",                   "extend": "objArray" },
+    { "id":"virtual-servers",           "extend": "objArray" },
+    { "id":"expose-route-domains",      "altId": "exposeRouteDomainsEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"virtual-server-discovery", "altId": "virtualServerDiscoveryMode"}
+  ],
+  "gtm server addresses": [
+      { "id": "name" },
+      { "id": "translation" }
+  ],
+  "gtm server metadata": [
+    { "id": "name" },
+    { "id": "persist" },
+    { "id": "value" }
+  ],
+  "gtm server devices": [
+    { "id":"name" },
+    { "id":"addresses",                "extend": "objArray" }
+  ],
+  "gtm server devices addresses": [
+    { "id": "name" },
+    { "id": "translation" }
+  ],
+  "gtm server virtual-servers": [
+    { "id":"name" },
+    { "id":"destination" },
+    { "id":"enabled" },
+    { "id":"disabled" },
+    { "id":"translation-address",       "altId": "addressTranslation" },
+    { "id":"translation-port",          "altId": "addressTranslationPort" },
+    { "id":"monitor",                   "altId": "monitors", "default": [] }
+  ],
+  "gtm datacenter": [
+    { "id":"metadata",                  "extend": "objArray" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"enabled"},
+    { "id":"disabled"},
+    { "id":"location",                  "quotedString": true },
+    { "id":"contact",                   "quotedString": true },
+    { "id":"prober-preference",         "altId": "proberPreferred" },
+    { "id":"prober-fallback" },
+    { "id":"prober-pool"}
+  ],
+  "gtm datacenter metadata": [
+    { "id": "name" },
+    { "id": "persist" }
+  ],
+  "gtm monitor": [
+    { "id":"cert",                      "altId": "clientCertificate" },
+    { "id":"cipherlist",                "altId": "ciphers" },
+    { "id":"debug",                     "altId": "debugEnabled", "truth": "yes", "falsehood": "no" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"destination",               "altId": "target" },
+    { "id":"ignore-down-response",      "altId": "ignoreDownResponseEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"interval" },
+    { "id":"key" },
+    { "id":"probe-attempts" },
+    { "id":"probe-interval" },
+    { "id":"probe-timeout" },
+    { "id":"recv",                      "altId": "receive", "quotedString": true },
+    { "id":"reverse",                   "altId": "reverseEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"send",                      "quotedString": true },
+    { "id":"timeout" },
+    { "id":"transparent",               "truth": "enabled", "falsehood": "disabled"},
+    { "id":"iControl_post",             "extend": "object"},
+    { "id":"run",                       "altId": "pathname" },
+    { "id":"args",                      "altId": "arguments" },
+    { "id":"user-defined",              "altId": "environmentVariables" }
+  ],
+  "gtm wideip": [
+    { "id":"a",                         "extend": "object" },
+    { "id":"aaaa",                      "extend": "object" },
+    { "id":"cname",                     "extend": "object" },
+    { "id":"mx",                        "extend": "object" }
+  ],
+  "gtm wideip a": [
+    { "id":"aliases",                   "extend": "array" },
+    { "id":"enabled" },
+    { "id":"disabled" },
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                     "extend": "objArray" },
+    { "id":"pools-cname",               "extend": "array" },
+    { "id":"rules",                     "extend": "array", "altId": "iRules" },
+    { "id":"last-resort-pool",          "default": "" },
+    { "id":"persistence",               "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
+    { "id":"persist-cidr-ipv4" },
+    { "id":"persist-cidr-ipv6" },
+    { "id":"ttl-persistence" }
+  ],
+  "gtm wideip a pools": [
+    { "id":"name" },
+    { "id":"order" },
+    { "id":"ratio" }
+  ],
+  "gtm wideip aaaa": [
+    { "id":"aliases",                   "extend": "array" },
+    { "id":"enabled" },
+    { "id":"disabled" },
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                     "extend": "objArray" },
+    { "id":"pools-cname",               "extend": "array" },
+    { "id":"rules",                     "extend": "array", "altId": "iRules" },
+    { "id":"last-resort-pool",          "default": "" },
+    { "id":"persistence",               "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
+    { "id":"persist-cidr-ipv4" },
+    { "id":"persist-cidr-ipv6" },
+    { "id":"ttl-persistence" }
+  ],
+  "gtm wideip aaaa pools": [
+    { "id":"name" },
+    { "id":"order" },
+    { "id":"ratio" }
+  ],
+  "gtm wideip cname": [
+    { "id":"aliases",                   "extend": "array" },
+    { "id":"enabled" },
+    { "id":"disabled" },
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                     "extend": "objArray" },
+    { "id":"rules",                     "extend": "array", "altId": "iRules" },
+    { "id":"last-resort-pool",          "default": "" },
+    { "id":"persistence",               "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
+    { "id":"persist-cidr-ipv4" },
+    { "id":"persist-cidr-ipv6" },
+    { "id":"ttl-persistence" }
+  ],
+  "gtm wideip cname pools": [
+    { "id":"name" },
+    { "id":"order" },
+    { "id": "ratio" }
+  ],
+  "gtm wideip mx": [
+    { "id":"aliases",                   "extend": "array" },
+    { "id":"enabled" },
+    { "id":"disabled" },
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                     "extend": "objArray" },
+    { "id":"pools-cname",               "extend": "array" },
+    { "id":"rules",                     "extend": "array", "altId": "iRules" },
+    { "id":"last-resort-pool",          "default": "" },
+    { "id":"persistence",               "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
+    { "id":"persist-cidr-ipv4" },
+    { "id":"persist-cidr-ipv6" },
+    { "id":"ttl-persistence" }
+  ],
+  "gtm wideip mx pools": [
+    { "id":"name" },
+    { "id":"order" },
+    { "id":"ratio" }
+  ],
+  "gtm region" : [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"region-members",            "altId": "members", "extend": "objArray" }
+  ],
+  "gtm region region-members": [
+    { "id":"not" },
+    { "id":"continent" },
+    { "id":"country" },
+    { "id":"datacenter" },
+    { "id":"geoip-isp", "quotedString": true },
+    { "id":"isp" },
+    { "id":"pool" },
+    { "id":"region" },
+    { "id":"state", "quotedString": true },
+    { "id":"subnet" }
+  ],
+  "gtm rule": [
+    { "id":"api-anonymous",             "altId": "iRule" }
+  ],
+  "gtm topology": [
+    { "id":"records",                   "extend": "objArray"}
+  ],
+  "gtm topology records": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"ldns:",                     "altId": "source" },
+    { "id":"server:",                   "altId": "destination" },
+    { "id":"score",                     "altId": "weight" },
+    { "id":"order",                     "minVersion": "14.1" }
+  ],
+  "gtm global-settings load-balancing": [
+    { "id":"topology-longest-match",    "altId": "longestMatchEnabled", "truth": "yes", "falsehood": "no"}
+  ],
+  "security dos profile": [
+      { "id":"application",               "extend": "objArray", "requiredModules": { "anyOf": [ "asm" ] } },
+      { "id":"description",               "altId": "remark", "quotedString": true },
+      { "id":"dos-network",               "altId": "network", "extend": "objArray", "requiredModules": { "anyOf": [ "afm" ] } },
+      { "id":"protocol-dns",              "altId": "protocolDNS", "extend": "objArray", "requiredModules": { "anyOf": [ "afm" ] } },
+      { "id":"protocol-sip",              "altId": "protocolSIP", "extend": "objArray", "requiredModules": { "anyOf": [ "afm" ] } },
+      { "id":"whitelist",                 "altId": "allowlist" },
+      { "id":"http-whitelist",            "altId": "applicationAllowlist", "requiredModules": { "anyOf": [ "asm" ] } }
+  ],
+  "security dos profile application": [
+    { "id":"captcha-response",            "extend": "object" },
+    { "id":"geolocations",                "extend": "objArray" },
+    { "id":"heavy-urls",                  "altId":"heavyURLProtection", "extend": "object" },
+    { "id":"trigger-irule",               "altId":"triggerIRule", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"single-page-application",     "altId":"singlePageApplicationEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"scrubbing-enable" },
+    { "id":"scrubbing-duration-sec",      "altId":"scrubbingDuration" },
+    { "id":"rtbh-enable" },
+    { "id":"rtbh-duration-sec",           "altId":"remoteTriggeredBlackHoleDuration" },
+    { "id":"fastl4-acceleration-profile", "altId":"profileAcceleration" },
+    { "id":"bot-defense",                 "extend": "object" },
+    { "id":"bot-signatures",              "extend": "object" },
+    { "id":"mobile-detection",            "altId": "mobileDefense", "extend": "object" },
+    { "id":"tps-based",                   "altId": "rateBasedDetection", "extend": "object" },
+    { "id":"stress-based",                "altId":"stressBasedDetection", "extend": "object" },
+    { "id":"tcp-dump",                    "altId":"recordTraffic", "extend": "object" }
+  ],
+  "security dos profile application captcha-response": [
+    { "id":"failure",                     "extend": "object" },
+    { "id":"first",                       "extend": "object" }
+  ],
+  "security dos profile application captcha-response failure": [
+    { "id":"body",                        "quotedString": true },
+    { "id":"type" }
+  ],
+  "security dos profile application captcha-response first": [
+    { "id":"body",                        "quotedString": true },
+    { "id":"type" }
+  ],
+  "security dos profile application geolocations": [
+    { "id":"name" },
+    { "id":"black-listed",                "truth": " ", "falsehood": "error", "altId": "denylistedGeolocations" },
+    { "id":"white-listed",                "truth": " ", "falsehood": "error", "altId": "allowlistedGeolocations" }
+  ],
+  "security dos profile application heavy-urls": [
+      { "id":"automatic-detection",       "altId":"automaticDetectionEnabled", "truth": "enabled", "falsehood": "disabled", "default": false },
+      { "id":"latency-threshold",         "altId":"detectionThreshold", "default": 1000 },
+      { "id":"exclude",                   "altId":"excludeList", "extend": "array"},
+      { "id":"include-list",              "altId":"protectList", "extend": "objArray" }
+  ],
+  "security dos profile application heavy-urls include-list": [
+      { "id":"name" },
+      { "id":"url" },
+      { "id":"threshold",                 "default": "auto" }
+  ],
+  "security dos profile application bot-defense": [
+    { "id":"mode" },
+    { "id":"browser-legit-enabled",         "altId": "blockSuspiscousBrowsers", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"browser-legit-captcha",         "altId": "issueCaptchaChallenge", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"grace-period" },
+    { "id":"cross-domain-requests" },
+    { "id":"site-domains",                  "extend": "array" },
+    { "id":"external-domains",              "extend": "array" },
+    { "id":"url-whitelist",                 "extend": "array", "altId": "urlAllowlist" }
+  ],
+  "security dos profile application bot-signatures": [
+    { "id":"categories",                   "extend": "objArray" },
+    { "id":"check",                        "altId": "checkingEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"disabled-signatures",          "extend": "array" }
+  ],
+  "security dos profile application bot-signatures categories": [
+    { "id":"name" },
+    { "id":"partition" },
+    { "id":"sub-path" },
+    { "id":"action" }
+  ],
+  "security dos profile application mobile-detection": [
+    { "id":"allow-android-rooted-device", "truth": "true", "falsehood": "false" },
+    { "id":"allow-any-android-package",   "truth": "true", "falsehood": "false" },
+    { "id":"allow-any-ios-package",       "truth": "true", "falsehood": "false" },
+    { "id":"allow-emulators",             "truth": "true", "falsehood": "false" },
+    { "id":"allow-jailbroken-devices",    "truth": "true", "falsehood": "false" },
+    { "id":"client-side-challenge-mode" },
+    { "id":"enabled",                     "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ios-allowed-package-names",   "altId": "allowIosPackageNames", "extend": "array" },
+    { "id":"android-publishers",          "altId": "allowAndroidPublishers", "extend": "objArray" }
+  ],
+  "security dos profile application mobile-detection android-publishers": [
+    { "id":"name" },
+    { "id":"partition" },
+    { "id":"sub-path" }
+  ],
+  "security dos profile dos-network": [
+      { "id":"dynamic-signatures",        "extend": "object", "default": {}  },
+      { "id":"network-attack-vector",     "altId": "vectors", "extend": "objArray" }
+  ],
+  "security dos profile dos-network dynamic-signatures": [
+      { "id":"detection",                 "altId": "detectionMode"  },
+      { "id":"mitigation",                "altId": "mitigationMode" },
+      { "id":"scrubber-enable",           "altId": "scrubbingEnabled", "truth": "yes", "falsehood": "no" },
+      { "id":"scrubber-category",         "altId": "scrubbingCategory" },
+      { "id":"scrubber-advertisement-period", "altId": "scrubbingDuration" }
+  ],
+  "security dos profile dos-network network-attack-vector": [
+      { "id":"name",                      "altId": "type" },
+      { "id":"state" },
+      { "id":"threshold-mode" },
+      { "id":"floor",                     "altId": "autoAttackFloor", "intToString": true  },
+      { "id":"ceiling",                   "altId": "autoAttackCeiling", "intToString": true },
+      { "id":"rate-threshold",            "intToString": true },
+      { "id":"rate-increase",             "altId": "rateIncreaseThreshold", "intToString": true },
+      { "id":"rate-limit",                "intToString": true },
+      { "id":"simulate-auto-threshold",   "altId": "simulateAutoThresholdEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"bad-actor",                 "truth": "enabled", "falsehood": "disabled" },
+      { "id":"per-source-ip-detection-pps", "altId": "sourceDetectionThreshold", "intToString": true  },
+      { "id":"per-source-ip-limit-pps",   "altId": "sourceMitigationThreshold", "intToString": true  },
+      { "id":"auto-blacklisting",         "truth": "enabled", "falsehood": "disabled" },
+      { "id":"blacklist-category" },
+      { "id":"blacklist-detection-seconds", "intToString": true },
+      { "id":"blacklist-duration",        "intToString": true },
+      { "id":"allow-advertisement",       "truth": "enabled", "falsehood": "disabled" },
+      { "id":"enforcement" },
+      { "id":"auto-threshold" }
+  ],
+  "security dos profile protocol-dns": [
+      { "id":"dns-query-vector",          "altId": "vectors", "extend": "objArray" }
+  ],
+  "security dos profile protocol-dns dns-query-vector": [
+      { "id":"name",                      "altId": "type" },
+      { "id":"state" },
+      { "id":"threshold-mode" },
+      { "id":"floor",                     "altId": "autoAttackFloor", "intToString": true },
+      { "id":"ceiling",                   "altId": "autoAttackCeiling", "intToString": true },
+      { "id":"rate-threshold",            "intToString": true },
+      { "id":"rate-increase",             "altId": "rateIncreaseThreshold", "intToString": true },
+      { "id":"rate-limit",                "intToString": true },
+      { "id":"simulate-auto-threshold",   "altId": "simulateAutoThresholdEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"bad-actor",                 "truth": "enabled", "falsehood": "disabled" },
+      { "id":"per-source-ip-detection-pps", "altId": "sourceDetectionThreshold", "intToString": true  },
+      { "id":"per-source-ip-limit-pps",   "altId": "sourceMitigationThreshold", "intToString": true  },
+      { "id":"auto-blacklisting",         "truth": "enabled", "falsehood": "disabled" },
+      { "id":"blacklist-category" },
+      { "id":"blacklist-detection-seconds", "intToString": true },
+      { "id":"blacklist-duration",        "intToString": true },
+      { "id":"allow-advertisement",       "truth": "enabled", "falsehood": "disabled" },
+      { "id":"enforcement" },
+      { "id":"auto-threshold" }
+  ],
+  "security dos profile protocol-sip": [
+      { "id":"sip-attack-vector",         "altId": "vectors", "extend": "objArray" }
+  ],
+  "security dos profile protocol-sip sip-attack-vector": [
+      { "id":"name",                      "altId": "type" },
+      { "id":"state" },
+      { "id":"threshold-mode" },
+      { "id":"floor",                     "altId": "autoAttackFloor", "intToString": true },
+      { "id":"ceiling",                   "altId": "autoAttackCeiling", "intToString": true },
+      { "id":"rate-threshold",            "intToString": true },
+      { "id":"rate-increase",             "altId": "rateIncreaseThreshold", "intToString": true },
+      { "id":"rate-limit",                "intToString": true },
+      { "id":"simulate-auto-threshold",   "altId": "simulateAutoThresholdEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"bad-actor",                 "truth": "enabled", "falsehood": "disabled" },
+      { "id":"per-source-ip-detection-pps", "altId": "sourceDetectionThreshold", "intToString": true },
+      { "id":"per-source-ip-limit-pps",   "altId": "sourceMitigationThreshold", "intToString": true },
+      { "id":"auto-blacklisting",         "truth": "enabled", "falsehood": "disabled" },
+      { "id":"blacklist-category" },
+      { "id":"blacklist-detection-seconds", "intToString": true },
+      { "id":"blacklist-duration",        "intToString": true },
+      { "id":"allow-advertisement",       "truth": "enabled", "falsehood": "disabled" },
+      { "id":"enforcement" },
+      { "id":"auto-threshold" }
+  ],
+  "security dos profile application tps-based": [
+      { "id":"mode",                      "altId": "operationMode" },
+      { "id":"thresholds-mode" },
+      { "id":"escalation-period" },
+      { "id":"de-escalation-period" },
+      { "id":"ip-minimum-tps" },
+      { "id":"ip-tps-increase-rate" },
+      { "id":"ip-maximum-tps" },
+      { "id":"ip-minimum-auto-tps" },
+      { "id":"ip-maximum-auto-tps" },
+      { "id":"ip-client-side-defense",    "altId": "ipClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-captcha-challenge",      "altId": "ipCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-rate-limiting",          "altId": "ipRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-request-blocking-mode",  "altId": "ipRateLimitingMode" },
+      { "id":"device-minimum-tps" },
+      { "id":"device-tps-increase-rate" },
+      { "id":"device-maximum-tps" },
+      { "id":"device-minimum-auto-tps" },
+      { "id":"device-maximum-auto-tps" },
+      { "id":"device-client-side-defense", "altId": "deviceClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-captcha-challenge",  "altId": "deviceCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-rate-limiting",      "altId": "deviceRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-request-blocking-mode", "altId": "deviceRateLimitingMode" },
+      { "id":"geo-minimum-share" },
+      { "id":"geo-share-increase-rate" },
+      { "id":"geo-minimum-auto-tps" },
+      { "id":"geo-maximum-auto-tps" },
+      { "id":"geo-client-side-defense",   "altId": "geoClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-captcha-challenge",     "altId": "geoCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-rate-limiting",         "altId": "geoRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-request-blocking-mode", "altId": "geoRateLimitingMode" },
+      { "id":"url-minimum-tps" },
+      { "id":"url-tps-increase-rate" },
+      { "id":"url-maximum-tps" },
+      { "id":"url-minimum-auto-tps" },
+      { "id":"url-maximum-auto-tps" },
+      { "id":"url-client-side-defense",   "altId": "urlClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"url-captcha-challenge",     "altId": "urlCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"url-rate-limiting",         "altId": "urlRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"site-minimum-tps" },
+      { "id":"site-tps-increase-rate" },
+      { "id":"site-maximum-tps" },
+      { "id":"site-minimum-auto-tps" },
+      { "id":"site-maximum-auto-tps" },
+      { "id":"site-client-side-defense",  "altId": "siteClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"site-captcha-challenge",    "altId": "siteCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"site-rate-limiting",        "altId": "siteRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"}
+  ],
+  "security dos profile application stress-based": [
+      { "id":"mode",                      "altId": "operationMode" },
+      { "id":"thresholds-mode" },
+      { "id":"escalation-period" },
+      { "id":"de-escalation-period" },
+      { "id":"ip-minimum-tps" },
+      { "id":"ip-tps-increase-rate" },
+      { "id":"ip-maximum-tps" },
+      { "id":"ip-minimum-auto-tps" },
+      { "id":"ip-maximum-auto-tps" },
+      { "id":"ip-client-side-defense",    "altId": "ipClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-captcha-challenge",      "altId": "ipCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-rate-limiting",          "altId": "ipRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"ip-request-blocking-mode",  "altId": "ipRateLimitingMode" },
+      { "id":"device-minimum-tps" },
+      { "id":"device-tps-increase-rate" },
+      { "id":"device-maximum-tps" },
+      { "id":"device-minimum-auto-tps" },
+      { "id":"device-maximum-auto-tps" },
+      { "id":"device-client-side-defense", "altId": "deviceClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-captcha-challenge",  "altId": "deviceCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-rate-limiting",      "altId": "deviceRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"device-request-blocking-mode", "altId": "deviceRateLimitingMode" },
+      { "id":"geo-minimum-share" },
+      { "id":"geo-share-increase-rate" },
+      { "id":"geo-minimum-auto-tps" },
+      { "id":"geo-maximum-auto-tps" },
+      { "id":"geo-client-side-defense",   "altId": "geoClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-captcha-challenge",     "altId": "geoCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-rate-limiting",         "altId": "geoRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"geo-request-blocking-mode", "altId": "geoRateLimitingMode" },
+      { "id":"url-minimum-tps" },
+      { "id":"url-tps-increase-rate" },
+      { "id":"url-maximum-tps" },
+      { "id":"url-minimum-auto-tps" },
+      { "id":"url-maximum-auto-tps" },
+      { "id":"url-client-side-defense",   "altId": "urlClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"url-captcha-challenge",     "altId": "urlCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"url-rate-limiting",         "altId": "urlRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"url-enable-heavy",          "altId": "urlHeavyURLProtectionEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"site-minimum-tps" },
+      { "id":"site-tps-increase-rate" },
+      { "id":"site-maximum-tps" },
+      { "id":"site-minimum-auto-tps" },
+      { "id":"site-maximum-auto-tps" },
+      { "id":"site-client-side-defense",  "altId": "siteClientSideDefenseEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"site-captcha-challenge",    "altId": "siteCaptchaChallengeEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"site-rate-limiting",        "altId": "siteRateLimitingEnabled", "truth": "enabled", "falsehood": "disabled"},
+      { "id":"behavioral",                "altId": "badActor", "extend": "object" }
+  ],
+  "security dos profile application stress-based behavioral": [
+      { "id":"dos-detection",             "altId": "detectionEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"mitigation-mode" },
+      { "id":"signatures",                "altId": "signatureDetectionEnabled", "truth": "enabled", "falsehood": "disabled" },
+      { "id":"signatures-approved-only",  "altId": "useApprovedSignaturesOnly",  "truth": "enabled", "falsehood": "disabled" },
+      { "id":"accelerated-signatures",    "altId": "acceleratedSignaturesEnabled", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.0" },
+      { "id":"tls-signatures",            "altId": "tlsSignaturesEnabled", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" }
+  ],
+  "security dos profile application tcp-dump": [
+      { "id":"maximum-duration" },
+      { "id":"maximum-size" },
+      { "id":"record-traffic",            "altId": "recordTrafficEnabled", "truth": "enabled", "falsehood": "disabled", "default": false },
+      { "id":"repetition-interval",       "intToString": true }
+  ],
+  "security ssh profile": [
+      { "id":"actions",                   "altId": "sshProfileDefaultActions", "extend": "objArray" },
+      { "id":"auth-info",                 "altId": "sshProfileAuthInfo", "extend": "objArray" },
+      { "id":"description",               "altId": "remark", "quotedString": true },
+      { "id":"rules",                     "altId": "sshProfileRuleSet", "extend": "objArray" },
+      { "id":"timeout" }
+  ],
+  "security ssh profile auth-info": [
+      { "id":"name" },
+      { "id":"proxy-server-auth",         "extend": "object", "default": {} },
+      { "id":"proxy-client-auth",         "extend": "object", "default": {} },
+      { "id":"real-server-auth",          "extend": "object", "default": {} }
+  ],
+  "security ssh profile auth-info proxy-client-auth": [
+      { "id":"private-key",               "quotedString": true, "default": "" },
+      { "id":"public-key",                "quotedString": true, "default": "" }
+  ],
+  "security ssh profile auth-info proxy-server-auth": [
+      { "id":"private-key",               "quotedString": true, "default": "" },
+      { "id":"public-key",                "quotedString": true, "default": "" }
+  ],
+  "security ssh profile auth-info real-server-auth": [
+      { "id":"public-key",                "quotedString": true, "default": "" }
+  ],
+  "security ssh profile rules": [
+      { "id":"name" },
+      { "id":"description",               "altId": "remark", "quotedString": true },
+      { "id":"actions",                   "altId": "sshProfileRuleActions", "extend": "objArray" },
+      { "id":"identity-users",            "altId": "sshProfileIdUsers", "extend": "array" },
+      { "id":"identity-groups",           "altId": "sshProfileIdGroups", "extend": "array" }
+  ],
+  "security ssh profile rules actions": [
+      { "id":"name" },
+      { "id":"agent-action",              "extend": "object" },
+      { "id":"local-forward-action",      "extend": "object" },
+      { "id":"other-action",              "extend": "object" },
+      { "id":"remote-forward-action",     "extend": "object" },
+      { "id":"rexec-action",              "extend": "object" },
+      { "id":"scp-up-action",             "extend": "object" },
+      { "id":"scp-down-action",           "extend": "object" },
+      { "id":"sftp-up-action",            "extend": "object" },
+      { "id":"sftp-down-action",          "extend": "object" },
+      { "id":"shell-action",              "extend": "object" },
+      { "id":"sub-system-action",         "extend": "object" },
+      { "id":"x11-forward-action",        "extend": "object" }
+  ],
+  "security ssh profile rules actions agent-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions local-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions other-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions remote-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions rexec-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions scp-up-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions scp-down-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions sftp-up-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions sftp-down-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions shell-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions sub-system-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile rules actions x11-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions": [
+      { "id":"name" },
+      { "id":"agent-action",              "extend": "object" },
+      { "id":"local-forward-action",      "extend": "object" },
+      { "id":"other-action",              "extend": "object" },
+      { "id":"remote-forward-action",     "extend": "object" },
+      { "id":"rexec-action",              "extend": "object" },
+      { "id":"scp-up-action",             "extend": "object" },
+      { "id":"scp-down-action",           "extend": "object" },
+      { "id":"sftp-up-action",            "extend": "object" },
+      { "id":"sftp-down-action",          "extend": "object" },
+      { "id":"shell-action",              "extend": "object" },
+      { "id":"sub-system-action",         "extend": "object" },
+      { "id":"x11-forward-action",        "extend": "object" }
+  ],
+  "security ssh profile actions agent-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions local-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions other-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions remote-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions rexec-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions scp-up-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions scp-down-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions sftp-up-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions sftp-down-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions shell-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions sub-system-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security ssh profile actions x11-forward-action": [
+      { "id":"control" },
+      { "id":"log",                       "truth": "yes", "falsehood": "no" }
+  ],
+  "security bot-defense profile": [
+    { "id":"cross-domain-requests",       "minVersion": "14.1" },
+    { "id":"external-domains",            "extend": "objArray", "minVersion": "14.1" },
+    { "id":"grace-period",                "minVersion": "14.1" },
+    { "id":"mobile-detection",            "altId": "mobileDefense", "extend": "object", "minVersion": "14.1" },
+    { "id":"signature-category-overrides", "extend": "objArray", "minVersion": "14.1" },
+    { "id":"signature-overrides",         "extend": "objArray", "minVersion": "14.1" },
+    { "id":"single-page-application",     "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+    { "id":"site-domains",                "extend": "objArray", "minVersion": "14.1" },
+    { "id":"whitelist",                   "extend": "objArray", "minVersion": "14.1" },
+    { "id":"enforcement-mode",            "minVersion": "14.1"},
+    { "id":"class-overrides",             "extend": "objArray", "minVersion": "14.1" },
+    { "id":"dos-attack-strict-mitigation", "altId": "dosMitigation", "minVersion": "14.1"}
+  ],
+  "security bot-defense profile external-domains": [
+    { "id":"name" }
+  ],
+  "security bot-defense profile site-domains": [
+    { "id":"name" }
+  ],
+  "security bot-defense profile mobile-detection": [
+    { "id":"allow-android-rooted-device", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-any-android-package",   "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-any-ios-package",       "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-emulators",             "truth": "enabled", "falsehood": "disabled" },
+    { "id":"allow-jailbroken-devices",    "truth": "enabled", "falsehood": "disabled" },
+    { "id":"client-side-challenge-mode" },
+    { "id":"ios-allowed-packages",        "altId": "allowIosPackageNames", "extend": "objArray" },
+    { "id":"android-publishers",          "altId": "allowAndroidPublishers", "extend": "objArray" }
+  ],
+  "security bot-defense profile mobile-detection ios-allowed-packages": [
+    { "id":"name" }
+  ],
+  "security bot-defense profile mobile-detection android-publishers": [
+    { "id":"name" },
+    { "id":"partition" },
+    { "id":"sub-path" }
+  ],
+  "security bot-defense profile signature-category-overrides": [
+    { "id":"action" },
+    { "id":"name" },
+    { "id":"partition" },
+    { "id":"sub-path" }
+  ],
+  "security bot-defense profile signature-overrides": [
+    { "id":"action" },
+    { "id":"name" },
+    { "id":"partition" },
+    { "id":"sub-path" }
+  ],
+  "security bot-defense profile whitelist": [
+    { "id":"match-order" },
+    { "id":"name" },
+    { "id":"url" }
+  ],
+  "security bot-defense profile class-overrides": [
+    { "id":"name" },
+    { "id":"mitigation",                 "extend":"object" },
+    { "id":"verification",               "extend":"object"}
+  ],
+  "security bot-defense profile class-overrides mitigation": [
+    { "id":"action" }
+  ],
+  "security bot-defense profile class-overrides verification": [
+    { "id":"action" }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.31.0",
+    "id": "TEST_L4_Profile",
+    "remark": "Test L4 profiles",
+    "L4_Tenant": {
+        "class": "Tenant",
+        "L4_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_L4",
+                "virtualPort": 80,
+                "virtualAddresses": ["1.2.3.4"],
+                "profileL4": {
+                    "use": "l4Profile"
+                }
+            },
+            "l4Profile": {
+                "class": "L4_Profile",
+                "clientTimeout": 60,
+                "idleTimeout": 600,
+                "keepAliveInterval": 600,
+                "looseClose": true,
+                "looseInitialization": true,
+                "maxSegmentSize": 4096,
+                "resetOnTimeout": false,
+                "synCookieEnable": false,
+                "synCookieAllowlist": false,
+                "tcpCloseTimeout": 43200,
+                "tcpHandshakeTimeout": 43200
+            }
+        }
+    }
+}

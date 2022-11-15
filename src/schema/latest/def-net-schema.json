@@ -1,0 +1,293 @@
+{
+    "definitions": {
+        "Bandwidth_Control_Policy": {
+            "title": "Bandwidth_Control_Policy",
+            "description": "Create a listener to specify how to handle traffic for policy enforcement",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Bandwidth_Control_Policy"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "dynamicControlEnabled": {
+                    "description": "Specifies whether the policy is a static or dynamic policy. When enabled, the policy is dynamic, and additional settings are available. A dynamic policy enforces the specified maximum user rate and flow fairness for all traffic associated with the policy and for each session. The default is disabled, which indicates a static policy. A static policy enforces the maximum rate for combined traffic and does not guarantee fairness bandwidth for each session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "maxBandwidth": {
+                    "description": "Specifies the maximum amount of bandwidth that traffic associated with the bandwidth control policy can use. The range is from 1 Mbps to 320 Gbps (between 1000000 bps and 320000000000 bps.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615
+                },
+                "maxBandwidthUnit": {
+                    "description": "Specifies the units used by the maxBandwidth property",
+                    "type": "string",
+                    "enum": [
+                        "bps",
+                        "Kbps",
+                        "Mbps",
+                        "Gbps"
+                    ],
+                    "default": "Mbps"
+                },
+                "maxUserBandwidth": {
+                    "description": "Specifies the maximum amount of bandwidth that each session associated with the bandwidth control policy can use. The range is from 5 Kbps to 2 Gbps. Note: For FTP traffic, the throughput is roughly half of this setting, because the FTP protocol creates two connections per user: a control connection and a data connection.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615,
+                    "default": 0
+                },
+                "maxUserBandwidthUnit": {
+                    "description": "Specifies the units used by the maxUserBandwidth property",
+                    "type": "string",
+                    "enum": [
+                        "bps",
+                        "Kbps",
+                        "Mbps",
+                        "Gbps"
+                    ],
+                    "default": "Mbps"
+                },
+                "maxUserPPS": {
+                    "description": "Specifies the limiter in packets per second that traffic is allowed per instance. It functions as a DoS limiter without fair share allocation. The system applies whichever value is lower, between this value and the specified Maximum Rate Per User. When both values are specified, both must pass for packets to go through. You can specify the rate in packets per second (PPS), kilo packets per second (KPPS), mega packets per second (MPPS), or giga packets per second (GPPS). The default value is 0 (not configured).",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615,
+                    "default": 0
+                },
+                "maxUserPPSUnit": {
+                    "description": "Specifies the units used by the maxUserBandwidthPPS property",
+                    "type": "string",
+                    "enum": [
+                        "bpps",
+                        "Kpps",
+                        "Mpps",
+                        "Gpps"
+                    ],
+                    "default": "Mpps"
+                },
+                "loggingEnabled": {
+                    "description": "Specifies whether the system measures bandwidth on all future instances of this bandwidth control policy. When enabled, the system measures bandwidth and sends it to the log publisher specified by the logPublisher setting. You can override this setting using iRules. For example, if you want measurement on only some instances, keep this setting disabled, and use iRules to enable measurement on specific instances.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logPublisher": {
+                    "$ref": "#/definitions/Pointer_Log_Publisher"
+                },
+                "logPeriod": {
+                    "description": "Specifies the frequency, in milliseconds, with which the system generates bandwidth measurement logs",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615,
+                    "default": 2048
+                },
+                "markIP": {
+                    "description": "Specifies whether to mark traffic that exceeds the per-user limit by setting a Type of Service (ToS) bit in the IP headers of TCP packets associated with this bandwidth control policy. The default value is \"pass-through\", which means there is no change to the ToS bit. To set a ToS bit use a value from 0 to 63. If this setting is specified, the bandwidth policy is not enforced, but rather the packets are marked for a downstream system to process.",
+                    "if": { "type": "string" },
+                    "then": { "const": "pass-through" },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                    },
+                    "default": "pass-through"
+                },
+                "markL2": {
+                    "description": "Specifies whether to mark traffic that exceeds the per-user limit by setting a Quality of Service (QoS) bit in the L2 headers of packets associated with this bandwidth control policy. The default value is \"pass-through\", which means there is no change to the QoS bit. To set a QoS bit use a value from 0 to 7. If this setting is specified, the bandwidth policy is not enforced, but rather the packets are marked for a downstream system to process.",
+                    "if": { "type": "string" },
+                    "then": { "const": "pass-through" },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 7
+                    },
+                    "default": "pass-through"
+                },
+                "categories": {
+                    "description": "This specifies the categories under policy. Note: policy need to be enabled as dynamic to configure categories. Up to a maximum of 32 categories can be configured. All the categories under the dynamic policy share the bandwidth as specified for the category, up to a maximum of maxUserBandwidth.",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/Bandwidth_Control_Policy_Category"
+                    }
+                }
+            },
+            "required": ["class", "maxBandwidth"],
+            "if": {
+                "required": ["dynamicControlEnabled"],
+                "properties": { "dynamicControlEnabled": { "const": true } }
+            },
+            "then": { "required": ["maxUserBandwidth"] },
+            "additionalProperties": false
+        },
+        "Idle_Timeout_Policy": {
+            "title": "Idle_Timeout_Policy",
+            "description": "Destination port based idle timeout policy",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Idle_Timeout_Policy"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "rules": {
+                    "description": "List of idle timeout rules",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Idle_Timeout_Rule"
+                    }
+                }
+            },
+            "required": [
+                "class"
+            ],
+            "additionalProperties": false
+        },
+        "Idle_Timeout_Rule": {
+            "description": "Idle timeout rule",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Idle timeout rule name",
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][0-9A-Za-z_/-]*$",
+                    "maxLength": 64
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "protocol": {
+                    "type": "string",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Enum_Protocols_Idle_Timeout_Policy"
+                        }
+                    ],
+                    "default": "all-other"
+                },
+                "destinationPorts": {
+                    "type": "array",
+                    "description": "List of ports, port ranges (for example, 80, \"8080-8090\"), or \"all-other\".",
+                    "items": {
+                        "type": ["integer", "string"]
+                    },
+                    "minItems": 1
+                },
+                "idleTimeout": {
+                    "description": "Idle timeout in seconds",
+                    "type": ["integer", "string"],
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "type": "string",
+                            "enum": [ "immediate", "indefinite", "unspecified" ]
+                        }
+                    ],
+                    "default": "unspecified"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "Bandwidth_Control_Policy_Category": {
+            "description": "Create a listener to specify how to handle traffic for policy enforcement",
+            "type": "object",
+            "properties": {
+                "remark": { "$ref": "#/definitions/Remark" },
+                "maxBandwidth": {
+                    "description": "Specifies the maximum bandwidth that this category of traffic can use when associated with this bandwidth control policy. The range is from 5 kbps to the value set for Maximum Rate Per User.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 18446744073709551615
+                },
+                "maxBandwidthUnit": {
+                    "description": "Specifies the units used by the maxBandwidth property",
+                    "type": "string",
+                    "enum": [
+                        "bps",
+                        "Kbps",
+                        "Mbps",
+                        "Gbps",
+                        "%"
+                    ],
+                    "default": "Mbps"
+                },
+                "markIP": {
+                    "description": "Specifies whether to mark traffic that exceeds the per-user limit by setting a Type of Service (ToS) bit in the IP headers of TCP packets associated with this bandwidth control policy. The default value is \"pass-through\", which means there is no change to the ToS bit. To set a ToS bit use a value from 0 to 63. If this setting is specified, the bandwidth policy is not enforced, but rather the packets are marked for a downstream system to process.",
+                    "if": { "type": "string" },
+                    "then": { "const": "pass-through" },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 63
+                    },
+                    "default": "pass-through"
+                },
+                "markL2": {
+                    "description": "Specifies whether to mark traffic that exceeds the per-user limit by setting a Quality of Service (QoS) bit in the L2 headers of packets associated with this bandwidth control policy. The default value is \"pass-through\", which means there is no change to the QoS bit. To set a QoS bit use a value from 0 to 7. If this setting is specified, the bandwidth policy is not enforced, but rather the packets are marked for a downstream system to process.",
+                    "if": { "type": "string" },
+                    "then": { "const": "pass-through" },
+                    "else": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 7
+                    },
+                    "default": "pass-through"
+                }
+            },
+            "required": ["maxBandwidth"],
+            "additionalProperties": false
+        },
+        "Net_Address_List": {
+            "title": "Net_Address_List",
+            "description": "You can use the address-list component to define reusable lists of addresses. This property requires a BIG-IP version of 14.1 or higher.",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Net_Address_List"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "addresses": {
+                    "type": "array",
+                    "description": "A list of IPv4 and IPv6 addresses and address ranges. You can specify a network with CIDR slash notation.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "addressLists": {
+                    "type": "array",
+                    "description": "A list of other address lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Net_Address_List"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["class"],
+            "anyOf": [
+                { "required": [ "addresses" ] },
+                { "required": [ "addressLists" ] }
+            ],
+            "additionalProperties": false
+        }
+    }
+}

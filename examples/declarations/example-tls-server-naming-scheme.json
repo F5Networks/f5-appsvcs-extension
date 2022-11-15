@@ -1,0 +1,38 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.28.0",
+    "id": "TLS_Server_Naming_Scheme",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "10.0.1.14"
+                ],
+                "serverTLS": "tlsServer",
+                "virtualPort": 443
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "application1.certificate"
+                    }
+                ],
+                "namingScheme": "certificate"
+            },
+            "application1.certificate": {
+                "class": "Certificate",
+                "remark": "in practice using a passphrase is recommended",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            }
+        }
+    }
+}

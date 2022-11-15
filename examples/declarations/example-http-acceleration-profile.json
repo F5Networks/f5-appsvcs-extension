@@ -1,0 +1,53 @@
+{
+    "class":"ADC",
+    "schemaVersion":"3.8.0",
+    "id":"TEST_HTTP_Acceleration_Profile",
+    "Sample_profile_06":{
+        "class":"Tenant",
+        "Application":{
+            "class":"Application",
+            "template":"generic",
+            "http_accel": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "profileHTTPAcceleration": {
+                    "use": "testItem"
+                }
+            },
+            "testItem": {
+                "class": "HTTP_Acceleration_Profile",
+                "parentProfile": {
+                    "use": "accel"
+                },
+                "agingRate": 5,
+                "ignoreHeaders": "none",
+                "insertAgeHeaderEnabled": false,
+                "maximumAge": 100000,
+                "maximumEntries": 200000,
+                "maximumObjectSize": 300000,
+                "minimumObjectSize": 1000,
+                "cacheSize": 200,
+                "uriExcludeList": [
+                    "."
+                ],
+                "uriIncludeList": [
+                    "www.google.com"
+                ],
+                "uriIncludeOverrideList": [
+                    "1.1.2.2",
+                    "1.2.3.4"
+                ],
+                "uriPinnedList": [
+                    "///"
+                ],
+                "metadataMaxSize": 30
+            },
+            "accel": {
+                "class": "HTTP_Acceleration_Profile"
+            }
+        }
+    }
+}

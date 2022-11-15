@@ -1,0 +1,38 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.30.0",
+    "id": "GSLB_External_Monitor_Sample",
+    "Sample_External_GSLB_Monitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "pathname_example": {
+                "class": "GSLB_Monitor",
+                "monitorType": "external",
+                "target": "1.1.1.1:80",
+                "interval": 31,
+                "timeout": 121,
+                "probeTimeout": 6,
+                "ignoreDownResponseEnabled": true,
+                "pathname": "/Common/arg_example",
+                "environmentVariables": {
+                    "USER": "nobody",
+                    "PASSWORD": "secret"
+                }
+            },
+            "script_example": {
+                "class": "GSLB_Monitor",
+                "monitorType": "external",
+                "target": "2.2.2.2:80",
+                "interval": 32,
+                "timeout": 122,
+                "probeTimeout": 7,
+                "ignoreDownResponseEnabled": false,
+                "script": {
+                    "url": "https://example.com/monitor.sh"
+                },
+                "arguments": "TEST=1"
+            }
+        }
+    }
+}

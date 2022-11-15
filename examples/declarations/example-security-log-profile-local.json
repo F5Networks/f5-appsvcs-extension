@@ -1,0 +1,50 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Security_Log_Profile_local",
+    "Security_Log_local": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "secLogLocal": {
+                "class": "Security_Log_Profile",
+                "application": {
+                    "storageFilter": {
+                        "logicalOperation": "and",
+                        "requestType": "all",
+                        "responseCodes": [
+                            "100",
+                            "200",
+                            "300",
+                            "400"
+                        ],
+                        "protocols": [
+                            "https",
+                            "ws"
+                        ],
+                        "httpMethods": [
+                            "ACL",
+                            "GET",
+                            "POLL",
+                            "POST"
+                        ],
+                        "requestContains": {
+                            "searchIn": "search-in-headers",
+                            "value": "The header string to search for"
+                        },
+                        "loginResults": [
+                            "login-result-successful",
+                            "login-result-failed"
+                        ]
+                    },
+                    "guaranteeLoggingEnabled": true,
+                    "guaranteeResponseLoggingEnabled": true,
+                    "maxHeaderSize": 200,
+                    "maxQuerySize": 1040,
+                    "maxRequestSize": 900,
+                    "responseLogging": "all"
+                }
+            }
+        }
+    }
+}

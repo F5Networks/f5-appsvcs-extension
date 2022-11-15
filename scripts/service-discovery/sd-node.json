@@ -1,0 +1,12 @@
+{
+ "awsRegion": "us-west-2",
+ "awsAvailabilityZone": "a",
+ "awsKeyPair": "as3-sd",
+ "awsImage": "ami-061e7ebbc234015fe",
+ "awsInstanceType": "t2.nano",
+ "awsNodeTagName": "Name",
+ "awsNodeTagValue": "as3-service-discovery-dev",
+ "awsNewTagKey": "foo",
+ "awsNewTagValue": "bar",
+ "awsNumInstances": 1
+}

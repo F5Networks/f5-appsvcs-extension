@@ -1,0 +1,48 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.10.0",
+    "id": "Splunk_Log_Destination",
+    "controls": {
+        "class": "Controls",
+        "trace": true,
+        "logLevel": "debug"
+    },
+    "Splunk_Log_Destination": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "logPool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 443,
+                        "serverAddresses": [
+                            "192.0.2.53"
+                        ]
+                    }
+                ]
+            },
+            "remoteHSLog": {
+                "class": "Log_Destination",
+                "type": "remote-high-speed-log",
+                "pool": {
+                    "use": "logPool"
+                }
+            },
+            "splunkLog1": {
+                "class": "Log_Destination",
+                "type": "splunk",
+                "forwardTo": {
+                    "use": "remoteHSLog"
+                }
+            },
+            "splunkLog2": {
+                "class": "Log_Destination",
+                "type": "splunk",
+                "forwardTo": {
+                    "bigip": "/Common/local-syslog"
+                }
+            }
+        }
+    }
+}

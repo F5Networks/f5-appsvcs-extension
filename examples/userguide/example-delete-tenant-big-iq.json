@@ -1,0 +1,17 @@
+{
+    "class": "AS3",
+    "declaration":{
+         "class": "ADC",
+         "schemaVersion": "3.0.0",
+         "id": "fghijkl7890",
+         "label": "Sample 1",
+         "remark": "HTTP with custom persistence",
+         "target": {
+             "address": "192.0.2.200"
+         },
+         "Sample_http_01": {
+             "class": "Tenant"
+         }
+     }
+ }
+ 

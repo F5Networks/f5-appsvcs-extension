@@ -1,0 +1,1507 @@
+{
+    "definitions": {
+        "DOS_Profile": {
+            "title": "DOS_Profile",
+            "description": "Configures a Denial of Service (DOS) profile",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "asm"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "DOS_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "application": {
+                    "description": "Application security sub-profile",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["asm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application" }
+                    ]
+                },
+                "network": {
+                    "description": "Network security sub-profile",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Network" }
+                    ]
+                },
+                "protocolDNS": {
+                    "description": "DNS protocol security sub-profile",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Protocol_DNS" }
+                    ]
+                },
+                "protocolSIP": {
+                    "description": "SIP protocol security sub-profile",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Protocol_SIP" }
+                    ]
+                },
+                "allowlist": {
+                    "description": "Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention. This property is available on BIGIP 14.1 and above.",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Address_List" }
+                    ]
+                },
+                "whitelist": {
+                    "description": "Deprecated. Replaced with functionally equivalent allowlist. Specifies the default allowlist address list for the system to use to determine which IP addresses are legitimate. The system does not examine traffic from the IP addresses in the list when performing DoS prevention. This property is available on BIGIP 14.1 and above.",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Address_List" }
+                    ]
+                },
+                "applicationAllowlist": {
+                    "description": "Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["asm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Address_List" }
+                    ]
+                },
+                "applicationWhitelist": {
+                    "description": "Deprecated. Replaced with functionally equivalent applicationAllowlist. Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["asm"]
+                    },
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Address_List" }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "f5aliases": {
+                "allowlist": "whitelist",
+                "applicationAllowlist": "applicationWhitelist"
+            }
+        },
+
+        "DOS_Auto_Denylist_Settings": {
+            "description": "Adds the source IP address to the denylist category assigned to the Denial-of-Service (DoS) vector",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Specifies if automatic denylist management should be used",
+                    "type": "boolean",
+                    "default": false
+                },
+                "category": {
+                    "description": "Specifies the denylist category assigned to the DoS vector. The settings for this category determine IP Intelligence actions, logging settings, and denylist publisher settings.",
+                    "default": { "bigip": "/Common/denial_of_service" },
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Denylist_Category" }
+                    ]
+                },
+                "attackDetectionTime": {
+                    "description": "Specifies the time in seconds before a vector is denylisted",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295,
+                    "default": 60
+                },
+                "categoryDuration": {
+                    "description": "Specifies the time in seconds before the denylist entry is removed",
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 4294967295,
+                    "default": 14400
+                },
+                "externalAdvertisementEnabled": {
+                    "description": "Specifies that addresses that are identified for denylisting are advertised to BGP routers, as configured per denylist category in Blacklist Publisher",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Bad_Actor_Detection_Settings": {
+            "description": "Bad actor detection allows automatic detection, logging, and rate limiting of specific IP addresses that appear to be the source of an attack, based on criteria you configure.",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Specifies that Bad Actor detection is enabled",
+                    "type": "boolean",
+                    "default": false
+                },
+                "sourceDetectionThreshold": {
+                    "description": "Specifies the number of packets per second to identify an IP address as a bad actor",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "sourceMitigationThreshold": {
+                    "description": "Specifies the rate limit applied to a source IP that is identified as a bad actor",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Heavy_URL": {
+            "description": "Heavy URLs are a small number of site URLs that might consume considerable server resources per request. Heavy URLs respond with low latency most of the time, but may easily reach high latency under specific conditions. Heavy URLs are not necessarily heavy all the time, but are potentially heavy, especially during DoS attacks. It only takes a low rate of requests to heavy URLs in order to cause DoS attacks. When an attack is suspected, the system protects the heavy URLs using the by URL methods that you enabled in TPS-based Detection and Behavioral & Stress-based Detection. If no URL-based methods are enabled there, the system only reports attacks.",
+            "type": "object",
+            "properties": {
+                "automaticDetectionEnabled": {
+                    "description": "Mark a URL as heavy if its portion of transactions with latency above the specified threshold is higher than usual for this site",
+                    "type": "boolean",
+                    "default": true
+                },
+                "detectionThreshold": {
+                    "description": "Specifies the latency threshold for automatic heavy URL detection (in milliseconds)",
+                    "type": "integer",
+                    "minimum": 16,
+                    "maximum": 4294967295,
+                    "default": 1000
+                },
+                "excludeList": {
+                    "description": "URLs the system should not consider heavy even if the system automatically detects them as being heavy. This list may contain prefix wildcards.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "protectList": {
+                    "description": "URLs you expect to be heavy even if the system does not automatically detect them as being heavy",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "url": {
+                                "description": "URL to protect",
+                                "type": "string"
+                            },
+                            "threshold": {
+                                "description": "Threshold for detection in requests per second",
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum":4294967295
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": ["url", "threshold"]
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Captcha": {
+            "description": "Specifies the text the system sends, during a suspected DoS event, to users after it challenges users with the first CAPTCHA response, and the text the system sends to users after they fail a CAPTCHA response.",
+            "type": "object",
+            "properties": {
+                "first": {
+                    "description": "Specifies the content that the system displays to a user the first time the user is asked to respond to a CAPTCHA",
+                    "type": "string",
+                    "maxLength": 65520
+                },
+                "failure": {
+                    "description": "Specifies the content the system displays to a user after the user fails to correctly answer a CAPTCHA",
+                    "type": "string",
+                    "maxLength": 65520
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Bot_Defense": {
+            "description": "BIG-IP AS3 provides defense against bot attacks by detecting and stopping them before the attacks start to grow, by performing the following:\n\n* The system sends a client-side JavaScript challenge to the browser.\n* If the challenge is met, the system adds a cookie to the second request. This cookie is active until the session ends, and the system does not add any more cookies to further requests during that session.\n* The system drops requests sent by browsers that do not answer the system’s initial JavaScript challenge, assuming they are bots that do not support JavaScript.\n\nNote: This feature requires browsers to allow JavaScript.\n\nImportant: The proactive bot defense feature works also in Transparent mode. This means that the system will replace responses with client side JavaScript also in Transparent mode, and if the client cannot run JavaScript, it will not be able to receive the server responses.\n\nImportant: If you enable Proactive Bot Defense and your web site uses CORS (Cross-Origin Resource Sharing), we recommend that you add the CORS URLs to the proactive bot URL allowlist.\n\nThis method is intended to complement, not replace, the other mitigation methods.",
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "description": "Specifies the conditions under which bots are detected and blocked",
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "during-attacks",
+                        "always"
+                    ],
+                    "default": "off"
+                },
+                "blockSuspiscousBrowsers": {
+                    "$comment": "maps to application.bot-defense.browser-legit-enabled",
+                    "description": "Detect and block requests from highly suspicious browsers",
+                    "type": "boolean",
+                    "default": true
+                },
+                "issueCaptchaChallenge": {
+                    "$comment": "maps to application.bot-defense.browser-legit-captcha",
+                    "description": "Issue CAPTCHA challenges to moderately suspicious browsers",
+                    "type": "boolean",
+                    "default": true
+                },
+                "gracePeriod": {
+                    "description": "The length of time (in seconds) before the system blocks suspected bots. The grace period allows web application pages with both HTML and non-HTML (like images, JS, and CSS) to load completely without being blocked. The grace period starts after client validation, a configuration change, or when proactive bot defense is activated as a result of a detected attack or high latency. This property is available on BIGIP 14.1 and above.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 300
+                },
+                "crossDomainRequests": {
+                    "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+                    "type": "string",
+                    "enum": [
+                        "allow-all",
+                        "validate-bulk",
+                        "validate-upon-request"
+                    ],
+                    "default": "allow-all"
+                },
+                "siteDomains": {
+                    "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "externalDomains": {
+                    "description": "Specifies the external referring domains (that are not part of your website) that are allowed to link to resources in your website. These domains are not protected with proactive bot defense, but the system allows them if they pass the system's redirect-cookie challenge. This property is available on BIGIP 14.1 and above.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "urlAllowlist": {
+                    "description": "Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "urlWhitelist": {
+                    "description": "Deprecated. Replaced with functionally equivalent urlAllowlist. Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            },
+            "f5aliases": {
+                "urlAllowlist": "urlWhitelist"
+            },
+
+            "dependencies": {
+                "issueCaptchaChallenge": {
+                    "if": { "properties": { "issueCaptchaChallenge": { "const": true } } },
+                    "then": {
+                        "properties": { "blockSuspiscousBrowsers": { "const": true } }
+                    }
+                },
+                "siteDomains": {
+                    "properties": { "crossDomainRequests": { "enum": ["validate-bulk", "validate-upon-request"] } }
+                },
+                "externalDomains": {
+                    "properties": { "crossDomainRequests": { "enum": ["validate-bulk", "validate-upon-request"] } }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Bot_Signatures": {
+            "description": "This feature automatically detects well known bots according to their HTTP characteristics. Malicious bots can be configured to be blocked, while benign bots can be configured to pass through the anti-bot defense mechanisms.",
+            "type": "object",
+            "properties": {
+                "checkingEnabled": {
+                    "description": "Specifies the system uses signatures to check whether a bot is benign or malicious",
+                    "type": "boolean",
+                    "default": false
+                },
+                "blockedCategories": {
+                    "description": "The system blocks and reports requests that match signatures in this list of categories",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Bot_Signature_Category"
+                    }
+                },
+                "reportedCategories": {
+                    "description": "The system logs requests that match signatures in this list of categories and counts them in the DoS reports",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Bot_Signature_Category"
+                    }
+                },
+                "disabledSignatures": {
+                    "description": "A list of signatures the system ignores when it matches requests with configured bot signatures",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Bot_Signature"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Mobile_Defense": {
+            "description": "When enabled, requests from mobile applications built with the Anti-Bot Mobile SDK will be detected and handled according to the setting configured here. When disabled, these requests will be handled like any other request, meaning that they may let attacks in or cause false positives. Mobile application traffic will be treated differently than other clients, e.g. browsers, in security policies. For this reason, even when DoS protection is not required in a security policy, you still must set a DoS profile with mobile application protection enabled.",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "When enabled, requests from mobile applications built with Anti-Bot Mobile SDK will be detected and handled according to the settings below. When disabled, these requests will be handled like any other request which may let attacks in, or cause false positives.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "allowAndroidPublishers": {
+                    "description": "Publisher certificates to allow. All others are blocked. An empty list allows all publishers.",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/Pointer_SSL_Certificate" }
+                },
+                "allowAndroidRootedDevice": {
+                    "description": "Select to allow traffic from rooted Android devices",
+                    "type": "boolean",
+                    "default": false
+                },
+                "allowIosPackageNames": {
+                    "description": "Package names to allow. All others are blocked. An empty list allows all package names.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "allowJailbrokenDevices": {
+                    "description": "Select to allow traffic from jailbroken iOS devices",
+                    "type": "boolean",
+                    "default": false
+                },
+                "allowEmulators": {
+                    "description": "Select to allow traffic from applications run on emulators",
+                    "type": "boolean",
+                    "default": false
+                },
+                "clientSideChallengeMode": {
+                    "description": "Specifies the action to take when a CAPTCHA or Client Side Integrity challenge needs to be presented",
+                    "type": "string",
+                    "enum": [
+                        "pass",
+                        "challenge"
+                    ],
+                    "default": "pass"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Detection_IP": {
+            "description": "Specifies the criteria that determines when the system treats a source IP address as an attacker",
+            "type": "object",
+            "properties": {
+                "minimumTps": {
+                    "description": "The minimum number of transactions per second before a source can be considered an attacking entity. This condition and the increase rate condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 40
+                },
+                "tpsIncreaseRate": {
+                    "description": "The transactions per second increase (as a percentage) that must occur before a source can be considered an attacking entity. This condition and the minimum TPS condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "maximumTps": {
+                    "description": "The maximum number of transactions per second before a source is always considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 200
+                },
+                "minimumAutoTps": {
+                    "description": "Minimum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5
+                },
+                "maximumAutoTps": {
+                    "description": "Maximum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5000
+                },
+                "clientSideDefenseEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a client-side integrity challenge that will consume computation resources from the client and slow its attack rate. The system issues a client-side integrity challenge to determine whether the client is a legal browser or an illegal script by sending a JavaScript challenge and waiting for a response. (Legal browsers are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "captchaChallengeEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a CAPTCHA challenge to determine whether the client is a legal browser with a human user behind it, or an illegal script. (Legal browsers with human users behind them are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system applies rate limiting to the traffic",
+                    "type": "boolean",
+                    "default": true
+                },
+                "rateLimitingMode": {
+                    "description": "Specifies if rate limiting should block all traffic ('block-all') or apply normal rate limiting ('rate-limit').",
+                    "type": "string",
+                    "enum": [
+                        "rate-limit",
+                        "block-all"
+                    ],
+                    "default": "rate-limit"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Detection_Device": {
+            "description": "Specifies the criteria that determines when the system treats a device as an attacker",
+            "type": "object",
+            "properties": {
+                "minimumTps": {
+                    "description": "The minimum number of transactions per second before a source can be considered an attacking entity. This condition and the increase rate condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 40
+                },
+                "tpsIncreaseRate": {
+                    "description": "The transactions per second increase (as a percentage) that must occur before a source can be considered an attacking entity. This condition and the minimum TPS condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "maximumTps": {
+                    "description": "The maximum number of transactions per second before a source is always considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 200
+                },
+                "minimumAutoTps": {
+                    "description": "Minimum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5
+                },
+                "maximumAutoTps": {
+                    "description": "Maximum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5000
+                },
+                "clientSideDefenseEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a client-side integrity challenge that will consume computation resources from the client and slow its attack rate. The system issues a client-side integrity challenge to determine whether the client is a legal browser or an illegal script by sending a JavaScript challenge and waiting for a response. (Legal browsers are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "captchaChallengeEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a CAPTCHA challenge to determine whether the client is a legal browser with a human user behind it, or an illegal script. (Legal browsers with human users behind them are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system applies rate limiting to the traffic",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingMode": {
+                    "description": "Specifies if rate limiting should block all traffic ('block-all') or apply normal rate limiting ('rate-limit').",
+                    "type": "string",
+                    "enum": [
+                        "rate-limit",
+                        "block-all"
+                    ],
+                    "default": "rate-limit"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Detection_Geolocation": {
+            "description": "Specifies the criteria that determines when the system treats a geolocation as an attacker",
+            "type": "object",
+            "properties": {
+                "minimumShare": {
+                    "description": "The minimum share of traffic (as a percentage) before a source can be considered an attacking entity. This condition and the share increase rate condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 10
+                },
+                "shareIncreaseRate": {
+                    "description": "The share increase (as a percentage) that must occur before a source can be considered an attacking entity. This condition and the minimum share condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "minimumAutoTps": {
+                    "description": "Minimum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 50
+                },
+                "maximumAutoTps": {
+                    "description": "Maximum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 20000
+                },
+                "clientSideDefenseEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a client-side integrity challenge that will consume computation resources from the client and slow its attack rate. The system issues a client-side integrity challenge to determine whether the client is a legal browser or an illegal script by sending a JavaScript challenge and waiting for a response. (Legal browsers are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "captchaChallengeEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a CAPTCHA challenge to determine whether the client is a legal browser with a human user behind it, or an illegal script. (Legal browsers with human users behind them are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system applies rate limiting to the traffic",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingMode": {
+                    "description": "Specifies if rate limiting should block all traffic ('block-all') or apply normal rate limiting ('rate-limit').",
+                    "type": "string",
+                    "enum": [
+                        "rate-limit",
+                        "block-all"
+                    ],
+                    "default": "rate-limit"
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Detection_URL": {
+            "description": "Specifies the criteria that determines when the system treats a URL as an attacker",
+            "type": "object",
+            "properties": {
+                "minimumTps": {
+                    "description": "The minimum number of transactions per second before a source can be considered an attacking entity. This condition and the increase rate condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 200
+                },
+                "tpsIncreaseRate": {
+                    "description": "The transactions per second increase (as a percentage) that must occur before a source can be considered an attacking entity. This condition and the minimum TPS condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "maximumTps": {
+                    "description": "The maximum number of transactions per second before a source is always considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1000
+                },
+                "minimumAutoTps": {
+                    "description": "Minimum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5
+                },
+                "maximumAutoTps": {
+                    "description": "Maximum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5000
+                },
+                "heavyURLProtectionEnabled": {
+                    "description": "Specifies, when enabled, that heavy URL protection should be enabled",
+                    "type": "boolean",
+                    "default": true
+                },
+                "clientSideDefenseEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a client-side integrity challenge that will consume computation resources from the client and slow its attack rate. The system issues a client-side integrity challenge to determine whether the client is a legal browser or an illegal script by sending a JavaScript challenge and waiting for a response. (Legal browsers are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "captchaChallengeEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a CAPTCHA challenge to determine whether the client is a legal browser with a human user behind it, or an illegal script. (Legal browsers with human users behind them are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system applies rate limiting to the traffic",
+                    "type": "boolean",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Detection_Site": {
+            "description": "Specifies the criteria that determines when the system treats a site as an attacker",
+            "type": "object",
+            "properties": {
+                "minimumTps": {
+                    "description": "The minimum number of transactions per second before a source can be considered an attacking entity. This condition and the increase rate condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 2000
+                },
+                "tpsIncreaseRate": {
+                    "description": "The transactions per second increase (as a percentage) that must occur before a source can be considered an attacking entity. This condition and the minimum TPS condition must be met for a source to be considered an attacking entity.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "maximumTps": {
+                    "description": "The maximum number of transactions per second before a source is always considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 10000
+                },
+                "minimumAutoTps": {
+                    "description": "Minimum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 5
+                },
+                "maximumAutoTps": {
+                    "description": "Maximum number of transactions per second of an auto-calculated threshold before a source is considered an attacking entity",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 20000
+                },
+                "clientSideDefenseEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a client-side integrity challenge that will consume computation resources from the client and slow its attack rate. The system issues a client-side integrity challenge to determine whether the client is a legal browser or an illegal script by sending a JavaScript challenge and waiting for a response. (Legal browsers are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "captchaChallengeEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system issues a CAPTCHA challenge to determine whether the client is a legal browser with a human user behind it, or an illegal script. (Legal browsers with human users behind them are able to respond, while illegal scripts cannot.)",
+                    "type": "boolean",
+                    "default": false
+                },
+                "rateLimitingEnabled": {
+                    "description": "Specifies, when enabled, that if traffic meets the detection conditions, the system applies rate limiting to the traffic",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Rate_Based_Detection": {
+            "description": "Configure the system to prevent DoS attacks based on the client side transactions per second (TPS-based detection mode). The system considers traffic to be a DoS attack based on the following calculations:\n\n*  Transaction rate detection interval: The average number of requests per second sent. This is the TPS value that triggered the attack. This number is calculated by the system, by default, every ten seconds.\n* Transaction rate history interval: The average number of requests per second sent. This number is the average number of transactions for the past hour, and it is updated every 10 seconds.\n\nIn TPS-based detection mode, if the ratio of the transaction rate detection interval to the transaction rate history interval is greater than the specific percentage configured, the system detects the URL/site to be under attack, or the IP address/geolocation to be attacking. In order to stop the attack, the system blocks some, or all, requests from the detected IP address/geolocation and/to the attacked URL/site, depending on the configuration of the DoS profile.",
+            "type": "object",
+            "properties": {
+                "operationMode": {
+                    "description": "Specifies how the system reacts when it detects an attack",
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "transparent",
+                        "blocking"
+                    ],
+                    "default": "off"
+                },
+                "thresholdsMode": {
+                    "description": "Specifies what type of thresholds to use",
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "automatic"
+                    ],
+                    "default": "manual"
+                },
+                "escalationPeriod": {
+                    "description": "Specifies the minimum time spent in each mitigation step before the system moves to the next mitigation step when preventing a DoS attack. After the system detects a DoS attack, it performs attack prevention for the amount of time specified here for every method that is enabled. If after this period the attack has not been fully stopped, the system escalates to the next enabled prevention step.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "default": 120
+                },
+                "deEscalationPeriod": {
+                    "description": "When preventing a DoS attack, specifies the time spent since the mitigation started until retrying the steps from the beginning of the enabled methods. If the value is 0, no de-escalation occurs.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86400,
+                    "default": 7200
+                },
+                "sourceIP": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_IP" }
+                    ],
+                    "default": {}
+                },
+                "deviceID": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Device" }
+                    ],
+                    "default": {}
+                },
+                "geolocation": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Geolocation" }
+                    ],
+                    "default": {}
+                },
+                "url": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_URL" }
+                    ],
+                    "default": {}
+                },
+                "site": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Site" }
+                    ],
+                    "default": {}
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Stress_Based_Detection_Bad_Actor": {
+            "description": "Specifies properties of Behavioral Detection in Stress-based anomaly.\n\nThe following mitigation options are available:\n\n* Conservative protection: If detectionEnabled is true, slows down and rate limits requests from anomalous IP addresses based on its anomaly detection confidence and the server's health.  If signatureDetectionEnabled is true, blocks requests that match the attack signatures.\n* Standard protection: If detectionEnabled is true, slows down requests from anomalous IP addresses based on its anomaly detection confidence and the server's health.  Rate limits requests from anomalous IP addresses and, if necessary, rate limits all requests based on the server's health. Limits the number of concurrent connections from anomalous IP addresses and, if necessary, limits the number of all concurrent connections based on the server's health.  If signatureDetectionEnabled is true, blocks requests that match the attack signatures.\n* Aggressive protection: If detectionEnabled is true, slows down requests from anomalous IP addresses based on its anomaly detection confidence and the server's health.  Rate limits requests from anomalous IP addresses and, if necessary, rate limits all requests based on the server's health. Limits the number of concurrent connections from anomalous IP addresses and, if necessary, limits the number of all concurrent connections based on the server's health.  Proactively performs all protection actions (even before an attack).  Increases the impact of the protection techniques.  If signatureDetectionEnabled is true, blocks requests that match the attack signatures. Increases the impact of blocked requests.",
+            "type": "object",
+            "properties": {
+                "detectionEnabled": {
+                    "description": "Enables traffic behavior, server's capacity learning, and anomaly detection",
+                    "type": "boolean",
+                    "default": false
+                },
+                "signatureDetectionEnabled": {
+                    "description": "Enables request signature detection",
+                    "type": "boolean",
+                    "default": false
+                },
+                "useApprovedSignaturesOnly": {
+                    "description": "Limits request signature detection to approved signatures only",
+                    "type": "boolean",
+                    "default": false
+                },
+                "mitigationMode": {
+                    "description": "Specifies mitigation impact on suspicious bad actors/requests",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "conservative",
+                        "standard",
+                        "aggressive"
+                    ],
+                    "default": "none"
+                },
+                "acceleratedSignaturesEnabled": {
+                    "description": "Enables signature detection before the connection establishment",
+                    "type": "boolean",
+                    "default": false
+                },
+                "tlsSignaturesEnabled": {
+                    "description": "Enables tls signature detection before the connection establishment. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_Stress_Based_Detection": {
+            "description": "Configure the system to prevent DoS attacks based on the server’s health condition. An attack is detected if the system finds the server to be under stress and either of the TPS thresholds are crossed.",
+            "type": "object",
+            "properties": {
+                "operationMode": {
+                    "description": "Specifies how the system reacts when it detects an attack",
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "transparent",
+                        "blocking"
+                    ],
+                    "default": "off"
+                },
+                "thresholdsMode": {
+                    "description": "Specifies what type of thresholds to use",
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "automatic"
+                    ],
+                    "default": "manual"
+                },
+                "escalationPeriod": {
+                    "description": "Specifies the minimum time spent in each mitigation step before the system moves to the next mitigation step when preventing a DoS attack. After the system detects a DoS attack, it performs attack prevention for the amount of time specified here for every method that is enabled. If after this period the attack has not been fully stopped, the system escalates to the next enabled prevention step.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 3600,
+                    "default": 120
+                },
+                "deEscalationPeriod": {
+                    "description": "When preventing a DoS attack, specifies the time spent since the mitigation started until retrying the steps from the beginning of the enabled methods. If the value is 0, no de-escalation occurs.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86400,
+                    "default": 7200
+                },
+                "sourceIP": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_IP" }
+                    ],
+                    "default": {}
+                },
+                "deviceID": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Device" }
+                    ],
+                    "default": {}
+                },
+                "geolocation": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Geolocation" }
+                    ],
+                    "default": {}
+                },
+                "url": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_URL" }
+                    ],
+                    "default": {}
+                },
+                "site": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Detection_Site" }
+                    ],
+                    "default": {}
+                },
+                "badActor": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Stress_Based_Detection_Bad_Actor" }
+                    ],
+                    "default": {}
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application_TCP_Dump": {
+            "description": "Configure settings to record traffic (perform a TCP dump) when a DoS attack is underway, in order to diagnose the attack vectors and attackers, observe whether and how it was mitigated, and draw conclusions for changing the DoS profile configuration.",
+            "type": "object",
+            "properties": {
+                "recordTrafficEnabled": {
+                    "description": "Enables the recording of traffic during attacks",
+                    "type": "boolean",
+                    "default": false
+                },
+                "maximumDuration": {
+                    "description": "Configures the maximum time for each TCP dump recording cycle",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 30
+                },
+                "maximumSize": {
+                    "description": "Configures the maximum size (in MB) for each TCP dump recording cycle",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 10
+                },
+                "repetitionInterval": {
+                    "description": "Allow multiple TCP dumps to be recorded during a single DoS attack",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "once-per-attack"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        }
+                    ],
+                    "default": 120
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Application": {
+            "description": "Specifies the conditions for determining that your application is under a DoS attack, and how the system reacts to a suspected attack.",
+            "type": "object",
+            "properties": {
+                "heavyURLProtection": {
+                    "description": "Configure Heavy URL include list, automatic detection, and exclude list",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Heavy_URL" }
+                    ],
+                    "default": {}
+                },
+                "denylistedGeolocations": {
+                    "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "blacklistedGeolocations": {
+                    "description": "Deprecated. Replaced with functionally equivalent denylistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "allowlistedGeolocations": {
+                    "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "whitelistedGeolocations": {
+                    "description": "Deprecated. Replaced with functionally equivalent allowlistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "captchaResponse": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Captcha" }
+                    ],
+                    "default": {}
+                },
+                "triggerIRule": {
+                    "description": "Specifies that the system activates an Application DoS iRule event",
+                    "type": "boolean",
+                    "default": false
+                },
+                "singlePageApplicationEnabled": {
+                    "description": "Specifies that your website is a Single Page Application, meaning a web application that loads new content without triggering a full page-reload. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "scrubbingDuration": {
+                    "description": "Specifies the BGP route advertisement duration in seconds for Traffic Scrubbing during attacks. This requires configuration of the Scrubber Profile, and will function even when the Operation Mode is set to Transparent. A value of 0 disables Traffic Scrubbing. Requires the AFM module and if this property is unspecified it will be disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    }
+                },
+                "remoteTriggeredBlackHoleDuration": {
+                    "description": "Specifies the BGP route advertisement duration in seconds for Remote Triggered Black Hole of attacking IPs. This requires configuration of the Blacklist Publisher, and will function even when the Operation Mode is set to Transparent. A value of 0 disables Remote Triggered Black Hole. Requires the AFM module and if this property is unspecified it will be disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    }
+                },
+                "profileAcceleration": {
+                    "description": "Select a TCP fastL4 profile to be used as a fast-path for acceleration",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_L4_Profile" }
+                    ]
+                },
+                "botDefense": {
+                    "description": "This feature proactively detects bots and scripts, and prevents them from accessing the site. It may be used to prevent DDoS, Web Scraping, and Brute Force attacks. Enabling this feature requires JavaScript support from the browsers.",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Bot_Defense" }
+                    ],
+                    "default": {}
+                },
+                "botSignatures": {
+                    "description": "This feature automatically detects well known bots according to their HTTP characteristics. Malicious bots can be configured to be blocked, while benign bots can be configured to pass through the anti-bot defense mechanisms",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Bot_Signatures" }
+                    ],
+                    "default": {}
+                },
+                "mobileDefense": {
+                    "description": "This feature detects mobile applications built with the Anti-Bot Mobile SDK and defines how requests from these mobile application clients are handled",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Mobile_Defense" }
+                    ],
+                    "default": {}
+                },
+                "rateBasedDetection": {
+                    "description": "Configures the detection of DoS attacks based on high volume of incoming traffic",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Rate_Based_Detection" }
+                    ],
+                    "default": {}
+                },
+                "stressBasedDetection": {
+                    "description": "Configures the detection of DoS attacks based on server stress. The system automatically detects an increase in server stress and mitigates DoS attacks causing it. ",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Stress_Based_Detection" }
+                    ],
+                    "default": {}
+                },
+                "recordTraffic": {
+                    "description": "This feature allows automatic recording of traffic during DoS attacks, and storing the recordings as TCP Dump files. The files are placed in the system file path /shared/dosl7/tcpdumps.",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_TCP_Dump" }
+                    ],
+                    "default": {}
+                }
+            },
+            "additionalProperties": false,
+            "f5aliases": {
+                "allowlistedGeolocations": "whitelistedGeolocations",
+                "denylistedGeolocations": "blacklistedGeolocations"
+            }
+        },
+
+        "DOS_Profile_Network_Dynamic_Signatures": {
+            "description": "",
+            "type": "object",
+            "properties": {
+                "detectionMode": {
+                    "description": "Select the enforcement state for dynamic signatures. To enable enforcement of dynamic DoS vectors, select enabled. When enforcement is enabled, all thresholds and threshold actions are applied. Select disabled to apply no action or thresholds to dynamic Vectors. Select learn-only to track dynamic vector statistics, without enforcing any thresholds or limits.",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "learn-only",
+                        "enabled"
+                    ],
+                    "default": "disabled"
+                },
+                "mitigationMode": {
+                    "description": "Specify the mitigation sensitivity for dynamic signatures",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "low",
+                        "medium",
+                        "high"
+                    ],
+                    "default": "none"
+                },
+                "scrubbingEnabled": {
+                    "description": "Specify whether to enable redirection and scrubbing of IP addresses identified by dynamic vectors. This enables handling of the dynamic vector hits by an IP intelligence category.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "scrubbingCategory": {
+                    "description": "Specifies the IP intelligence denylist category to which scrubbed IPs are sent",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Denylist_Category" }
+                    ]
+                },
+                "scrubbingDuration": {
+                    "description": "Specify the duration in seconds for which an IP address is added to the denylist category",
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 4294967295,
+                    "default": 500
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Profile_Network": {
+            "description": "",
+            "type": "object",
+            "properties": {
+                "dynamicSignatures": {
+                    "default": {},
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Network_Dynamic_Signatures" }
+                    ]
+                },
+                "vectors": {
+                    "description": "A list of configured network DoS vectors",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DOS_Network_Vector" }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_Network_Vector": {
+            "description": "Network Denial-of-Service (DoS) vector",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies the name of the DoS attack vector whose thresholds you are configuring",
+                    "type": "string",
+                    "enum": [
+                        "ext-hdr-too-large",
+                        "hop-cnt-low",
+                        "host-unreachable",
+                        "icmpv4-flood",
+                        "icmpv6-flood",
+                        "icmp-frag",
+                        "ip-frag-flood",
+                        "ip-low-ttl",
+                        "ip-opt-frames",
+                        "ipv6-ext-hdr-frames",
+                        "ipv6-frag-flood",
+                        "non-tcp-connection",
+                        "opt-present-with-illegal-len",
+                        "sweep",
+                        "tcp-half-open",
+                        "tcp-opt-overruns-tcp-hdr",
+                        "tcp-psh-flood",
+                        "tcp-rst-flood",
+                        "tcp-syn-flood",
+                        "tcp-synack-flood",
+                        "tcp-syn-oversize",
+                        "tcp-bad-urg",
+                        "tcp-window-size",
+                        "tidcmp",
+                        "too-many-ext-hdrs",
+                        "udp-flood",
+                        "unk-tcp-opt-type"
+                    ]
+                },
+                "state": {
+                    "description": "Specifies how to enforce protection for that attack type: mitigate (watch, learn, alert, and mitigate), detect-only (watch, learn, and alert), learn-only (collect stats, no mitigation), or Disabled (no stat collection, no mitigation).",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "learn-only",
+                        "detect-only",
+                        "mitigate"
+                    ],
+                    "default": "mitigate"
+                },
+                "thresholdMode": {
+                    "description": "Specifies how thresholds are set for this vector",
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "stress-based-mitigation",
+                        "fully-automatic"
+                    ],
+                    "default": "manual"
+                },
+                "badActorSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Bad_Actor_Detection_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoDenylistSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ]
+                },
+                "autoBlacklistSettings": {
+                    "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoAttackFloor": {
+                    "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 100
+                },
+                "autoAttackCeiling": {
+                    "description": "Specifies the absolute maximum allowable for packets of this type. This setting rate limits packets to the packets per second setting, when specified. To set no hard limit and allow automatic thresholds to manage all rate limiting, set this to 4294967295.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateThreshold": {
+                    "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateIncreaseThreshold": {
+                    "description": "Specify percent of rate increase the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "rateLimit": {
+                    "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "simulateAutoThresholdEnabled": {
+                    "description": "Specifies that results of the current automatic thresholds are logged, though manual thresholds are enforced, and no action is taken on automatic thresholds",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false,
+            "f5aliases": {
+                "autoDenylistSettings": "autoBlacklistSettings"
+            }
+        },
+
+        "DOS_Profile_Protocol_DNS": {
+            "description": "",
+            "type": "object",
+            "properties": {
+                "vectors": {
+                    "description": "A list of configured DNS DoS vectors",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DOS_DNS_Vector" }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_DNS_Vector": {
+            "description": "Protocol DNS Denial-of-Service (DoS) vector",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies the name of the DoS attack vector whose thresholds you are configuring",
+                    "type": "string",
+                    "enum": [
+                        "a",
+                        "aaaa",
+                        "any",
+                        "axfr",
+                        "cname",
+                        "ixfr",
+                        "mx",
+                        "ns",
+                        "nxdomain",
+                        "other",
+                        "ptr",
+                        "qdcount",
+                        "soa",
+                        "srv",
+                        "txt",
+                        "malformed"
+                    ]
+                },
+                "state": {
+                    "description": "Specifies how to enforce protection for that attack type: mitigate (watch, learn, alert, and mitigate), detect-only (watch, learn, and alert), learn-only (collect stats, no mitigation), or Disabled (no stat collection, no mitigation).",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "learn-only",
+                        "detect-only",
+                        "mitigate"
+                    ],
+                    "default": "mitigate"
+                },
+                "thresholdMode": {
+                    "description": "Specifies how thresholds are set for this vector",
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "stress-based-mitigation",
+                        "fully-automatic"
+                    ],
+                    "default": "manual"
+                },
+                "badActorSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Bad_Actor_Detection_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoDenylistSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ]
+                },
+                "autoBlacklistSettings": {
+                    "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoAttackFloor": {
+                    "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 100
+                },
+                "autoAttackCeiling": {
+                    "description": "Specifies the absolute maximum allowable for packets of this type. This setting rate limits packets to the packets per second setting, when specified. To set no hard limit and allow automatic thresholds to manage all rate limiting, set this to 4294967295.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateThreshold": {
+                    "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateIncreaseThreshold": {
+                    "description": "Specify percent of rate increase the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "rateLimit": {
+                    "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "simulateAutoThresholdEnabled": {
+                    "description": "Specifies that results of the current automatic thresholds are logged, though manual thresholds are enforced, and no action is taken on automatic thresholds",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false,
+            "required": ["type"],
+            "f5aliases": {
+                "autoDenylistSettings": "autoBlacklistSettings"
+            }
+        },
+
+        "DOS_Profile_Protocol_SIP": {
+            "description": "",
+            "type": "object",
+            "properties": {
+                "vectors": {
+                    "description": "A list of configured SIP DoS vectors",
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/DOS_SIP_Vector" }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "DOS_SIP_Vector": {
+            "description": "Protocol SIP Denial-of-Service (DoS) vector",
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "Specifies the name of the DoS attack vector whose thresholds you are configuring",
+                    "type": "string",
+                    "enum": [
+                        "ack",
+                        "cancel",
+                        "message",
+                        "options",
+                        "prack",
+                        "register",
+                        "bye",
+                        "invite",
+                        "notify",
+                        "other",
+                        "publish",
+                        "subscribe",
+                        "uri-limit",
+                        "malformed"
+                    ]
+                },
+                "state": {
+                    "description": "Specifies how to enforce protection for that attack type: mitigate (watch, learn, alert, and mitigate), detect-only (watch, learn, and alert), learn-only (collect stats, no mitigation), or Disabled (no stat collection, no mitigation).",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "learn-only",
+                        "detect-only",
+                        "mitigate"
+                    ],
+                    "default": "mitigate"
+                },
+                "thresholdMode": {
+                    "description": "Specifies how thresholds are set for this vector",
+                    "type": "string",
+                    "enum": [
+                        "manual",
+                        "stress-based-mitigation",
+                        "fully-automatic"
+                    ],
+                    "default": "manual"
+                },
+                "badActorSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Bad_Actor_Detection_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoDenylistSettings": {
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ]
+                },
+                "autoBlacklistSettings": {
+                    "description": "Deprecated. Replaced with functionally equivalent autoDenylistSettings.",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Auto_Denylist_Settings" }
+                    ],
+                    "default": {}
+                },
+                "autoAttackFloor": {
+                    "description": "Specifies packets per second to identify an attack. These settings provide an absolute minimum of packets to allow before the attack is identified. As the automatic detection thresholds adjust to traffic and CPU usage on the system over time, this attack floor becomes less relevant.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 100
+                },
+                "autoAttackCeiling": {
+                    "description": "Specifies the absolute maximum allowable for packets of this type. This setting rate limits packets to the packets per second setting, when specified. To set no hard limit and allow automatic thresholds to manage all rate limiting, set this to 4294967295.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateThreshold": {
+                    "description": "Specify how many packets per second the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "rateIncreaseThreshold": {
+                    "description": "Specify percent of rate increase the system must discover in traffic in order to detect this attack",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 500
+                },
+                "rateLimit": {
+                    "description": "Specify the maximum number of this type of packet per second the system allows for a vector. The system drops packets once the traffic level exceeds the rate limit.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 4294967295
+                },
+                "simulateAutoThresholdEnabled": {
+                    "description": "Specifies that results of the current automatic thresholds are logged, though manual thresholds are enforced, and no action is taken on automatic thresholds",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "additionalProperties": false,
+            "required": ["type"],
+            "f5aliases": {
+                "autoDenylistSettings": "autoBlacklistSettings"
+            }
+        }
+    }
+}

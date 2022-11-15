@@ -1,0 +1,33 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "action": "deploy",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.30.0",
+        "id": "DNS_Nameserver",
+        "controls": {
+            "class": "Controls",
+            "trace": true,
+            "logLevel": "debug",
+            "traceResponse": true,
+            "dryRun": true
+        },
+        "TEST_DNS_Nameserver": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "test.item-foo": {
+                    "class": "DNS_Nameserver"
+                },
+                "tsigKey": {
+                    "class": "DNS_TSIG_Key",
+                    "secret": {
+                        "ciphertext": "ZjVmNQ==",
+                        "ignoreChanges": true
+                    }
+                }
+            }
+        }
+    }
+}

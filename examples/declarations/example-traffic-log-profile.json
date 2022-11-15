@@ -1,0 +1,72 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.8.0",
+    "id": "Traffic_Log_Profile",
+    "Sample_profile_04": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "trafLogProf": {
+                "class": "Traffic_Log_Profile",
+                "parentProfile": {
+                	"use": "trafLog"
+                },
+                "requestSettings": {
+                    "requestErrorLoggingEnabled": true,
+                    "proxyCloseOnErrorEnabled": true,
+                    "proxyRespondOnLoggingErrorEnabled": true,
+                    "requestErrorProtocol": "mds-tcp",
+                    "requestProtocol": "mds-tcp",
+                    "requestEnabled": true,
+                    "proxyResponse": "Proxy Response",
+                    "requestErrorPool": {
+                        "use": "thePool"
+                    },
+                    "requestErrorTemplate": "ERR TEMPLATE:",
+                    "requestPool": {
+                        "use": "thePool"
+                    },
+                    "requestTemplate": "REQ TEMP"
+                },
+                "responseSettings": {
+                    "byDefaultEnabled": false,
+                    "responseErrorLoggingEnabled": true,
+                    "responseErrorProtocol": "mds-tcp",
+                    "responseProtocol": "mds-tcp",
+                    "responseEnabled": true,
+                    "responseErrorPool": {
+                        "use": "thePool"
+                    },
+                    "responseErrorTemplate": "ERROR: ",
+                    "responsePool": {
+                        "use": "thePool"
+                    },
+                    "responseTemplate": "TEMPLATE"
+                }
+            },
+            "thePool": {
+                "class": "Pool"
+            },
+            "trafLog": {
+                "class": "Traffic_Log_Profile"
+            }
+        }
+    },
+    "tenant2": {
+        "class": "Tenant",
+        "app2": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": ["1.1.1.1"],
+                "virtualPort": 23,
+                "profileTrafficLog": {
+                    "use": "trafLogProf2"
+                }
+            },
+            "trafLogProf2": {
+                "class": "Traffic_Log_Profile"
+            }
+        }
+    }
+}

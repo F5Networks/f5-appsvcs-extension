@@ -1,0 +1,37 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.31.0",
+    "id": "TEST",
+    "TEST": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testVirtual": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "pool": {
+                    "use": "testPool"
+                }
+            },
+            "testPool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "addressDiscovery": "aws",
+                        "updateInterval": 1,
+                        "tagKey": "foo",
+                        "tagValue": "bar",
+                        "addressRealm": "private",
+                        "accessKeyId": "key",
+                        "secretAccessKey": "secret",
+                        "region": "us-west-1",
+                        "routeDomain": 100
+                    }
+                ]
+            }
+        }
+    }
+}

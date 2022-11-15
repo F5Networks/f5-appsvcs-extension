@@ -1,0 +1,24 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.6.0",
+    "id": "TEST_TCP_OPTIONS",
+    "Sample_non_http_06": {
+      "class": "Tenant",
+      "TEST_TCP_Profile": {
+        "class": "Application",
+        "pTcpOptions" : {
+            "class": "TCP_Profile",
+            "tcpOptions": [
+                {
+                    "option": 8,
+                    "when": "first"
+                },
+                {
+                    "option": 28,
+                    "when": "last"
+                }
+            ]
+        }
+      }
+    }
+  }

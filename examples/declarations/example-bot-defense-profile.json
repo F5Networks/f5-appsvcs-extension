@@ -1,0 +1,25 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.17.0",
+        "id": "Service_HTTP",
+        "Example_Bot_Def": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "test.botDef": {
+                    "class": "Service_HTTP",
+                    "virtualPort": 8080,
+                    "virtualAddresses": [
+                        "1.2.3.4"
+                    ],
+                    "profileBotDefense": {
+                    	"bigip": "/Common/bot-defense"
+                    }
+                }
+            }
+        }
+    }
+}

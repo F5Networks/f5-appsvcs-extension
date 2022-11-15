@@ -1,0 +1,51 @@
+[
+    {
+        "class": "AS3",
+        "action": "redeploy",
+        "redeployAge": 2,
+        "targetHost": "10.10.10.11",
+        "targetUsername": "admin",
+        "targetPassphrase": "admin"
+    },
+    {
+        "class": "AS3",
+        "action": "deploy",
+        "targetHost": "10.10.10.12",
+        "targetUsername": "admin",
+        "targetPassphrase": "admin",
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.7.0",
+            "id": "AS3Request_Tenant1",
+            "updateMode": "selective",
+            "AS3Request_Tenant1": {
+                "class": "Tenant",
+                "App1": {
+                    "class": "Application",
+                    "service": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "198.19.192.14"
+                        ],
+                        "pool": "web_pool1"
+                    },
+                    "web_pool1": {
+                        "class": "Pool",
+                        "monitors": [
+                            "http"
+                        ],
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": [
+                                    "198.19.192.72",
+                                    "198.19.192.73"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+]

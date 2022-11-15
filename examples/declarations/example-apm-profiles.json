@@ -1,0 +1,72 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.25.0",
+    "tenant1a": {
+        "class": "Tenant",
+        "application1a": {
+            "class": "Application",
+            "APMservice": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "192.0.2.0"
+                ],
+                "profileAccess": {
+                    "use": "/tenant1a/Shared/accessProfileTenant1a"
+                }
+            }
+        },
+        "application1b": {
+            "class": "Application",
+            "APMservice": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "profileAccess": {
+                    "use": "/tenant1a/Shared/accessProfileTenant1a"
+                }
+            }
+        },
+        "Shared":{
+            "class": "Application",
+            "template": "shared",
+            "accessProfileTenant1a": {
+                "class": "Access_Profile",
+                "url": "https://apm.example.com/apm/apmProfile.tar.gz",
+                "ssloCreated": false,
+                "ignoreChanges": false
+            }
+        }
+    },
+    "tenant2a": {
+        "class": "Tenant",
+        "application": {
+            "class": "Application",
+            "APMservice": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "192.0.2.2"
+                ],
+                "profileAccess": {
+                    "use": "/Common/Shared/accessProfileCommon"
+                }
+            }
+        }
+    },
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "accessProfileCommon": {
+                "class": "Access_Profile",
+                "url": "https://apm.example.com/apm/apmProfile.tar.gz",
+                "ssloCreated": true,
+                "ignoreChanges": false
+            }
+        }
+    }
+}
