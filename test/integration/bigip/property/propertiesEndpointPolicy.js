@@ -304,6 +304,19 @@ const conditionTemplates = [
             { address: { operand: 'does-not-match', values: ['1.2.3.4'] } },
             { port: { operand: 'equals', values: [8080] } }
         ]
+    },
+    {
+        type: 'geoip',
+        events: ['request', 'response'],
+        conditions: [
+            { continent: { operand: 'matches', values: ['AF'] } },
+            { countryCode: { operand: 'matches', values: ['AT'] } },
+            { countryName: { operand: 'matches', values: ['Germany'] } },
+            { isp: { operand: 'matches', values: ['AT&T'] } },
+            { org: { operand: 'matches', values: ['myORG'] } },
+            { regionCode: { operand: 'matches', values: ['OR'] } },
+            { regionName: { operand: 'matches', values: ['Ohio'] } }
+        ]
     }
 ];
 
