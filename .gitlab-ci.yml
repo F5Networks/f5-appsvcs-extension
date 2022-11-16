@@ -70,7 +70,7 @@ schema:
     - npm ci --no-optional
     - npm run build-schema
   artifacts:
-    name: f5-appsvcs-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_BUILD_REF
     paths:
       - src/schema/latest/adc-schema.json
       - src/schema/latest/as3-schema.json
@@ -179,7 +179,7 @@ build_rpm:
   tags:
     - cm-official-docker-executor
   artifacts:
-    name: f5-appsvcs-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_BUILD_REF
     paths:
       - dist
       - src/schema/latest/adc-schema.json
@@ -403,7 +403,7 @@ test_rpms_in_azure:
     TEST_RESOURCES_URL: "$TEST_RESOURCES_URL_AZURE"
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_BUILD_REF
     when: always
     paths:
       - test/logs
@@ -427,7 +427,7 @@ test_rpms_for_this_project:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_BUILD_REF
     when: always
     paths:
       - test/logs
@@ -449,7 +449,7 @@ test_rpms_for_other_project:
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_BUILD_REF
     when: always
     paths:
       - test/logs
