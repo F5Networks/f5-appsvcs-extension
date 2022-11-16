@@ -1,0 +1,98 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.42.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "tcpItem": {
+                "class": "Service_HTTP",
+                "policyEndpoint": "geoIPPolicy",
+                "virtualAddresses": [
+                    "10.1.0.1"
+                ]
+            },
+            "geoIPPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "geoIPDefault",
+                        "conditions": [
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "continent": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "AF"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "countryCode": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "AT"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "countryName": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "Germany"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "isp": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "AT&T"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "org": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "myORG"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "regionCode": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "OR"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "geoip",
+                                "event": "request",
+                                "regionName": {
+                                    "operand": "matches",
+                                    "values": [
+                                        "Ohio"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

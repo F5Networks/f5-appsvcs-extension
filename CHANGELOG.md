@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.42.0
 
 ### Added
+- AUTOTOOL-975: ([GitHub Issue 156](https://github.com/F5Networks/f5-appsvcs-extension/issues/156)): Add geoip condition to Endpoint_Policy
 
 ### Fixed
 

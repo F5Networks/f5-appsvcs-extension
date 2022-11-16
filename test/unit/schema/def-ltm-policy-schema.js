@@ -97,6 +97,69 @@ describe('def-ltm-policy-schema.json', () => {
                                                 bigip: '/Common/myDatagroup'
                                             }
                                         }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        continent: {
+                                            operand: 'matches',
+                                            values: [
+                                                'AF'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        countryCode: {
+                                            operand: 'matches',
+                                            values: [
+                                                'AT'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        countryName: {
+                                            operand: 'matches',
+                                            values: [
+                                                'Germany'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        isp: {
+                                            operand: 'matches',
+                                            values: [
+                                                'AT&T'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        org: {
+                                            operand: 'matches',
+                                            values: [
+                                                'myOrg'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        regionCode: {
+                                            operand: 'matches',
+                                            values: [
+                                                'OR'
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        type: 'geoip',
+                                        regionName: {
+                                            operand: 'matches',
+                                            values: [
+                                                'Ohio'
+                                            ]
+                                        }
                                     }
                                 ]
                             }
