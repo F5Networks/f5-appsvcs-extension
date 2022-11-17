@@ -27,6 +27,8 @@ else
 
     git checkout $UPDATE_BRANCH_NAME 2>/dev/null || git checkout -b $UPDATE_BRANCH_NAME;
 
+    ./scripts/dev/filter-package-lock.sh
+
     git add .
     git status
     git commit -m "Auto-update to AS3 deps"
