@@ -52,7 +52,6 @@ update_autotool_deps:
     UPDATE_BRANCH_NAME: update_autotool_deps
   script:
     - . ./scripts/dev/update-as3-deps.sh
-    - . ./scripts/dev/filter-package-lock.sh
     - >
       if [ "$AUTOTOOL_DIFF" = "true" ]; then
         git push -f origin ${UPDATE_BRANCH_NAME}
