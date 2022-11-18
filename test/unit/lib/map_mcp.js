@@ -2238,4 +2238,93 @@ describe('map_mcp', () => {
             });
         });
     });
+
+    describe('tm:ltm:snat-translation:snat-translationstate', () => {
+        it('should return ltm profile snat-translation with mostly default values', () => {
+            const obj = {
+                kind: 'tm:ltm:snat-translation:snat-translationstate',
+                name: '10.10.21.21',
+                partition: 'Common',
+                fullPath: '/Common/10.10.21.21',
+                generation: 44780,
+                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Common~10.10.21.21?ver=17.0.0',
+                address: '10.10.21.21',
+                arp: 'enabled',
+                connectionLimit: 4294967295,
+                enabled: true,
+                inheritedTrafficGroup: 'true',
+                ipIdleTimeout: 'indefinite',
+                tcpIdleTimeout: 'indefinite',
+                trafficGroup: '/Common/traffic-group-1',
+                trafficGroupReference: {
+                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
+                },
+                udpIdleTimeout: 'indefinite',
+                unit: 1
+            };
+            const results = translate[obj.kind](defaultContext, obj);
+            assert.deepStrictEqual(
+                results[0],
+                {
+                    path: '/Common/10.10.21.21',
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '10.10.21.21',
+                        arp: 'enabled',
+                        'connection-limit': 4294967295,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                }
+            );
+        });
+
+        it('should return ipv6 ltm profile with more customized values', () => {
+            const obj = {
+                kind: 'tm:ltm:snat-translation:snat-translationstate',
+                name: '2001:db8::1',
+                partition: 'Tenant',
+                subPath: 'Application',
+                fullPath: '/Tenant/Application/2001:db8::1',
+                generation: 48870,
+                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Tenant~Application~2001:db8::1?ver=17.0.0',
+                address: '2001:db8::1',
+                arp: 'enabled',
+                connectionLimit: 0,
+                disabled: true,
+                inheritedTrafficGroup: 'false',
+                ipIdleTimeout: '3000',
+                tcpIdleTimeout: '1000',
+                trafficGroup: '/Common/traffic-group-1',
+                trafficGroupReference: {
+                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
+                },
+                udpIdleTimeout: '2000',
+                unit: 1
+            };
+            const results = translate[obj.kind](defaultContext, obj);
+            assert.deepStrictEqual(
+                results[0],
+                {
+                    path: '/Tenant/Application/2001:db8::1',
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '2001:db8::1',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        disabled: {},
+                        'ip-idle-timeout': '3000',
+                        'tcp-idle-timeout': '1000',
+                        'traffic-group': '/Common/traffic-group-1',
+                        'udp-idle-timeout': '2000'
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
 });

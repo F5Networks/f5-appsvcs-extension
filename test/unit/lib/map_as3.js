@@ -273,6 +273,88 @@ describe('map_as3', () => {
         });
     });
 
+    describe('SNAT_Translation', () => {
+        it('should handle mostly default values', () => {
+            const config = translate.SNAT_Translation(
+                defaultContext,
+                'tenantId',
+                'appId',
+                'mySnatTranslation',
+                {
+                    class: 'SNAT_Translation',
+                    address: '192.0.2.100',
+                    adminState: 'enable',
+                    arpEnabled: true,
+                    ipIdleTimeout: 'indefinite',
+                    maxConnections: 0,
+                    tcpIdleTimeout: 'indefinite',
+                    trafficGroup: 'default',
+                    udpIdleTimeout: 'indefinite'
+                }
+            ).configs[0];
+
+            assert.deepStrictEqual(
+                config,
+                {
+                    command: 'ltm snat-translation',
+                    ignore: [],
+                    path: '/tenantId/appId/192.0.2.100',
+                    properties: {
+                        address: '192.0.2.100',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    }
+                }
+            );
+        });
+
+        it('should handle custom values', () => {
+            const config = translate.SNAT_Translation(
+                defaultContext,
+                'tenantId',
+                'appId',
+                'mySnatTranslation',
+                {
+                    class: 'SNAT_Translation',
+                    remark: 'my remark',
+                    address: '2001:db8:0000:0000:0000:0000:0000:0001',
+                    adminState: 'disable',
+                    arpEnabled: false,
+                    ipIdleTimeout: 1000,
+                    maxConnections: 10000,
+                    tcpIdleTimeout: 2000,
+                    trafficGroup: '/Common/myTrafficGroup',
+                    udpIdleTimeout: 3000
+                }
+            ).configs[0];
+
+            assert.deepStrictEqual(
+                config,
+                {
+                    command: 'ltm snat-translation',
+                    ignore: [],
+                    path: '/tenantId/appId/2001:db8::1',
+                    properties: {
+                        description: '"my remark"',
+                        address: '2001:db8::1',
+                        arp: 'disabled',
+                        'connection-limit': 10000,
+                        disabled: {},
+                        'ip-idle-timeout': '1000',
+                        'tcp-idle-timeout': '2000',
+                        'traffic-group': '/Common/myTrafficGroup',
+                        'udp-idle-timeout': '3000'
+                    }
+                }
+            );
+        });
+    });
+
     describe('Pool', () => {
         let item;
 

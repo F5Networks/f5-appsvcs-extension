@@ -1054,6 +1054,18 @@
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"members" }
   ],
+  "ltm snat-translation": [
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"address" },
+    { "id":"arp",                       "truth": "enabled", "falsehood": "disabled", "altId": "arpEnabled" },
+    { "id":"connection-limit",          "altId": "maxConnections" },
+    { "id":"disabled" },
+    { "id":"enabled" },
+    { "id":"ip-idle-timeout",           "intToString": true },
+    { "id":"tcp-idle-timeout",          "intToString": true },
+    { "id":"traffic-group" },
+    { "id":"udp-idle-timeout",          "intToString": true }
+  ],
   "ltm virtual": [
     { "id":"enabled",                   "altId": "adminState" },
     { "id":"disabled" },

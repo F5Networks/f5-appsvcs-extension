@@ -773,7 +773,7 @@ function getMcpObject(as3Class, index, options) {
         pathPrefix = options.mcpPath;
     }
 
-    const itemName = getItemName(options);
+    const itemName = options.mcpObjectName || getItemName(options);
     if (options.getMcpObject) {
         options.getMcpObject.itemName = options.getMcpObject.itemName || itemName;
         pathPrefix += options.getMcpObject.itemName;

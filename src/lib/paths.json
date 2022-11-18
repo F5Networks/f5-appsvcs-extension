@@ -200,6 +200,9 @@
             "endpoint": "/mgmt/tm/ltm/snatpool"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/snat-translation"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/virtual",
             "expand": true
         },

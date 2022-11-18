@@ -2796,6 +2796,108 @@
             "required": [ "class", "snatAddresses" ]
         },
 
+        "SNAT_Translation": {
+            "title": "SNAT_Translation",
+            "description": "Configures explicit secure network address translation (SNAT) address",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "SNAT_Translation"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "address": {
+                    "title": "Address",
+                    "description": "The IP address of the SNAT translation",
+                    "type": "string",
+                    "format": "f5ip"
+                },
+                "adminState": {
+                    "title": "Administration State",
+                    "description": "Specifies the state of the SNAT translation",
+                    "type": "string",
+                    "enum": [
+                        "enable",
+                        "disable"
+                    ],
+                    "default": "enable"
+                },
+                "arpEnabled": {
+                    "title": "Enable ARP",
+                    "description": "Specifies that the NAT sends ARP requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "ipIdleTimeout": {
+                    "title": "IP Idle Timeout",
+                    "description": "Specifies time in seconds that connections to an IP address initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "maximum": 4294967295,
+                            "minimum": 1
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
+                },
+                "maxConnections": {
+                    "title": "Maximum Connections",
+                    "description": "Specifies a limit on the number of connections a translation address must reach before it no longer initiates a connection. A value of 0 indicates the setting is disabled.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 0
+                },
+                "tcpIdleTimeout": {
+                    "title": "TCP Idle Timeout",
+                    "description": "Specifies time in seconds that TCP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "maximum": 4294967295,
+                            "minimum": 1
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
+                },
+                "trafficGroup": {
+                    "title": "Traffic Group",
+                    "description": "Specifies the traffic group which the SNAT_Translation belongs",
+                    "type": "string",
+                    "default": "default"
+                },
+                "udpIdleTimeout": {
+                    "title": "UDP Idle Timeout",
+                    "description": "Specifies time in seconds that UDP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "maximum": 4294967295,
+                            "minimum": 1
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class", "address" ]
+        },
+
         "iRule": {
             "title": "iRule",
             "description": "An iRule",

@@ -37,6 +37,18 @@
                     "192.0.96.10",
                     "192.0.96.11"
                  ]
+            },
+            "CreateSnatTranslation": {
+                "class": "SNAT_Translation",
+                "label": "my label",
+                "remark": "my remark",
+                "address": "10.10.33.41",
+                "arpEnabled": false,
+                "ipIdleTimeout": "indefinite",
+                "maxConnections": 10000,
+                "tcpIdleTimeout": 2000,
+                "trafficGroup": "/Common/traffic-group-1",
+                "udpIdleTimeout": 3000
             }
         }
     }

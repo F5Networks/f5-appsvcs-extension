@@ -5046,6 +5046,61 @@ describe('fetch', () => {
             assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
         });
 
+        it('should process snat translations with snat pools', () => {
+            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.control = {
+                host: 'localhost'
+            };
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.9.0',
+                id: 'Pool',
+                Tenant: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        template: 'generic',
+                        snatPool: {
+                            class: 'SNAT_Pool',
+                            snatAddresses: [
+                                '2001:db8:0000:0000:0000:0000:0000:0001',
+                                '2001:db8:0000:0000:0000:0000:0000:0002'
+                            ]
+                        },
+                        snatTranslation: {
+                            class: 'SNAT_Translation',
+                            address: '2001:db8:0000:0000:0000:0000:0000:0002',
+                            connectionLimit: 10000
+                        },
+                        enable: true
+                    },
+                    enable: true,
+                    defaultRouteDomain: 0,
+                    optimisticLockKey: ''
+                },
+                updateMode: 'selective'
+            };
+
+            const desiredConfig = fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig);
+            assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
+            assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
+                '/Tenant/Application/2001:db8::1': {},
+                '/Tenant/Application/2001:db8::2': {}
+            });
+
+            // auto generated snat-translation
+            let snatTranslation = desiredConfig['/Tenant/Application/2001:db8::1'];
+            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+            assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
+            assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
+
+            // specified snat-translation
+            snatTranslation = desiredConfig['/Tenant/Application/2001:db8::2'];
+            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+            assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
+            assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+        });
+
         describe('.updateDesiredForCommonNodes', () => {
             const getPoolDecl = (tenant, memberAddresses) => ({
                 class: 'ADC',

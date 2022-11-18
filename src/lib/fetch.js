@@ -143,6 +143,9 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
     const keyRegex = /\.key$/;
     const hasKey = postProcessing.find((change) => change.oldString && change.oldString.match(keyRegex));
 
+    const snatPoolAddresses = new Set();
+    const snatTranslationAddresses = [];
+
     postProcessing.forEach((change) => {
         if (change.oldString && change.newString) {
             util.stringReplace(config, change.oldString, change.newString);
@@ -166,8 +169,47 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
                 );
             });
         }
+
+        if (change.snatPoolAddress || change.snatTranslationAddress) {
+            if (change.snatTranslationAddress) {
+                snatTranslationAddresses.push(change);
+            }
+            if (change.snatPoolAddress) {
+                snatPoolAddresses.add(change);
+            }
+        }
     });
+
+    // remove overlap to find snat pool addresses that BIGIP will create snat translations for if we do not
+    snatTranslationAddresses.forEach((tChange) => {
+        snatPoolAddresses.forEach((pChange) => {
+            if (tChange.name === pChange.name && tChange.snatTranslationAddress === pChange.snatPoolAddress) {
+                snatPoolAddresses.delete(pChange);
+            }
+        });
+    });
+
+    createDefaultSnatTranslations(config, snatPoolAddresses);
 };
+
+function createDefaultSnatTranslations(config, snatPoolAddresses) {
+    snatPoolAddresses.forEach((change) => {
+        config[change.name] = {
+            command: 'ltm snat-translation',
+            properties: {
+                address: change.snatPoolAddress,
+                arp: 'enabled',
+                'connection-limit': 0,
+                enabled: {},
+                'ip-idle-timeout': 'indefinite',
+                'tcp-idle-timeout': 'indefinite',
+                'traffic-group': 'default',
+                'udp-idle-timeout': 'indefinite'
+            },
+            ignore: []
+        };
+    });
+}
 
 function updateDesiredForCommonNodes(desiredConfig, nodelist) {
     const handledNodes = [];

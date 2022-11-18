@@ -3354,6 +3354,69 @@ describe('core-schema.json', () => {
         });
     });
 
+    describe('SNAT_Translate', () => {
+        let data;
+        beforeEach(() => {
+            data = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                tenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        test: {
+                            class: 'SNAT_Translation',
+                            address: '192.0.2.100'
+                        }
+                    }
+                }
+            };
+        });
+
+        it('should validate minimal values', () => {
+            assert.ok(validate(data), getErrorString(validate));
+            assert.deepStrictEqual(data.tenant.application.test,
+                {
+                    class: 'SNAT_Translation',
+                    address: '192.0.2.100',
+                    adminState: 'enable',
+                    arpEnabled: true,
+                    ipIdleTimeout: 'indefinite',
+                    maxConnections: 0,
+                    tcpIdleTimeout: 'indefinite',
+                    trafficGroup: 'default',
+                    udpIdleTimeout: 'indefinite'
+                });
+        });
+
+        it('should validate when fully populated', () => {
+            Object.assign(data.tenant.application.test, {
+                class: 'SNAT_Translation',
+                label: 'myLabel',
+                remark: 'myRemark',
+                adminState: 'disable',
+                arpEnabled: false,
+                ipIdleTimeout: 2000,
+                maxConnections: 10000,
+                tcpIdleTimeout: 3000,
+                trafficGroup: 'someTrafficGroup',
+                udpIdleTimeout: 4000
+            });
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate indefinite timeouts', () => {
+            Object.assign(data.tenant.application.test, {
+                class: 'SNAT_Translation',
+                ipIdleTimeout: 'indefinite',
+                tcpIdleTimeout: 'indefinite',
+                udpIdleTimeout: 'indefinite'
+            });
+            assert.ok(validate(data), getErrorString(validate));
+        });
+    });
+
     describe('Pool_Member', () => {
         describe('.addressDiscovery', () => {
             function testValue(value, expected) {
