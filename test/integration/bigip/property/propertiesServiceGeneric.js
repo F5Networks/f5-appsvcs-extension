@@ -19,11 +19,14 @@
 const {
     assertClass,
     assertMultipleItems,
+    deleteBigipItems,
     extractProfile,
     assertModuleProvisioned,
     getBigIpVersion,
-    GLOBAL_TIMEOUT
+    GLOBAL_TIMEOUT,
+    logEvent
 } = require('./propertiesCommon');
+const requestUtil = require('../../../common/requestUtilPromise');
 const util = require('../../../../src/lib/util/util');
 
 // Just missing allowVlans and rejectVlans
@@ -36,6 +39,33 @@ describe('Service_Generic', function () {
 
     function assertMultiple(properties) {
         return assertMultipleItems('Service_Generic', properties, 2);
+    }
+
+    function testCleanup() {
+        return Promise.resolve()
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/virtual-address?$filter=partition+eq+Common' }))
+            .then((result) => {
+                const addr = (result.body.items || [])
+                    .find((a) => a.fullPath === '/Common/any6');
+                if (addr) {
+                    const msg = 'Virtual address /Common/any6 found after test. Will try to delete.';
+                    console.log(msg);
+                    logEvent(msg);
+
+                    return deleteBigipItems(
+                        [
+                            {
+                                endpoint: '/mgmt/tm/ltm/virtual-address',
+                                data: {
+                                    name: 'any6',
+                                    partition: 'Common'
+                                }
+                            }
+                        ]
+                    );
+                }
+                return Promise.resolve();
+            });
     }
 
     it('Basic properties', function () {
@@ -427,7 +457,8 @@ describe('Service_Generic', function () {
             }
         ];
 
-        return assertServiceGenericClass(properties);
+        return assertServiceGenericClass(properties)
+            .finally(() => testCleanup());
     });
 
     it('virtualAddresses 0.0.0.0 and double colon with RD should be idempotent', () => {
@@ -489,7 +520,8 @@ describe('Service_Generic', function () {
             }
         ];
 
-        return assertServiceGenericClass(properties, options);
+        return assertServiceGenericClass(properties, options)
+            .finally(() => testCleanup());
     });
 
     it('AFM properties', function () {
