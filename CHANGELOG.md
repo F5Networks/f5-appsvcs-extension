@@ -9,6 +9,8 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 
 ### Changed
+- Updated to Service Discovery 1.11.0-1
+  - AUTOTOOL-3335: ([GitHub Issue 610](https://github.com/F5Networks/f5-appsvcs-extension/issues/610)): Service Discovery / Consul and jmespathquery to configure priorityGroup for pool members
 
 ### Removed
 
