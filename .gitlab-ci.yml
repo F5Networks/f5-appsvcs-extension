@@ -355,7 +355,7 @@ deploy_for_other_project:
     - if [ -n "$UPSTREAM_RPM_PATH" ]; then
     -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
     - fi
-    - export BIGIP_IMAGE="BIGIP-16.1.2.2-0.0.28"
+    - export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
