@@ -978,6 +978,19 @@ const translate = {
         obj = util.arrToObj(obj, 'members');
         return [normalize.actionableMcp(context, obj, 'ltm snatpool', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
+    'tm:ltm:snat-translation:snat-translationstate': function (context, obj) {
+        if (obj.enabled === true) {
+            obj.enabled = {};
+        }
+        if (obj.disabled === true) {
+            obj.disabled = {};
+        }
+        if (obj.inheritedTrafficGroup === 'true') {
+            obj.trafficGroup = 'default';
+        }
+        obj.address = ipUtil.minimizeIP(obj.address);
+        return [normalize.actionableMcp(context, obj, 'ltm snat-translation', util.mcpPath(obj.partition, obj.subPath, obj.name))];
+    },
     'tm:ltm:virtual:virtualstate': function (context, obj) {
         obj.enabled = util.isEnabledObject(obj);
         delete obj.disabled;

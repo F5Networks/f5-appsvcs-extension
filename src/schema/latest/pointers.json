@@ -551,11 +551,6 @@
         "name": "SCTP Profile",
         "tmshPath": "ltm profile sctp"
     },
-    "SNAT_Pool": {
-        "name": "snat pool",
-        "class": "SNAT_Pool",
-        "tmshPath": "ltm snatpool"
-    },
     "Security_Log_Profile": {
         "name": "Security Log Profile",
         "class": "Security_Log_Profile",
@@ -574,6 +569,16 @@
             "Service_Generic"
         ],
         "tmshPath": "ltm virtual"
+    },
+    "SNAT_Pool": {
+        "name": "snat pool",
+        "class": "SNAT_Pool",
+        "tmshPath": "ltm snatpool"
+    },
+    "SNAT_Translation": {
+        "name": "snat translation",
+        "class": "SNAT_Translation",
+        "tmshPath": "ltm snat-translation"
     },
     "SSL_Certificate": {
         "name": "SSL certificate",

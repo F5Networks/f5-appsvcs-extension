@@ -2044,8 +2044,38 @@ const translate = {
         item.snatAddresses.forEach((addr) => {
             addr = ipUtil.minimizeIP(addr);
             item.members[util.mcpPath(tenantId, appId, addr)] = {};
+            context.request.postProcessing.push(
+                {
+                    name: `/${tenantId}/${appId}/${addr}`,
+                    snatPoolAddress: addr
+                }
+            );
         });
         return { configs: [normalize.actionableMcp(context, item, 'ltm snatpool', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    /**
+     * Defines a snat translation
+     */
+    SNAT_Translation(context, tenantId, appId, itemId, item) {
+        if (item.adminState === 'enable') {
+            item.enabled = {};
+        } else {
+            item.disabled = {};
+        }
+        item.address = ipUtil.minimizeIP(item.address);
+        context.request.postProcessing.push(
+            {
+                name: `/${tenantId}/${appId}/${item.address}`,
+                snatTranslationAddress: item.address
+            }
+        );
+        // set the name to the address
+        // The addres property is read-only and there can be only 1 copy of the address among all the translations.
+        // When BIGIP auto generates a translation it picks the address as the name of the object.
+        // For the maintenance of translations moving between auto generated and user specified it is easier to always
+        // make the translation names the same as the address.
+        return { configs: [normalize.actionableMcp(context, item, 'ltm snat-translation', util.mcpPath(tenantId, appId, item.address))] };
     },
 
     /**

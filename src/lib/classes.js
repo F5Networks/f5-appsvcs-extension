@@ -39,6 +39,7 @@ module.exports = {
         Service_TCP: 'ltm virtual',
         Service_UDP: 'ltm virtual',
         SNAT_Pool: 'ltm snatpool',
+        SNAT_Translation: 'ltm snat-translation',
         Multiplex_Profile: 'ltm profile one-connect',
         TCP_Profile: 'ltm profile tcp',
         TLS_Server: 'ltm profile client-ssl',
