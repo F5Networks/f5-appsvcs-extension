@@ -54,7 +54,7 @@ function combineDeclarations() {
         id: 'declarationId',
         /* target: {
             hostName: 'theHost',
-            address: '1.1.1.1'
+            address: '192.0.2.10'
         }, */
         label: 'theDeclaration',
         remark: 'All properties declaration',
