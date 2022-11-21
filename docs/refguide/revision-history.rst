@@ -13,7 +13,7 @@ Document Revision History
         
       * - 3.42
         - Updated the documentation for AS3 v3.42.0. This release contains the following changes: |br| * |br| |br| Issues Resolved: |br| * 
-        - 
+        - 12-
 
       * - 3.41
         - Updated the documentation for AS3 v3.41.0. This release contains the following changes: |br| * Added support for inband monitors (see :ref:`Inband monitor<inbandmon>`), `GitHub Issue 562 <https://github.com/F5Networks/f5-appsvcs-extension/issues/562>`_ |br| * Added support for creating Statistics profiles (see :ref:`Statistics profile<stats>`) |br| * Added support for advanced SSL profile properties (see :ref:`Advanced SSL properties<advssl>`) |br| * Added persistence options to GSLB Domain (see :ref:`this GSLB example`), `GitHub Issue 566 <https://github.com/F5Networks/f5-appsvcs-extension/issues/566>`_ |br| |br| Issues Resolved: |br| * Unable to reference existing virtual addresses that exist in Common in route domains, `GitHub Issue 606 <https://github.com/F5Networks/f5-appsvcs-extension/issues/606>`_ |br| * Unable to use use-references to single-letter Tenants or Applications, `GitHub Issue 613 <https://github.com/F5Networks/f5-appsvcs-extension/issues/613>`_ |br| * Mapped IPv4 Addresses are not idempotent |br| * PATCH request fails to add new tenant to existing declaration |br| * Corrected the Schema Reference property descriptions for |tlss|
