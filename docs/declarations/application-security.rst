@@ -730,7 +730,7 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
-.. _ep-log:
+.. _geoip:
 
 Using GeoIP Conditions in an Endpoint policy
 ````````````````````````````````````````````
@@ -750,7 +750,7 @@ This declaration creates the following objects on the BIG-IP:
 - An Endpoint policy named **geoIPPolicy** with a set or rules named **geoIPDefault**
 - Multiple rules using the **geoip** type.
 
-.. literalinclude:: ../../examples/declarations/example-endpoint-policy-log-action.json
+.. literalinclude:: ../../examples/declarations/example-endpoint-policy-geoip-condition-events.json
     :language: json
     
 
