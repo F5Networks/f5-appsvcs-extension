@@ -728,6 +728,36 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<app-sec-examples>`
 
+|
+
+.. _ep-log:
+
+Using GeoIP Conditions in an Endpoint policy
+````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for the GeoIP Conditions in an Endpoint policy is available in BIG-IP AS3 v3.42 and later. 
+
+In this example, we show how you can use GeoIP Conditions (introduced in BIG-IP AS3 3.42) in an Endpoint Policy. GeoIP Conditions allow you to configure an Endpoint policy to match against specific IP geolocation properties. For more information on LTM Endpoint Policies, see |ltmpol| in the BIG-IP documentation.
+
+See |geoip| in the Schema Reference for available properties, descriptions, and AS3 usage.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **AS3_Tenant**.
+- An Application named **AS3_Application**.
+- A virtual server named **tcpItem** that references the Endpoint Policy.
+- An Endpoint policy named **geoIPPolicy** with a set or rules named **geoIPDefault**
+- Multiple rules using the **geoip** type.
+
+.. literalinclude:: ../../examples/declarations/example-endpoint-policy-log-action.json
+    :language: json
+    
+
+:ref:`Back to top<app-sec-examples>`
+
+|
+
 
 
 .. |asm| raw:: html
@@ -790,7 +820,7 @@ This declaration creates the following objects on the BIG-IP:
 
 .. |ltmpol| raw:: html
 
-   <a href="https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-local-traffic-management-getting-started-with-policies-14-0-0/01.html" target="_blank">Local Traffic Policies</a>
+   <a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-getting-started-with-policies.html" target="_blank">Local Traffic Policies</a>
 
 .. |policyaction| raw:: html
 
@@ -859,3 +889,7 @@ This declaration creates the following objects on the BIG-IP:
 .. |logpaw| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-action-log-write" target="_blank">Policy_Action_Log_Write</a>
+
+.. |geoip| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-condition-geoip" target="_blank">Policy_Condition_GeoIP</a>
