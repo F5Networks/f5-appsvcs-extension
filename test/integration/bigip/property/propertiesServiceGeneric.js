@@ -42,6 +42,10 @@ describe('Service_Generic', function () {
     }
 
     function testCleanup() {
+        if (process.env.DRY_RUN) {
+            return Promise.resolve();
+        }
+
         return Promise.resolve()
             .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/virtual-address?$filter=partition+eq+Common' }))
             .then((result) => {
