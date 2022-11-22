@@ -531,22 +531,31 @@ The following example shows how you can enable the burst handling feature when y
 
 Configuring a SNAT pool
 ```````````````````````
-In this example, we show how you can configure a SNAT pool in a BIG-IP AS3 declaration. A SNAT is an object that maps the source client IP address in a request to a translation address defined on the BIG-IP device.  A SNAT pool represents a pool of translation addresses you configure on the BIG-IP system. The original IP address is then mapped to the entire translation pool (SNAT pool).
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for the SNAT Translation class is available in BIG-IP AS3 v3.42 and later. 
+
+In this example, we show how you can configure a SNAT (secure network address translation) pool in a BIG-IP AS3 declaration. A SNAT is an object that maps the source client IP address in a request to a translation address defined on the BIG-IP device.  A SNAT pool represents a pool of translation addresses you configure on the BIG-IP system. The original IP address is then mapped to the entire translation pool (SNAT pool).
 
 .. TIP:: You can also use a pointer to a SNAT Pool that exists on the BIG-IP. See |spp| in the Schema Reference for usage.
 
 For more information on SNAT on the BIG-IP, see |sp|.
 
-This declaration creates the following objects on the BIG-IP:
+**New in BIG-IP AS3 3.42** |br|
+BIG-IP AS3 3.42 introduced the **SNAT_Translation** class.  This class allows you to configure explicit SNAT address and configure properties such as IP idle timeout.  See |snatt| for information about specific properties and BIG-IP AS3 usage. 
+
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on a version prior to 3.42, it will fail.  On previous versions, remove the **SNAT_Translation** lines highlighted in yellow, and the comma in line 40)
 
 - Partition (tenant) named **Sample_SNAT_Pool**.
 - An Application named **SNAT_app**.
 - A virtual server named **SNAT_service** that references the SNAT pool.
 - A pool named **web_pool** with two members.
-- A SNAT pool containing two SNAT addresses.
+- A SNAT pool named **CreateSnatPool** containing two SNAT addresses.
+- A SNAT translation class named **CreateSnatTranslation** with associated properties.
 
 .. literalinclude:: ../../examples/declarations/example-snat-pool.json
    :language: json
+   :emphasize-lines: 41-51
 
 
 :ref:`Back to top<misc-examples>`
@@ -1113,3 +1122,6 @@ This declaration creates the following objects on the BIG-IP:
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#data-group" target="_blank">Data_Group</a>
 
+.. |snatt| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#snat-translation" target="_blank">SNAT_Translation</a>
