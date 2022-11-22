@@ -12,7 +12,7 @@ Document Revision History
         - Date
         
       * - 3.42
-        - Updated the documentation for AS3 v3.42.0. This release contains the following changes: |br| * Added support for GeoIP conditions in a Endpoint policy (see :ref:`GeoIP<geoip>`) |br| |br| Issues Resolved: |br| * 
+        - Updated the documentation for AS3 v3.42.0. This release contains the following changes: |br| * Added support for GeoIP conditions in a Endpoint policy (see :ref:`GeoIP<geoip>`) |br| * Added the SNAT Translation class (see the updated :ref:`SNAT Pool<snatpool>` example) |br| |br| Issues Resolved: |br| * 
         - 12-21-22
 
       * - 3.41
