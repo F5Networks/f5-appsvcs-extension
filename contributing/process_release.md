@@ -25,12 +25,21 @@
 
 ## Process for release
 ### Begin process release at the very beginning of the first sprint of a new release, by performing the following actions:
-* Run the AS3 schedule from the atg-build repository in GitLab
-  * This will update and commit build number changes to `package.json` and `package-lock.json`
-  * This will also tag the appropriate branch with the updated version (e.g. v3.10.0-4)
 * Create a new release branch using the major version, minor version and patch number as the name (e.g 3.10.0)
   * Create the branch directly off of the tag in the previous step to ensure that the branch contains the expected commit history
   * It is also recommended to create the branch using the GUI to avoid any issues with an out-of-date local repository
+* Point the `gitBranch` variable in the AS3 schedule in the atg-build repository at the release branch
+* Run the AS3 schedule from the atg-build repository in GitLab
+  * This will update and commit build number changes to `package.json` and `package-lock.json`
+  * This will also tag the appropriate branch with the updated `<version>-<build>` (e.g. v3.10.0-4)
+* Point the `gitBranch` variable in the AS3 schedule in the atg-build repository back to `develop`
+* Download and copy the built schema file to the correct locations
+  * From Artifactory f5-automation-toolchain-generic/f5-appsvcs/`<version>-<build>`, download as3-schema-`<version>-<build>`.json
+  * mkdir -p schema/`<version>`
+  * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema-`<version>-<build>`.json
+  * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema.json
+  * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema-`<version>-<build>`.json
+  * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema.json
 * Prepare the develop branch for the next development cycle
   * Create a new branch off of develop like any other development task
   * Update version changes to `package.json` and `package-lock.json`.  The release number of the new version should start at 0 (e.g. 3.10.0-4 would become 3.11.0-0).
