@@ -555,7 +555,8 @@ This declaration creates the following objects on the BIG-IP (**NOTE** If you at
 
 .. literalinclude:: ../../examples/declarations/example-snat-pool.json
    :language: json
-   :emphasize-lines: 41-51
+   :linenos:
+   :emphasize-lines: 41-52
 
 
 :ref:`Back to top<misc-examples>`
