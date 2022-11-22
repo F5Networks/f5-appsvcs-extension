@@ -16,7 +16,7 @@ For information about support policies, see http://www.f5.com/about/guidelines-p
 * "End of Support" = End of Software Development (EOSD) + End of Technical Support (EOTS)
 
 Currently supported versions:
- 
+
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
 | AS 3.32.1        | LTS           |  13-Dec-2021        | 13-Dec-2022     |
@@ -24,7 +24,6 @@ Currently supported versions:
 | AS 3.39.0        | Feature       |  22-Aug-2022        | 22-Nov-2022     |
 | AS 3.40.0        | Feature       |  04-Oct-2022        | 04-Jan-2023     |
 | AS 3.41.0        | Feature       |  14-Nov-2022        | 14-Feb-2023     |
-
 
 Versions no longer supported:
 
@@ -38,31 +37,31 @@ Versions no longer supported:
 | AS 3.5.0         | Feature       |  02-Oct-2018        | 02-Jan-2019     |
 | AS 3.6.0         | Feature       |  13-Nov-2018        | 13-Feb-2019     |
 | AS 3.7.0         | Feature       |  11-Dec-2018        | 11-Mar-2019     |
-| AS 3.8.0         | Feature       |  23-Jan-2019        | 23-Apr-2019     | 
+| AS 3.8.0         | Feature       |  23-Jan-2019        | 23-Apr-2019     |
 | AS 3.8.1         | Feature       |  06-Jan-2019        | 06-May-2019     |
-| AS 3.9.0	       | Feature	   |  27-Feb-2019	     | 27-May-2019     |
-| AS 3.10.0	       | Feature	   |  09-Apr-2019	     | 09-Jul-2019     |
-| AS 3.11.0	       | Feature	   |  07-May-2019	     | 07-Aug-2019     |
-| AS 3.11.1	       | Feature*	   |  22-May-2019	     | 07-Aug-2019     |
-| AS 3.12.0	       | Feature	   |  18-Jun-2019	     | 18-Sep-2019     |
+| AS 3.9.0         | Feature       |  27-Feb-2019        | 27-May-2019     |
+| AS 3.10.0        | Feature       |  09-Apr-2019        | 09-Jul-2019     |
+| AS 3.11.0        | Feature       |  07-May-2019        | 07-Aug-2019     |
+| AS 3.11.1        | Feature*      |  22-May-2019        | 07-Aug-2019     |
+| AS 3.12.0        | Feature       |  18-Jun-2019        | 18-Sep-2019     |
 | AS 3.13.0        | Feature       |  30-Jul-2019        | 30-Oct-2019     |
 | AS 3.5.1         | LTS           |  13-Nov-2018        | 13-Nov-2019     |
 | AS 3.5.2         | LTS*          |  22-May-2019        | 13-Nov-2019     |
-| AS 3.14.0        | Feature       |  10-Sep-2019        | 10-Dec-2019     | 
+| AS 3.14.0        | Feature       |  10-Sep-2019        | 10-Dec-2019     |
 | AS 3.15.0        | Feature       |  22-Oct-2019        | 22-Jan-2020     |
 | AS 3.16.0        | Feature       |  03-Dec-2019        | 03-Mar-2020     |
-| AS 3.17.0        | Feature       |  28-Jan-2020        | 28-Apr-2020     | 
-| AS 3.13.1        | LTS           |  16-Jul-2019        | 16-Jul-2020     | 
-| AS 3.13.2        | LTS**         |  27-Sep-2019        | 16-Jul-2020     | 
+| AS 3.17.0        | Feature       |  28-Jan-2020        | 28-Apr-2020     |
+| AS 3.13.1        | LTS           |  16-Jul-2019        | 16-Jul-2020     |
+| AS 3.13.2        | LTS**         |  27-Sep-2019        | 16-Jul-2020     |
 | AS 3.18.0        | Feature       |  10-Mar-2020        | 10-Jun-2020     |
-| AS 3.19.0        | Feature       |  21-Apr-2020        | 21-Jul-2020     | 
-| AS 3.20.0        | Feature       |  02-Jun-2020        | 02-Sep-2020     | 
-| AS 3.21.0        | Feature       |  21-Jul-2020        | 21-Oct-2020     | 
+| AS 3.19.0        | Feature       |  21-Apr-2020        | 21-Jul-2020     |
+| AS 3.20.0        | Feature       |  02-Jun-2020        | 02-Sep-2020     |
+| AS 3.21.0        | Feature       |  21-Jul-2020        | 21-Oct-2020     |
 | AS 3.22.0        | Feature       |  01-Sep-2020        | 01-Dec-2020     |
 | AS 3.22.1        | Feature       |  08-Sep-2020        | 01-Dec-2020     |
 | AS 3.23.0        | Feature       |  12-Oct-2020        | 12-Jan-2021     |
 | AS 3.24.0        | Feature       |  20-Nov-2020        | 20-Feb-2021     |
-| AS 3.19.1        | LTS           |  07-May-2020        | 07-May-2021     | 
+| AS 3.19.1        | LTS           |  07-May-2020        | 07-May-2021     |
 | AS 3.25.0        | Feature       |  12-Jan-2021        | 12-Apr-2021     |
 | AS 3.26.0        | Feature       |  23-Feb-2021        | 23-May-2021     |
 | AS 3.27.0        | Feature       |  06-Apr-2021        | 06-Jul-2021     |
