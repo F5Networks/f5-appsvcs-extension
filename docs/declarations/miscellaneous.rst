@@ -539,11 +539,13 @@ In this example, we show how you can configure a SNAT (secure network address tr
 
 .. TIP:: You can also use a pointer to a SNAT Pool that exists on the BIG-IP. See |spp| in the Schema Reference for usage.
 
-For more information on SNAT on the BIG-IP, see |sp|.
+For more information on SNAT on the BIG-IP, see |sp|. 
 
-New in BIG-IP AS3 3.42
-""""""""""""""""""""""
+**New in BIG-IP AS3 3.42** |br|
+
 BIG-IP AS3 3.42 introduced the **SNAT_Translation** class.  This class allows you to configure explicit SNAT address and configure properties such as IP idle timeout. |br| See |snatt| for information about specific properties and BIG-IP AS3 usage. 
+
+|
 
 This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on a version prior to 3.42, it will fail.  On previous versions, remove the **SNAT_Translation** lines highlighted in yellow, and the comma in line 40)
 
