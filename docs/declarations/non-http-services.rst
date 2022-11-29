@@ -289,10 +289,45 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<tcp-examples>`
 
+|
+
+.. _statelessudp:
+
+Creating a stateless UDP virtual server
+```````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for stateless UDP virtual servers is available in BIG-IP AS3 3.40 and later. 
 
 
+In this example, we show how you can create a stateless UDP virtual server with an AS3 declaration. Using a stateless UDP virtual server can save BIG-IP resources and improve performance when you don't need to use the advanced properties of a UDP virtual server and want simple load balancing. For more information on stateless virtual servers, see |stateless| on AskF5.
 
-   
+**IMPORTANT** |br|
+For a stateless UDP virtual server, you need do the following:
+
+- Set **virtualType** to **stateless**
+- Set **translateClientPort** and **translateServerPort** to **false**
+- Supply a pool in the declaration.
+
+For additional details and BIG-IP AS3 usage, see |serviceudp| in the Schema Reference.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **Tenant**.
+- An Application named **Application**.
+- A virtual server named **service** using the Service_UDP class and type set to **stateless** and **translateClientPort** and **translateServerPort** to **false**.  It also references an existing pool on the BIG-IP.
+
+
+.. literalinclude:: ../../examples/declarations/example-service-udp-stateless.json
+   :language: json
+
+:ref:`Back to top<tcp-examples>`
+
+ 
+
+.. |stateless| raw:: html
+
+   <a href="https://support.f5.com/csp/article/K13675" target="_blank">Overview of the stateless virtual server</a>
 
 .. |tftppoint| raw:: html
 
