@@ -5,10 +5,10 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Added
 - AUTOTOOL-975: ([GitHub Issue 156](https://github.com/F5Networks/f5-appsvcs-extension/issues/156)): Add geoip condition to Endpoint_Policy
-- AUTOTOOL-2201: ([GitHub Issue 407](https://github.com/F5Networks/f5-appsvcs-extension/issues/407)): Retry on HTTP request timeouts
 - AUTOTOOL-3549: ([GitHub Issue 487](https://github.com/F5Networks/f5-appsvcs-extension/issues/487)): SNAT_Translation class (ltm snat-translation)
 
 ### Fixed
+- AUTOTOOL-2201: ([GitHub Issue 407](https://github.com/F5Networks/f5-appsvcs-extension/issues/407)): Retry on HTTP request timeouts
 
 ### Changed
 - Updated to Service Discovery 1.11.0-1
