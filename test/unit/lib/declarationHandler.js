@@ -1761,197 +1761,196 @@ describe('DeclarationHandler', () => {
                 /the authorization provided was insufficient/);
         });
     });
-});
 
-describe('persistConfig', () => {
-    let context;
-    beforeEach(() => {
-        context = Context.build();
-        context.tasks.push({ protocol: 'http', urlPrefix: 'http://localhost:8100' });
-        sinon.stub(promiseUtil, 'delay').resolves();
-    });
+    describe('persistConfig', () => {
+        beforeEach(() => {
+            context = Context.build();
+            context.tasks.push({ protocol: 'http', urlPrefix: 'http://localhost:8100' });
+            sinon.stub(promiseUtil, 'delay').resolves();
+        });
 
-    afterEach(() => {
-        sinon.restore();
-        nock.cleanAll();
-    });
+        afterEach(() => {
+            sinon.restore();
+            nock.cleanAll();
+        });
 
-    function nockCreate() {
-        nock('http://localhost:8100')
-            .post('/mgmt/tm/task/sys/config')
-            .reply(200, {
-                selfLink: 'https://localhost/mgmt/tm/task/sys/config/42',
-                _taskId: 42
-            });
-    }
+        function nockCreate() {
+            nock('http://localhost:8100')
+                .post('/mgmt/tm/task/sys/config')
+                .reply(200, {
+                    selfLink: 'https://localhost/mgmt/tm/task/sys/config/42',
+                    _taskId: 42
+                });
+        }
 
-    function nockStart() {
-        nock('http://localhost:8100')
-            .put('/mgmt/tm/task/sys/config/42')
-            .reply(200);
-    }
+        function nockStart() {
+            nock('http://localhost:8100')
+                .put('/mgmt/tm/task/sys/config/42')
+                .reply(200);
+        }
 
-    function nockInProgress(n) {
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .times(n)
-            .reply(400, {
-                error: 'TimeoutException'
-            });
-    }
+        function nockInProgress(n) {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .times(n)
+                .reply(400, {
+                    error: 'TimeoutException'
+                });
+        }
 
-    function nockBadRequest(n) {
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .times(n)
-            .reply(400, {
-                error: 'response=400'
-            });
-    }
+        function nockBadRequest(n) {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .times(n)
+                .reply(400, {
+                    error: 'response=400'
+                });
+        }
 
-    function nockCompleted(state) {
-        state = state || {};
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(200, () => {
-                state.completed = true;
-                return {
-                    _taskState: 'COMPLETED'
-                };
-            });
-    }
+        function nockCompleted(state) {
+            state = state || {};
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(200, () => {
+                    state.completed = true;
+                    return {
+                        _taskState: 'COMPLETED'
+                    };
+                });
+        }
 
-    function nockTimeout() {
-        // nock.delayConnection doesn't seem to work across all of our node versions
-        // so we have to fake the timeout error by emitting it ourselves
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(500, function () {
-                this.req.emit('timeout');
-            });
-    }
+        function nockTimeout() {
+            // nock.delayConnection doesn't seem to work across all of our node versions
+            // so we have to fake the timeout error by emitting it ourselves
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(504, function () {
+                    this.req.emit('timeout');
+                });
+        }
 
-    function nockTaskNotFound() {
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(404, { message: 'Task not found - ID: 42 user: admin' });
-    }
+        function nockTaskNotFound() {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(404, { message: 'Task not found - ID: 42 user: admin' });
+        }
 
-    function assertComplete() {
-        const state = {};
-        nockCompleted(state);
-        return assert.isFulfilled(DeclarationHandler.persistConfig(context))
-            .then(() => {
-                assert(state.completed, 'Did not wait for COMPLETED state');
-            });
-    }
+        function assertComplete() {
+            const state = {};
+            nockCompleted(state);
+            return assert.isFulfilled(DeclarationHandler.persistConfig(context))
+                .then(() => {
+                    assert(state.completed, 'Did not wait for COMPLETED state');
+                });
+        }
 
-    it('should reject if run POST fails', () => {
-        nock('http://localhost:8100')
-            .post('/mgmt/tm/task/sys/config')
-            .reply(500, 'waldo');
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /waldo/
-        );
-    });
+        it('should reject if run POST fails', () => {
+            nock('http://localhost:8100')
+                .post('/mgmt/tm/task/sys/config')
+                .reply(500, 'waldo');
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /waldo/
+            );
+        });
 
-    it('should reject if start PUT fails', () => {
-        nockCreate();
-        nock('http://localhost:8100')
-            .put('/mgmt/tm/task/sys/config/42')
-            .reply(500, 'waldo');
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /waldo/
-        );
-    });
+        it('should reject if start PUT fails', () => {
+            nockCreate();
+            nock('http://localhost:8100')
+                .put('/mgmt/tm/task/sys/config/42')
+                .reply(500, 'waldo');
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /waldo/
+            );
+        });
 
-    it('should reject if status GET fails', () => {
-        nockCreate();
-        nockStart();
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(500, 'waldo');
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /waldo/
-        );
-    });
+        it('should reject if status GET fails', () => {
+            nockCreate();
+            nockStart();
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(500, 'waldo');
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /waldo/
+            );
+        });
 
-    it('should fulfill on COMPLETED state', () => {
-        nockCreate();
-        nockStart();
-        return assertComplete();
-    });
+        it('should fulfill on COMPLETED state', () => {
+            nockCreate();
+            nockStart();
+            return assertComplete();
+        });
 
-    it('should wait when in VALIDATING state', () => {
-        nockCreate();
-        nockStart();
-        nockInProgress();
-        return assertComplete();
-    });
+        it('should wait when in VALIDATING state', () => {
+            nockCreate();
+            nockStart();
+            nockInProgress();
+            return assertComplete();
+        });
 
-    it('should fulfill even if in progress checks do not timeout', () => {
-        nockCreate();
-        nockStart();
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(200, {
-                _taskState: 'VALIDATING'
-            });
-        return assertComplete();
-    });
+        it('should fulfill even if in progress checks do not timeout', () => {
+            nockCreate();
+            nockStart();
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(200, {
+                    _taskState: 'VALIDATING'
+                });
+            return assertComplete();
+        });
 
-    it('should reject if too many timeouts are encountered', () => {
-        nockCreate();
-        nockStart();
-        nockInProgress(121);
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /TimeoutException/
-        );
-    });
+        it('should reject if too many timeouts are encountered', () => {
+            nockCreate();
+            nockStart();
+            nockInProgress(121);
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /TimeoutException/
+            );
+        });
 
-    it('should reject on FAILED state', () => {
-        nockCreate();
-        nockStart();
-        nock('http://localhost:8100')
-            .get('/mgmt/tm/task/sys/config/42')
-            .reply(200, {
-                _taskState: 'FAILED'
-            });
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /failed during execution/
-        );
-    });
+        it('should reject on FAILED state', () => {
+            nockCreate();
+            nockStart();
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(200, {
+                    _taskState: 'FAILED'
+                });
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /failed during execution/
+            );
+        });
 
-    it('should reject if too many response=400 are encountered', () => {
-        nockCreate();
-        nockStart();
-        nockBadRequest(121);
-        return assert.isRejected(
-            DeclarationHandler.persistConfig(context),
-            /response=400/
-        );
-    });
+        it('should reject if too many response=400 are encountered', () => {
+            nockCreate();
+            nockStart();
+            nockBadRequest(121);
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /response=400/
+            );
+        });
 
-    it('should retry on timeout', () => {
-        nockCreate();
-        nockStart();
-        nockTimeout();
-        return assertComplete()
-            .then(() => {
-                assert.ok(nock.isDone(), `nock has pending mocks:\n${nock.pendingMocks()}`);
-            });
-    });
+        it('should retry on timeout', () => {
+            nockCreate();
+            nockStart();
+            nockTimeout();
+            return assertComplete()
+                .then(() => {
+                    assert.ok(nock.isDone(), `nock has pending mocks:\n${nock.pendingMocks()}`);
+                });
+        });
 
-    it('should update error message if task is not found', () => {
-        const expectedMsg = /failed to save BIG-IP config \(Record no longer exists on BIG-IP for saving configuration task \(ID: 42\)/;
-        nockCreate();
-        nockStart();
-        nockTaskNotFound();
-        return assert.isRejected(DeclarationHandler.persistConfig(context), expectedMsg);
+        it('should update error message if task is not found', () => {
+            const expectedMsg = /failed to save BIG-IP config \(Record no longer exists on BIG-IP for saving configuration task \(ID: 42\)/;
+            nockCreate();
+            nockStart();
+            nockTaskNotFound();
+            return assert.isRejected(DeclarationHandler.persistConfig(context), expectedMsg);
+        });
     });
 });

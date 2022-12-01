@@ -142,6 +142,7 @@ function filterBigComponentTag(context, component, declaration, filteredComponen
                 testName,
                 testOptions: {
                     path: testUrl,
+                    why: `${method} bigip tag components`,
                     method,
                     send: payload,
                     crude: true
@@ -229,6 +230,7 @@ function checkComponent(context, comp) {
                 const deleteOptions = util.simpleCopy(testOptions);
                 deleteOptions.path = testUrl;
                 deleteOptions.method = 'DELETE';
+                deleteOptions.why = deleteOptions.why.replace('POST', 'DELETE');
                 delete deleteOptions.send;
 
                 return util.iControlRequest(context, deleteOptions)

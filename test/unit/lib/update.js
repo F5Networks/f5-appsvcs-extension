@@ -96,7 +96,7 @@ describe('update', () => {
             // so we have to fake the timeout error by emitting it ourselves
             nock('http://localhost:8100')
                 .get('/mgmt/tm/task/cli/script/42')
-                .reply(500, function () {
+                .reply(504, function () {
                     this.req.emit('timeout');
                 });
         }
