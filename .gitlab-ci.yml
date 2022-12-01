@@ -103,6 +103,8 @@ audit:
   image: $DOCKER_URL/node:lts
   stage: test
   needs: []
+  variables:
+    NODE_OPTIONS: "--dns-result-order=ipv4first"
   allow_failure: true
   tags:
     - cm-official-docker-executor

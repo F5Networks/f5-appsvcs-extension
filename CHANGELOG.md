@@ -11,8 +11,9 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-2201: ([GitHub Issue 407](https://github.com/F5Networks/f5-appsvcs-extension/issues/407)): Retry on HTTP request timeouts
 
 ### Changed
-- Updated to Service Discovery 1.11.0-1
+- Updated to Service Discovery 1.11.1-1
   - AUTOTOOL-3335: ([GitHub Issue 610](https://github.com/F5Networks/f5-appsvcs-extension/issues/610)): Service Discovery / Consul and jmespathquery to configure priorityGroup for pool members
+  - AUTOTOOL-3534: Update packages to latest available versions
 
 ### Removed
 
