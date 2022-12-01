@@ -25,6 +25,7 @@ const net = require('net');
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const log = require('../log');
 const constants = require('../constants');
+const STATUS_CODES = require('./restUtil').STATUS_CODES;
 
 const tracerTags = require('../tracer').Tags;
 
@@ -145,6 +146,16 @@ class Util {
         let why = (Object.prototype.hasOwnProperty.call(opts, 'why') ? opts.why : '').concat('\x20');
         if (why.charAt(0) !== '\x20') { why = '\x20'.concat(why); }
 
+        function retry(resolve, reject, reason, message) {
+            const newOptions = this.simpleCopy(opts);
+            newOptions.retryNetError = opts.retryNetError - 1;
+            log.debug(`request failed due to ${reason} - retrying - ${message}`);
+            promiseUtil.delay(opts.retryNetErrorDelay)
+                .then(() => this.httpRequest(url, newOptions))
+                .then(resolve)
+                .catch(reject);
+        }
+
         // return the promised promise
         return new Promise((resolve, reject) => {
             let sendSize = 0;
@@ -256,13 +267,6 @@ class Util {
             // during bigip restarts and reboots [Buries face in hands.]
             //
             req.setTimeout(opts.timeout * 1000);
-
-            req.on('timeout', () => {
-                const e1 = new Error(`connection to ${logurl}${why}timed out`);
-                e1.code = 'ETIMEDOUT';
-                // req.destroy(e); // should provoke req.on('error') but doesn't
-                reject(e1);
-            });
 
             req.on('response', (rsp) => {
                 const chunks = [];
@@ -418,17 +422,22 @@ class Util {
                 });
             });
 
+            req.on('timeout', () => {
+                log.info('Received timeout event');
+
+                const timedOutError = new Error('timed out');
+                timedOutError.code = STATUS_CODES.GATEWAY_TIMEOUT;
+
+                // req.destroy causes the 'error' event to be emitted, so retry will happen there
+                req.destroy(timedOutError);
+            });
+
             req.on('error', (e1) => {
                 e1.message = `${opts.method} ${logurl}${why}failed (${e1.message})`;
+                log.info(`Received error event: ${e1.message}`);
 
                 if (opts.retryNetError) {
-                    const newOptions = this.simpleCopy(options);
-                    newOptions.retryNetError = opts.retryNetError - 1;
-                    log.debug(`request failed due to network error - retrying - ${e1.message}`);
-                    promiseUtil.delay(opts.retryNetErrorDelay)
-                        .then(() => this.httpRequest(url, newOptions))
-                        .then(resolve)
-                        .catch(reject);
+                    retry.call(this, resolve, reject, 'network error', e1.message);
                     return;
                 }
 
@@ -614,6 +623,8 @@ class Util {
             rejectUnauthorized: false,
             maxRedirects: 0,
             retry503: 4,
+            retryNetError: options.retryNetError,
+            retryNetErrorDelay: options.retryNetErrorDelay,
             headers: { 'Content-Type': 'application/json' },
             range: true,
             timeout: (options.targetTimeout || 60),

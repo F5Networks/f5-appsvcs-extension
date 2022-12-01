@@ -296,7 +296,7 @@ class Update {
                             return true;
                         }
 
-                        if (error.code === 'ETIMEDOUT') {
+                        if (error.message.indexOf('response=504') > -1) {
                             return true;
                         }
 

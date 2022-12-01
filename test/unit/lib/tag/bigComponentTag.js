@@ -303,7 +303,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/asm/policies',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -312,7 +313,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'POST',
                             path: '/mgmt/tm/ltm/monitor/icmp',
-                            send: '{"name":"/Common/icmp"}'
+                            send: '{"name":"/Common/icmp"}',
+                            why: 'POST bigip tag components'
                         }
                     );
                 });
@@ -343,7 +345,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/asm/policies',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
@@ -374,7 +377,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/asm/policies',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
@@ -405,7 +409,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'POST',
                             path: '/mgmt/tm/ltm/monitor/icmp',
-                            send: '{"name":"/Common/icmp"}'
+                            send: '{"name":"/Common/icmp"}',
+                            why: 'POST bigip tag components'
                         }
                     );
                 });
@@ -435,7 +440,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/asm/policies',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
@@ -475,7 +481,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/bigip/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -484,7 +491,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/bigip-link/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -493,7 +501,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/external/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -502,7 +511,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/firepass/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -511,7 +521,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/ftp/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -520,7 +531,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/gateway-icmp/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -529,7 +541,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/gtm/monitor/gtp/~Common~bigip',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
@@ -575,7 +588,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'POST',
                             path: '/mgmt/tm/ltm/monitor/icmp',
-                            send: '{"name":"/Common/icmp"}'
+                            send: '{"name":"/Common/icmp"}',
+                            why: 'POST bigip tag components'
                         }
                     );
                 });
@@ -613,7 +627,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/asm/policies',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
@@ -651,7 +666,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'POST',
                             path: '/mgmt/tm/ltm/monitor/icmp',
-                            send: '{"name":"/Common/icmp2"}'
+                            send: '{"name":"/Common/icmp2"}',
+                            why: 'POST bigip tag components'
                         }
                     );
                     assert.deepStrictEqual(
@@ -659,7 +675,8 @@ describe('bigComponentTag', () => {
                         {
                             crude: true,
                             method: 'DELETE',
-                            path: '/mgmt/tm/ltm/monitor/icmp/~Common~icmp2'
+                            path: '/mgmt/tm/ltm/monitor/icmp/~Common~icmp2',
+                            why: 'DELETE bigip tag components'
                         }
                     );
                 });
@@ -713,7 +730,8 @@ describe('bigComponentTag', () => {
                             crude: true,
                             method: 'GET',
                             path: '/mgmt/tm/ltm/virtual-address/~Common~address',
-                            send: undefined
+                            send: undefined,
+                            why: 'GET bigip tag components'
                         }
                     );
                 });
