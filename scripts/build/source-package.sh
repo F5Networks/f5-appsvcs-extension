@@ -16,6 +16,7 @@ cp source-raw/scripts/dev/install-rpm.sh $PREFIX/scripts/
 cp source-raw/package.json $PREFIX/
 cp source-raw/package-lock.json $PREFIX/
 cp source-raw/f5-appsvcs.spec $PREFIX/
+cp source-raw/.npmrc $PREFIX/
 mkdir -p $PREFIX/dist
 npm ci --prefix ./$PREFIX
 tar -czf ../dist/f5-appsvcs-$VERSION-source.tar.gz $PREFIX
