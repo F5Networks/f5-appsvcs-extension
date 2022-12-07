@@ -12,7 +12,7 @@ Document Revision History
         - Date
         
       * - 3.42
-        - Updated the documentation for AS3 v3.42.0. This release contains the following changes: |br| * Added support for GeoIP conditions in a Endpoint policy (see :ref:`GeoIP<geoip>`) |br| * Added the SNAT Translation class (see the updated :ref:`SNAT Pool<snatpool>` example) |br| |br| Issues Resolved: |br| * BIG-IP AS3 now retries on HTTP request timeouts
+        - Updated the documentation for AS3 v3.42.0. This release contains the following changes: |br| * Added support for GeoIP conditions in a Endpoint policy (see :ref:`GeoIP<geoip>`), `GitHub Issue 156 <https://github.com/F5Networks/f5-appsvcs-extension/issues/156>`_ |br| * Added the SNAT Translation class (see the updated :ref:`SNAT Pool<snatpool>` example), `GitHub Issue 487 <https://github.com/F5Networks/f5-appsvcs-extension/issues/487>`_ |br| |br| Issues Resolved: |br| * BIG-IP AS3 now retries on HTTP request timeouts, `GitHub Issue 407 <https://github.com/F5Networks/f5-appsvcs-extension/issues/407>`_
         - 1-10-23
 
       * - 3.41
