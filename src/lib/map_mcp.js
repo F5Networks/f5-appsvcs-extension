@@ -724,11 +724,9 @@ const translate = {
             Object.keys(obj.members).forEach((member) => {
                 if (!isEphemeral[obj.members[member].name]) {
                     obj.members[member] = pushMonitors(obj.members[member]);
+                    obj.members[member].session = obj.members[member].session.replace('monitor', 'user');
                     if (obj.members[member].state !== 'user-down') {
                         obj.members[member].state = 'user-up';
-                        obj.members[member].session = obj.members[member].session.replace('monitor', 'user');
-                    } else {
-                        delete obj.members[member].session;
                     }
 
                     if (obj.members[member].rateLimit !== undefined && obj.members[member].rateLimit !== 'disabled') {

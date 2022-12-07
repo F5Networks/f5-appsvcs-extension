@@ -25,6 +25,7 @@ const assert = chai.assert;
 
 const util = require('../../../src/lib/util/util');
 const mapAs3 = require('../../../src/lib/map_as3');
+const log = require('../../../src/lib/log');
 
 const translate = mapAs3.translate;
 
@@ -689,6 +690,51 @@ describe('map_as3', () => {
                         }
                     }
                 );
+            });
+        });
+
+        describe('adminState', () => {
+            const assertAdminState = (expectedState, expectedSession) => {
+                const memberName = '/tenantId/192.0.2.20:8080';
+                const configs = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs;
+                assert.strictEqual(configs[1].properties.members[memberName].state, expectedState);
+                assert.strictEqual(configs[1].properties.members[memberName].session, expectedSession);
+            };
+            let logErrorSpy;
+
+            beforeEach(() => {
+                logErrorSpy = sinon.stub(log, 'error');
+                item.members = [
+                    {
+                        addressDiscovery: 'static',
+                        servicePort: 8080,
+                        serverAddresses: [
+                            '192.0.2.20'
+                        ],
+                        enable: true
+                    }
+                ];
+            });
+
+            it('should handle enable', () => {
+                item.members[0].adminState = 'enable';
+                assertAdminState('user-up', 'user-enabled');
+            });
+
+            it('should handle disable', () => {
+                item.members[0].adminState = 'disable';
+                assertAdminState('user-up', 'user-disabled');
+            });
+
+            it('should handle offline', () => {
+                item.members[0].adminState = 'offline';
+                assertAdminState('user-down', 'user-disabled');
+            });
+
+            it('should log invalid value', () => {
+                item.members[0].adminState = 'foobar';
+                translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item);
+                assert.strictEqual(logErrorSpy.args[0][0], 'Invalid adminState state: foobar');
             });
         });
     });

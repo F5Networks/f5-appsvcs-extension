@@ -531,6 +531,7 @@ const updateMember = function updateMember(member) {
             break;
         case 'offline':
             member.state = 'user-down';
+            member.session = 'user-disabled';
             break;
         default:
             log.error(`Invalid adminState state: ${member.adminState}`);

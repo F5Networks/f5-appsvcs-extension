@@ -1071,8 +1071,9 @@ describe('map_mcp', () => {
         });
 
         describe('tm:ltm:pool:poolstate', () => {
-            it('should convert rateLimit from string to integer', () => {
-                const obj = {
+            let poolObj;
+            beforeEach(() => {
+                poolObj = {
                     kind: 'tm:ltm:pool:poolstate',
                     name: 'testItem',
                     partition: 'TEST_Pool',
@@ -1080,16 +1081,25 @@ describe('map_mcp', () => {
                     membersReference: {
                         items: [
                             {
-                                name: '2.2.2.2:400',
+                                name: '192.0.2.20:8080',
                                 state: 'down',
-                                session: 'user-disabled',
+                                session: 'monitor-disabled',
                                 rateLimit: '100'
                             }
                         ]
                     }
                 };
-                const results = translate[obj.kind](defaultContext, obj);
-                assert.strictEqual(100, results[0].properties.members['2.2.2.2:400']['rate-limit']);
+            });
+
+            it('should convert rateLimit from string to integer', () => {
+                const results = translate[poolObj.kind](defaultContext, poolObj);
+                assert.strictEqual(results[0].properties.members['192.0.2.20:8080']['rate-limit'], 100);
+            });
+
+            it('should update session and state', () => {
+                const results = translate[poolObj.kind](defaultContext, poolObj);
+                assert.strictEqual(results[0].properties.members['192.0.2.20:8080'].session, 'user-disabled');
+                assert.strictEqual(results[0].properties.members['192.0.2.20:8080'].state, 'user-up');
             });
         });
 
