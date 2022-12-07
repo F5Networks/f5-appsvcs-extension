@@ -9,6 +9,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-2201: ([GitHub Issue 407](https://github.com/F5Networks/f5-appsvcs-extension/issues/407)): Retry on HTTP request timeouts
+- AUTOTOOL-3385: ([GitHub Issue 623](https://github.com/F5Networks/f5-appsvcs-extension/issues/623)): Pool member adminState does not match "force offline" behavior in WebUI
 
 ### Changed
 - Updated to Service Discovery 1.11.2-1
