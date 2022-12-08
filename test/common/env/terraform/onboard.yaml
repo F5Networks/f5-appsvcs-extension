@@ -15,6 +15,7 @@ write_files:
       # Set passwords
       /usr/bin/passwd admin "${AS3_PASSWORD}" >/dev/null 2>&1
       /usr/bin/passwd root "${AS3_PASSWORD}" >/dev/null 2>&1
+      /usr/bin/chage -M -1 admin
 
       # Begin BIG-IP configuration
 
