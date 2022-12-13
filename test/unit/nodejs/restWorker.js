@@ -30,6 +30,7 @@ const SettingsHandler = require('../../../src/lib/settingsHandler');
 const restUtil = require('../../../src/lib/util/restUtil');
 const config = require('../../../src/lib/config');
 const util = require('../../../src/lib/util/util');
+const tmshUtil = require('../../../src/lib/util/tmshUtil');
 
 describe('restWorker', () => {
     let restWorker = null;
@@ -56,6 +57,7 @@ describe('restWorker', () => {
 
         sinon.stub(config, 'getAllSettings').resolves({});
         sinon.stub(util, 'getDeviceInfo').resolves({});
+        sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin:');
     });
 
     function createRestOpMock(statusCode, done, restOpBody) {

@@ -16,14 +16,102 @@
 
 'use strict';
 
-const assert = require('assert');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
+
 const nock = require('nock');
+const sinon = require('sinon');
+const childProcess = require('child_process');
+const EventEmitter = require('events');
 
 const tmshUtil = require('../../../../src/lib/util/tmshUtil');
 
 describe('tmshUtil', () => {
     afterEach(() => {
         nock.cleanAll();
+        sinon.restore();
+    });
+
+    function getCpMock(data, error) {
+        const cp = new EventEmitter();
+        cp.stdout = new EventEmitter();
+        cp.stderr = new EventEmitter();
+
+        function sendData() {
+            if (data) {
+                cp.stdout.emit('data', data);
+            }
+        }
+
+        function sendError() {
+            if (error) {
+                cp.stderr.emit('data', error);
+            }
+        }
+
+        function close() {
+            const code = error ? 1 : 0;
+            cp.emit('close', code);
+        }
+
+        setTimeout(sendData, 100);
+        setTimeout(sendError, 100);
+        setTimeout(close, 200);
+        return cp;
+    }
+
+    describe('.getPrimaryAdminUser()', () => {
+        it('should get the primary admin user from the db var', () => {
+            sinon.stub(childProcess, 'spawn').callsFake(() => getCpMock('{ value "myAdminUser" }'));
+            const expectedArgs = [
+                '/bin/tmsh',
+                [
+                    '-a',
+                    'list',
+                    'sys',
+                    'db',
+                    'systemauth.primaryadminuser'
+                ],
+                {
+                    shell: '/bin/bash'
+                }
+            ];
+            return tmshUtil.getPrimaryAdminUser()
+                .then((adminUser) => {
+                    const args = childProcess.spawn.getCall(0).args;
+                    assert.deepStrictEqual(args, expectedArgs);
+                    assert.strictEqual(adminUser, 'myAdminUser');
+                });
+        });
+
+        it('should handle unexpected values', () => {
+            sinon.stub(childProcess, 'spawn').callsFake(() => getCpMock('{ thisIsWrong "myAdminUser" }'));
+            return assert.isRejected(tmshUtil.getPrimaryAdminUser(), 'Unable to get primary admin user');
+        });
+    });
+
+    describe('.executeTmshCommand()', () => {
+        it('should parse and reply with data', () => {
+            sinon.stub(childProcess, 'spawn').callsFake(() => getCpMock('{ property1 value1 property2 value2 }'));
+            return tmshUtil.executeTmshCommand('myCommand')
+                .then((response) => {
+                    assert.deepStrictEqual(
+                        response,
+                        {
+                            property1: 'value1',
+                            property2: 'value2'
+                        }
+                    );
+                });
+        });
+
+        it('should respond with errors that occur', () => {
+            sinon.stub(childProcess, 'spawn').callsFake(() => getCpMock(null, 'my error'));
+            return assert.isRejected(tmshUtil.executeTmshCommand('myCommand'), 'my error');
+        });
     });
 
     describe('.generateAddFolderCommand()', () => {
@@ -149,7 +237,7 @@ describe('tmshUtil', () => {
                 .reply(200, (uri, requestBody) => requestBody);
 
             return Promise.resolve()
-                .then(() => tmshUtil.addFolder('/Partition/myFolder'))
+                .then(() => tmshUtil.addFolder(null, '/Partition/myFolder'))
                 .then((result) => assert.deepStrictEqual(result, {
                     name: 'myFolder',
                     fullPath: '/Partition/myFolder'
@@ -164,7 +252,7 @@ describe('tmshUtil', () => {
                 .reply(200, (uri, requestBody) => requestBody);
 
             return Promise.resolve()
-                .then(() => tmshUtil.addDataGroup('myDataGroup'))
+                .then(() => tmshUtil.addDataGroup(null, 'myDataGroup'))
                 .then((result) => assert.deepStrictEqual(result, {
                     name: 'myDataGroup',
                     type: 'string'
@@ -179,7 +267,7 @@ describe('tmshUtil', () => {
                 .reply(200, (uri, requestBody) => requestBody);
 
             return Promise.resolve()
-                .then(() => tmshUtil.updateDataGroup('myDataGroup', [
+                .then(() => tmshUtil.updateDataGroup(null, 'myDataGroup', [
                     {
                         name: 'myName',
                         data: 'myRecordData'
@@ -203,7 +291,7 @@ describe('tmshUtil', () => {
                 .reply(200, { data: 'data' });
 
             return Promise.resolve()
-                .then(() => tmshUtil.readDataGroup('myDataGroup'))
+                .then(() => tmshUtil.readDataGroup(null, 'myDataGroup'))
                 .then(((result) => assert.deepStrictEqual(result, {
                     data: 'data'
                 })));
@@ -217,7 +305,7 @@ describe('tmshUtil', () => {
                 .reply(500, 'fake error test message');
             let isCaught = false;
             return Promise.resolve()
-                .then(() => tmshUtil.folderExists('/Tenant/Application'))
+                .then(() => tmshUtil.folderExists(null, '/Tenant/Application'))
                 .catch((err) => {
                     isCaught = true;
                     assert.deepStrictEqual(err.message, 'fake error test message');
@@ -233,7 +321,7 @@ describe('tmshUtil', () => {
                 .reply(200, {});
 
             return Promise.resolve()
-                .then(() => tmshUtil.folderExists('/Tenant/Application'))
+                .then(() => tmshUtil.folderExists(null, '/Tenant/Application'))
                 .then((result) => assert.deepStrictEqual(result, true));
         });
 
@@ -243,7 +331,7 @@ describe('tmshUtil', () => {
                 .reply(404);
 
             return Promise.resolve()
-                .then(() => tmshUtil.folderExists('/Tenant/Application'))
+                .then(() => tmshUtil.folderExists(null, '/Tenant/Application'))
                 .then((result) => assert.deepStrictEqual(result, false));
         });
     });
@@ -255,7 +343,7 @@ describe('tmshUtil', () => {
                 .reply(200, {});
 
             return Promise.resolve()
-                .then(() => tmshUtil.dataGroupExists('/Common/appsvcs/dataStore'))
+                .then(() => tmshUtil.dataGroupExists(null, '/Common/appsvcs/dataStore'))
                 .then((result) => assert.deepStrictEqual(result, true));
         });
 
@@ -265,7 +353,7 @@ describe('tmshUtil', () => {
                 .reply(404);
 
             return Promise.resolve()
-                .then(() => tmshUtil.dataGroupExists('/Common/appsvcs/dataStore'))
+                .then(() => tmshUtil.dataGroupExists(null, '/Common/appsvcs/dataStore'))
                 .then((result) => assert.deepStrictEqual(result, false));
         });
     });

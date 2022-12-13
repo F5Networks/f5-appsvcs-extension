@@ -20,28 +20,29 @@ const dataGroupUtil = require('./util/dataGroupUtil');
 const TmshUtil = require('./util/tmshUtil');
 
 class DataGroupDataStore {
-    constructor(path) {
+    constructor(context, path) {
+        this.context = context;
         this.path = path;
     }
 
     ensureFolder() {
         const path = this.path.split('/').slice(0, -1).join('/');
-        return TmshUtil.folderExists(path)
+        return TmshUtil.folderExists(this.context, path)
             .then((exists) => {
                 if (exists) {
                     return Promise.resolve();
                 }
-                return TmshUtil.addFolder(path);
+                return TmshUtil.addFolder(this.context, path);
             });
     }
 
     ensureDataGroup() {
-        return TmshUtil.dataGroupExists(this.path)
+        return TmshUtil.dataGroupExists(this.context, this.path)
             .then((exists) => {
                 if (exists) {
                     return Promise.resolve();
                 }
-                return TmshUtil.addDataGroup(this.path);
+                return TmshUtil.addDataGroup(this.context, this.path);
             });
     }
 
@@ -52,13 +53,13 @@ class DataGroupDataStore {
             .then(() => {
                 const string = JSON.stringify(data);
                 const records = dataGroupUtil.stringToRecords(recordName, string);
-                return TmshUtil.updateDataGroup(this.path, records);
+                return TmshUtil.updateDataGroup(this.context, this.path, records);
             });
     }
 
     load(recordName) {
         return Promise.resolve()
-            .then(() => TmshUtil.readDataGroup(this.path))
+            .then(() => TmshUtil.readDataGroup(this.context, this.path))
             .then((data) => {
                 const match = (data.records || []).find((r) => r.name.startsWith(recordName));
                 if (!match) {

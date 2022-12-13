@@ -24,6 +24,7 @@ const RestOperationMock = require('../../RestOperationMock');
 const HostContext = require('../../../../src/lib/context/hostContext');
 const RequestContext = require('../../../../src/lib/context/requestContext');
 const util = require('../../../../src/lib/util/util');
+const tmshUtil = require('../../../../src/lib/util/tmshUtil');
 const config = require('../../../../src/lib/config');
 
 const assert = chai.assert;
@@ -36,6 +37,7 @@ describe('RequestContext', () => {
         constants.reqSchemaFile = `${__dirname}/../../../../src/schema/latest/as3-request-schema.json`;
         sinon.stub(util, 'getMgmtPort').resolves(443);
         sinon.stub(util, 'getDeviceInfo').resolves({});
+        sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
         sinon.stub(config, 'getAllSettings').resolves({});
     });
 

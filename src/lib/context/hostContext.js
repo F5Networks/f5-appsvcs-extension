@@ -38,6 +38,7 @@ const TeemDevice = require('@f5devcentral/f5-teem').Device;
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const constants = require('../constants');
 const util = require('../util/util');
+const tmshUtil = require('../util/tmshUtil');
 const log = require('../log');
 const As3Parser = require('../adcParser');
 const AsyncHandler = require('../asyncHandler');
@@ -53,6 +54,7 @@ const CHECK_TIMEOUT_MS = 2 * 60 * 1000;
 class HostContext {
     constructor(initialContext) {
         this.initialContext = initialContext ? util.simpleCopy(initialContext) : {};
+        this.initialContext.adminUser = this.initialContext.adminUser || 'admin';
         this.context = util.simpleCopy(this.initialContext);
     }
 
@@ -70,13 +72,22 @@ class HostContext {
 }
 
 function buildContext(initialContext) {
-    const context = {};
+    const context = util.simpleCopy(initialContext);
 
-    return getDeviceType(initialContext)
+    return tmshUtil.getPrimaryAdminUser()
+        .then((primaryAdminUser) => {
+            context.adminUser = primaryAdminUser;
+        })
+        .then(() => getDeviceType(context))
         .then((deviceType) => {
             context.deviceType = deviceType;
             const urls = ['http://localhost:8100/tm/util/available', 'http://localhost:8100/mgmt/tm/sys/provision'];
-            const promises = urls.map((url) => () => checkAddtlDependencies(url, CHECK_TIMEOUT_MS, CHECK_INTERVAL_MS)
+            const promises = urls.map((url) => () => checkAddtlDependencies(
+                context,
+                url,
+                CHECK_TIMEOUT_MS,
+                CHECK_INTERVAL_MS
+            )
                 .then((result) => {
                     if (!result.success) {
                         throw new Error(`Unable to verify additional dependencies: ${result.errorMessage}}`);
@@ -98,7 +109,7 @@ function buildContext(initialContext) {
             context.buildType = buildType;
         })
         .then(() => clearLocalMutex(context.deviceType))
-        .then(() => initAsyncDataStore(context.deviceType))
+        .then(() => initAsyncDataStore(context))
         .then((dataStore) => {
             context.asyncDataStore = dataStore;
             return initAsyncHandler(dataStore);
@@ -145,7 +156,7 @@ function getDeviceType(initialContext) {
         });
 }
 
-function checkAddtlDependencies(url, timeout, interval) {
+function checkAddtlDependencies(context, url, timeout, interval) {
     // deps that cannot be handled by the availability monitor
     // requires user context/auth so manually build check
     const result = {
@@ -164,7 +175,7 @@ function checkAddtlDependencies(url, timeout, interval) {
         method: 'GET',
         retry503: 5,
         host: 'localhost',
-        auth: 'admin:',
+        auth: `${context.adminUser}:`,
         port: 8100
     };
     return util.httpRequest(url, options)
@@ -172,7 +183,7 @@ function checkAddtlDependencies(url, timeout, interval) {
             if (response.statusCode !== 200) {
                 log.warning('Dependencies Check failed, retrying.');
                 return promiseUtil.delay(interval)
-                    .then(() => checkAddtlDependencies(url, timeout - interval, interval));
+                    .then(() => checkAddtlDependencies(context, url, timeout - interval, interval));
             }
             return result;
         })
@@ -180,7 +191,7 @@ function checkAddtlDependencies(url, timeout, interval) {
             log.warning(`Dependencies Check failed, retrying. ${e}`);
             timeout -= interval;
             return promiseUtil.delay(interval)
-                .then(() => checkAddtlDependencies(url, timeout - interval, interval));
+                .then(() => checkAddtlDependencies(context, url, timeout - interval, interval));
         });
 }
 
@@ -213,9 +224,16 @@ function initServiceDiscovery(context) {
                 return Promise.resolve();
             }
 
+            return tmshUtil.getPrimaryAdminUser();
+        })
+        .then((primaryAdminUser) => {
+            if (!primaryAdminUser) {
+                return Promise.resolve();
+            }
+
             buildType = constants.BUILD_TYPES.CLOUD;
             const newContext = Context.build({ deviceType, buildType });
-            newContext.request.basicAuth = `Basic ${util.base64Encode('admin:')}`;
+            newContext.request.basicAuth = `Basic ${util.base64Encode(`${primaryAdminUser}:`)}`;
             newContext.target.host = newContext.target.host || constants.defaultHost;
             newContext.target.port = newContext.target.port || constants.defaultPort;
             newContext.tasks = [{ protocol: 'http', urlPrefix: 'http://localhost:8100' }];
@@ -240,32 +258,36 @@ function clearLocalMutex(deviceType) {
         return Promise.resolve();
     }
 
-    const url = `http://127.0.0.1/mgmt/tm/ltm/data-group/internal/~Common~${constants.as3CommonFolder}~____appsvcs_lock`;
-    const options = {
-        why: 'Delete mutex lock on startup',
-        crude: true,
-        method: 'DELETE',
-        retry503: 5,
-        host: '127.0.0.1',
-        auth: 'admin:',
-        port: 8100
-    };
-    return util.httpRequest(url, options);
+    return tmshUtil.getPrimaryAdminUser()
+        .then((primaryAdminUser) => {
+            const url = `http://127.0.0.1/mgmt/tm/ltm/data-group/internal/~Common~${constants.as3CommonFolder}~____appsvcs_lock`;
+            const options = {
+                why: 'Delete mutex lock on startup',
+                crude: true,
+                method: 'DELETE',
+                retry503: 5,
+                host: '127.0.0.1',
+                auth: `${primaryAdminUser}:`,
+                port: 8100
+            };
+
+            return util.httpRequest(url, options);
+        });
 }
 
-function makeDataStore(type, name) {
+function makeDataStore(context, type, name) {
     switch (type) {
     case 'memory': return new JsonDataStore();
-    case 'data-group': return new DataGroupDataStore(`/Common/appsvcs/${name}`);
+    case 'data-group': return new DataGroupDataStore(Context.build(context), `/Common/appsvcs/${name}`);
     default: throw new Error(`Unknown data store type: ${type}`);
     }
 }
 
-function initAsyncDataStore(deviceType) {
+function initAsyncDataStore(context) {
     return Promise.resolve()
         .then(() => {
             // Containers do not have data groups, so use in memory storage for now
-            if (deviceType === constants.DEVICE_TYPES.CONTAINER) {
+            if (context.deviceType === constants.DEVICE_TYPES.CONTAINER) {
                 return config.updateSettings({
                     asyncTaskStorage: 'memory'
                 });
@@ -274,6 +296,7 @@ function initAsyncDataStore(deviceType) {
         })
         .then(() => config.getAllSettings())
         .then((settings) => makeDataStore(
+            context,
             settings.asyncTaskStorage || 'data-group',
             'dataStore'
         ));
