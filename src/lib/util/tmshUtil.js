@@ -16,6 +16,7 @@
 
 'use strict';
 
+const childProcess = require('child_process');
 const util = require('./util');
 const Context = require('../context/context');
 
@@ -85,11 +86,23 @@ function generateListDataGroupCommand(path) {
     };
 }
 
-function executeCommand(command) {
-    const requestContext = {
-        basicAuth: `Basic ${util.base64Encode('admin:')}`
-    };
-    const context = Context.build(undefined, requestContext, undefined, [{ protocol: 'http', urlPrefix: 'http://localhost:8100' }]);
+function getPrimaryAdminUser() {
+    return executeTmshCommand('list sys db systemauth.primaryadminuser')
+        .then((result) => {
+            if (!result || !result.value) {
+                return Promise.reject(new Error('Unable to get primary admin user'));
+            }
+            const adminUser = result.value.replace(/"/g, '');
+            return Promise.resolve(adminUser);
+        });
+}
+
+function executeCommand(context, command) {
+    const adminUser = util.getDeepValue(context, 'host.adminUser');
+    const basicAuth = `Basic ${util.base64Encode(`${adminUser}:`)}`;
+    const tempRequestContext = { basicAuth };
+    const tempContext = Context.build(undefined, tempRequestContext, undefined, [{ protocol: 'http', urlPrefix: 'http://localhost:8100' }]);
+
     const options = {
         ctype: 'application/json',
         crude: true
@@ -108,7 +121,7 @@ function executeCommand(command) {
         options.send = JSON.stringify(command.data);
     }
 
-    return util.iControlRequest(context, options)
+    return util.iControlRequest(tempContext, options)
         .then((result) => {
             if (result.statusCode >= 400) {
                 const error = new Error();
@@ -120,24 +133,65 @@ function executeCommand(command) {
         });
 }
 
-function addFolder(path) {
-    return executeCommand(generateAddFolderCommand(path));
+function parseTmshResponse(response) {
+    const keyVals = response.split(/\s+/);
+    const result = {};
+
+    // find the parts inside the {}
+    const openingBraceIndex = keyVals.indexOf('{');
+    const closingBraceIndex = keyVals.lastIndexOf('}');
+
+    for (let i = openingBraceIndex + 1; i < closingBraceIndex - 1; i += 2) {
+        result[keyVals[i]] = keyVals[i + 1];
+    }
+
+    return result;
 }
 
-function addDataGroup(path) {
-    return executeCommand(generateAddDataGroupCommand(path));
+function executeTmshCommand(command, flags) {
+    return new Promise((resolve, reject) => {
+        const commandName = '/bin/tmsh';
+        const commandArgs = (flags || ['-a']).concat(command.split(' '));
+        let result = '';
+        let error = '';
+        const cp = childProcess.spawn(commandName, commandArgs, { shell: '/bin/bash' });
+
+        cp.stdout.on('data', (data) => {
+            result += data;
+        });
+
+        cp.stderr.on('data', (data) => {
+            error += data;
+        });
+
+        cp.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(error));
+            }
+
+            resolve(parseTmshResponse(result));
+        });
+    });
 }
 
-function updateDataGroup(path, records) {
-    return executeCommand(generateUpdateDataGroupCommand(path, records));
+function addFolder(context, path) {
+    return executeCommand(context, generateAddFolderCommand(path));
 }
 
-function readDataGroup(path) {
-    return executeCommand(generateReadDataGroupCommand(path));
+function addDataGroup(context, path) {
+    return executeCommand(context, generateAddDataGroupCommand(path));
 }
 
-function itemExists(command) {
-    return executeCommand(command)
+function updateDataGroup(context, path, records) {
+    return executeCommand(context, generateUpdateDataGroupCommand(path, records));
+}
+
+function readDataGroup(context, path) {
+    return executeCommand(context, generateReadDataGroupCommand(path));
+}
+
+function itemExists(context, command) {
+    return executeCommand(context, command)
         .then(() => true)
         .catch((err) => {
             if (err && err.code === 404) {
@@ -147,12 +201,12 @@ function itemExists(command) {
         });
 }
 
-function folderExists(path) {
-    return itemExists(generateListFolderCommand(path));
+function folderExists(context, path) {
+    return itemExists(context, generateListFolderCommand(path));
 }
 
-function dataGroupExists(path) {
-    return itemExists(generateListDataGroupCommand(path));
+function dataGroupExists(context, path) {
+    return itemExists(context, generateListDataGroupCommand(path));
 }
 
 module.exports = {
@@ -160,7 +214,9 @@ module.exports = {
     generateAddDataGroupCommand,
     generateUpdateDataGroupCommand,
     generateReadDataGroupCommand,
+    getPrimaryAdminUser,
     executeCommand,
+    executeTmshCommand,
     addFolder,
     addDataGroup,
     updateDataGroup,

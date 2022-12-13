@@ -36,6 +36,7 @@ const Config = require('../../../../src/lib/config');
 
 const cloudLibUtils = require('../../../../src/lib/util/cloudLibUtils');
 const util = require('../../../../src/lib/util/util');
+const tmshUtil = require('../../../../src/lib/util/tmshUtil');
 const DEVICE_TYPES = require('../../../../src/lib/constants').DEVICE_TYPES;
 
 describe('hostContext', function () {
@@ -95,6 +96,8 @@ describe('hostContext', function () {
             return originalLoadJson(url, opts);
         });
         sinon.stub(util, 'getDeviceInfo').resolves({});
+
+        sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
 
         sinon.stub(cloudLibUtils, 'getIsAvailable').resolves(true);
         ensureInstallSpy = sinon.stub(cloudLibUtils, 'ensureInstall').resolves();

@@ -20,6 +20,7 @@ const Ajv = require('ajv');
 const fs = require('fs');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const util = require('./util/util');
+const tmshUtil = require('./util/tmshUtil');
 const constants = require('./constants');
 
 class As3Request {
@@ -105,30 +106,35 @@ class As3Request {
                     const creds = util.base64Encode(`${request.targetUsername}:${request.targetPassphrase}`);
                     request.basicAuth = `Basic ${creds}`;
                 }
-            } else {
+                return Promise.resolve();
+            }
+            return tmshUtil.getPrimaryAdminUser();
+        })
+            .then((primaryAdminUser) => {
+                if (primaryAdminUser) {
                 // if targetHost is not supplied, use localhost port 8100
-                request.targetHost = 'localhost';
-                request.targetPort = 8100;
-                request.protocol = 'http';
-                request.urlPrefix = `http://admin:@${request.targetHost}:${request.targetPort}`;
-                request.localBigip = true;
-            }
+                    request.targetHost = 'localhost';
+                    request.targetPort = 8100;
+                    request.protocol = 'http';
+                    request.urlPrefix = `http://${primaryAdminUser}:@${request.targetHost}:${request.targetPort}`;
+                    request.localBigip = true;
+                }
 
-            if (typeof request.targetTokens !== 'object') {
-                request.targetTokens = {};
-            }
-            if (typeof token === 'string' && token.length) {
-                request.targetTokens['X-F5-Auth-Token'] = token;
-            }
+                if (typeof request.targetTokens !== 'object') {
+                    request.targetTokens = {};
+                }
+                if (typeof token === 'string' && token.length) {
+                    request.targetTokens['X-F5-Auth-Token'] = token;
+                }
 
-            const minimizedHost = ipUtil.minimizeIP(request.targetHost);
-            if (request.targetHost === undefined || request.targetHost === '' || minimizedHost === '::1' || minimizedHost === '127.0.0.1') {
-                request.targetHost = 'localhost';
-            } else {
-                request.targetHost = request.targetHost.toLowerCase();
-            }
-            return request;
-        });
+                const minimizedHost = ipUtil.minimizeIP(request.targetHost);
+                if (request.targetHost === undefined || request.targetHost === '' || minimizedHost === '::1' || minimizedHost === '127.0.0.1') {
+                    request.targetHost = 'localhost';
+                } else {
+                    request.targetHost = request.targetHost.toLowerCase();
+                }
+                return request;
+            });
     }
 
     // wrap to get/set the context of the AS3 host and the targeted device
