@@ -22,6 +22,7 @@ const sinon = require('sinon');
 const assert = chai.assert;
 const As3Request = require('../../../src/lib/as3request');
 const util = require('../../../src/lib/util/util');
+const tmshUtil = require('../../../src/lib/util/tmshUtil');
 const constants = require('../../../src/lib/constants');
 
 describe('as3request', function () {
@@ -33,7 +34,10 @@ describe('as3request', function () {
         // Build the request once so that we don't have to keep parsing the schema
         as3Request = new As3Request(schemaPath);
     });
-    beforeEach(() => sinon.stub(util, 'getMgmtPort').resolves(8443));
+    beforeEach(() => {
+        sinon.stub(util, 'getMgmtPort').resolves(8443);
+        sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
+    });
     afterEach(() => sinon.restore());
 
     describe('.constructor', () => {
