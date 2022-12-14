@@ -67,7 +67,7 @@ describe('tmshUtil', () => {
         it('should get the primary admin user from the db var', () => {
             sinon.stub(childProcess, 'spawn').callsFake(() => getCpMock('{ value "myAdminUser" }'));
             const expectedArgs = [
-                '/bin/tmsh',
+                '/usr/bin/tmsh',
                 [
                     '-a',
                     'list',
