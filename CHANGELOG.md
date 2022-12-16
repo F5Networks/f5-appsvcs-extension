@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-2201: ([GitHub Issue 407](https://github.com/F5Networks/f5-appsvcs-extension/issues/407)): Retry on HTTP request timeouts
 - AUTOTOOL-3385: ([GitHub Issue 623](https://github.com/F5Networks/f5-appsvcs-extension/issues/623)): Pool member adminState does not match "force offline" behavior in WebUI
 - AUTOTOOL-3470: ([GitHub Issue 650](https://github.com/F5Networks/f5-appsvcs-extension/issues/650)): F5 appsvcs throws 404 when the admin user is disabled
+- AUTOTOOL-3055: ([GitHub Issue 574](https://github.com/F5Networks/f5-appsvcs-extension/issues/574)): Pool members not rolling back properly on declaration failure
 
 ### Changed
 - Updated to Service Discovery 1.11.2-1
