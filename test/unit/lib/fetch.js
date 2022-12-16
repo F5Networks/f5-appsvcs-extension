@@ -5779,6 +5779,7 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/10.70.61.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
                             '}}',
                             '}'

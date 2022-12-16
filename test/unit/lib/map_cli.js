@@ -284,15 +284,69 @@ describe('map_cli', () => {
                 ],
                 rhsCommand: 'ltm pool'
             };
-            const config = {
+            const targetConfig = {
                 members: {
                     '/Generic_Ten/10.128.0.9:80': {}
                 }
             };
-            const output = mapCli.tmshCreate(context, diff, config);
+            const currentConfig = {
+                '/Generic_Ten/Generic_App/generic_Pool': {
+                    properties: {
+                        members: {
+                            '/Generic_Ten/10.128.0.9:80': {}
+                        }
+                    }
+                }
+            };
+            const output = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
             assert.strictEqual(
                 output.commands[0],
                 'tmsh::modify ltm pool /Generic_Ten/Generic_App/generic_Pool members delete \\{ "/Generic_Ten/10.128.0.9:80" \\}'
+            );
+        });
+
+        it('ltm pool member rollback', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    'tenant/app/pool',
+                    'properties',
+                    'members',
+                    '/tenant/192.0.2.0:80'
+                ],
+                rhsCommand: 'ltm pool'
+            };
+            const targetConfig = {
+                members: {
+                    '/tenant/192.0.2.0:0': {}
+                }
+            };
+            const currentConfig = {
+                'tenant/app/pool': {
+                    properties: {
+                        members: {
+                            '/tenant/192.0.2.0:80': {
+                                monitor: {
+                                    default: {}
+                                },
+                                metadata: {
+                                    source: {
+                                        value: 'declaration'
+                                    }
+                                },
+                                ratio: 1,
+                                'rate-limit': 'disabled'
+                            }
+                        }
+                    }
+                }
+            };
+            const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.deepStrictEqual(
+                result.rollback,
+                [
+                    'tmsh::modify ltm pool tenant/app/pool members add \\{ /tenant/192.0.2.0:80 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} ratio 1 rate-limit disabled \\} \\}'
+                ]
             );
         });
 

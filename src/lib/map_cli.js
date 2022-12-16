@@ -715,7 +715,10 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             });
         }
         if (diff.kind === 'D' && diff.path.find((p) => p === 'members')) {
-            commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${diff.path[diff.path.indexOf('members') + 1]}" \\}`];
+            const memberName = diff.path[diff.path.indexOf('members') + 1];
+            const currentMember = pushMonitors(currentConfig[diff.path[0]].properties.members[memberName]);
+            commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${memberName}" \\}`];
+            commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} members add \\{ ${memberName} \\{${stringify(diff.rhsCommand, currentMember, true)} \\} \\}`);
             return commandObj;
         }
         break;
