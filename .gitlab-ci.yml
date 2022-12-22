@@ -98,6 +98,7 @@ coverage:
   artifacts:
     paths:
       - coverage
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
 
 audit:
   image: $DOCKER_URL/node:lts
