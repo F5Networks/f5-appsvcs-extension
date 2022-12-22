@@ -44,16 +44,6 @@
             "security bot-defense signature-category"
         ]
     },
-    "Certificate_Validator_OCSP": {
-        "name": "OCSP Cert Validator",
-        "class": "Certificate_Validator_OCSP",
-        "tmshPath": "sys crypto cert-validator ocsp"
-    },
-    "CA_Bundle": {
-        "name": "Ca Bundle",
-        "class": "CA_Bundle",
-        "tmshPath": "sys file ssl-cert"
-    },
     "Cipher_Group": {
         "name": "cipher group",
         "class": "Cipher_Group",
@@ -80,10 +70,6 @@
         "name": "classification profile",
         "class": "Classification_Profile",
         "tmshPath": "ltm profile classification"
-    },
-    "DNS_Resolver": {
-        "name": "DNS resolver",
-        "tmshPath": "net dns-resolver"
     },
     "DNS_Cache": {
         "name": "DNS cache",
@@ -455,11 +441,6 @@
             "sys log-config destination splunk"
         ]
     },
-    "Log_Publisher": {
-        "name": "log publisher",
-        "class": "Log_Publisher",
-        "tmshPath": "sys log-config publisher"
-    },
     "Radius_Profile": {
         "name": "radius profile",
         "class": "Radius_Profile",
@@ -579,11 +560,6 @@
         "name": "snat translation",
         "class": "SNAT_Translation",
         "tmshPath": "ltm snat-translation"
-    },
-    "SSL_Certificate": {
-        "name": "SSL certificate",
-        "tmshPath": "sys file ssl-cert",
-        "class": "Certificate"
     },
     "SSL_CRL_File": {
         "name": "SSL CRL file",

@@ -17,6 +17,7 @@ Changes to this project are documented in this file. More detail (including info
 - Updated to Service Discovery 1.11.2-1
   - AUTOTOOL-3335: ([GitHub Issue 610](https://github.com/F5Networks/f5-appsvcs-extension/issues/610)): Service Discovery / Consul and jmespathquery to configure priorityGroup for pool members
   - AUTOTOOL-3534: Update packages to latest available versions
+- AUTOTOOL-3439: Merge f5-appsvcs-schema into AS3, specifically: Analytics_Profile, Analytics_TCP_Profile, Basic_Auth, Bearer_Token, CA_Bundle, Capture_Filter, Certificate, Certificate_Validator_OCSP, Enum_Country_Analytics, F5_String, JWE, Log_Publisher
 
 ### Removed
 

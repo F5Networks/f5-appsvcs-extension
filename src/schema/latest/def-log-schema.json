@@ -1746,32 +1746,6 @@
             "additionalProperties": false
         },
 
-        "Log_Publisher": {
-            "title": "Log_Publisher",
-            "description": "Configures lists of destinations for the common logging interface",
-            "type": "object",
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "Log_Publisher"
-                },
-                "label": {
-                    "$ref": "#/definitions/Label"
-                },
-                "remark": {
-                    "$ref": "#/definitions/Remark"
-                },
-                "destinations": {
-                    "description": "specify log destinations for this log publisher to use",
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/Pointer_Log_Destination" }
-                }
-
-            },
-            "required": ["class", "destinations"]
-        },
-
         "Log_Destination": {
             "title": "Log_Destination",
             "description": "Configures a log destination",
