@@ -420,7 +420,7 @@ test_rpms_in_azure:
       artifacts: true
 
 test_rpms_for_this_project:
-  timeout: 7 hours
+  timeout: 8 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
