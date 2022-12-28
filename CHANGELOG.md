@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use
 
 ### Changed
 

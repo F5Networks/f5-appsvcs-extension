@@ -16,6 +16,7 @@
 
 'use strict';
 
+const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const log = require('./log');
 const util = require('./util/util');
 const constants = require('./constants');
@@ -1119,13 +1120,37 @@ const tmshDelete = function (context, diff, currentConfig) {
             deleteCommand
         ];
         return commandObj;
-    case 'ltm virtual-address': {
+    case 'ltm virtual':
+        commandObj.commands.push(deleteCommand);
+
+        // If we are deleting a virtual, see if we are modifying a destination from a Common virtual address.
+        // If so, attempt to delete that as well. It may be referenced by another virtual, so ignore
+        // errors
+        if (typeof diff.lhs === 'string' && diff.lhs.startsWith('/Common/')) {
+            let fromAddress = ipUtil.splitAddress(diff.lhs.substring('/Common/'.length))[0];
+            fromAddress = ipUtil.parseIpAddress(fromAddress);
+            const toDelete = context.host.parser.virtualAddressList.find(
+                (addr) => {
+                    // Only touch virtual addresses that we created
+                    if (addr.metadata && addr.metadata.some((md) => md.name === 'references')) {
+                        let virtualAddress = ipUtil.splitAddress(addr.fullPath.substring('/Common/'.length))[0];
+                        virtualAddress = ipUtil.parseIpAddress(virtualAddress);
+                        return fromAddress.ipWithRoute === virtualAddress.ipWithRoute;
+                    }
+                    return false;
+                }
+            );
+            if (toDelete) {
+                commandObj.commands.push(`catch { tmsh::delete ltm virtual-address ${toDelete.fullPath} } e`);
+            }
+        }
+        return commandObj;
+    case 'ltm virtual-address':
         path = path.split('/');
         path[path.length - 1] = path[path.length - 1].replace('Service_Address-', '');
         path = path.join('/');
         commandObj.commands = [`tmsh::delete ${diff.lhsCommand} ${path}`];
         return commandObj;
-    }
     case 'ltm node':
         if (diff.kind === 'E') {
             // Modifies are handled in tmshCreate

@@ -324,4 +324,57 @@ describe('shareAddresses', function () {
             })
             .then(() => deleteDeclaration());
     });
+
+    it('should delete virtual addresses that are no longer in use', () => {
+        const declaration1 = simpleCopy(baseDecl);
+        declaration1.tenant1 = simpleCopy(tenantDecl);
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 2);
+                assert.strictEqual(
+                    response.items.some((item) => item.fullPath === '/Common/10.10.0.111'),
+                    true,
+                    'Service_Address for 10.10.0.111 was not found'
+                );
+                assert.strictEqual(
+                    response.items.some((item) => item.fullPath === '/Common/10.10.0.1'),
+                    true,
+                    'Service_Address for 10.10.0.1 was not found'
+                );
+            })
+            .then(() => {
+                declaration1.tenant1.Application.Service.virtualAddresses = [
+                    '10.10.0.222',
+                    '10.10.0.1'
+                ];
+                return postDeclaration(declaration1, { declarationIndex: 1 });
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 2);
+                assert.strictEqual(
+                    response.items.some((item) => item.fullPath === '/Common/10.10.0.222'),
+                    true,
+                    'Service_Address for 10.10.0.222 was not found'
+                );
+                assert.strictEqual(
+                    response.items.some((item) => item.fullPath === '/Common/10.10.0.1'),
+                    true,
+                    'Service_Address for 10.10.0.1 was not found'
+                );
+            })
+            .then(() => deleteDeclaration())
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 0);
+            });
+    });
 });
