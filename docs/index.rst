@@ -7,7 +7,7 @@ Welcome to the F5 BIG-IP Application Services 3 Extension User Guide. This is th
 
 To provide feedback on this documentation, you can file a GitHub Issue, or email us at solutionsfeedback@f5.com.
 
-.. NOTE:: To see what's new in BIG-IP AS3, see the the :ref:`revision-history` or the |relnotes|.
+.. NOTE:: To see what is new in BIG-IP AS3, see the the :ref:`revision-history` or the |relnotes|.
 
 Introduction
 ------------
