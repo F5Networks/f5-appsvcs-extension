@@ -4742,6 +4742,73 @@ describe('map_as3', () => {
         });
     });
 
+    describe('ALG_Log_Profile', () => {
+        it('should configure properly', () => {
+            const item = {
+                class: 'ALG_Log_Profile',
+                remark: 'My Remark',
+                csvFormat: true,
+                startControlChannel: {
+                    action: 'enabled',
+                    includeDestination: false
+                },
+                endControlChannel: {
+                    action: 'disabled',
+                    includeDestination: true
+                },
+                startDataChannel: {
+                    action: 'backup-allocation-only',
+                    includeDestination: false
+                },
+                endDataChannel: {
+                    action: 'enabled',
+                    includeDestination: true
+                },
+                inboundTransaction: {
+                    action: 'enabled'
+                }
+            };
+
+            const config = translateClass('ALG_Log_Profile', item);
+            assert.deepStrictEqual(config, {
+                path: '/tenantId/appId/itemId',
+                command: 'ltm alg-log-profile',
+                properties: {
+                    description: '"My Remark"',
+                    'csv-format': 'enabled',
+                    'start-control-channel': {
+                        action: 'enabled',
+                        elements: {
+                            '': {}
+                        }
+                    },
+                    'end-control-channel': {
+                        action: 'disabled',
+                        elements: {
+                            destination: {}
+                        }
+                    },
+                    'start-data-channel': {
+                        action: 'backup-allocation-only',
+                        elements: {
+                            '': {}
+                        }
+                    },
+                    'end-data-channel': {
+                        action: 'enabled',
+                        elements: {
+                            destination: {}
+                        }
+                    },
+                    'inbound-transaction': {
+                        action: 'enabled'
+                    }
+                },
+                ignore: []
+            });
+        });
+    });
+
     describe('DNS_Logging_Profile', () => {
         it('should configure properly', () => {
             const item = {

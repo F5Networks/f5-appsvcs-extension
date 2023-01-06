@@ -2,6 +2,34 @@
   "auth partition": [
     { "id":"default-route-domain" }
   ],
+  "ltm alg-log-profile": [
+    { "id": "description",              "altId": "remark", "quotedString": true },
+    { "id": "csv-format",               "truth": "enabled", "falsehood": "disabled" },
+    { "id": "start-control-channel",    "extend": "object" },
+    { "id": "end-control-channel",      "extend": "object" },
+    { "id": "start-data-channel",       "extend": "object" },
+    { "id": "end-data-channel",         "extend": "object" },
+    { "id": "inbound-transaction",      "extend": "object" }
+  ],
+  "ltm alg-log-profile start-control-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile end-control-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile start-data-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile end-data-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile inbound-transaction": [
+    { "id": "action",                   "truth": "enabled", "falsehood": "disabled" }
+  ],
   "ltm cipher group": [
     { "id":"allow",                     "extend": "objArray", "altId": "allowCipherRules" },
     { "id":"description",               "altId": "remark", "quotedString": true },

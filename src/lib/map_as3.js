@@ -571,6 +571,18 @@ const translate = {
     },
 
     /**
+     * Defines an ALG_Log_Profile
+     */
+    ALG_Log_Profile(context, tenantId, appId, itemId, item) {
+        ['startControlChannel', 'endControlChannel', 'startDataChannel', 'endDataChannel'].forEach((e) => {
+            item[e].elements = (item[e].includeDestination === true) ? { destination: {} } : '';
+            delete item[e].includeDestination;
+        });
+        const config = normalize.actionableMcp(context, item, 'ltm alg-log-profile', util.mcpPath(tenantId, appId, itemId));
+        return { configs: [config] };
+    },
+
+    /**
      * Defines an iRule
      */
     iRule(context, tenantId, appId, itemId, item) {

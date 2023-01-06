@@ -8,6 +8,11 @@
         "name": "Address Discovery",
         "class": "Address_Discovery"
     },
+    "ALG_Log_Profile": {
+        "name": "application layer gateway log profile",
+        "class": "ALG_Log_Profile",
+        "tmshPath": "ltm alg-log-profile"
+    },
     "API_Protection_Profile": {
         "name": "API_Protection_Profile",
         "tmshPath": "api-protection profile apiprotection"

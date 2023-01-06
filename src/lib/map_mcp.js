@@ -216,6 +216,9 @@ const translate = {
         obj.signingPassphrase = obj.signerKeyPassphrase || 'none';
         return [normalize.actionableMcp(context, obj, 'sys crypto cert-validator ocsp', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
+    'tm:ltm:alg-log-profile:alg-log-profilestate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'ltm alg-log-profile', util.mcpPath(obj.partition, obj.subPath, obj.name))];
+    },
     'tm:ltm:html-rule:comment-raise-event:comment-raise-eventstate': function (context, obj) {
         obj.description = obj.description || 'none';
         return [normalize.actionableMcp(context, obj, 'ltm html-rule comment-raise-event', util.mcpPath(obj.partition, obj.subPath, obj.name))];

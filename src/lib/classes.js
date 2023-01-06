@@ -18,6 +18,7 @@
 
 module.exports = {
     toMcp: {
+        ALG_Log_Profile: 'ltm alg-log-profile',
         Data_Group: [
             'ltm data-group internal',
             'ltm data-group external'

@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.43.0
 
 ### Added
+- AUTOTOOL-3491: ([GitHub Issue 619](https://github.com/F5Networks/f5-appsvcs-extension/issues/619)): ALG_Log_Profile. Currently requires cgnat to be provisioned and minimum BIGIP version to be 15.1
 
 ### Fixed
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use

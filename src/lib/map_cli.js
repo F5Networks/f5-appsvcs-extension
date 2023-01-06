@@ -22,6 +22,7 @@ const util = require('./util/util');
 const constants = require('./constants');
 
 const prefix = {
+    'ltm alg-log-profile elements': 'replace-all-with',
     'ltm cipher group allow': 'replace-all-with',
     'ltm cipher group exclude': 'replace-all-with',
     'ltm cipher group require': 'replace-all-with',

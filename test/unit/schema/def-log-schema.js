@@ -38,6 +38,154 @@ const validate = ajv
     .compile(adcSchema);
 
 describe('def-log-schema.json', () => {
+    describe('ALG_Log_Profile', () => {
+        const baseDecl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            id: 'declarationId',
+            theTenant: {
+                class: 'Tenant',
+                A1: {
+                    class: 'Application',
+                    template: 'generic',
+                    alp: {
+                        class: 'ALG_Log_Profile'
+                    }
+                }
+            }
+        };
+
+        describe('valid', () => {
+            it('should accept minimal properties and fully populate default values', () => {
+                const testData = simpleCopy(baseDecl);
+                assert.ok(validate(testData), getErrorString(validate));
+                assert.deepStrictEqual(testData, {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        A1: {
+                            class: 'Application',
+                            template: 'generic',
+                            alp: {
+                                class: 'ALG_Log_Profile',
+                                csvFormat: false,
+                                startControlChannel: {
+                                    action: 'disabled',
+                                    includeDestination: false
+                                },
+                                endControlChannel: {
+                                    action: 'enabled',
+                                    includeDestination: false
+                                },
+                                startDataChannel: {
+                                    action: 'disabled',
+                                    includeDestination: false
+                                },
+                                endDataChannel: {
+                                    action: 'enabled',
+                                    includeDestination: false
+                                },
+                                inboundTransaction: {
+                                    action: 'disabled'
+                                }
+                            },
+                            enable: true
+                        },
+                        enable: true,
+                        defaultRouteDomain: 0,
+                        optimisticLockKey: ''
+                    },
+                    updateMode: 'selective'
+                });
+            });
+
+            it('should fully populate default values in empty objects', () => {
+                const testData = simpleCopy(baseDecl);
+                testData.theTenant.A1.alp = {
+                    class: 'ALG_Log_Profile',
+                    startControlChannel: {},
+                    endControlChannel: {},
+                    startDataChannel: {},
+                    endDataChannel: {},
+                    inboundTransaction: {}
+                };
+                assert.ok(validate(testData), getErrorString(validate));
+                assert.deepStrictEqual(testData, {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        A1: {
+                            class: 'Application',
+                            template: 'generic',
+                            alp: {
+                                class: 'ALG_Log_Profile',
+                                csvFormat: false,
+                                startControlChannel: {
+                                    action: 'disabled',
+                                    includeDestination: false
+                                },
+                                endControlChannel: {
+                                    action: 'enabled',
+                                    includeDestination: false
+                                },
+                                startDataChannel: {
+                                    action: 'disabled',
+                                    includeDestination: false
+                                },
+                                endDataChannel: {
+                                    action: 'enabled',
+                                    includeDestination: false
+                                },
+                                inboundTransaction: {
+                                    action: 'disabled'
+                                }
+                            },
+                            enable: true
+                        },
+                        enable: true,
+                        defaultRouteDomain: 0,
+                        optimisticLockKey: ''
+                    },
+                    updateMode: 'selective'
+                });
+            });
+
+            it('should accept fully populated properties', () => {
+                const testData = simpleCopy(baseDecl);
+                testData.theTenant.A1.alp = {
+                    class: 'ALG_Log_Profile',
+                    label: 'My Label',
+                    remark: 'My Remark',
+                    csvFormat: true,
+                    startControlChannel: {
+                        action: 'enabled',
+                        includeDestination: false
+                    },
+                    endControlChannel: {
+                        action: 'disabled',
+                        includeDestination: true
+                    },
+                    startDataChannel: {
+                        action: 'enabled',
+                        includeDestination: false
+                    },
+                    endDataChannel: {
+                        action: 'backup-allocation-only',
+                        includeDestination: true
+                    },
+                    inboundTransaction: {
+                        action: 'disabled'
+                    }
+                };
+                assert.ok(validate(testData), getErrorString(validate));
+            });
+        });
+    });
+
     describe('Security_Log_Profile', () => {
         const baseDecl = {
             class: 'ADC',

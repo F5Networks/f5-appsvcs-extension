@@ -4,6 +4,10 @@
             "endpoint": "/mgmt/tm/auth/partition"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/alg-log-profile",
+            "modules": ["cgnat"]
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/data-group/internal"
         },
         {
