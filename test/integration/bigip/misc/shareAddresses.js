@@ -374,7 +374,7 @@ describe('shareAddresses', function () {
             })
             .then(() => getPath('/mgmt/tm/ltm/virtual-address'))
             .then((response) => {
-                assert.strictEqual(response.items.length, 0);
+                assert.strictEqual(response.items ? response.items.length : 0, 0);
             });
     });
 });
