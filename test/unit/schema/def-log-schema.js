@@ -231,6 +231,71 @@ describe('def-log-schema.json', () => {
                 });
             });
         });
+
+        describe('.nat', () => {
+            describe('valid', () => {
+                it('should accept full properties', () => {
+                    const testData = simpleCopy(baseDecl);
+                    testData.theTenant.A1.slp.nat = {
+                        publisher: {
+                            bigip: '/Common/default-ipsec-log-publisher'
+                        },
+                        logErrors: true,
+                        logSubscriberId: true,
+                        logQuotaExceeded: true,
+                        logStartInboundSession: true,
+                        logEndInboundSession: true,
+                        logStartOutboundSession: true,
+                        logStartOutboundSessionDestination: true,
+                        logEndOutboundSession: true,
+                        logEndOutboundSessionDestination: true,
+                        lsnLegacyMode: false,
+                        rateLimitAggregate: 100,
+                        rateLimitErrors: 10,
+                        rateLimitQuotaExceeded: 20,
+                        rateLimitStartInboundSession: 30,
+                        rateLimitEndInboundSession: 40,
+                        rateLimitStartOutboundSession: 50,
+                        rateLimitEndOutboundSession: 60,
+                        formatErrors: {
+                            fields: [
+                                'context-name',
+                                'event-name',
+                                'dest-ip'
+                            ],
+                            delimiter: '.'
+                        }
+                    };
+                    assert.ok(validate(testData), getErrorString(validate));
+                });
+            });
+
+            describe('invalid', () => {
+                it('should disallow setting logStartOutboundSessionDestination without logStartOutboundSession', () => {
+                    const testData = simpleCopy(baseDecl);
+                    testData.theTenant.A1.slp.nat = {
+                        publisher: {
+                            bigip: '/Common/default-ipsec-log-publisher'
+                        },
+                        logStartOutboundSession: false,
+                        logStartOutboundSessionDestination: true
+                    };
+                    assert.strictEqual(validate(testData), false);
+                });
+
+                it('should disallow setting logEndOutboundSessionDestination without logEndOutboundSession', () => {
+                    const testData = simpleCopy(baseDecl);
+                    testData.theTenant.A1.slp.nat = {
+                        publisher: {
+                            bigip: '/Common/default-ipsec-log-publisher'
+                        },
+                        logEndOutboundSession: false,
+                        logEndOutboundSessionDestination: true
+                    };
+                    assert.strictEqual(validate(testData), false);
+                });
+            });
+        });
     });
 
     describe('Log_Destination', () => {

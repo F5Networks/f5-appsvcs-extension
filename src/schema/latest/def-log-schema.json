@@ -964,7 +964,6 @@
                 "tag": "modules",
                 "data": ["afm"]
             },
-
             "properties": {
                 "publisher": {
                     "description": "Specifies the name of the log publisher used for logging Network Address Translation events",
@@ -1032,8 +1031,23 @@
                     "type": "boolean",
                     "default": false
                 },
+                "logStartOutboundSessionDestination": {
+                    "description": "Include destination address and port with log entry for the start of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+                    "type": "boolean",
+                    "default": false
+                },
                 "logEndOutboundSession": {
                     "description": "Generates event log entries at end of translation event for a NAT client. Triggered when the system frees the outbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logEndOutboundSessionDestination": {
+                    "description": "Include destination address and port with log entry for the end of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+                    "type": "boolean",
+                    "default": false
+                },
+                "lsnLegacyMode": {
+                    "description": "This option specifies whether translation events (and other NAT events) are logged in existing CGNAT/LSN formats (for backward compatibility with LSN events).",
                     "type": "boolean",
                     "default": false
                 },
@@ -1093,9 +1107,42 @@
             },
 
             "required": ["publisher"],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "dependencies": {
+                "logStartOutboundSessionDestination": {
+                    "if": {
+                        "properties": {
+                            "logStartOutboundSessionDestination": {
+                                "const": true
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "logStartOutboundSession": {
+                                "const": true
+                            }
+                        }
+                    }
+                },
+                "logEndOutboundSessionDestination": {
+                    "if": {
+                        "properties": {
+                            "logEndOutboundSessionDestination": {
+                                "const": true
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "logEndOutboundSession": {
+                                "const": true
+                            }
+                        }
+                    }
+                }
+            }
         },
-
         "Security_Log_Profile_Nat_Storage_Format": {
             "description": "Specifies the format type for log messages",
             "anyOf": [{

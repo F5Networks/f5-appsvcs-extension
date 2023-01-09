@@ -3064,6 +3064,22 @@ const translate = {
             subProfile.rateLimit = extractProperties(subProfile, (key) => key.startsWith('rateLimit'));
         }
 
+        function mapNatSession(natProfile) {
+            natProfile.logStartOutboundSession = { action: natProfile.logStartOutboundSession };
+            natProfile.logEndOutboundSession = { action: natProfile.logEndOutboundSession };
+
+            if (natProfile.logStartOutboundSession.action === true) {
+                if (natProfile.logStartOutboundSessionDestination === true) {
+                    natProfile.logStartOutboundSession.elements = { destination: {} };
+                }
+            }
+            if (natProfile.logEndOutboundSession.action === true) {
+                if (natProfile.logEndOutboundSessionDestination === true) {
+                    natProfile.logEndOutboundSession.elements = { destination: {} };
+                }
+            }
+        }
+
         function mapFormat(subProfile, inKey, outKey) {
             inKey = inKey || 'storageFormat';
             outKey = outKey || 'format';
@@ -3187,8 +3203,7 @@ const translate = {
                 item.nat.format[`in${formatKey}`] = item.nat.format[formatKey];
                 mapFormat(item.nat.format, `in${formatKey}`, formatKey);
             });
-            item.nat.logStartOutboundSession = { action: item.nat.logStartOutboundSession };
-            item.nat.logEndOutboundSession = { action: item.nat.logEndOutboundSession };
+            mapNatSession(item.nat);
         }
         if (item.network) {
             mapFormat(item.network);

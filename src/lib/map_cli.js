@@ -105,6 +105,7 @@ const prefix = {
     'security bot-defense profile whitelist': 'replace-all-with',
     'security log profile application': 'replace-all-with',
     'security log profile bot-defense': 'replace-all-with',
+    'security log profile elements': 'replace-all-with',
     'security log profile dos-application': 'replace-all-with',
     'security log profile network': 'replace-all-with',
     'security log profile protocol-dns': 'replace-all-with',

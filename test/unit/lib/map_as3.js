@@ -6577,6 +6577,10 @@ describe('map_as3', () => {
     });
 
     describe('Security_Log_Profile', () => {
+        beforeEach(() => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+        });
+
         it('should escape user defined strings', () => {
             /* eslint-disable no-template-curly-in-string */
             const item = {
@@ -6585,7 +6589,6 @@ describe('map_as3', () => {
                     storageFormat: 'foo ${date_time},${bigip_hostname} bar'
                 }
             };
-            sinon.stub(util, 'isOneOfProvisioned').returns(true);
             const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             const networkFormat = results.configs[0].properties.network.undefined.format;
             assert.strictEqual(
@@ -6593,6 +6596,44 @@ describe('map_as3', () => {
             );
             assert.strictEqual(networkFormat['field-list-delimiter'], undefined);
             /* eslint-enable no-template-curly-in-string */
+        });
+
+        it('should map NAT start/end session elements properly when enabled', () => {
+            const item = {
+                class: 'Security_Log_Profile',
+                nat: {
+                    logStartOutboundSession: true,
+                    logStartOutboundSessionDestination: true,
+                    logEndOutboundSession: true,
+                    logEndOutboundSessionDestination: true
+                }
+            };
+            const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            const natStartOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            const natEndOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            assert.strictEqual(natStartOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natStartOutboundSession.elements, { destination: {} });
+            assert.strictEqual(natEndOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natEndOutboundSession.elements, { destination: {} });
+        });
+
+        it('should map NAT start/end session elements properly when not enabled', () => {
+            const item = {
+                class: 'Security_Log_Profile',
+                nat: {
+                    logStartOutboundSession: true,
+                    logStartOutboundSessionDestination: true,
+                    logEndOutboundSession: false,
+                    logEndOutboundSessionDestination: false
+                }
+            };
+            const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            const natStartOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            const natEndOutboundSession = results.configs[0].properties.nat['end-outbound-session'];
+            assert.strictEqual(natStartOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natStartOutboundSession.elements, { destination: {} });
+            assert.strictEqual(natEndOutboundSession.action, 'disabled');
+            assert.strictEqual(natEndOutboundSession.elements, undefined);
         });
     });
 

@@ -1426,13 +1426,16 @@
     { "id":"start-outbound-session",   "altId": "logStartOutboundSession", "extend": "object", "default": {}},
     { "id":"end-outbound-session",     "altId": "logEndOutboundSession", "extend": "object", "default": {}},
     { "id":"rate-limit",               "extend": "object", "default": {}},
-    { "id":"format",                   "extend": "object", "default": {}}
+    { "id":"format",                   "extend": "object", "default": {}},
+    { "id":"lsn-legacy-mode",          "truth": "enabled", "falsehood": "disabled", "default": false }
   ],
   "security log profile nat start-outbound-session": [
-    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"elements",      "extend": "array", "default": null }
   ],
   "security log profile nat end-outbound-session": [
-    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"elements",      "extend": "array", "default": null }
   ],
   "security log profile nat rate-limit": [
     { "id":"errors",                     "altId": "rateLimitErrors", "default": 4294967295},

@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.43.0
 
 ### Added
+- AUTOTOOL-3490: ([GitHub Issue 533](https://github.com/F5Networks/f5-appsvcs-extension/issues/533)): Added lsn-legacy-mode & destination address/port properties in Security_Log_Profile_Nat
 - AUTOTOOL-3491: ([GitHub Issue 619](https://github.com/F5Networks/f5-appsvcs-extension/issues/619)): ALG_Log_Profile. Currently requires cgnat to be provisioned and minimum BIGIP version to be 15.1
 
 ### Fixed

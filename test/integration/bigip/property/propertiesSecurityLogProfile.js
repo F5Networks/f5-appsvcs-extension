@@ -184,10 +184,26 @@ describe('Security_Log_Profile', function () {
                     extractFunction: (o) => o.nat.startOutboundSession.action
                 },
                 {
+                    name: 'nat.logStartOutboundSessionDestination',
+                    inputValue: [undefined, true, undefined],
+                    expectedValue: [undefined, 'destination', undefined],
+                    extractFunction: (o) => (
+                        o.nat.startOutboundSession.elements ? o.nat.startOutboundSession.elements[0] : undefined
+                    )
+                },
+                {
                     name: 'nat.logEndOutboundSession',
                     inputValue: [undefined, true, undefined],
                     expectedValue: ['disabled', 'enabled', 'disabled'],
                     extractFunction: (o) => o.nat.endOutboundSession.action
+                },
+                {
+                    name: 'nat.logEndOutboundSessionDestination',
+                    inputValue: [undefined, true, undefined],
+                    expectedValue: [undefined, 'destination', undefined],
+                    extractFunction: (o) => (
+                        o.nat.endOutboundSession.elements ? o.nat.endOutboundSession.elements[0] : undefined
+                    )
                 },
                 {
                     name: 'network',
@@ -866,6 +882,31 @@ describe('Security_Log_Profile', function () {
                 }
             );
         }
+
+        return assertSecurityLogProfile(properties);
+    });
+
+    it('Should handle LSN legacy mode', () => {
+        assertModuleProvisioned.call(this, 'afm');
+
+        const properties = [
+            {
+                name: 'nat',
+                inputValue: [{}],
+                skipAssert: true
+            },
+            {
+                name: 'nat.publisher',
+                inputValue: [{ bigip: '/Common/default-ipsec-log-publisher' }],
+                skipAssert: true
+            },
+            {
+                name: 'nat.lsnLegacyMode',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: (o) => o.nat.lsnLegacyMode
+            }
+        ];
 
         return assertSecurityLogProfile(properties);
     });
