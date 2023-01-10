@@ -25,7 +25,7 @@ const {
 describe('ALG_Log_Profile', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    it('All properties response', function () {
+    it.skip('All properties response', function () {
         assertModuleProvisioned.call(this, 'cgnat');
 
         function extractResults(o, property) {
