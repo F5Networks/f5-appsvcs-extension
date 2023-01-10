@@ -405,7 +405,8 @@
     },
     "RTSP_Profile": {
         "name": "Real Time Streaming Protocol Profile",
-        "tmshPath": "ltm profile rtsp"
+        "tmshPath": "ltm profile rtsp",
+        "class": "RTSP_Profile"
     },
     "Access_Profile": {
         "name": "Access Profile",

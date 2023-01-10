@@ -469,6 +469,9 @@ const translate = {
     'tm:ltm:profile:ftp:ftpstate': function (context, obj) {
         return profile(context, obj, 'ltm profile ftp', '');
     },
+    'tm:ltm:profile:rtsp:rtspstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile rtsp', '');
+    },
     'tm:ltm:profile:statistics:statisticsstate': function (context, obj) {
         return profile(context, obj, 'ltm profile statistics', '');
     },

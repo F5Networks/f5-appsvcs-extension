@@ -6452,6 +6452,149 @@
             "required": [ "class" ]
         },
 
+        "RTSP_Profile": {
+            "title": "RTSP_Profile",
+            "type": "object",
+            "description": "Real Time Streaming Protocol Profile",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "RTSP_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "idleTimeout": {
+                    "title": "Idle Timeout",
+                    "description": "The number of seconds that a Real-time Transport Protocol (RTP) connection is idle before the connection is eligible for deletion",
+                    "if": { "type": "integer" },
+                    "then": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                    },
+                    "else": {
+                        "type": "string",
+                        "enum": [
+                            "indefinite",
+                            "immediate"
+                        ]
+                    },
+                    "default": 300
+                },
+                "maxHeaderSize": {
+                    "title": "Maximum Header Size",
+                    "description": "The largest RTSP request or response header, in bytes, that the RTSP filter accepts before dropping the connection",
+                    "type": "integer",
+                    "default": 4096,
+                    "minimum": 0,
+                    "maximum": 4294967295
+                },
+                "maxQueuedData": {
+                    "title": "Maximum Queued Data",
+                    "description": "The maximum amount of data, in bytes, that the RTSP filter buffers before dropping the connection",
+                    "type": "integer",
+                    "default": 32768,
+                    "minimum": 0,
+                    "maximum": 4294967295
+                },
+                "unicastRedirect": {
+                    "title": "Unicast Redirect",
+                    "description": "When enabled specifies that the client can select the destination port for the streamed data. The destination address for the data is the source of the request.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "multicastRedirect": {
+                    "title": "Multicast Redirect",
+                    "description": "When enabled, if you are using multicast streams, specifies that the client has permission to supply a different destination IP address for the streamed data",
+                    "type": "boolean",
+                    "default": false
+                },
+                "sessionReconnect": {
+                    "title": "Session Reconnect",
+                    "description": "When enabled specifies that the system persists a resumed control connection to the correct server. Typical clients do not support this behavior.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "realHTTPPersistence": {
+                    "title": "Real HTTP Persistence",
+                    "description": "When enabled specifies that the system automatically persists Real Networks-tunneled RTSP data over HTTP, which is over the RTSP port. When disabled, a user can override the default behavior with an iRule.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "checkSource": {
+                    "title": "Check Source",
+                    "description": "When true the system uses the source attribute in the transport header to establish the target address of the RTP stream, and before the response is forwarded to the client, updates the value of the source attribute to be the virtual address of the BIG-IP system. When false the system does not change the source attribute.",
+                    "type": "boolean",
+                    "default": true
+                },
+                "proxy": {
+                    "title": "Proxy",
+                    "description": "Specifies whether the RTSP profile is associated with an RTSP proxy configuration",
+                    "type": "string",
+                    "enum": [ "external", "internal", "none" ],
+                    "default": "none"
+                },
+                "proxyHeader": {
+                    "title": "Proxy Header",
+                    "description": "When set, specifies the name of the header in the RTSP proxy configuration that is passed from the client-side virtual server to the server-side virtual server. Note that the name of the header must begin with X-. To use the proxyHeader option, you must specify a value for the proxy option. Note that the system removes this header from the request prior to sending the request to the server for processing.",
+                    "type": "string"
+                },
+                "RTPPort": {
+                    "title": "RTP Port",
+                    "description": "The number of the port to use for the RTP service",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "RTCPPort": {
+                    "title": "RTCP Port",
+                    "description": "The number of the port to use for the Real Time Control Protocol (RTCP) service. RTCP allows monitoring of real-time data delivery.",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "logProfile": {
+                    "description": "ALG log profile pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_ALG_Log_Profile"
+                        }
+                    ]
+                },
+                "logPublisher": {
+                    "description": "Log publisher pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_Log_Publisher"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class" ],
+            "dependencies": {
+                "logProfile": {
+                    "required": ["logPublisher"]
+                },
+                "logPublisher": {
+                    "required": ["logProfile"]
+                }
+            }
+        },
+
         "SIP_Profile": {
             "title": "SIP_Profile",
             "type": "object",

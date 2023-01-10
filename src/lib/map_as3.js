@@ -1002,6 +1002,18 @@ const translate = {
     },
 
     /**
+     * Defines an Real-Time Streaming Protocol profile
+     *
+     */
+    RTSP_Profile(context, tenantId, appId, itemId, item) {
+        item.remark = item.remark || '';
+        item.logProfile = item.logProfile || 'none';
+        item.logPublisher = item.logPublisher || 'none';
+        item.proxyHeader = item.proxyHeader || 'none';
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile rtsp', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    /**
      * Defines a statistics profile
      */
     Statistics_Profile(context, tenantId, appId, itemId, item) {

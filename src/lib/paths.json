@@ -137,6 +137,9 @@
             "endpoint": "/mgmt/tm/ltm/profile/one-connect"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/rtsp"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/profile/sctp"
         },
         {

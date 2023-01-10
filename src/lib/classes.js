@@ -75,6 +75,7 @@ module.exports = {
             'ltm monitor udp'
         ],
         FTP_Profile: 'ltm profile ftp',
+        RTSP_Profile: 'ltm profile rtsp',
         SIP_Profile: 'ltm profile sip',
         SMTPS_Profile: 'ltm profile smtps',
         ILX_Profile: 'ltm profile ilx',

@@ -422,6 +422,61 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:profile:rtsp:rtspstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:rtsp:rtspstate',
+                    name: 'myRtsp',
+                    partition: 'myApp',
+                    subPath: 'Applicaton1',
+                    fullPath: '/myApp/Application1/myRtsp',
+                    checkSource: 'enabled',
+                    description: 'My Description',
+                    idleTimeout: 'indefinite',
+                    logProfile: '/Common/alg_log_profile',
+                    logPublisher: '/Common/local-db-publisher',
+                    logPublisherReference: {
+                        link: 'https://localhost/mgmt/tm/sys/log-config/publisher/~Common~local-db-publisher?ver=17.0.0'
+                    },
+                    maxHeaderSize: 4096,
+                    maxQueuedData: 32768,
+                    multicastRedirect: 'disabled',
+                    proxy: 'internal',
+                    proxyHeader: 'proxy-header',
+                    realHttpPersistence: 'enabled',
+                    rtcpPort: 0,
+                    rtpPort: 0,
+                    sessionReconnect: 'disabled',
+                    unicastRedirect: 'disabled'
+                };
+
+                defaultContext.target.provisionedModules = ['cgnat'];
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Applicaton1/myRtsp',
+                    command: 'ltm profile rtsp',
+                    properties: {
+                        'check-source': 'enabled',
+                        description: '"My Description"',
+                        'idle-timeout': 'indefinite',
+                        'log-profile': '/Common/alg_log_profile',
+                        'log-publisher': '/Common/local-db-publisher',
+                        'max-header-size': 4096,
+                        'max-queued-data': 32768,
+                        'multicast-redirect': 'disabled',
+                        proxy: '"internal"',
+                        'proxy-header': '"proxy-header"',
+                        'real-http-persistence': 'enabled',
+                        'rtcp-port': 0,
+                        'rtp-port': 0,
+                        'session-reconnect': 'disabled',
+                        'unicast-redirect': 'disabled'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:security:protocol-inspection:profile:profilestate', () => {
             it('should perform basic transformation', () => {
                 const obj = {

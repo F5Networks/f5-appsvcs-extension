@@ -1040,6 +1040,23 @@
     { "id":"timeout" },
     { "id":"allow-http-10",             "altId": "allowHTTP10", "truth": "yes", "falsehood": "no" }
   ],
+  "ltm profile rtsp": [
+    { "id":"check-source",              "truth": "enabled", "falsehood": "disabled" },
+    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"log-profile",               "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"max-header-size" },
+    { "id":"max-queued-data" },
+    { "id":"multicast-redirect",        "truth": "enabled", "falsehood": "disabled" },
+    { "id":"proxy",                     "quotedString": true },
+    { "id":"proxy-header",              "quotedString": true },
+    { "id":"real-http-persistence",     "altId": "realHTTPPersistence", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rtcp-port",                 "altId": "RTCPPort" },
+    { "id":"rtp-port",                  "altId": "RTPPort" },
+    { "id":"session-reconnect",         "truth": "enabled", "falsehood": "disabled" },
+    { "id":"unicast-redirect",          "truth": "enabled", "falsehood": "disabled" }
+  ],
   "ltm profile statistics": [
     { "id":"description",               "altId": "remark", "quotedString": true},
     { "id":"field1",                    "quotedString": true },

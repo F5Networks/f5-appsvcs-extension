@@ -1247,6 +1247,92 @@ describe('map_as3', () => {
         });
     });
 
+    describe('RTSP_Profile', () => {
+        it('should map default values', () => {
+            const item = {
+                class: 'RTSP_Profile',
+                idleTimeout: 300,
+                maxHeaderSize: 4096,
+                maxQueuedData: 32768,
+                unicastRedirect: false,
+                multicastRedirect: false,
+                sessionReconnect: false,
+                realHTTPPersistence: true,
+                checkSource: true,
+                proxy: 'none',
+                RTPPort: 0,
+                RTCPPort: 0
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.RTSP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                'check-source': 'enabled',
+                description: 'none',
+                'idle-timeout': '300',
+                'log-profile': 'none',
+                'log-publisher': 'none',
+                'max-header-size': 4096,
+                'max-queued-data': 32768,
+                'multicast-redirect': 'disabled',
+                proxy: 'none',
+                'proxy-header': 'none',
+                'real-http-persistence': 'enabled',
+                'rtcp-port': 0,
+                'rtp-port': 0,
+                'session-reconnect': 'disabled',
+                'unicast-redirect': 'disabled'
+            });
+        });
+
+        it('should map non-default values', () => {
+            const item = {
+                class: 'RTSP_Profile',
+                remark: 'My Remark',
+                idleTimeout: 'indefinite',
+                maxHeaderSize: 5096,
+                maxQueuedData: 42768,
+                unicastRedirect: true,
+                multicastRedirect: true,
+                sessionReconnect: true,
+                realHTTPPersistence: false,
+                checkSource: false,
+                proxy: 'external',
+                proxyHeader: 'X-Proxy',
+                RTPPort: 49152,
+                RTCPPort: 49153,
+                logProfile: {
+                    bigip: '/Common/alg_log_profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/local-db-publisher'
+                }
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.RTSP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                'check-source': 'disabled',
+                description: '"My Remark"',
+                'idle-timeout': 'indefinite',
+                'log-profile': '/Common/alg_log_profile',
+                'log-publisher': '/Common/local-db-publisher',
+                'max-header-size': 5096,
+                'max-queued-data': 42768,
+                'multicast-redirect': 'enabled',
+                proxy: '"external"',
+                'proxy-header': '"X-Proxy"',
+                'real-http-persistence': 'disabled',
+                'rtcp-port': 49153,
+                'rtp-port': 49152,
+                'session-reconnect': 'enabled',
+                'unicast-redirect': 'enabled'
+            });
+        });
+    });
+
     describe('WebSocket_Profile', () => {
         let baseConfig;
 

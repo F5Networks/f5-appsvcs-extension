@@ -3162,6 +3162,65 @@ describe('core-schema.json', () => {
         });
     });
 
+    describe('RTSP_Profile', () => {
+        const data = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    template: 'generic'
+                }
+            }
+        };
+
+        it('should validate with default values', () => {
+            data.Tenant.Application.rtspProfile = {
+                class: 'RTSP_Profile',
+                idleTimeout: 300,
+                maxHeaderSize: 4096,
+                maxQueuedData: 32768,
+                unicastRedirect: false,
+                multicastRedirect: false,
+                sessionReconnect: false,
+                realHTTPPersistence: true,
+                checkSource: true,
+                proxy: 'none',
+                RTPPort: 0,
+                RTCPPort: 0
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate with custom values', () => {
+            data.Tenant.Application.rtspProfile = {
+                class: 'RTSP_Profile',
+                idleTimeout: 'immediate',
+                maxHeaderSize: 8096,
+                maxQueuedData: 40000,
+                unicastRedirect: true,
+                multicastRedirect: true,
+                sessionReconnect: true,
+                realHTTPPersistence: false,
+                checkSource: false,
+                proxy: 'internal',
+                proxyHeader: 'proxy-header',
+                RTPPort: 1200,
+                RTCPPort: 2400,
+                logProfile: {
+                    bigip: '/Common/alg-log-profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/myLittleLogPublisher'
+                }
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+    });
+
     describe('Statistics_Profile', () => {
         describe('fieldXX properties', () => {
             function testValue(name, expected) {
