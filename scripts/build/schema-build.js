@@ -237,6 +237,7 @@ function buildSharedSchema() {
         'Capture_Filter',
         'Certificate',
         'Certificate_Validator_OCSP',
+        'Constants',
         'DNS_Logging_Profile',
         'Enum_Country_Analytics',
         'F5_String',

@@ -8900,52 +8900,6 @@
             "required": [ "class" ]
         },
 
-        "Constants": {
-            "title": "Constants",
-            "description": "Named values for (re-)use by declaration objects",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "Constants"
-                }
-            },
-
-            "additionalProperties": {
-                "type": [
-                    "boolean", "integer", "number",
-                    "string", "array", "object"
-                ],
-
-                "if": {
-                    "type": "object",
-                    "required": [ "protected", "ciphertext" ]
-                },
-                "then": {
-                    "properties": {
-                        "allowReuse": {
-                            "title": "Allow reuse",
-                            "description": "If true (default), cryptogram may be reused by different declaration objects, WHICH MAY POSE A SECURITY RISK!",
-                            "type": "boolean",
-                            "default": true
-                        }
-                    },
-                    "allOf": [
-                        { "$ref": "#/definitions/JWE" }
-                    ]
-                }
-            },
-
-            "propertyNames": {
-                "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
-                "maxLength": 64
-            },
-            "required": [ "class" ]
-        },
-
-
         "Label": {
             "title": "Label",
             "description": "Optional friendly name for this object. Allows 0-64 chars, excluding a few likely to cause trouble with string searching, JS, TCL, or HTML",
