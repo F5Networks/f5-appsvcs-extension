@@ -78,6 +78,7 @@ module.exports = {
         RTSP_Profile: 'ltm profile rtsp',
         SIP_Profile: 'ltm profile sip',
         SMTPS_Profile: 'ltm profile smtps',
+        TFTP_Profile: 'ltm profile tftp',
         ILX_Profile: 'ltm profile ilx',
         UDP_Profile: 'ltm profile udp',
         Persist: [

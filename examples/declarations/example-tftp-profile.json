@@ -1,6 +1,6 @@
 {
     "class": "ADC",
-    "schemaVersion": "3.14.0",
+    "schemaVersion": "3.43.0",
     "Example_Service_UDP": {
         "class": "Tenant",
         "Application": {
@@ -12,7 +12,42 @@
                 ],
                 "virtualPort": 10,
                 "profileTFTP": {
-                    "bigip": "/Common/tftp"
+                    "use": "TFTP_profile"
+                }
+            },
+            "TFTP_profile": {
+                "class": "TFTP_Profile",
+                "remark": "My Remark",
+                "idleTimeout": "indefinite",
+                "logProfile": {
+                    "use": "ALG_Log_profile"
+                },
+                "logPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                }
+            },
+            "ALG_Log_profile": {
+                "class": "ALG_Log_Profile",
+                "remark": "My Remark",
+                "csvFormat": true,
+                "startControlChannel": {
+                    "action": "enabled",
+                    "includeDestination": false
+                },
+                "endControlChannel": {
+                    "action": "disabled",
+                    "includeDestination": true
+                },
+                "startDataChannel": {
+                    "action": "backup-allocation-only",
+                    "includeDestination": false
+                },
+                "endDataChannel": {
+                    "action": "enabled",
+                    "includeDestination": true
+                },
+                "inboundTransaction": {
+                    "action": "enabled"
                 }
             }
         }

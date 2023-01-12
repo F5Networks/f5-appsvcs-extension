@@ -428,7 +428,7 @@ describe('map_mcp', () => {
                     kind: 'tm:ltm:profile:rtsp:rtspstate',
                     name: 'myRtsp',
                     partition: 'myApp',
-                    subPath: 'Applicaton1',
+                    subPath: 'Application1',
                     fullPath: '/myApp/Application1/myRtsp',
                     checkSource: 'enabled',
                     description: 'My Description',
@@ -453,7 +453,7 @@ describe('map_mcp', () => {
                 defaultContext.target.provisionedModules = ['cgnat'];
                 const results = translate[obj.kind](defaultContext, obj);
                 assert.deepStrictEqual(results[0], {
-                    path: '/myApp/Applicaton1/myRtsp',
+                    path: '/myApp/Application1/myRtsp',
                     command: 'ltm profile rtsp',
                     properties: {
                         'check-source': 'enabled',
@@ -471,6 +471,36 @@ describe('map_mcp', () => {
                         'rtp-port': 0,
                         'session-reconnect': 'disabled',
                         'unicast-redirect': 'disabled'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:tftp:tftpstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:tftp:tftpstate',
+                    name: 'myTftp',
+                    partition: 'myApp',
+                    subPath: 'Application1',
+                    fullPath: '/myApp/Application1/myTftp',
+                    description: 'My Description',
+                    idleTimeout: 'indefinite',
+                    logProfile: '/Common/alg_log_profile',
+                    logPublisher: '/Common/local-db-publisher'
+                };
+
+                defaultContext.target.provisionedModules = ['cgnat'];
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application1/myTftp',
+                    command: 'ltm profile tftp',
+                    properties: {
+                        description: '"My Description"',
+                        'idle-timeout': 'indefinite',
+                        'log-profile': '/Common/alg_log_profile',
+                        'log-publisher': '/Common/local-db-publisher'
                     },
                     ignore: []
                 });

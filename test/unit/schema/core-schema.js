@@ -3264,6 +3264,44 @@ describe('core-schema.json', () => {
         });
     });
 
+    describe('TFTP_Profile', () => {
+        const data = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    template: 'generic'
+                }
+            }
+        };
+
+        it('should validate with default values', () => {
+            data.Tenant.Application.tftpProfile = {
+                class: 'TFTP_Profile',
+                idleTimeout: 300
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate with custom values', () => {
+            data.Tenant.Application.tftpProfile = {
+                class: 'TFTP_Profile',
+                idleTimeout: 'indefinite',
+                logProfile: {
+                    bigip: '/Common/alg-log-profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/myLittleLogPublisher'
+                }
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+    });
+
     describe('HTTP_Profile', () => {
         describe('.hstsPeriod', () => {
             function testValue(value, expected) {

@@ -158,6 +158,9 @@
             "endpoint": "/mgmt/tm/ltm/profile/tcp"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/tftp"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/profile/udp"
         },
         {

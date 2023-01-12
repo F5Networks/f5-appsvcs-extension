@@ -578,6 +578,7 @@
     },
     "TFTP_Profile": {
         "name": "TFTP profile",
+        "class": "TFTP_Profile",
         "tmshPath": "ltm profile tftp"
     },
     "Traffic_Log_Profile": {

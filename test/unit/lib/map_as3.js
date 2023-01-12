@@ -1333,6 +1333,49 @@ describe('map_as3', () => {
         });
     });
 
+    describe('TFTP_Profile', () => {
+        it('should map default values', () => {
+            const item = {
+                class: 'TFTP_Profile',
+                idleTimeout: 30
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.TFTP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: 'none',
+                'idle-timeout': '30',
+                'log-profile': 'none',
+                'log-publisher': 'none'
+            });
+        });
+
+        it('should map non-default values', () => {
+            const item = {
+                class: 'TFTP_Profile',
+                remark: 'My Remark',
+                idleTimeout: 'indefinite',
+                logProfile: {
+                    bigip: '/Common/alg_log_profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/local-db-publisher'
+                }
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.TFTP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: '"My Remark"',
+                'idle-timeout': 'indefinite',
+                'log-profile': '/Common/alg_log_profile',
+                'log-publisher': '/Common/local-db-publisher'
+            });
+        });
+    });
+
     describe('WebSocket_Profile', () => {
         let baseConfig;
 

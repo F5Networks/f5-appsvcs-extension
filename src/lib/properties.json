@@ -1042,15 +1042,15 @@
   ],
   "ltm profile rtsp": [
     { "id":"check-source",              "truth": "enabled", "falsehood": "disabled" },
-    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"idle-timeout",              "intToString": true },
-    { "id":"log-profile",               "requiredModules": { "anyOf": [ "cgnat" ] } },
-    { "id":"log-publisher",             "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-profile",               "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"max-header-size" },
     { "id":"max-queued-data" },
     { "id":"multicast-redirect",        "truth": "enabled", "falsehood": "disabled" },
     { "id":"proxy",                     "quotedString": true },
-    { "id":"proxy-header",              "quotedString": true },
+    { "id":"proxy-header",              "quotedString": true, "default": "none" },
     { "id":"real-http-persistence",     "altId": "realHTTPPersistence", "truth": "enabled", "falsehood": "disabled" },
     { "id":"rtcp-port",                 "altId": "RTCPPort" },
     { "id":"rtp-port",                  "altId": "RTPPort" },
@@ -1092,6 +1092,14 @@
     { "id":"field31",                    "quotedString": true },
     { "id":"field32",                    "quotedString": true }
   ],
+  
+  "ltm profile tftp": [
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"log-profile",               "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } }
+  ],
+
   "ltm rule": [
     { "id":"api-anonymous",             "altId": "iRule" }
   ],

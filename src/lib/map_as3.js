@@ -1006,10 +1006,6 @@ const translate = {
      *
      */
     RTSP_Profile(context, tenantId, appId, itemId, item) {
-        item.remark = item.remark || '';
-        item.logProfile = item.logProfile || 'none';
-        item.logPublisher = item.logPublisher || 'none';
-        item.proxyHeader = item.proxyHeader || 'none';
         return { configs: [normalize.actionableMcp(context, item, 'ltm profile rtsp', util.mcpPath(tenantId, appId, itemId))] };
     },
 
@@ -4485,6 +4481,10 @@ const translate = {
 
         configs.push(normalize.actionableMcp(context, item, 'ltm profile ftp', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
+    },
+
+    TFTP_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile tftp', util.mcpPath(tenantId, appId, itemId))] };
     },
 
     HTML_Profile(context, tenantId, appId, itemId, item) {

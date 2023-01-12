@@ -6640,6 +6640,70 @@
             "required": [ "class" ]
         },
 
+        "TFTP_Profile": {
+            "title": "TFTP_Profile",
+            "type": "object",
+            "description": "Trivial File Transer Protocol (TFTP) profile",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "TFTP_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "idleTimeout": {
+                    "description": "Specifies an idle timeout in seconds. This setting specifies the number of seconds that a connection is idle before the connection is eligible for deletion.",
+                    "if": { "type": "integer" },
+                    "then": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                    },
+                    "else": {
+                        "type": "string",
+                        "const": "indefinite"
+                    },
+                    "default": 30
+                },
+                "logProfile": {
+                    "description": "ALG log profile pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_ALG_Log_Profile"
+                        }
+                    ]
+                },
+                "logPublisher": {
+                    "description": "Log publisher pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_Log_Publisher"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class" ],
+            "dependencies": {
+                "logProfile": {
+                    "required": ["logPublisher"]
+                },
+                "logPublisher": {
+                    "required": ["logProfile"]
+                }
+            }
+        },
+
         "FTP_Profile": {
             "title": "FTP_Profile",
             "type": "object",
