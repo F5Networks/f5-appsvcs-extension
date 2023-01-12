@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.42.0",
             "3.41.0",
             "3.40.0",
             "3.39.0",
@@ -983,6 +984,7 @@
               "Service_Forwarding",
               "Service_Address",
               "SNAT_Pool",
+              "SNAT_Translation",
               "iRule",
               "WAF_Policy",
               "Persist",
@@ -1190,6 +1192,18 @@
             },
             "then": {
               "$ref": "#/definitions/SNAT_Pool"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "SNAT_Translation"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/SNAT_Translation"
             }
           },
           {
@@ -5097,6 +5111,113 @@
       "required": [
         "class",
         "snatAddresses"
+      ]
+    },
+    "SNAT_Translation": {
+      "title": "SNAT_Translation",
+      "description": "Configures explicit secure network address translation (SNAT) address",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "SNAT_Translation"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "address": {
+          "title": "Address",
+          "description": "The IP address of the SNAT translation",
+          "type": "string",
+          "format": "f5ip"
+        },
+        "adminState": {
+          "title": "Administration State",
+          "description": "Specifies the state of the SNAT translation",
+          "type": "string",
+          "enum": [
+            "enable",
+            "disable"
+          ],
+          "default": "enable"
+        },
+        "arpEnabled": {
+          "title": "Enable ARP",
+          "description": "Specifies that the NAT sends ARP requests",
+          "type": "boolean",
+          "default": true
+        },
+        "ipIdleTimeout": {
+          "title": "IP Idle Timeout",
+          "description": "Specifies time in seconds that connections to an IP address initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "maximum": 4294967295,
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "const": "indefinite"
+            }
+          ],
+          "default": "indefinite"
+        },
+        "maxConnections": {
+          "title": "Maximum Connections",
+          "description": "Specifies a limit on the number of connections a translation address must reach before it no longer initiates a connection. A value of 0 indicates the setting is disabled.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 0
+        },
+        "tcpIdleTimeout": {
+          "title": "TCP Idle Timeout",
+          "description": "Specifies time in seconds that TCP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "maximum": 4294967295,
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "const": "indefinite"
+            }
+          ],
+          "default": "indefinite"
+        },
+        "trafficGroup": {
+          "title": "Traffic Group",
+          "description": "Specifies the traffic group which the SNAT_Translation belongs",
+          "type": "string",
+          "default": "default"
+        },
+        "udpIdleTimeout": {
+          "title": "UDP Idle Timeout",
+          "description": "Specifies time in seconds that UDP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
+          "oneOf": [
+            {
+              "type": "integer",
+              "maximum": 4294967295,
+              "minimum": 1
+            },
+            {
+              "type": "string",
+              "const": "indefinite"
+            }
+          ],
+          "default": "indefinite"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "address"
       ]
     },
     "iRule": {
@@ -25702,7 +25823,8 @@
             "httpUri",
             "httpCookie",
             "sslExtension",
-            "tcp"
+            "tcp",
+            "geoip"
           ]
         }
       },
@@ -25777,6 +25899,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Condition_TCP"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "geoip"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Condition_GeoIP"
           }
         }
       ],
@@ -26311,6 +26445,151 @@
               },
               "required": [
                 "port"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Policy_Condition_GeoIP": {
+      "description": "Match against specific GeoIP properties",
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "event": {
+              "description": "When to evaluate this condition in the request-response cycle",
+              "type": "string",
+              "enum": [
+                "request",
+                "response",
+                "client-accepted",
+                "proxy-connect",
+                "proxy-request",
+                "proxy-response",
+                "server-connected",
+                "ssl-client-hello",
+                "ssl-client-serverhello-send",
+                "ssl-server-handshake",
+                "ssl-server-hello"
+              ],
+              "default": "request"
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "continent": {
+                  "description": "Two-character continent code: AF, AN, AS, OC, EU, NA, SA",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "continent"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "countryCode": {
+                  "description": "Two-character country code as defined in ISO-3166-2",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "countryCode"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "countryName": {
+                  "description": "Full name of country",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "countryName"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "isp": {
+                  "description": "Internet Service Provider associated with address",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "isp"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "org": {
+                  "description": "Organization associated with address",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "org"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "regionCode": {
+                  "description": "Abbreviation of State, Province, or country-specific region",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "regionCode"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "regionName": {
+                  "description": "Full name of State, Province, or country-specific region",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Match_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "regionName"
               ]
             }
           ]
@@ -32594,50 +32873,6 @@
         }
       ]
     },
-    "Pointer_SNAT_Pool": {
-      "description": "Reference to a snat pool",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to snat pool declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "SNAT_Pool"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP snat pool",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query ltm snatpool"
-            ]
-          }
-        }
-      ]
-    },
     "Pointer_Security_Log_Profile": {
       "description": "Reference to a Security Log Profile",
       "type": "object",
@@ -32727,6 +32962,94 @@
             "tag": "bigComponent",
             "data": [
               "query ltm virtual"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_SNAT_Pool": {
+      "description": "Reference to a snat pool",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to snat pool declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "SNAT_Pool"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP snat pool",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm snatpool"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_SNAT_Translation": {
+      "description": "Reference to a snat translation",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to snat translation declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "SNAT_Translation"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP snat translation",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm snat-translation"
             ]
           }
         }
