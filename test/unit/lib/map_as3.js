@@ -1302,7 +1302,7 @@ describe('map_as3', () => {
                 proxyHeader: 'X-Proxy',
                 RTPPort: 49152,
                 RTCPPort: 49153,
-                logProfile: {
+                algLogProfile: {
                     bigip: '/Common/alg_log_profile'
                 },
                 logPublisher: {

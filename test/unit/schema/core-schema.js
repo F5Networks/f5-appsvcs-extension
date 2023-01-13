@@ -3209,7 +3209,7 @@ describe('core-schema.json', () => {
                 proxyHeader: 'proxy-header',
                 RTPPort: 1200,
                 RTCPPort: 2400,
-                logProfile: {
+                algLogProfile: {
                     bigip: '/Common/alg-log-profile'
                 },
                 logPublisher: {
@@ -3290,7 +3290,7 @@ describe('core-schema.json', () => {
             data.Tenant.Application.tftpProfile = {
                 class: 'TFTP_Profile',
                 idleTimeout: 'indefinite',
-                logProfile: {
+                algLogProfile: {
                     bigip: '/Common/alg-log-profile'
                 },
                 logPublisher: {

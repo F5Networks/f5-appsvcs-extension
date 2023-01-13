@@ -825,10 +825,12 @@
   "ltm profile ftp": [
     { "id":"allow-ftps",                "truth": "enabled", "falsehood": "disabled" },
     { "id":"allow-active-mode",         "altId": "activeModeEnabled", "truth": "enabled", "falsehood": "disabled" },
-    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"enforce-tls-session-reuse", "altId": "enforceTlsSessionReuseEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ftps-mode",                 "minVersion": "14.0" },
     { "id":"inherit-parent-profile",    "altId": "inheritParentProfileEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"port" },
     { "id":"security",                  "altId": "securityEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"translate-extended",        "altId": "translateExtendedEnabled", "truth": "enabled", "falsehood": "disabled" }
@@ -1044,7 +1046,7 @@
     { "id":"check-source",              "truth": "enabled", "falsehood": "disabled" },
     { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"idle-timeout",              "intToString": true },
-    { "id":"log-profile",               "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"max-header-size" },
     { "id":"max-queued-data" },
@@ -1096,7 +1098,7 @@
   "ltm profile tftp": [
     { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"idle-timeout",              "intToString": true },
-    { "id":"log-profile",               "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } }
   ],
 

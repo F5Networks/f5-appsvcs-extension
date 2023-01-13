@@ -31,7 +31,7 @@
                 "proxyHeader": "X-Proxy",
                 "RTPPort": 49152,
                 "RTCPPort": 49153,
-                "logProfile": {
+                "algLogProfile": {
                     "use": "ALG_Log_profile"
                 },
                 "logPublisher": {

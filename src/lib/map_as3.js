@@ -4475,10 +4475,7 @@ const translate = {
 
     FTP_Profile(context, tenantId, appId, itemId, item) {
         const configs = [];
-
-        item.remark = item.remark || 'none';
         item.allowFtps = item.ftpsMode !== 'disallow';
-
         configs.push(normalize.actionableMcp(context, item, 'ltm profile ftp', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
     },

@@ -101,7 +101,7 @@ describe('RTSP_Profile', function () {
 
         if (getProvisionedModules().includes('cgnat')) {
             properties.push({
-                name: 'logProfile',
+                name: 'algLogProfile',
                 inputValue: [undefined, { use: 'algLogProfile' }, undefined],
                 expectedValue: ['none', '/TEST_RTSP_Profile/Application/algLogProfile', 'none'],
                 extractFunction: (o) => ((typeof o.logProfile === 'object') ? o.logProfile.fullPath : o.logProfile),

@@ -18,6 +18,7 @@
 
 const {
     assertClass,
+    getProvisionedModules,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
 
@@ -74,6 +75,26 @@ describe('FTP_Profile', function () {
                 expectedValue: ['disabled', 'enabled', 'disabled']
             }
         ];
+
+        if (getProvisionedModules().includes('cgnat')) {
+            properties.push({
+                name: 'algLogProfile',
+                inputValue: [undefined, { use: 'algLogProfile' }, undefined],
+                expectedValue: ['none', '/TEST_FTP_Profile/Application/algLogProfile', 'none'],
+                extractFunction: (o) => ((typeof o.logProfile === 'object') ? o.logProfile.fullPath : o.logProfile),
+                referenceObjects: {
+                    algLogProfile: {
+                        class: 'ALG_Log_Profile'
+                    }
+                }
+            });
+            properties.push({
+                name: 'logPublisher',
+                inputValue: [undefined, { bigip: '/Common/local-db-publisher' }, undefined],
+                expectedValue: ['none', '/Common/local-db-publisher', 'none'],
+                extractFunction: (o) => ((typeof o.logPublisher === 'object') ? o.logPublisher.fullPath : o.logPublisher)
+            });
+        }
 
         return assertFtpProfile(properties);
     });

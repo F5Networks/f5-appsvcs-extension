@@ -6558,7 +6558,7 @@
                     "minimum": 0,
                     "maximum": 65535
                 },
-                "logProfile": {
+                "algLogProfile": {
                     "description": "ALG log profile pointer",
                     "f5PostProcess": {
                         "tag": "modules",
@@ -6586,11 +6586,11 @@
             "additionalProperties": false,
             "required": [ "class" ],
             "dependencies": {
-                "logProfile": {
+                "algLogProfile": {
                     "required": ["logPublisher"]
                 },
                 "logPublisher": {
-                    "required": ["logProfile"]
+                    "required": ["algLogProfile"]
                 }
             }
         },
@@ -6667,7 +6667,7 @@
                     },
                     "default": 30
                 },
-                "logProfile": {
+                "algLogProfile": {
                     "description": "ALG log profile pointer",
                     "f5PostProcess": {
                         "tag": "modules",
@@ -6695,11 +6695,11 @@
             "additionalProperties": false,
             "required": [ "class" ],
             "dependencies": {
-                "logProfile": {
+                "algLogProfile": {
                     "required": ["logPublisher"]
                 },
                 "logPublisher": {
-                    "required": ["logProfile"]
+                    "required": ["algLogProfile"]
                 }
             }
         },
@@ -6762,10 +6762,42 @@
                     "description": "Specifies if the FTP data channel should inherit the TCP profile used by the control channel",
                     "type": "boolean",
                     "default": false
+                },
+                "algLogProfile": {
+                    "description": "ALG log profile pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_ALG_Log_Profile"
+                        }
+                    ]
+                },
+                "logPublisher": {
+                    "description": "Log publisher pointer",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["cgnat"]
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_Log_Publisher"
+                        }
+                    ]
                 }
             },
             "additionalProperties": false,
-            "required": [ "class" ]
+            "required": [ "class" ],
+            "dependencies": {
+                "algLogProfile": {
+                    "required": ["logPublisher"]
+                },
+                "logPublisher": {
+                    "required": ["algLogProfile"]
+                }
+            }
         },
 
         "HTML_Rule": {

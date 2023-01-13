@@ -5,9 +5,10 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Added
 - AUTOTOOL-3490: ([GitHub Issue 533](https://github.com/F5Networks/f5-appsvcs-extension/issues/533)): Added lsn-legacy-mode & destination address/port properties in Security_Log_Profile_Nat
-- AUTOTOOL-3491: ([GitHub Issue 619](https://github.com/F5Networks/f5-appsvcs-extension/issues/619)): ALG_Log_Profile. Currently requires cgnat to be provisioned and minimum BIGIP version to be 15.1
-- AUTOTOOL-3492: ([GitHub Issue 575](https://github.com/F5Networks/f5-appsvcs-extension/issues/575)): RTSP_Profile
-- AUTOTOOL-3494: ([GitHub Issue 576](https://github.com/F5Networks/f5-appsvcs-extension/issues/576)): TFTP_Profile
+- AUTOTOOL-3491: ([GitHub Issue 619](https://github.com/F5Networks/f5-appsvcs-extension/issues/619)): ALG_Log_Profile. Currently requires CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3492: ([GitHub Issue 575](https://github.com/F5Networks/f5-appsvcs-extension/issues/575)): RTSP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3494: ([GitHub Issue 576](https://github.com/F5Networks/f5-appsvcs-extension/issues/576)): TFTP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3493: ([GitHub Issue 570](https://github.com/F5Networks/f5-appsvcs-extension/issues/570)): Add algLogProfile and logPublisher properties to FTP_Profile which requires CGNAT to be provisioned and BIGIP version to be 15.1 or higher
 
 ### Fixed
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use

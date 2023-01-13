@@ -19,7 +19,7 @@
                 "class": "TFTP_Profile",
                 "remark": "My Remark",
                 "idleTimeout": "indefinite",
-                "logProfile": {
+                "algLogProfile": {
                     "use": "ALG_Log_profile"
                 },
                 "logPublisher": {
