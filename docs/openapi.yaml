@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  version: 3.42.0
+  version: 3.43.0
   title: F5 BIG-IP AS3
   description: This reference describes the BIG-IP AS3 API and available endpoints. For more details, see https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/as3-api.html
 basePath: /mgmt/shared/appsvcs

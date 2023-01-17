@@ -455,6 +455,16 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
         item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
         item.iControl_postFromRemote.post.overrides = overrides;
+
+        if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
+            item.ignore.iControl_postFromRemote = {
+                get: {
+                    authentication: {
+                        token: item.iControl_postFromRemote.get.authentication.token
+                    }
+                }
+            };
+        }
     }
 
     if (item.ignoreChanges) {
@@ -571,6 +581,18 @@ const translate = {
     },
 
     /**
+     * Defines an ALG_Log_Profile
+     */
+    ALG_Log_Profile(context, tenantId, appId, itemId, item) {
+        ['startControlChannel', 'endControlChannel', 'startDataChannel', 'endDataChannel'].forEach((e) => {
+            item[e].elements = (item[e].includeDestination === true) ? { destination: {} } : '';
+            delete item[e].includeDestination;
+        });
+        const config = normalize.actionableMcp(context, item, 'ltm alg-log-profile', util.mcpPath(tenantId, appId, itemId));
+        return { configs: [config] };
+    },
+
+    /**
      * Defines an iRule
      */
     iRule(context, tenantId, appId, itemId, item) {
@@ -656,6 +678,16 @@ const translate = {
             item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
             item.iControl_postFromRemote.post.why = `upload asm policy ${itemId}`;
             item.iControl_postFromRemote.post.overrides = overrides;
+
+            if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
+                item.ignore.iControl_postFromRemote = {
+                    get: {
+                        authentication: {
+                            token: item.iControl_postFromRemote.get.authentication.token
+                        }
+                    }
+                };
+            }
         } else if (item.policy || item.file) {
             item.iControl_post = {};
             item.iControl_post.reference = path;
@@ -987,6 +1019,14 @@ const translate = {
         item.remark = item.remark || '';
         const config = normalize.actionableMcp(context, item, 'ltm profile http2', util.mcpPath(tenantId, appId, itemId));
         return { configs: [config] };
+    },
+
+    /**
+     * Defines an Real-Time Streaming Protocol profile
+     *
+     */
+    RTSP_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile rtsp', util.mcpPath(tenantId, appId, itemId))] };
     },
 
     /**
@@ -3052,6 +3092,22 @@ const translate = {
             subProfile.rateLimit = extractProperties(subProfile, (key) => key.startsWith('rateLimit'));
         }
 
+        function mapNatSession(natProfile) {
+            natProfile.logStartOutboundSession = { action: natProfile.logStartOutboundSession };
+            natProfile.logEndOutboundSession = { action: natProfile.logEndOutboundSession };
+
+            if (natProfile.logStartOutboundSession.action === true) {
+                if (natProfile.logStartOutboundSessionDestination === true) {
+                    natProfile.logStartOutboundSession.elements = { destination: {} };
+                }
+            }
+            if (natProfile.logEndOutboundSession.action === true) {
+                if (natProfile.logEndOutboundSessionDestination === true) {
+                    natProfile.logEndOutboundSession.elements = { destination: {} };
+                }
+            }
+        }
+
         function mapFormat(subProfile, inKey, outKey) {
             inKey = inKey || 'storageFormat';
             outKey = outKey || 'format';
@@ -3175,8 +3231,7 @@ const translate = {
                 item.nat.format[`in${formatKey}`] = item.nat.format[formatKey];
                 mapFormat(item.nat.format, `in${formatKey}`, formatKey);
             });
-            item.nat.logStartOutboundSession = { action: item.nat.logStartOutboundSession };
-            item.nat.logEndOutboundSession = { action: item.nat.logEndOutboundSession };
+            mapNatSession(item.nat);
         }
         if (item.network) {
             mapFormat(item.network);
@@ -4440,12 +4495,13 @@ const translate = {
 
     FTP_Profile(context, tenantId, appId, itemId, item) {
         const configs = [];
-
-        item.remark = item.remark || 'none';
         item.allowFtps = item.ftpsMode !== 'disallow';
-
         configs.push(normalize.actionableMcp(context, item, 'ltm profile ftp', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
+    },
+
+    TFTP_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile tftp', util.mcpPath(tenantId, appId, itemId))] };
     },
 
     HTML_Profile(context, tenantId, appId, itemId, item) {

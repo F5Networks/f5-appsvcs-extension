@@ -2,6 +2,34 @@
   "auth partition": [
     { "id":"default-route-domain" }
   ],
+  "ltm alg-log-profile": [
+    { "id": "description",              "altId": "remark", "quotedString": true },
+    { "id": "csv-format",               "truth": "enabled", "falsehood": "disabled" },
+    { "id": "start-control-channel",    "extend": "object" },
+    { "id": "end-control-channel",      "extend": "object" },
+    { "id": "start-data-channel",       "extend": "object" },
+    { "id": "end-data-channel",         "extend": "object" },
+    { "id": "inbound-transaction",      "extend": "object" }
+  ],
+  "ltm alg-log-profile start-control-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile end-control-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile start-data-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile end-data-channel": [
+    { "id": "action" },
+    { "id": "elements",                 "extend": "array" }
+  ],
+  "ltm alg-log-profile inbound-transaction": [
+    { "id": "action",                   "truth": "enabled", "falsehood": "disabled" }
+  ],
   "ltm cipher group": [
     { "id":"allow",                     "extend": "objArray", "altId": "allowCipherRules" },
     { "id":"description",               "altId": "remark", "quotedString": true },
@@ -797,10 +825,12 @@
   "ltm profile ftp": [
     { "id":"allow-ftps",                "truth": "enabled", "falsehood": "disabled" },
     { "id":"allow-active-mode",         "altId": "activeModeEnabled", "truth": "enabled", "falsehood": "disabled" },
-    { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"enforce-tls-session-reuse", "altId": "enforceTlsSessionReuseEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ftps-mode",                 "minVersion": "14.0" },
     { "id":"inherit-parent-profile",    "altId": "inheritParentProfileEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"port" },
     { "id":"security",                  "altId": "securityEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"translate-extended",        "altId": "translateExtendedEnabled", "truth": "enabled", "falsehood": "disabled" }
@@ -1012,6 +1042,23 @@
     { "id":"timeout" },
     { "id":"allow-http-10",             "altId": "allowHTTP10", "truth": "yes", "falsehood": "no" }
   ],
+  "ltm profile rtsp": [
+    { "id":"check-source",              "truth": "enabled", "falsehood": "disabled" },
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"max-header-size" },
+    { "id":"max-queued-data" },
+    { "id":"multicast-redirect",        "truth": "enabled", "falsehood": "disabled" },
+    { "id":"proxy",                     "quotedString": true },
+    { "id":"proxy-header",              "quotedString": true, "default": "none" },
+    { "id":"real-http-persistence",     "altId": "realHTTPPersistence", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"rtcp-port",                 "altId": "RTCPPort" },
+    { "id":"rtp-port",                  "altId": "RTPPort" },
+    { "id":"session-reconnect",         "truth": "enabled", "falsehood": "disabled" },
+    { "id":"unicast-redirect",          "truth": "enabled", "falsehood": "disabled" }
+  ],
   "ltm profile statistics": [
     { "id":"description",               "altId": "remark", "quotedString": true},
     { "id":"field1",                    "quotedString": true },
@@ -1047,6 +1094,14 @@
     { "id":"field31",                    "quotedString": true },
     { "id":"field32",                    "quotedString": true }
   ],
+  
+  "ltm profile tftp": [
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
+    { "id":"idle-timeout",              "intToString": true },
+    { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
+    { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } }
+  ],
+
   "ltm rule": [
     { "id":"api-anonymous",             "altId": "iRule" }
   ],
@@ -1398,13 +1453,16 @@
     { "id":"start-outbound-session",   "altId": "logStartOutboundSession", "extend": "object", "default": {}},
     { "id":"end-outbound-session",     "altId": "logEndOutboundSession", "extend": "object", "default": {}},
     { "id":"rate-limit",               "extend": "object", "default": {}},
-    { "id":"format",                   "extend": "object", "default": {}}
+    { "id":"format",                   "extend": "object", "default": {}},
+    { "id":"lsn-legacy-mode",          "truth": "enabled", "falsehood": "disabled", "default": false }
   ],
   "security log profile nat start-outbound-session": [
-    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"elements",      "extend": "array", "default": null }
   ],
   "security log profile nat end-outbound-session": [
-    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false}
+    { "id":"action",        "truth": "enabled", "falsehood": "disabled", "default": false},
+    { "id":"elements",      "extend": "array", "default": null }
   ],
   "security log profile nat rate-limit": [
     { "id":"errors",                     "altId": "rateLimitErrors", "default": 4294967295},

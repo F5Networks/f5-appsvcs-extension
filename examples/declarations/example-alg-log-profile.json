@@ -1,32 +1,12 @@
 {
     "class": "ADC",
     "schemaVersion": "3.43.0",
-    "Example_Service_UDP": {
+    "id": "ALG_Log_Profile",
+    "Tenant": {
         "class": "Tenant",
         "Application": {
             "class": "Application",
-            "service": {
-                "class": "Service_UDP",
-                "virtualAddresses": [
-                    "1.1.1.10"
-                ],
-                "virtualPort": 10,
-                "profileTFTP": {
-                    "use": "TFTP_profile"
-                }
-            },
-            "TFTP_profile": {
-                "class": "TFTP_Profile",
-                "remark": "My Remark",
-                "idleTimeout": "indefinite",
-                "algLogProfile": {
-                    "use": "ALG_Log_profile"
-                },
-                "logPublisher": {
-                    "bigip": "/Common/local-db-publisher"
-                }
-            },
-            "ALG_Log_profile": {
+            "myProfile": {
                 "class": "ALG_Log_Profile",
                 "remark": "My Remark",
                 "csvFormat": true,

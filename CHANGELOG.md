@@ -1,6 +1,23 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.43.0
+
+### Added
+- AUTOTOOL-3490: ([GitHub Issue 533](https://github.com/F5Networks/f5-appsvcs-extension/issues/533)): Added lsn-legacy-mode & destination address/port properties in Security_Log_Profile_Nat
+- AUTOTOOL-3491: ([GitHub Issue 619](https://github.com/F5Networks/f5-appsvcs-extension/issues/619)): ALG_Log_Profile. Currently requires CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3492: ([GitHub Issue 575](https://github.com/F5Networks/f5-appsvcs-extension/issues/575)): RTSP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3494: ([GitHub Issue 576](https://github.com/F5Networks/f5-appsvcs-extension/issues/576)): TFTP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3493: ([GitHub Issue 570](https://github.com/F5Networks/f5-appsvcs-extension/issues/570)): Add algLogProfile and logPublisher properties to FTP_Profile which requires CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+
+### Fixed
+- AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use
+- AUTOTOOL-2489: Unchecked mode fails when URLs have authentication
+
+### Changed
+
+### Removed
+
 ## 3.42.0
 
 ### Added
@@ -17,6 +34,7 @@ Changes to this project are documented in this file. More detail (including info
 - Updated to Service Discovery 1.11.2-1
   - AUTOTOOL-3335: ([GitHub Issue 610](https://github.com/F5Networks/f5-appsvcs-extension/issues/610)): Service Discovery / Consul and jmespathquery to configure priorityGroup for pool members
   - AUTOTOOL-3534: Update packages to latest available versions
+- AUTOTOOL-3439: Merge f5-appsvcs-schema into AS3, specifically: Analytics_Profile, Analytics_TCP_Profile, Basic_Auth, Bearer_Token, CA_Bundle, Capture_Filter, Certificate, Certificate_Validator_OCSP, Enum_Country_Analytics, F5_String, JWE, Log_Publisher
 
 ### Removed
 

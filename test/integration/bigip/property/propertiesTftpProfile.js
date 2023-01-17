@@ -22,57 +22,25 @@ const {
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
 
-describe('FTP_Profile', function () {
+describe('TFTP_Profile', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    function assertFtpProfile(properties) {
-        return assertClass('FTP_Profile', properties);
+    function assertTftpProfile(properties) {
+        return assertClass('TFTP_Profile', properties);
     }
 
     it('All properties', function () {
         const properties = [
             {
                 name: 'remark',
-                inputValue: [undefined, 'description', undefined],
-                expectedValue: ['none', 'description', 'none'],
+                inputValue: [undefined, 'This is a description', undefined],
+                expectedValue: ['none', 'This is a description', 'none'],
                 extractFunction: (o) => o.description || 'none'
             },
             {
-                name: 'port',
-                inputValue: [undefined, 300, undefined],
-                expectedValue: [20, 300, 20]
-            },
-            {
-                name: 'ftpsMode',
-                inputValue: [undefined, 'require', undefined],
-                expectedValue: ['disallow', 'require', 'disallow']
-            },
-            {
-                name: 'enforceTlsSessionReuseEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled'],
-                minVersion: '14.0'
-            },
-            {
-                name: 'activeModeEnabled',
-                inputValue: [undefined, false, undefined],
-                expectedValue: ['enabled', 'disabled', 'enabled'],
-                minVersion: '14.0'
-            },
-            {
-                name: 'securityEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
-            },
-            {
-                name: 'translateExtendedEnabled',
-                inputValue: [undefined, false, undefined],
-                expectedValue: ['enabled', 'disabled', 'enabled']
-            },
-            {
-                name: 'inheritParentProfileEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
+                name: 'idleTimeout',
+                inputValue: [undefined, 'indefinite', undefined],
+                expectedValue: ['30', 'indefinite', '30']
             }
         ];
 
@@ -80,7 +48,7 @@ describe('FTP_Profile', function () {
             properties.push({
                 name: 'algLogProfile',
                 inputValue: [undefined, { use: 'algLogProfile' }, undefined],
-                expectedValue: ['none', '/TEST_FTP_Profile/Application/algLogProfile', 'none'],
+                expectedValue: ['none', '/TEST_TFTP_Profile/Application/algLogProfile', 'none'],
                 extractFunction: (o) => ((typeof o.logProfile === 'object') ? o.logProfile.fullPath : o.logProfile),
                 referenceObjects: {
                     algLogProfile: {
@@ -96,6 +64,6 @@ describe('FTP_Profile', function () {
             });
         }
 
-        return assertFtpProfile(properties);
+        return assertTftpProfile(properties);
     });
 });

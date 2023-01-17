@@ -1247,6 +1247,135 @@ describe('map_as3', () => {
         });
     });
 
+    describe('RTSP_Profile', () => {
+        it('should map default values', () => {
+            const item = {
+                class: 'RTSP_Profile',
+                idleTimeout: 300,
+                maxHeaderSize: 4096,
+                maxQueuedData: 32768,
+                unicastRedirect: false,
+                multicastRedirect: false,
+                sessionReconnect: false,
+                realHTTPPersistence: true,
+                checkSource: true,
+                proxy: 'none',
+                RTPPort: 0,
+                RTCPPort: 0
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.RTSP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                'check-source': 'enabled',
+                description: 'none',
+                'idle-timeout': '300',
+                'log-profile': 'none',
+                'log-publisher': 'none',
+                'max-header-size': 4096,
+                'max-queued-data': 32768,
+                'multicast-redirect': 'disabled',
+                proxy: 'none',
+                'proxy-header': 'none',
+                'real-http-persistence': 'enabled',
+                'rtcp-port': 0,
+                'rtp-port': 0,
+                'session-reconnect': 'disabled',
+                'unicast-redirect': 'disabled'
+            });
+        });
+
+        it('should map non-default values', () => {
+            const item = {
+                class: 'RTSP_Profile',
+                remark: 'My Remark',
+                idleTimeout: 'indefinite',
+                maxHeaderSize: 5096,
+                maxQueuedData: 42768,
+                unicastRedirect: true,
+                multicastRedirect: true,
+                sessionReconnect: true,
+                realHTTPPersistence: false,
+                checkSource: false,
+                proxy: 'external',
+                proxyHeader: 'X-Proxy',
+                RTPPort: 49152,
+                RTCPPort: 49153,
+                algLogProfile: {
+                    bigip: '/Common/alg_log_profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/local-db-publisher'
+                }
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.RTSP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                'check-source': 'disabled',
+                description: '"My Remark"',
+                'idle-timeout': 'indefinite',
+                'log-profile': '/Common/alg_log_profile',
+                'log-publisher': '/Common/local-db-publisher',
+                'max-header-size': 5096,
+                'max-queued-data': 42768,
+                'multicast-redirect': 'enabled',
+                proxy: '"external"',
+                'proxy-header': '"X-Proxy"',
+                'real-http-persistence': 'disabled',
+                'rtcp-port': 49153,
+                'rtp-port': 49152,
+                'session-reconnect': 'enabled',
+                'unicast-redirect': 'enabled'
+            });
+        });
+    });
+
+    describe('TFTP_Profile', () => {
+        it('should map default values', () => {
+            const item = {
+                class: 'TFTP_Profile',
+                idleTimeout: 30
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.TFTP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: 'none',
+                'idle-timeout': '30',
+                'log-profile': 'none',
+                'log-publisher': 'none'
+            });
+        });
+
+        it('should map non-default values', () => {
+            const item = {
+                class: 'TFTP_Profile',
+                remark: 'My Remark',
+                idleTimeout: 'indefinite',
+                logProfile: {
+                    bigip: '/Common/alg_log_profile'
+                },
+                logPublisher: {
+                    bigip: '/Common/local-db-publisher'
+                }
+            };
+            sinon.stub(util, 'isOneOfProvisioned').callsFake(
+                (targetContext, module) => module.indexOf('cgnat') > -1
+            );
+            const result = translate.TFTP_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: '"My Remark"',
+                'idle-timeout': 'indefinite',
+                'log-profile': '/Common/alg_log_profile',
+                'log-publisher': '/Common/local-db-publisher'
+            });
+        });
+    });
+
     describe('WebSocket_Profile', () => {
         let baseConfig;
 
@@ -4742,6 +4871,73 @@ describe('map_as3', () => {
         });
     });
 
+    describe('ALG_Log_Profile', () => {
+        it('should configure properly', () => {
+            const item = {
+                class: 'ALG_Log_Profile',
+                remark: 'My Remark',
+                csvFormat: true,
+                startControlChannel: {
+                    action: 'enabled',
+                    includeDestination: false
+                },
+                endControlChannel: {
+                    action: 'disabled',
+                    includeDestination: true
+                },
+                startDataChannel: {
+                    action: 'backup-allocation-only',
+                    includeDestination: false
+                },
+                endDataChannel: {
+                    action: 'enabled',
+                    includeDestination: true
+                },
+                inboundTransaction: {
+                    action: 'enabled'
+                }
+            };
+
+            const config = translateClass('ALG_Log_Profile', item);
+            assert.deepStrictEqual(config, {
+                path: '/tenantId/appId/itemId',
+                command: 'ltm alg-log-profile',
+                properties: {
+                    description: '"My Remark"',
+                    'csv-format': 'enabled',
+                    'start-control-channel': {
+                        action: 'enabled',
+                        elements: {
+                            '': {}
+                        }
+                    },
+                    'end-control-channel': {
+                        action: 'disabled',
+                        elements: {
+                            destination: {}
+                        }
+                    },
+                    'start-data-channel': {
+                        action: 'backup-allocation-only',
+                        elements: {
+                            '': {}
+                        }
+                    },
+                    'end-data-channel': {
+                        action: 'enabled',
+                        elements: {
+                            destination: {}
+                        }
+                    },
+                    'inbound-transaction': {
+                        action: 'enabled'
+                    }
+                },
+                ignore: []
+            });
+        });
+    });
+
     describe('DNS_Logging_Profile', () => {
         it('should configure properly', () => {
             const item = {
@@ -5985,6 +6181,69 @@ describe('map_as3', () => {
             const results = translate.Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepStrictEqual(results.configs[0], expected);
         });
+
+        it('should have correct ignore values for token when ignoreChanges is true', () => {
+            const item = {
+                url: {
+                    url: 'https://example.url.helloThere.tar',
+                    authentication: {
+                        method: 'bearer',
+                        token: {
+                            ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                            miniJWE: true
+                        }
+                    }
+                },
+                ignoreChanges: true,
+                enable: true
+            };
+            const results = translate.Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    command: 'apm profile access',
+                    ignore: [
+                        'iControl_postFromRemote.get.authentication',
+                        'iControl_postFromRemote.get.authentication.token',
+                        'iControl_postFromRemote.get.authentication.token.ciphertext',
+                        'iControl_postFromRemote.get.authentication.token.protected',
+                        'iControl_postFromRemote.get.authentication.token.miniJWE'
+                    ],
+                    path: '/tenantId/itemId',
+                    properties: {
+                        enable: true,
+                        iControl_postFromRemote: {
+                            get: {
+                                authentication: {
+                                    method: 'bearer',
+                                    token: {
+                                        ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                                        miniJWE: true,
+                                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0'
+                                    }
+                                },
+                                ctype: 'application/octet-stream',
+                                method: 'GET',
+                                path: 'https://example.url.helloThere.tar',
+                                rejectUnauthorized: true,
+                                why: 'get Access Profile itemId from url'
+                            },
+                            post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                overrides: {
+                                    ignoreChanges: true,
+                                    url: 'https://example.url.helloThere.tar'
+                                },
+                                path: '/mgmt/shared/file-transfer/uploads/itemId.tar',
+                                why: 'upload Access Profile itemId'
+                            }
+                        }
+                    }
+                }
+            );
+        });
     });
 
     describe('Per_Request_Access_Policy', () => {
@@ -6292,6 +6551,69 @@ describe('map_as3', () => {
                 }
             );
         });
+
+        it('should have correct ignore values for token when ignoreChanges is true', () => {
+            const item = {
+                url: {
+                    url: 'https://example.url.helloThere.xml',
+                    authentication: {
+                        method: 'bearer',
+                        token: {
+                            ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                            miniJWE: true
+                        }
+                    }
+                },
+                ignoreChanges: true,
+                enable: true
+            };
+            const results = translate.WAF_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'asm policy',
+                    properties: {
+                        iControl_postFromRemote: {
+                            get: {
+                                authentication: {
+                                    method: 'bearer',
+                                    token: {
+                                        ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                                        miniJWE: true,
+                                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0'
+                                    }
+                                },
+                                ctype: 'application/octet-stream',
+                                method: 'GET',
+                                path: 'https://example.url.helloThere.xml',
+                                rejectUnauthorized: true,
+                                why: 'get asm policy itemId from url'
+                            },
+                            post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                overrides: {
+                                    enable: true,
+                                    ignoreChanges: true,
+                                    url: 'https://example.url.helloThere.xml'
+                                },
+                                path: '/mgmt/shared/file-transfer/uploads/itemId.xml',
+                                why: 'upload asm policy itemId'
+                            }
+                        }
+                    },
+                    ignore: [
+                        'iControl_postFromRemote.get.authentication',
+                        'iControl_postFromRemote.get.authentication.token',
+                        'iControl_postFromRemote.get.authentication.token.ciphertext',
+                        'iControl_postFromRemote.get.authentication.token.protected',
+                        'iControl_postFromRemote.get.authentication.token.miniJWE'
+                    ]
+                }
+            );
+        });
     });
 
     describe('ICAP_Profile', () => {
@@ -6510,6 +6832,10 @@ describe('map_as3', () => {
     });
 
     describe('Security_Log_Profile', () => {
+        beforeEach(() => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+        });
+
         it('should escape user defined strings', () => {
             /* eslint-disable no-template-curly-in-string */
             const item = {
@@ -6518,7 +6844,6 @@ describe('map_as3', () => {
                     storageFormat: 'foo ${date_time},${bigip_hostname} bar'
                 }
             };
-            sinon.stub(util, 'isOneOfProvisioned').returns(true);
             const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             const networkFormat = results.configs[0].properties.network.undefined.format;
             assert.strictEqual(
@@ -6526,6 +6851,44 @@ describe('map_as3', () => {
             );
             assert.strictEqual(networkFormat['field-list-delimiter'], undefined);
             /* eslint-enable no-template-curly-in-string */
+        });
+
+        it('should map NAT start/end session elements properly when enabled', () => {
+            const item = {
+                class: 'Security_Log_Profile',
+                nat: {
+                    logStartOutboundSession: true,
+                    logStartOutboundSessionDestination: true,
+                    logEndOutboundSession: true,
+                    logEndOutboundSessionDestination: true
+                }
+            };
+            const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            const natStartOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            const natEndOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            assert.strictEqual(natStartOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natStartOutboundSession.elements, { destination: {} });
+            assert.strictEqual(natEndOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natEndOutboundSession.elements, { destination: {} });
+        });
+
+        it('should map NAT start/end session elements properly when not enabled', () => {
+            const item = {
+                class: 'Security_Log_Profile',
+                nat: {
+                    logStartOutboundSession: true,
+                    logStartOutboundSessionDestination: true,
+                    logEndOutboundSession: false,
+                    logEndOutboundSessionDestination: false
+                }
+            };
+            const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            const natStartOutboundSession = results.configs[0].properties.nat['start-outbound-session'];
+            const natEndOutboundSession = results.configs[0].properties.nat['end-outbound-session'];
+            assert.strictEqual(natStartOutboundSession.action, 'enabled');
+            assert.deepStrictEqual(natStartOutboundSession.elements, { destination: {} });
+            assert.strictEqual(natEndOutboundSession.action, 'disabled');
+            assert.strictEqual(natEndOutboundSession.elements, undefined);
         });
     });
 

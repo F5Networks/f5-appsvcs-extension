@@ -8,6 +8,11 @@
         "name": "Address Discovery",
         "class": "Address_Discovery"
     },
+    "ALG_Log_Profile": {
+        "name": "application layer gateway log profile",
+        "class": "ALG_Log_Profile",
+        "tmshPath": "ltm alg-log-profile"
+    },
     "API_Protection_Profile": {
         "name": "API_Protection_Profile",
         "tmshPath": "api-protection profile apiprotection"
@@ -44,16 +49,6 @@
             "security bot-defense signature-category"
         ]
     },
-    "Certificate_Validator_OCSP": {
-        "name": "OCSP Cert Validator",
-        "class": "Certificate_Validator_OCSP",
-        "tmshPath": "sys crypto cert-validator ocsp"
-    },
-    "CA_Bundle": {
-        "name": "Ca Bundle",
-        "class": "CA_Bundle",
-        "tmshPath": "sys file ssl-cert"
-    },
     "Cipher_Group": {
         "name": "cipher group",
         "class": "Cipher_Group",
@@ -80,10 +75,6 @@
         "name": "classification profile",
         "class": "Classification_Profile",
         "tmshPath": "ltm profile classification"
-    },
-    "DNS_Resolver": {
-        "name": "DNS resolver",
-        "tmshPath": "net dns-resolver"
     },
     "DNS_Cache": {
         "name": "DNS cache",
@@ -414,7 +405,8 @@
     },
     "RTSP_Profile": {
         "name": "Real Time Streaming Protocol Profile",
-        "tmshPath": "ltm profile rtsp"
+        "tmshPath": "ltm profile rtsp",
+        "class": "RTSP_Profile"
     },
     "Access_Profile": {
         "name": "Access Profile",
@@ -454,11 +446,6 @@
             "sys log-config destination remote-syslog",
             "sys log-config destination splunk"
         ]
-    },
-    "Log_Publisher": {
-        "name": "log publisher",
-        "class": "Log_Publisher",
-        "tmshPath": "sys log-config publisher"
     },
     "Radius_Profile": {
         "name": "radius profile",
@@ -580,11 +567,6 @@
         "class": "SNAT_Translation",
         "tmshPath": "ltm snat-translation"
     },
-    "SSL_Certificate": {
-        "name": "SSL certificate",
-        "tmshPath": "sys file ssl-cert",
-        "class": "Certificate"
-    },
     "SSL_CRL_File": {
         "name": "SSL CRL file",
         "tmshPath": "sys file ssl-crl"
@@ -596,6 +578,7 @@
     },
     "TFTP_Profile": {
         "name": "TFTP profile",
+        "class": "TFTP_Profile",
         "tmshPath": "ltm profile tftp"
     },
     "Traffic_Log_Profile": {

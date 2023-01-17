@@ -68,63 +68,6 @@
                 }
             }
         },
-        "DNS_Logging_Profile": {
-            "title": "DNS_Logging_Profile",
-            "description": "Configures a Domain Name System (DNS) logging profile",
-            "type": "object",
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "DNS_Logging_Profile"
-                },
-                "label": {
-                    "$ref": "#/definitions/Label"
-                },
-                "remark": {
-                    "$ref": "#/definitions/Remark"
-                },
-                "includeCompleteAnswer": {
-                    "description": "Specifies whether the system logs the complete answer from the query",
-                    "type": "boolean",
-                    "default": true
-                },
-                "includeQueryId": {
-                    "description": "Specifies whether the system logs the ID of the query",
-                    "type": "boolean",
-                    "default": false
-                },
-                "includeSource": {
-                    "description": "Specifies whether the system logs the source (the BIG-IP system that receives the packet)",
-                    "type": "boolean",
-                    "default": true
-                },
-                "includeTimestamp": {
-                    "description": "Specifies whether the system logs the timestamp of when the query was created",
-                    "type": "boolean",
-                    "default": true
-                },
-                "includeView": {
-                    "description": "Specifies whether the system includes the view in the log",
-                    "type": "boolean",
-                    "default": true
-                },
-                "logPublisher": {
-                    "$ref": "#/definitions/Pointer_Log_Publisher"
-                },
-                "logQueriesEnabled": {
-                    "description": "Specifies whether the system logs queries",
-                    "type": "boolean",
-                    "default": true
-                },
-                "logResponsesEnabled": {
-                    "description": "Specifies whether the systems logs responses",
-                    "type": "boolean",
-                    "default": false
-                }
-            },
-            "required": ["class", "logPublisher"]
-        },
         "DNS_Profile": {
             "title": "DNS_Profile",
             "description": "Configures a Domain Name System (DNS) profile",

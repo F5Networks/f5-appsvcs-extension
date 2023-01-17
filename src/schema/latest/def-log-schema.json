@@ -1,5 +1,139 @@
 {
     "definitions": {
+        "ALG_Log_Profile": {
+            "type": "object",
+            "title": "ALG_Log_Profile",
+            "description": "Configures an application layer gateway log profle",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["cgnat"]
+            },
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "ALG_Log_Profile"
+                },
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
+                "csvFormat": {
+                    "description": "Generate entries in comma-separated-values (csv) format",
+                    "type": "boolean",
+                    "default": false
+                },
+                "startControlChannel": {
+                    "description": "Event for start of control channel connection",
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+                            "type": "string",
+                            "enum": ["enabled", "disabled", "backup-allocation-only"],
+                            "default": "disabled"
+                        },
+                        "includeDestination": {
+                            "description": "Include destination address/port in the log message",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "default": {
+                        "action": "disabled",
+                        "includeDestination": false
+                    },
+                    "additionalProperties": false
+                },
+                "endControlChannel": {
+                    "description": "Event for end of control channel connection",
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+                            "type": "string",
+                            "enum": ["enabled", "disabled", "backup-allocation-only"],
+                            "default": "enabled"
+                        },
+                        "includeDestination": {
+                            "description": "Include destination address/port in the log message",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "default": {
+                        "action": "enabled",
+                        "includeDestination": false
+                    },
+                    "additionalProperties": false
+                },
+                "startDataChannel": {
+                    "description": "Event for start of data channel connection",
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+                            "type": "string",
+                            "enum": ["enabled", "disabled", "backup-allocation-only"],
+                            "default": "disabled"
+                        },
+                        "includeDestination": {
+                            "description": "Include destination address/port in the log message",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "default": {
+                        "action": "disabled",
+                        "includeDestination": false
+                    },
+                    "additionalProperties": false
+                },
+                "endDataChannel": {
+                    "description": "Event for end of data channel connection",
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+                            "type": "string",
+                            "enum": ["enabled", "disabled", "backup-allocation-only"],
+                            "default": "enabled"
+                        },
+                        "includeDestination": {
+                            "description": "Include destination address/port in the log message",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "default": {
+                        "action": "enabled",
+                        "includeDestination": false
+                    },
+                    "additionalProperties": false
+                },
+                "inboundTransaction": {
+                    "description": "Generates event log entries of SIP messages. Triggered by inbound connection to the BIG-IP system",
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. Inbound transaction log entry could contain both incoming and outgoing messages.",
+                            "type": "string",
+                            "enum": ["enabled", "disabled"],
+                            "default": "disabled"
+                        }
+                    },
+                    "default": {
+                        "action": "disabled"
+                    }
+                }
+            },
+            "required": ["class"],
+            "additionalProperties": false
+        },
+
         "Security_Log_Profile": {
             "type": "object",
             "title": "Security_Log_Profile",
@@ -830,7 +964,6 @@
                 "tag": "modules",
                 "data": ["afm"]
             },
-
             "properties": {
                 "publisher": {
                     "description": "Specifies the name of the log publisher used for logging Network Address Translation events",
@@ -898,8 +1031,23 @@
                     "type": "boolean",
                     "default": false
                 },
+                "logStartOutboundSessionDestination": {
+                    "description": "Include destination address and port with log entry for the start of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+                    "type": "boolean",
+                    "default": false
+                },
                 "logEndOutboundSession": {
                     "description": "Generates event log entries at end of translation event for a NAT client. Triggered when the system frees the outbound session.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "logEndOutboundSessionDestination": {
+                    "description": "Include destination address and port with log entry for the end of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+                    "type": "boolean",
+                    "default": false
+                },
+                "lsnLegacyMode": {
+                    "description": "This option specifies whether translation events (and other NAT events) are logged in existing CGNAT/LSN formats (for backward compatibility with LSN events).",
                     "type": "boolean",
                     "default": false
                 },
@@ -959,9 +1107,42 @@
             },
 
             "required": ["publisher"],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "dependencies": {
+                "logStartOutboundSessionDestination": {
+                    "if": {
+                        "properties": {
+                            "logStartOutboundSessionDestination": {
+                                "const": true
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "logStartOutboundSession": {
+                                "const": true
+                            }
+                        }
+                    }
+                },
+                "logEndOutboundSessionDestination": {
+                    "if": {
+                        "properties": {
+                            "logEndOutboundSessionDestination": {
+                                "const": true
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "logEndOutboundSession": {
+                                "const": true
+                            }
+                        }
+                    }
+                }
+            }
         },
-
         "Security_Log_Profile_Nat_Storage_Format": {
             "description": "Specifies the format type for log messages",
             "anyOf": [{
@@ -1744,32 +1925,6 @@
                 }
             },
             "additionalProperties": false
-        },
-
-        "Log_Publisher": {
-            "title": "Log_Publisher",
-            "description": "Configures lists of destinations for the common logging interface",
-            "type": "object",
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "Log_Publisher"
-                },
-                "label": {
-                    "$ref": "#/definitions/Label"
-                },
-                "remark": {
-                    "$ref": "#/definitions/Remark"
-                },
-                "destinations": {
-                    "description": "specify log destinations for this log publisher to use",
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/Pointer_Log_Destination" }
-                }
-
-            },
-            "required": ["class", "destinations"]
         },
 
         "Log_Destination": {
