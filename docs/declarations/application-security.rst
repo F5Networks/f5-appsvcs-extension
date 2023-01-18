@@ -771,6 +771,7 @@ In this example, we show how you can configure Security Log Profile NAT settings
 While the Security Log Profile with NAT settings has long been supported, AS3 3.43 introduced three new properties for the NAT object, related to LSN legacy mode: 
 
 - **lsnLegacyMode**: specifies whether translation events and other NAT events are logged in existing CGNAT/LSN formats (for backward compatibility with LSN events). The following options are applicable only if lsnLegacyMode is enabled (**true**).
+
   - **logStartOutboundSessionDestination**: includes the destination address and port with the log entry for the *start* of the translation event for a NAT client. 
   - **logEndOutboundSessionDestination**:  includes the destination address and port with log entry for the *end* of the translation event for a NAT client. 
 
