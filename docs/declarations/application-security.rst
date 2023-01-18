@@ -758,6 +758,41 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
+.. _slnat:
+
+Configuring Security Log Profile NAT settings
+`````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for lsnLegacyMode, logStartOutboundSessionDestination, and logEndOutboundSessionDestination in the Security Log Profile NAT class is available in BIG-IP AS3 v3.43 and later. 
+
+In this example, we show how you can configure Security Log Profile NAT settings in an AS3 declaration. These settings determine how the system logs firewall NAT events.
+
+While the Security Log Profile has long been supported, AS3 3.43 introduced three new properties related to LSN legacy mode: 
+
+- **lsnLegacyMode**: specifies whether translation events and other NAT events are logged in existing CGNAT/LSN formats (for backward compatibility with LSN events). The following options are applicable only if lsnLegacyMode is enabled (**true**).
+  - **logStartOutboundSessionDestination**: includes the destination address and port with the log entry for the *start* of the translation event for a NAT client. 
+  - **logEndOutboundSessionDestination**:  includes the destination address and port with log entry for the *end* of the translation event for a NAT client. 
+
+.. IMPORTANT:: If **lsnLegacyMode** is enabled, you cannot set the **rateLimitStartInboundSession**, **rateLimitEndInboundSession**, **rateLimitStartOutboundSession**, or **rateLimitEndOutboundSession** properties.
+
+For more information on the Security Log Profile, see |seclog|. For details on all of the available NAT settings, see |slpnat|.
+
+This declaration creates the following objects on the BIG-IP (if you try to use the following declaration on an AS3 version prior to 3.43, it will fail. On previous versions, remove the new settings, highlighted in yellow):
+
+- Partition (tenant) named **Sample_sec_log_profile_nat**.
+- An Application named **A1**.
+- A Security Log Profile named **secLogNAT** with a number of settings, including **lsnLegacyMode**, **logStartOutboundSessionDestination**, and **logEndOutboundSessionDestination** introduced in AS3 3.43.
+
+.. literalinclude:: ../../examples/declarations/example-security-log-profile-nat.json
+    :language: json
+    :emphasize-lines: 22, 24, 25
+    
+
+:ref:`Back to top<app-sec-examples>`
+
+|
+
 
 
 .. |asm| raw:: html
@@ -893,3 +928,7 @@ This declaration creates the following objects on the BIG-IP:
 .. |geoip| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-condition-geoip" target="_blank">Policy_Condition_GeoIP</a>
+
+.. |slpnat| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#security-log-profile-nat-object" target="_blank">Security_Log_Profile.nat</a>
