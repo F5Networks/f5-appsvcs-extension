@@ -455,16 +455,6 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
         item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
         item.iControl_postFromRemote.post.overrides = overrides;
-
-        if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
-            item.ignore.iControl_postFromRemote = {
-                get: {
-                    authentication: {
-                        token: item.iControl_postFromRemote.get.authentication.token
-                    }
-                }
-            };
-        }
     }
 
     if (item.ignoreChanges) {
@@ -678,16 +668,6 @@ const translate = {
             item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
             item.iControl_postFromRemote.post.why = `upload asm policy ${itemId}`;
             item.iControl_postFromRemote.post.overrides = overrides;
-
-            if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
-                item.ignore.iControl_postFromRemote = {
-                    get: {
-                        authentication: {
-                            token: item.iControl_postFromRemote.get.authentication.token
-                        }
-                    }
-                };
-            }
         } else if (item.policy || item.file) {
             item.iControl_post = {};
             item.iControl_post.reference = path;

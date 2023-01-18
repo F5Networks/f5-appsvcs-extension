@@ -113,11 +113,7 @@ function isAlreadyEncrypted(data, dataPath) {
 function encryptLongSecret(context, data) {
     return secureVault.encrypt(data.secret)
         .then((response) => {
-            data.parent[data.key] = {
-                ciphertext: util.base64Encode(response),
-                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
-                miniJWE: true
-            };
+            data.parent[data.key] = response;
         })
         .catch((e) => {
             e.message = `Failed encrypting credential with secureVault: ${e.message}`;

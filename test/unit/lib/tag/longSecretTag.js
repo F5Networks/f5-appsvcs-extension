@@ -195,14 +195,7 @@ describe('LongSecretTag', () => {
                 .process(context, declaration, getSecrets())
                 .then(() => {
                     assert.strictEqual(secureVaultSpy.args[0][0], 'test secret');
-                    assert.deepStrictEqual(
-                        declaration.parentData.data,
-                        {
-                            ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
-                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
-                            miniJWE: true
-                        }
-                    );
+                    assert.deepStrictEqual(declaration.parentData.data, 'dGVzdCBzZWNyZXQ=');
                 }));
 
             it('should decode data object before encrypting', () => {
@@ -213,14 +206,7 @@ describe('LongSecretTag', () => {
                 return LongSecretTag.process(context, declaration, getSecrets())
                     .then(() => {
                         assert.strictEqual(secureVaultSpy.args[0][0], 'test secret');
-                        assert.deepStrictEqual(
-                            declaration.parentData.data,
-                            {
-                                ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
-                                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
-                                miniJWE: true
-                            }
-                        );
+                        assert.deepStrictEqual(declaration.parentData.data, 'dGVzdCBzZWNyZXQ=');
                     });
             });
 

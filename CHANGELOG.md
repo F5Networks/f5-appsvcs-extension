@@ -12,7 +12,6 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use
-- AUTOTOOL-2489: Unchecked mode fails when URLs have authentication
 
 ### Changed
 
