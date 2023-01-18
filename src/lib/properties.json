@@ -2812,5 +2812,17 @@
   ],
   "security bot-defense profile class-overrides verification": [
     { "id":"action" }
+  ],
+  "api-protection response": [
+    { "id":"description",   "altId": "remark", "quotedString": true },
+    { "id":"body",          "quotedString": true },
+    { "id":"headers",       "extend": "objArray" },
+    { "id":"status-code",   "quotedString": true },
+    { "id":"status-string", "quotedString": true }
+  ],
+  "api-protection response headers": [
+    { "id":"name" },
+    { "id":"header-name",  "quotedString": true },
+    { "id":"header-value", "quotedString": true }
   ]
 }

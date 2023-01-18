@@ -10687,4 +10687,77 @@ describe('map_as3', () => {
             );
         });
     });
+
+    describe('API_Protection_Response', () => {
+        it('should create correct config with minimal properties', () => {
+            const item = {
+                class: 'API_Protection_Response',
+                statusCode: 403,
+                statusString: 'Forbidden'
+            };
+            const result = translate.API_Protection_Response(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        command: 'api-protection response',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            headers: {},
+                            'status-code': '"403"',
+                            'status-string': '"Forbidden"'
+                        }
+                    }
+                ]
+            );
+        });
+
+        it('should create correct config with all properties', () => {
+            const item = {
+                class: 'API_Protection_Response',
+                remark: 'description',
+                body: 'OAuth status: %{perflow.oauth.scope.status_string}',
+                headers: [
+                    {
+                        headerName: '%{perflow.oauth.scope.auth_hdr_name}',
+                        headerValue: '%{perflow.oauth.scope.auth_hdr_value}'
+                    },
+                    {
+                        headerName: 'foo',
+                        headerValue: 'bar'
+                    }
+                ],
+                statusCode: '%{perflow.oauth.scope.status_code}',
+                statusString: '%{perflow.oauth.scope.status_string}'
+            };
+            const result = translate.API_Protection_Response(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        command: 'api-protection response',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            description: '"description"',
+                            body: '"OAuth status: %\\{perflow.oauth.scope.status_string\\}"',
+                            headers: {
+                                0: {
+                                    'header-name': '"%\\{perflow.oauth.scope.auth_hdr_name\\}"',
+                                    'header-value': '"%\\{perflow.oauth.scope.auth_hdr_value\\}"'
+                                },
+                                1: {
+                                    'header-name': '"foo"',
+                                    'header-value': '"bar"'
+                                }
+                            },
+                            'status-code': '"%\\{perflow.oauth.scope.status_code\\}"',
+                            'status-string': '"%\\{perflow.oauth.scope.status_string\\}"'
+                        }
+                    }
+                ]
+            );
+        });
+    });
 });

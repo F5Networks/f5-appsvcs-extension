@@ -195,6 +195,7 @@ module.exports = {
         Cipher_Group: 'ltm cipher group',
         Protocol_Inspection_Profile: 'security protocol-inspection profile',
         Idle_Timeout_Policy: 'net timer-policy',
-        iFile: 'ltm ifile'
+        iFile: 'ltm ifile',
+        API_Protection_Response: 'api-protection response'
     }
 };
