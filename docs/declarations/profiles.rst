@@ -396,14 +396,18 @@ This declaration creates the following objects on the BIG-IP:
 
 .. _rtsp-ex:
 
-Referencing an existing RTSP profile in a declaration
-`````````````````````````````````````````````````````
-This example shows how you can reference an RTSP profile that exists on the BIG-IP system in your declarations. For information on RTSP, see |rtspref|; for information on the RTSP profile, see the |rtspdoc|.  You can also see |rtsppt| and |servtcp| in the Schema Reference for usage.
+Creating an RTSP profile in a declaration
+`````````````````````````````````````````
+This updated example shows how you can create an RTSP profile in a declaration using BIG-IP AS3 3.43 and later.  In previous versions of BIG-IP AS3, you could reference an existing profile, but not create one. For information on RTSP, see |rtspref|; for information on the RTSP profile, see the |rtspdoc|.  
+
+See |rtsp| in the Schema Reference for AS3 options and usage.
 
 This declaration creates the following objects on the BIG-IP:
 
 - Partition (tenant) named **example_RTSP**.
-- A virtual service named **RTSP_vs** which includes the **profileRTSP** property referencing an existing RTSP profile on the target BIG-IP.
+- An Application named **App1**.
+- A virtual service named **RTSP_vs** which references the RTSP profile
+- An RTSP profile named **RTSP_profile** with a number of configured properties..
 
 .. literalinclude:: ../../examples/declarations/example-rtsp-profile.json
    :language: json
@@ -923,9 +927,9 @@ This declaration creates the following objects on the BIG-IP:
 
    <a href="https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-local-traffic-management-profiles-reference-14-1-0/02.html#GUID-2C8C75A0-1A12-417D-8C92-6943C345403F" target="_blank">RTSP documentation</a>
 
-.. |rtsppt| raw:: html
+.. |rtsp| raw:: html
 
-   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#pointer-rtsp-profile" target="_blank">Pointer_RTSP_Profile</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#rtsp-profile" target="_blank">RTSP_Profile</a>
 
 .. |servtcp| raw:: html
 
