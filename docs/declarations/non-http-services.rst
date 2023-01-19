@@ -132,14 +132,25 @@ This declaration creates the following objects on the BIG-IP:
 
 Using an existing TFTP profile in a declaration
 ```````````````````````````````````````````````
-This example shows how can use TFTP (Trivial File Transfer Protocol) profiles that already exist on your BIG-IP system in a BIG-IP AS3 declaration.  The TFTP profile enables you to configure the BIG-IP system to read and write files from or to a remote server. See the |tftpdoc| chapter of the BIG-IP documentation for detailed information.
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-See |tftppoint| in the :ref:`Schema Reference<schema-reference>` for usage options.
+   Support for creating a TFTP profile is available in BIG-IP AS3 3.43 and later. 
+
+This updated example shows how you can create a TFTP (Trivial File Transfer Protocol) profile in a declaration using BIG-IP AS3 3.43 and later.  In previous versions of BIG-IP AS3, you could reference an existing profile, but not create one.
+
+The TFTP profile allows you to configure the BIG-IP system to read and write files from or to a remote server. See the |tftpdoc| chapter of the BIG-IP documentation for detailed information.
+
+See |tftpp| in the Schema Reference for information on available properties and AS3 usage options.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
 
 This declaration creates the following objects on the BIG-IP:
 
-- Partition (tenant) named **Exampe_Service_UDP**. 
-- A virtual service named **service** that references an existing TFTP profile on the BIG-IP system.
+- Partition (tenant) named **Example_Service_UDP**. 
+- An Application named **Application**.
+- A virtual service named **service** that references the TFTP profile
+- A TFTP profile named **TFTP_profile** with a number of configured properties.
+- An :ref:`ALG Log Profile<alglog>` named **ALG_Log_profile** with a number of configured properties.
 
 .. literalinclude:: ../../examples/declarations/example-tftp-profile.json
    :language: json
@@ -329,9 +340,9 @@ This declaration creates the following objects on the BIG-IP:
 
    <a href="https://support.f5.com/csp/article/K13675" target="_blank">Overview of the stateless virtual server</a>
 
-.. |tftppoint| raw:: html
+.. |tftpp| raw:: html
 
-   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#pointer-tftp-profile" target="_blank">Pointer_TFTP</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#tftp-profile" target="_blank">TFTP_Profile</a>
 
 .. |tftpdoc| raw:: html
 
