@@ -366,7 +366,7 @@ Creating an ALG log profile in a declaration
 ````````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-   Support for ALG logging profiles is available in BIG-IP AS3 3.43.  |br| You must have the CGNAT module licensed and provisioned.
+   Support for ALG logging profiles is available in BIG-IP AS3 3.43.  |br| You must have the CGNAT module licensed and provisioned on BIG-IP 15.1 or later.
 
 This example shows how you can create an ALG (Application Layer Gateway) logging profile in an AS3 declaration in version 3.43 and later.  
 
