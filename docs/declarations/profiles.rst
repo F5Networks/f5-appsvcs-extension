@@ -408,7 +408,7 @@ See |rtsp| in the Schema Reference for AS3 options and usage.
 
 .. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
 
-This declaration creates the following objects on the BIG-IP:
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on an AS3 version prior to 3.43, it will fail.  Remove the ALG profile and log publisher for previous versions):
 
 - Partition (tenant) named **example_RTSP**.
 - An Application named **App1**.

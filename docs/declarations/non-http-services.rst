@@ -112,12 +112,25 @@ This declaration creates the following objects on the BIG-IP:
 
 Creating an FTP profile in a declaration
 ````````````````````````````````````````
-This example shows how you can create an FTP profile in a declaration (example 9 showed how to use an existing FTP profile).   See |ftpprofile| in the Schema Reference for more usage options and information.  
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-This declaration creates the following objects on the BIG-IP:
+   Support for including an ALG logging profile and log publisher in an FTP profile is available in BIG-IP AS3 3.43 and later. 
+   
+This example shows how you can create an FTP profile in a declaration (the previous example showed how to use an existing FTP profile).   
+
+See |ftpprofile| in the Schema Reference for more usage options and information.
+
+**New in BIG-IP AS3 3.43** |br|
+BIG-IP AS3 3.43 adds the ability to include an :ref:`ALG Log Profile<alglog>` and log publisher to an FTP profile, allowing flexibility when setting logging parameters.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
+
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on an AS3 version prior to 3.43, it will fail.  Remove the ALG profile and log publisher for previous versions):
 
 - Partition (tenant) named **TEST_FTP_Profile**.
-- A FTP profile named **sampleFTPprofile**
+- An Application named **Application**
+- A virtual server named **service** that references the FTP profile
+- A FTP profile named **sampleFTPprofile** which includes an ALG Log profile and log publisher.
 
 .. literalinclude:: ../../examples/declarations/example-ftp-profile.json
    :language: json
