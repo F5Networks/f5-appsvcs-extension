@@ -12,7 +12,7 @@ Document Revision History
         - Date
 
       * - 3.43
-        - Updated the documentation for AS3 v3.43.0. This release contains the following changes: |br| * Added new properties for the Security Log Profile NAT object (see :ref:`Security Log Profile NAT<slnat>`), `GitHub Issue 533 <https://github.com/F5Networks/f5-appsvcs-extension/issues/533>`_  |br| * Added support for ALG Log profiles (see :ref:`ALG Log Profile<alglog>`), `GitHub Issue 619 <https://github.com/F5Networks/f5-appsvcs-extension/issues/619>`_ |br| |br| Issues Resolved: |br| * 
+        - Updated the documentation for AS3 v3.43.0. This release contains the following changes: |br| * Added new properties for the Security Log Profile NAT object (see :ref:`Security Log Profile NAT<slnat>`), `GitHub Issue 533 <https://github.com/F5Networks/f5-appsvcs-extension/issues/533>`_  |br| * Added support for ALG Log profiles (see :ref:`ALG Log Profile<alglog>`), `GitHub Issue 619 <https://github.com/F5Networks/f5-appsvcs-extension/issues/619>`_ |br| * Added support for creating RSTP profiles (see the updated :ref:`RSTP example<rstp-ex>`) |br| |br| Issues Resolved: |br| * 
         - 3-1-23
 
       * - 3.42
