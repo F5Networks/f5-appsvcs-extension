@@ -370,9 +370,7 @@ Creating an ALG log profile in a declaration
 
 This example shows how you can create an ALG (Application Layer Gateway) logging profile in an AS3 declaration in version 3.43 and later.  
 
-An ALG log profile allows fine grain control of the logging for ALG events.  When attached to a supported ALG profile (NAT, FTP, RTSP, SIP, and PPTP), you can control the events, to log as well as optional elements in the log entry.
-
-For more information on ALG profiles, see |algp| in the BIG-IP documentation.
+An ALG log profile allows fine grain control of the logging for ALG events.  When attached to a supported ALG profile (NAT, FTP, RTSP, SIP, and PPTP), you can control the events, to log as well as optional elements in the log entry. For more information on ALG profiles, see |algp| in the BIG-IP documentation.
 
 For AS3 options and usage, see |alg|.
 
@@ -401,6 +399,11 @@ This declaration creates only the following objects on the BIG-IP:
 .. |algp| raw:: html
 
    <a href="https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations/using-alg-profiles.html" target="_blank">Using ALG profiles</a>
+
+.. |alg| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#alg-log-profile" target="_blank">ALG_Log_Profile</a>
+
 
 .. |pipkb| raw:: html
 
