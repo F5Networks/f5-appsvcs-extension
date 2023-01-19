@@ -400,11 +400,13 @@ Creating an RTSP profile in a declaration
 `````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-   Support for creating RSTP profiles in a declaration is available in AS3 3.43 and later.
+   Support for creating RSTP profiles in a declaration is available in AS3 3.43 and later. 
 
 This updated example shows how you can create an RTSP profile in a declaration using BIG-IP AS3 3.43 and later.  In previous versions of BIG-IP AS3, you could reference an existing profile, but not create one. For information on RTSP, see |rtspref|; for information on the RTSP profile, see the |rtspdoc|.  
 
 See |rtsp| in the Schema Reference for AS3 options and usage.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
 
 This declaration creates the following objects on the BIG-IP:
 
