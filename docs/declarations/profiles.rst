@@ -411,7 +411,8 @@ This declaration creates the following objects on the BIG-IP:
 - Partition (tenant) named **example_RTSP**.
 - An Application named **App1**.
 - A virtual service named **RTSP_vs** which references the RTSP profile
-- An RTSP profile named **RTSP_profile** with a number of configured properties..
+- An RTSP profile named **RTSP_profile** with a number of configured properties.
+- An :ref:`ALG Log Profile<alglog>` named **ALG_Log_profile** with a number of configured properties.
 
 .. literalinclude:: ../../examples/declarations/example-rtsp-profile.json
    :language: json
