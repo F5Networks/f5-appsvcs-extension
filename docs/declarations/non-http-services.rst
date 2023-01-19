@@ -130,8 +130,8 @@ This declaration creates the following objects on the BIG-IP:
 .. _tftpprof:
 
 
-Using an existing TFTP profile in a declaration
-```````````````````````````````````````````````
+Creating a TFTP profile in a declaration
+````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
    Support for creating a TFTP profile is available in BIG-IP AS3 3.43 and later. 
