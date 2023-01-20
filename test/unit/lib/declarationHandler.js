@@ -980,7 +980,6 @@ describe('DeclarationHandler', () => {
                                         optimisticLockKey: 'X2+v5GL/Efee06aRRnkbPWlOWosvpzYbBb/AwuY0CcM='
                                     }
                                 },
-                                fortune: undefined,
                                 results: [
                                     {
                                         code: 422,
@@ -1378,6 +1377,21 @@ describe('DeclarationHandler', () => {
                         assert.strictEqual(result.body.dryRun, true);
                     });
             });
+        });
+
+        it('should handle fortune if its set to true in the request', () => {
+            context.request.fortune = true;
+            context.tasks[0] = {
+                declaration: {}, // declaration is irrelevant
+                tenantsInPath: [],
+                action: 'deploy',
+                dryRun: true
+            };
+            sinon.stub(Math, 'random').returns(0.1);
+            return assert.isFulfilled(handler.handleCreateUpdateOrDelete(context))
+                .then((result) => {
+                    assert.strictEqual(result.body.fortune, 'Whee! Easter-egg hunting is fun!');
+                });
         });
     });
 

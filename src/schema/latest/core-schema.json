@@ -159,66 +159,7 @@
         },
 
         "controls": {
-            "title": "Controls",
-            "description": "Options to control configuration process",
-            "type": "object",
-
-            "$comment": "archiveId and archiveTimestamp reserved for future use.",
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "Controls",
-                    "default": "Controls"
-                },
-                "logLevel": {
-                    "title": "Log level",
-                    "description": "Controls the amount of detail in logs produced by the configuration process using RFC 5424 severity levels (default is 'error').  May be overridden on a per-Tenant basis",
-                    "type": "string",
-                    "enum": [
-                        "emergency", "alert", "critical", "error",
-                        "warning", "notice", "info", "debug"
-                    ],
-                    "default": "error"
-                },
-                "trace": {
-                    "title": "Trace",
-                    "description": "If true, BIG-IP AS3 creates a detailed trace of the configuration process for subsequent analysis (default false).  May be overridden on a per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
-                    "type": "boolean",
-                    "default": false
-                },
-                "traceResponse": {
-                    "title": "Trace Response",
-                    "description": "If true, the response will contain the trace files",
-                    "type": "boolean",
-                    "default": false
-                },
-                "userAgent": {
-                    "title": "User Agent",
-                    "description": "User Agent information to include in TEEM report",
-                    "type": "string"
-                },
-                "archiveId": {
-                    "title": "Archive ID",
-                    "description": "Read-only property present when you GET a declaration from configuration system.  Archived versions of declaration are identified by a combination of 'id' and 'archiveId'",
-                    "type": [ "number", "string" ],
-                    "readOnly": true
-                },
-                "archiveTimestamp": {
-                    "title": "Archive timestamp",
-                    "description": "Read-only property present when you GET a declaration from configuration system.  Indicates when this version (see archiveId) of declaration was archived",
-                    "type": "string",
-                    "format": "date-time",
-                    "readOnly": true
-                },
-                "dryRun": {
-                    "title": "Dry-Run Option",
-                    "description": "Boolean that indicates if this declaration will be run as a dry-run. If true, the declaration will NOT make any changes to the system, but will respond with whether or not it would.",
-                    "type": "boolean",
-                    "default": false
-                }
-            },
-            "additionalProperties": false
+            "$ref": "#/definitions/Controls"
         },
 
         "scratch": {
@@ -9061,50 +9002,6 @@
                 "minProperties": 1,
                 "maxProperties": 1
             }
-        },
-
-        "Controls": {
-            "title": "Controls",
-            "description": "Options to control configuration process",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "Controls",
-                    "default": "Controls"
-                },
-                "logLevel": {
-                    "title": "Log level",
-                    "description": "Controls the amount of detail in logs produced while configuring this Tenant (default is whole-declaration Controls/logLevel value)",
-                    "type": "string",
-                    "enum": [
-                        "emergency", "alert", "critical", "error",
-                        "warning", "notice", "info", "debug"
-                    ],
-                    "default": "error"
-                },
-                "trace": {
-                    "title": "Trace",
-                    "description": "If true, BIG-IP AS3 creates a detailed trace of the configuration process for this Tenant for subsequent analysis (default is whole-declaration Controls/trace value).  Warning:  trace files may contain sensitive configuration data",
-                    "type": "boolean",
-                    "default": false
-                },
-                "traceResponse": {
-                    "title": "Trace Response",
-                    "description": "If true, the response will contain the trace files",
-                    "type": "boolean",
-                    "default": false
-                },
-                "fortune": {
-                    "title": "Fortune",
-                    "description": "If true, BIG-IP AS3 will activate Zoltar mode and read you your fortune",
-                    "type": "boolean",
-                    "default": false
-                }
-            },
-            "additionalProperties": false
         },
 
         "Metadata": {
