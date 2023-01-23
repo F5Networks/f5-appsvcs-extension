@@ -571,6 +571,9 @@ const translate = {
     'tm:ltm:profile:smtps:smtpsstate': function (context, obj) {
         return profile(context, obj, 'ltm profile smtps', '');
     },
+    'tm:ltm:profile:socks:socksstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile socks', '');
+    },
     'tm:ltm:profile:stream:streamstate': function (context, obj) {
         obj.target = obj.tmTarget || 'none';
         obj.source = obj.source || 'none';

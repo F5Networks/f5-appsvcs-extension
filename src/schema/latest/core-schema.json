@@ -926,6 +926,9 @@
                 "profileRTSP": {
                     "$ref": "#/definitions/Pointer_RTSP_Profile"
                 },
+                "profileSOCKS": {
+                    "$ref": "#/definitions/Pointer_SOCKS_Profile"
+                },
                 "profileICAP": {
                     "$ref": "#/definitions/Pointer_ICAP_Profile"
                 }
@@ -7978,6 +7981,94 @@
             "required": [ "class" ]
         },
 
+        "SOCKS_Profile": {
+            "title": "SOCKS_Profile",
+            "description": "Configures a SOCKS (Socket Secure) profile",
+            "type": "object",
+
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "SOCKS_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+
+                "protocolVersions": {
+                    "description": "Specifies the SOCKS protocol versions that are supported",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "socks4",
+                            "socks4a",
+                            "socks5"
+                        ]
+                    },
+                    "default": [
+                        "socks4",
+                        "socks4a",
+                        "socks5"
+                    ],
+                    "minItems": 1,
+                    "uniqueItems": true
+                },
+                "resolver": {
+                    "title": "DNS resolver",
+                    "description": "BIG-IP AS3 pointer to DNS resolver used to resolve hostnames in connect requests",
+                    "type": "object",
+                    "properties": {
+                        "bigip": {
+                            "title": "BIG-IP resolver",
+                            "description": "Pathname of existing BIG-IP net DNS resolver",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "bigip" ],
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query net dns-resolver"]
+                    }
+                },
+                "ipv6First": {
+                    "title": "IPv6 first priority",
+                    "description": "Specifies the relative order of IPv4 and IPv6 DNS resolutions for URIs. If false (default), then the system performs IPv4 lookup before IPv6.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "routeDomain": {
+                    "description": "The route domain that will be used for outbound connect requests",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65534,
+                    "default": 0
+                },
+                "tunnelName": {
+                    "title": "Tunnel name",
+                    "description": "Name of tunnel used for outbound connect requests",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 63,
+                    "default": "socks-tunnel",
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query net tunnels tunnel"]
+                    }
+                },
+                "defaultConnectAction": {
+                    "title": "Default Connect Action",
+                    "description": "Specifies the behavior of the proxy service for connect requests. If set to 'deny', connect requests will only be honored if there is another virtual server listening for the requested outbound connection. If set to 'allow' outbound connection will be made ragardless of other virtual servers.",
+                    "type": "string",
+                    "enum": [ "deny", "allow" ],
+                    "default": "deny"
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class", "resolver" ]
+        },
 
         "TCP_Profile": {
             "title": "TCP_Profile",

@@ -477,6 +477,59 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:profile:socks:socksstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:socks:socksstate',
+                    name: 'socksExample',
+                    partition: 'myApp',
+                    subPath: 'Application',
+                    fullPath: '/myApp/Application/socksExample',
+                    defaultConnectHandling: 'allow',
+                    description: 'My Description',
+                    dnsResolver: '/Common/f5-aws-dns',
+                    dnsResolverReference: {
+                        link: 'https://localhost/mgmt/tm/net/dns-resolver/~Common~f5-aws-dns?ver=17.0.0'
+                    },
+                    ipv6First: 'yes',
+                    protocolVersions: [
+                        'socks4',
+                        'socks4a',
+                        'socks5'
+                    ],
+                    routeDomain: '/Common/2222',
+                    routeDomainReference: {
+                        link: 'https://localhost/mgmt/tm/net/route-domain/~Common~2222?ver=17.0.0'
+                    },
+                    tunnelName: '/Common/socks-tunnel',
+                    tunnelNameReference: {
+                        link: 'https://localhost/mgmt/tm/net/tunnels/tunnel/~Common~socks-tunnel?ver=17.0.0'
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application/socksExample',
+                    command: 'ltm profile socks',
+                    properties: {
+                        description: '"My Description"',
+                        'protocol-versions': {
+                            socks4: {},
+                            socks4a: {},
+                            socks5: {}
+                        },
+                        'dns-resolver': '/Common/f5-aws-dns',
+                        ipv6: 'yes',
+                        'route-domain': '/Common/2222',
+                        'tunnel-name': '/Common/socks-tunnel',
+                        'default-connect-handling': 'allow'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:ltm:profile:tftp:tftpstate', () => {
             it('should perform basic transformation', () => {
                 const obj = {

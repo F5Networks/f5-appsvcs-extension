@@ -1010,6 +1010,19 @@ const translate = {
     },
 
     /**
+     * Defines an Secure Socket (SOCKS) profile
+     *
+     */
+    SOCKS_Profile(context, tenantId, appId, itemId, item) {
+        ['routeDomain', 'tunnelName'].forEach((prop) => {
+            if (item[prop].toString().indexOf('/') === -1) {
+                item[prop] = `/Common/${item[prop]}`;
+            }
+        });
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile socks', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    /**
      * Defines a statistics profile
      */
     Statistics_Profile(context, tenantId, appId, itemId, item) {
@@ -2816,6 +2829,7 @@ const translate = {
         item = profile(item, 'profileAnalyticsTcp');
         item = profile(item, 'profileFIX');
         item = profile(item, 'profileSIP');
+        item = profile(item, 'profileSOCKS');
         item = profile(item, 'profileSSHProxy');
         item = profile(item, 'profileFTP');
         item = profile(item, 'profilePPTP');
