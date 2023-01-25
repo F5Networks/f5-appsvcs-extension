@@ -869,15 +869,15 @@ This declaration creates the following objects on the BIG-IP:
 
 .. |socksdocs| raw:: html
 
-   < a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-profiles-reference/services-profiles.html#GUID-54B29220-772F-4D3B-9352-AB70922DA41C" target="_blank">SOCKS Profile</a>
+   <a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-profiles-reference/services-profiles.html#GUID-54B29220-772F-4D3B-9352-AB70922DA41C" target="_blank">SOCKS Profile</a>
 
 .. |socksref| raw:: html
 
-   < a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#socks-profile" target="_blank">SOCKS Profile</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#socks-profile" target="_blank">SOCKS Profile</a>
 
 .. |streamprof| raw:: html
 
-   < a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#stream-profile" target="_blank">Stream Profile</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#stream-profile" target="_blank">Stream Profile</a>
 
 .. |streamprofile| raw:: html
 
