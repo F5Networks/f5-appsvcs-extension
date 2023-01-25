@@ -3221,6 +3221,61 @@ describe('core-schema.json', () => {
         });
     });
 
+    describe('SOCKS_Profile', () => {
+        const data = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    template: 'generic'
+                }
+            }
+        };
+
+        it('should validate with default values', () => {
+            data.Tenant.Application.socksProfile = {
+                class: 'SOCKS_Profile',
+                protocolVersions: [
+                    'socks4',
+                    'socks4a',
+                    'socks5'
+                ],
+                ipv6First: false,
+                // resolver is not a default property but is required by schema
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                routeDomain: 0,
+                tunnelName: 'socks-tunnel',
+                defaultConnectAction: 'deny'
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate with custom values', () => {
+            data.Tenant.Application.socksProfile = {
+                class: 'SOCKS_Profile',
+                label: 'My Label',
+                remark: 'My Remark',
+                protocolVersions: [
+                    'socks4'
+                ],
+                resolver: {
+                    bigip: '/Common/f5-aws-dns'
+                },
+                ipv6First: true,
+                routeDomain: 65534,
+                tunnelName: 'http-tunnel',
+                defaultConnectAction: 'allow'
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+    });
+
     describe('Statistics_Profile', () => {
         describe('fieldXX properties', () => {
             function testValue(name, expected) {

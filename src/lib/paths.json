@@ -152,6 +152,9 @@
             "endpoint": "/mgmt/tm/ltm/profile/smtps"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/socks"
+        },
+        {
             "endpoint":"/mgmt/tm/ltm/profile/statistics"
         },
         {

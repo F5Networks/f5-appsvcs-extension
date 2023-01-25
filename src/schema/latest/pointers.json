@@ -567,6 +567,11 @@
         "class": "SNAT_Translation",
         "tmshPath": "ltm snat-translation"
     },
+    "SOCKS_Profile": {
+        "name": "SOCKS profile",
+        "class": "SOCKS_Profile",
+        "tmshPath": "ltm profile socks"
+    },
     "SSL_CRL_File": {
         "name": "SSL CRL file",
         "tmshPath": "sys file ssl-crl"

@@ -270,6 +270,13 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
     util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
     log.updateGlobalSettings(tenantControls);
 
+    if (typeof tenantControls.fortune !== 'undefined') {
+        context.request.fortune = tenantControls.fortune;
+        // Remove the fortune object after it is no longer needed
+        delete context.control.fortune;
+        delete declaration[tenantId].controls.fortune;
+    }
+
     const startTime = new Date();
     let configuredTenant = tenantId;
     if (tenantId !== 'Common' && declaration.Common) {

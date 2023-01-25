@@ -9,6 +9,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3492: ([GitHub Issue 575](https://github.com/F5Networks/f5-appsvcs-extension/issues/575)): RTSP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
 - AUTOTOOL-3494: ([GitHub Issue 576](https://github.com/F5Networks/f5-appsvcs-extension/issues/576)): TFTP_Profile. algLogProfile and logPublisher properties require CGNAT to be provisioned and BIGIP version to be 15.1 or higher
 - AUTOTOOL-3493: ([GitHub Issue 570](https://github.com/F5Networks/f5-appsvcs-extension/issues/570)): Add algLogProfile and logPublisher properties to FTP_Profile which requires CGNAT to be provisioned and BIGIP version to be 15.1 or higher
+- AUTOTOOL-3615: SOCKS_profile (ltm profile socks) which can be attached to a Service_TCP with profileSOCKS
 
 ### Fixed
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use

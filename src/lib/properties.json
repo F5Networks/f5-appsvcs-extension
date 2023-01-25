@@ -451,6 +451,15 @@
   "ltm profile smtps": [
     { "id":"activation-mode" }
   ],
+  "ltm profile socks": [
+    { "id": "description",              "altId": "remark", "quotedString": true, "default": "none" },
+    { "id": "protocol-versions",        "extend": "array" },
+    { "id": "dns-resolver",             "altId": "resolver", "default": "none" },
+    { "id": "ipv6",                     "altId": "ipv6First", "truth": "yes", "falsehood": "no" },
+    { "id": "route-domain" },
+    { "id": "tunnel-name" },
+    { "id": "default-connect-handling", "altId": "defaultConnectAction" }
+  ],
   "ltm profile stream": [
     { "id":"chunking",                  "altId": "chunkingEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"chunk-size" },

@@ -1333,6 +1333,70 @@ describe('map_as3', () => {
         });
     });
 
+    describe('SOCKS_Profile', () => {
+        it('should map default values', () => {
+            const item = {
+                class: 'SOCKS_Profile',
+                protocolVersions: [
+                    'socks4',
+                    'socks4a',
+                    'socks5'
+                ],
+                ipv6First: false,
+                // resolver is not a default property but is required by schema
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                routeDomain: 0,
+                tunnelName: 'socks-tunnel',
+                defaultConnectAction: 'deny'
+            };
+            const result = translate.SOCKS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: 'none',
+                'protocol-versions': {
+                    socks4: {},
+                    socks4a: {},
+                    socks5: {}
+                },
+                'dns-resolver': '/Common/myDnsResolver',
+                ipv6: 'no',
+                'route-domain': '/Common/0',
+                'tunnel-name': '/Common/socks-tunnel',
+                'default-connect-handling': 'deny'
+            });
+        });
+
+        it('should map non-default values', () => {
+            const item = {
+                class: 'SOCKS_Profile',
+                description: 'My Description',
+                protocolVersions: [
+                    'socks5'
+                ],
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                ipv6First: true,
+                routeDomain: 123,
+                tunnelName: 'http-tunnel',
+                defaultConnectAction: 'allow'
+            };
+            const result = translate.SOCKS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(result.configs[0].properties, {
+                description: '"My Description"',
+                'protocol-versions': {
+                    socks5: {}
+                },
+                'dns-resolver': '/Common/myDnsResolver',
+                ipv6: 'yes',
+                'route-domain': '/Common/123',
+                'tunnel-name': '/Common/http-tunnel',
+                'default-connect-handling': 'allow'
+            });
+        });
+    });
+
     describe('TFTP_Profile', () => {
         it('should map default values', () => {
             const item = {

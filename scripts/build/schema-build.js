@@ -239,6 +239,7 @@ function buildSharedSchema() {
         'Certificate',
         'Certificate_Validator_OCSP',
         'Constants',
+        'Controls',
         'DNS_Logging_Profile',
         'Enum_Country_Analytics',
         'F5_String',
