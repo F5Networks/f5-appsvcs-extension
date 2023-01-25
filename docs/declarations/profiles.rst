@@ -932,7 +932,7 @@ This declaration creates the following objects on the BIG-IP:
 
 .. |rtspdoc| raw:: html
 
-   <a href="https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-local-traffic-management-profiles-reference-14-1-0/02.html#GUID-2C8C75A0-1A12-417D-8C92-6943C345403F" target="_blank">RTSP documentation</a>
+   <a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-profiles-reference/services-profiles.html#GUID-2C8C75A0-1A12-417D-8C92-6943C345403F" target="_blank">RTSP documentation</a>
 
 .. |rtsp| raw:: html
 
