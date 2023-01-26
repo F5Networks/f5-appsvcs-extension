@@ -200,8 +200,7 @@ const prefix = {
     'gtm wideip mx aliases': 'replace-all-with',
     'gtm wideip mx pools': 'replace-all-with',
     'gtm wideip mx pools-cname': 'replace-all-with',
-    'gtm wideip mx rules': '',
-    'api-protection response headers': 'replace-all-with'
+    'gtm wideip mx rules': ''
 };
 
 /**
