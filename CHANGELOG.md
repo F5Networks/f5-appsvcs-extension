@@ -15,6 +15,8 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use
 
 ### Changed
+- Updated to Service Discovery 1.12.0-1
+  - AUTOTOOL-3640: support for credential objects
 
 ### Removed
 
