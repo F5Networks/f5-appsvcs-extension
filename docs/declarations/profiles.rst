@@ -845,7 +845,7 @@ Configuring a SOCKS profile in a declaration
 
    Support for SOCKS profiles is available in BIG-IP AS3 v3.43 and later. 
 
-This example shows how you can configure a SOCKS (Socket Secure) profile in a declaration using the **Socks_Profile** class introduced in AS3 3.43.  
+This example shows how you can configure a SOCKS (Socket Secure) profile in a declaration using the **SOCKS_Profile** class introduced in AS3 3.43.
 
 You can use the SOCKS profile to configure the BIG-IP system to handle proxy requests and function as a gateway. By configuring browser traffic to use the proxy, you can control whether to allow or deny a requested connection. For more information on the SOCKS profile, see |socksdocs| in the BIG-IP documentation.
 
