@@ -1464,11 +1464,11 @@ function checkServices() {
                 if (status === 'ACTIVE') {
                     return Promise.resolve();
                 }
-                return Promise.reject();
+                return Promise.reject(new Error('BIGIP did not become ACTIVE in time'));
             });
     };
 
-    return promiseUtil.retryPromise(checkActivePromise, { delay: 4000, retries: 30 });
+    return promiseUtil.retryPromise(checkActivePromise, { delay: 4000, retries: 60 });
 }
 
 function getAuthToken() {
