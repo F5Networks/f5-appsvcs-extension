@@ -4581,16 +4581,6 @@ const translate = {
         }
         configs.push(normalize.actionableMcp(context, item, 'net timer-policy', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
-    },
-
-    API_Protection_Response(context, tenantId, appId, itemId, item) {
-        const configs = [];
-        item.statusCode = `${item.statusCode}`;
-        (item.headers || []).forEach((header, index) => {
-            header.name = `${index}`;
-        });
-        configs.push(normalize.actionableMcp(context, item, 'api-protection response', util.mcpPath(tenantId, appId, itemId)));
-        return { configs };
     }
 };
 

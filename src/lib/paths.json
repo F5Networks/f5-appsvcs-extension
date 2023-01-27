@@ -522,10 +522,6 @@
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/http-proxy-connect"
-        },
-        {
-            "endpoint": "/mgmt/tm/api-protection/response",
-            "modules": ["apm"]
         }
     ],
     "referred": [
@@ -597,9 +593,6 @@
         },
         {
             "endpoint": "certValidatorsReference"
-        },
-        {
-            "endpoint": "headersReference"
         }
     ],
     "subReferred": [

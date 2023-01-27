@@ -231,7 +231,6 @@ function buildSharedSchema() {
     const supportedClasses = [
         'Analytics_Profile',
         'Analytics_TCP_Profile',
-        'API_Protection_Response',
         'Basic_Auth',
         'Bearer_Token',
         'CA_Bundle',

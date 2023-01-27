@@ -1621,20 +1621,8 @@ const translate = {
     },
     'tm:sys:file:ifile:ifilestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'sys file ifile', util.mcpPath(obj.partition, obj.subPath, obj.name))];
-    },
-    'tm:api-protection:response:responsestate': function (context, obj, referenceConfig) {
-        const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
-        obj = pushReferences(
-            context,
-            obj,
-            referenceConfig,
-            `/mgmt/tm/api-protection/response/${path.replace(/\//g, '~')}`,
-            'tm:api-protection:response:headers:headersstate',
-            'api-protection response',
-            'headers'
-        );
-        return [normalize.actionableMcp(context, obj, 'api-protection response', path)];
     }
+
 };
 
 module.exports = {
