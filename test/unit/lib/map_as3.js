@@ -6245,6 +6245,69 @@ describe('map_as3', () => {
             const results = translate.Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepStrictEqual(results.configs[0], expected);
         });
+
+        it('should have correct ignore values for token when ignoreChanges is true', () => {
+            const item = {
+                url: {
+                    url: 'https://example.url.helloThere.tar',
+                    authentication: {
+                        method: 'bearer',
+                        token: {
+                            ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                            miniJWE: true
+                        }
+                    }
+                },
+                ignoreChanges: true,
+                enable: true
+            };
+            const results = translate.Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    command: 'apm profile access',
+                    ignore: [
+                        'iControl_postFromRemote.get.authentication',
+                        'iControl_postFromRemote.get.authentication.token',
+                        'iControl_postFromRemote.get.authentication.token.ciphertext',
+                        'iControl_postFromRemote.get.authentication.token.protected',
+                        'iControl_postFromRemote.get.authentication.token.miniJWE'
+                    ],
+                    path: '/tenantId/itemId',
+                    properties: {
+                        enable: true,
+                        iControl_postFromRemote: {
+                            get: {
+                                authentication: {
+                                    method: 'bearer',
+                                    token: {
+                                        ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                                        miniJWE: true,
+                                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0'
+                                    }
+                                },
+                                ctype: 'application/octet-stream',
+                                method: 'GET',
+                                path: 'https://example.url.helloThere.tar',
+                                rejectUnauthorized: true,
+                                why: 'get Access Profile itemId from url'
+                            },
+                            post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                overrides: {
+                                    ignoreChanges: true,
+                                    url: 'https://example.url.helloThere.tar'
+                                },
+                                path: '/mgmt/shared/file-transfer/uploads/itemId.tar',
+                                why: 'upload Access Profile itemId'
+                            }
+                        }
+                    }
+                }
+            );
+        });
     });
 
     describe('Per_Request_Access_Policy', () => {
@@ -6549,6 +6612,69 @@ describe('map_as3', () => {
                         }
                     },
                     ignore: []
+                }
+            );
+        });
+
+        it('should have correct ignore values for token when ignoreChanges is true', () => {
+            const item = {
+                url: {
+                    url: 'https://example.url.helloThere.xml',
+                    authentication: {
+                        method: 'bearer',
+                        token: {
+                            ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                            miniJWE: true
+                        }
+                    }
+                },
+                ignoreChanges: true,
+                enable: true
+            };
+            const results = translate.WAF_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'asm policy',
+                    properties: {
+                        iControl_postFromRemote: {
+                            get: {
+                                authentication: {
+                                    method: 'bearer',
+                                    token: {
+                                        ciphertext: 'ZEdWemRDQnpaV055WlhRPQ==',
+                                        miniJWE: true,
+                                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0'
+                                    }
+                                },
+                                ctype: 'application/octet-stream',
+                                method: 'GET',
+                                path: 'https://example.url.helloThere.xml',
+                                rejectUnauthorized: true,
+                                why: 'get asm policy itemId from url'
+                            },
+                            post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                overrides: {
+                                    enable: true,
+                                    ignoreChanges: true,
+                                    url: 'https://example.url.helloThere.xml'
+                                },
+                                path: '/mgmt/shared/file-transfer/uploads/itemId.xml',
+                                why: 'upload asm policy itemId'
+                            }
+                        }
+                    },
+                    ignore: [
+                        'iControl_postFromRemote.get.authentication',
+                        'iControl_postFromRemote.get.authentication.token',
+                        'iControl_postFromRemote.get.authentication.token.ciphertext',
+                        'iControl_postFromRemote.get.authentication.token.protected',
+                        'iControl_postFromRemote.get.authentication.token.miniJWE'
+                    ]
                 }
             );
         });
