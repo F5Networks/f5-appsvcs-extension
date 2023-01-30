@@ -45,6 +45,7 @@ resource "azurerm_public_ip" "pip0" {
   location              = var.location
   resource_group_name   = module.utils.env_prefix
   allocation_method     = "Static"
+  sku                   = "Standard"
   depends_on = [azurerm_resource_group.deployment]
 }
 
