@@ -69,8 +69,8 @@ describe('moduleTag', () => {
                                     tagValue: 'bar',
                                     addressRealm: 'private',
                                     region: 'us-west-1',
-                                    accessKeyId: '***REMOVED***',
-                                    secretAccessKey: '***REMOVED***',
+                                    accessKeyId: '<id>',
+                                    secretAccessKey: '<key>',
                                     credentialUpdate: false
                                 },
                                 '192.0.2.1',
