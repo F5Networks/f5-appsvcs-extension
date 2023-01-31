@@ -36,6 +36,7 @@
 * Download and copy the built schema file to the correct locations
   * From Artifactory f5-automation-toolchain-generic/f5-appsvcs/`<version>-<build>`, download as3-schema-`<version>-<build>`.json
   * mkdir -p schema/`<version>`
+  * rm schema/latest/*
   * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema-`<version>-<build>`.json
   * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema.json
   * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema-`<version>-<build>`.json
@@ -44,7 +45,7 @@
   * Create a new branch off of develop like any other development task
   * Update version changes to `package.json` and `package-lock.json`.  The release number of the new version should start at 0 (e.g. 3.10.0-4 would become 3.11.0-0).
   * Update the `info.version` property in `docs/openapi.yaml` to the new AS3 version (e.g. 3.27.0).
-  * Add a new version to the beginning of the schemaVersion enum in `schema/latest/core-schema.js` using the preexisting format.
+  * Add a new version to the beginning of the schemaVersion enum in `src/schema/latest/core-schema.js` using the preexisting format.
   * Adding a new block to `CHANGELOG.md` would also be appreciated.
   * Create a merge request like for any other development task and announce on Teams `AS3-DO General`.
 
