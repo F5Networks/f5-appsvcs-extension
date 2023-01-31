@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3615: SOCKS_profile (ltm profile socks) which can be attached to a Service_TCP with profileSOCKS
 
 ### Fixed
+- AUTOTOOL-2966: GSLB topology records update order fails in unchecked mode
 - AUTOTOOL-3517: Shared virtual addresses are not removed when no longer in use
 - AUTOTOOL-2489: Unchecked mode fails when URLs have authentication
 

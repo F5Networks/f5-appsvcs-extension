@@ -1540,6 +1540,172 @@ describe('fetch', () => {
                             });
                     });
             });
+
+            it('should repost records if longestMatchEnabled set to true', () => {
+                context.currentIndex = 0;
+                context.tasks = [{ unchecked: true }];
+                commonConfig = {};
+
+                currentConfig = {
+                    '/Common/Shared/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'yes'
+                        },
+                        ignore: []
+                    },
+                    '/Common/topology/records': {
+                        command: 'gtm topology',
+                        properties: {
+                            records: {
+                                0: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'country AD',
+                                    'server:': 'subnet 10.10.0.0/21',
+                                    score: 100,
+                                    order: 1
+                                },
+                                1: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'isp Comcast',
+                                    'server:': 'subnet 10.10.20.0/24',
+                                    score: 100,
+                                    order: 2
+                                },
+                                2: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'continent AF',
+                                    'server:': 'subnet 10.30.10.0/24',
+                                    score: 100,
+                                    order: 3
+                                },
+                                3: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'region /Common/topologyTestRegion',
+                                    'server:': 'subnet 10.10.10.0/24',
+                                    score: 100,
+                                    order: 4
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                };
+                desiredConfig = {
+                    '/Common/Shared/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'no'
+                        },
+                        ignore: []
+                    },
+                    '/Common/topology/records': {
+                        command: 'gtm topology',
+                        properties: {
+                            records: {
+                                0: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'country AD',
+                                    'server:': 'subnet 10.10.0.0/21',
+                                    score: 100,
+                                    order: 1
+                                },
+                                1: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'isp Comcast',
+                                    'server:': 'subnet 10.10.20.0/24',
+                                    score: 100,
+                                    order: 2
+                                },
+                                2: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'continent AF',
+                                    'server:': 'subnet 10.30.10.0/24',
+                                    score: 100,
+                                    order: 3
+                                },
+                                3: {
+                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                    'ldns:': 'region /Common/topologyTestRegion',
+                                    'server:': 'subnet 10.10.10.0/24',
+                                    score: 100,
+                                    order: 4
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, tenantId, uncheckedDiff)
+                    .then((diff) => {
+                        assert.deepStrictEqual(diff,
+                            [
+                                {
+                                    kind: 'E',
+                                    path: [
+                                        '/Common/global-settings',
+                                        'properties',
+                                        'topology-longest-match'
+                                    ],
+                                    lhs: 'yes',
+                                    rhs: 'no'
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        '/Common/topology/records'
+                                    ],
+                                    rhs: {
+                                        command: 'gtm topology',
+                                        properties: {
+                                            records: {
+                                                0: {
+                                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                                    'ldns:': 'country AD',
+                                                    'server:': 'subnet 10.10.0.0/21',
+                                                    score: 100,
+                                                    order: 1
+                                                },
+                                                1: {
+                                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                                    'ldns:': 'isp Comcast',
+                                                    'server:': 'subnet 10.10.20.0/24',
+                                                    score: 100,
+                                                    order: 2
+                                                },
+                                                2: {
+                                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                                    'ldns:': 'continent AF',
+                                                    'server:': 'subnet 10.30.10.0/24',
+                                                    score: 100,
+                                                    order: 3
+                                                },
+                                                3: {
+                                                    description: '"This object is managed by appsvcs, do not modify this description"',
+                                                    'ldns:': 'region /Common/topologyTestRegion',
+                                                    'server:': 'subnet 10.10.10.0/24',
+                                                    score: 100,
+                                                    order: 4
+                                                }
+                                            }
+                                        },
+                                        ignore: []
+                                    }
+                                }
+                            ]);
+                    });
+            });
         });
 
         describe('.maintainAddressList', () => {

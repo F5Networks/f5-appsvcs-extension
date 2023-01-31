@@ -32,6 +32,7 @@ const {
     getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
+const gtmUtil = require('../../../../src/lib/util/gtmUtil');
 const util = require('../../../../src/lib/util/util');
 const { validateEnvVars } = require('../../../common/checkEnv');
 
@@ -600,5 +601,165 @@ describe('Unchecked mode', function () {
         ]);
 
         return assertGTMPoolClass(properties);
+    });
+
+    it('GSLB Topology Update Order', function () {
+        // This is the unchecked copy of a GSLB Topology Update Order test
+        assertModuleProvisioned.call(this, 'gtm');
+
+        const globalSettingsKind = 'tm:gtm:global-settings:load-balancing:load-balancingstate';
+        const topologyKind = 'tm:gtm:topology:topologystate';
+
+        const extractFunctions = {
+            longestMatchEnabled(result) {
+                const settings = result.find((r) => r.kind === globalSettingsKind);
+                return settings.topologyLongestMatch === 'yes';
+            },
+            records(result) {
+                const mapToRecord = function (item) {
+                    const rec = {
+                        matchOperator: item.not === 'not' ? 'not-equals' : 'equals',
+                        matchType: item.type,
+                        matchValue: item.value.indexOf('"') > -1
+                            ? item.value.substring(item.value.indexOf('"') + 1, item.value.lastIndexOf('"'))
+                            : item.value
+                    };
+                    if (item.type === 'region') {
+                        rec.matchValue = { bigip: rec.matchValue };
+                    }
+                    if (item.type === 'datacenter') {
+                        rec.matchValue = { use: rec.matchValue.replace('/Common/', '/Common/Shared/') };
+                    }
+                    if (item.type === 'pool') {
+                        rec.matchValue = { use: rec.matchValue };
+                    }
+                    return rec;
+                };
+                return result.filter((r) => r.kind === topologyKind).map((item) => {
+                    const record = {};
+                    const itemName = item.name;
+                    const ldnsIndex = itemName.indexOf('ldns: ') + 6;
+                    const serverIndex = itemName.indexOf('server: ');
+                    record.source = mapToRecord(gtmUtil.parseTopologyItem(
+                        itemName.substring(ldnsIndex, serverIndex).trim()
+                    ));
+                    record.destination = mapToRecord(gtmUtil.parseTopologyItem(
+                        itemName.substring(serverIndex + 8).trim()
+                    ));
+                    record.weight = item.score;
+                    return record;
+                });
+            }
+        };
+
+        const options = {
+            findAll: true,
+            tenantName: 'Common',
+            applicationName: 'Shared',
+            getMcpObject: {
+                itemName: '',
+                itemKind: topologyKind,
+                refItemKind: globalSettingsKind,
+                skipNameCheck: true
+            },
+            getMcpValueDelay: 1000,
+            mcpPath: '/Common/',
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/gtm/region',
+                    data: { name: 'topologyTestRegion' }
+                }
+            ],
+            unchecked: true
+        };
+
+        const country = {
+            source: {
+                matchType: 'country',
+                matchOperator: 'equals',
+                matchValue: 'AD'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.0.0/21'
+            },
+            weight: 100
+        };
+
+        const continent = {
+            source: {
+                matchType: 'continent',
+                matchOperator: 'equals',
+                matchValue: 'AF'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.30.10.0/24'
+            },
+            weight: 100
+        };
+
+        const isp = {
+            source: {
+                matchType: 'isp',
+                matchOperator: 'equals',
+                matchValue: 'Comcast'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.20.0/24'
+            },
+            weight: 100
+        };
+
+        const region = {
+            source: {
+                matchType: 'region',
+                matchOperator: 'equals',
+                matchValue: {
+                    bigip: '/Common/topologyTestRegion'
+                }
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.10.0/24'
+            },
+            weight: 100
+        };
+
+        const actualRecords = [
+            country,
+            isp,
+            continent,
+            region
+        ];
+        // For longest match algorithm, see https://support.f5.com/csp/article/K14284
+        const orderedRecords = [
+            region,
+            isp,
+            country,
+            continent
+        ];
+
+        const properties = [
+            {
+                name: 'longestMatchEnabled',
+                inputValue: [undefined, false],
+                expectedValue: [true, false],
+                extractFunction: extractFunctions.longestMatchEnabled
+            },
+            {
+                name: 'records',
+                inputValue: [actualRecords, actualRecords],
+                expectedValue: [orderedRecords, actualRecords],
+                extractFunction: extractFunctions.records
+            }
+
+        ];
+        return assertClass('GSLB_Topology_Records', properties, options);
     });
 });
