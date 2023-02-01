@@ -1102,11 +1102,7 @@ const updateAddressesWithRouteDomain = function (configs, tenantId) {
         if (cfg.command === 'ltm virtual-address') {
             let destAddr = cfg.properties.address;
             if (!util.isEmptyOrUndefined(defaultRd) && !destAddr.includes('%')) {
-                let cidr = ipUtil.getCidrFromNetmask(cfg.properties.mask);
-                if ((ipUtil.isIPv4(destAddr) && cidr === '/32') || cidr === '/0' || cidr === '/128') {
-                    cidr = '';
-                }
-                destAddr = `${destAddr}%${defaultRd}${cidr}`;
+                destAddr = `${destAddr}%${defaultRd}`;
                 cfg.properties.address = destAddr;
             }
             if (destAddr.includes('%')) {

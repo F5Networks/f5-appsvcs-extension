@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice
 
 ### Changed
 
