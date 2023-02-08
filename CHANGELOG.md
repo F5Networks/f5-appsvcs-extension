@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.44.0
 
 ### Added
+- AUTOTOOL-3572: Support "use" reference for virtualServer under GSLB_Pool
 
 ### Fixed
 - AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice

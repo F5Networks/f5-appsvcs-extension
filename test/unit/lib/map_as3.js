@@ -9792,6 +9792,76 @@ describe('map_as3', () => {
                 ]
             });
         });
+
+        it('should handle a virtualServer use and bigip reference', () => {
+            const item = {
+                class: 'GSLB_Pool',
+                resourceRecordType: 'A',
+                members: [
+                    {
+                        ratio: 10,
+                        server: {
+                            use: '/Common/Shared/testServer'
+                        },
+                        virtualServer: {
+                            use: 'virtual0'
+                        },
+                        dependsOn: 'none'
+                    },
+                    {
+                        ratio: 10,
+                        server: {
+                            use: '/Common/Shared/testServer'
+                        },
+                        virtualServer: {
+                            bigip: 'virtual1'
+                        },
+                        dependsOn: 'none'
+                    }
+                ]
+            };
+
+            const results = translate.GSLB_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'gtm pool a',
+                    properties: {
+                        members: {
+                            '/Common/testServer:virtual0': {
+                                'depends-on': 'none',
+                                'member-order': 0,
+                                ratio: 10
+                            },
+                            '/Common/testServer:virtual1': {
+                                'depends-on': 'none',
+                                'member-order': 1,
+                                ratio: 10
+                            }
+                        },
+                        monitor: 'default',
+                        'fallback-ip': 'any',
+                        'limit-max-bps': 0,
+                        'limit-max-bps-status': 'disabled',
+                        'limit-max-pps': 0,
+                        'limit-max-pps-status': 'disabled',
+                        'limit-max-connections': 0,
+                        'limit-max-connections-status': 'disabled',
+                        'qos-hit-ratio': 5,
+                        'qos-hops': 0,
+                        'qos-kilobytes-second': 3,
+                        'qos-lcs': 30,
+                        'qos-packet-rate': 1,
+                        'qos-rtt': 50,
+                        'qos-topology': 0,
+                        'qos-vs-capacity': 0,
+                        'qos-vs-score': 0
+                    },
+                    ignore: []
+                }
+            );
+        });
     });
 
     describe('GSLB_Pool AAAA', () => {

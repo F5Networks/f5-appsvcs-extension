@@ -4288,6 +4288,11 @@ const translate = {
                     currentTask.metadata = currentTask.metadata || {};
                     currentTask.metadata.gslbPool = { needsWait: true };
                 }
+
+                if (typeof member.virtualServer === 'object') {
+                    member.virtualServer = member.virtualServer.use || member.virtualServer.bigip;
+                }
+
                 member.name = `${bigipPath(member, 'server').replace('/Shared', '')}:${member.virtualServer}`;
                 if (member.dependsOn && member.dependsOn !== 'none') {
                     member.dependsOn.forEach((dependsOn, index) => {

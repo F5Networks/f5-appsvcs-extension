@@ -85,6 +85,12 @@ describe('GSLB Pool', function () {
                         }
                     ]
                 },
+                testServerVirtualDiscovery: {
+                    class: 'GSLB_Server',
+                    dataCenter: { use: 'testDataCenter' },
+                    devices: [{ address: '10.10.5.5' }],
+                    virtualServerDiscoveryMode: 'enabled-no-delete'
+                },
                 testDataCenter: {
                     class: 'GSLB_Data_Center'
                 },
@@ -536,5 +542,76 @@ describe('GSLB Pool', function () {
         ]);
 
         return assertGTMPoolClass(properties, { tenantName: 'Common', applicationName: 'Shared' });
+    });
+
+    it('should create GSLB_Pool that uses a use pointer', () => {
+        const options = {
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/net/self',
+                    data: {
+                        name: 'testSelf',
+                        address: '10.10.5.5/32',
+                        vlan: '/Common/internal'
+                    }
+                }
+            ]
+        };
+        const properties = aProperties.concat([
+            {
+                name: 'resourceRecordType',
+                inputValue: ['A'],
+                skipAssert: true
+            },
+            {
+                name: 'fallbackIP',
+                inputValue: [undefined, '1.1.1.1', undefined],
+                expectedValue: ['any', '1.1.1.1', 'any']
+            },
+            {
+                name: 'members.0.server',
+                inputValue: [undefined, { use: '/Common/Shared/testServerTwo' }, undefined],
+                skipAssert: true
+            },
+            {
+                name: 'members.0.virtualServer',
+                inputValue: [undefined, '0', undefined],
+                skipAssert: true
+            },
+            {
+                name: 'members.0.enabled',
+                inputValue: [undefined, true, undefined],
+                expectedValue: [undefined, true, undefined],
+                extractFunction: (o) => extractMemberEnabled(o, 0)
+            },
+            {
+                name: 'members.1.server',
+                inputValue: [undefined, { use: '/Common/Shared/testServerVirtualDiscovery' }, undefined],
+                expectedValue: [undefined, '/Common/testServerVirtualDiscovery', undefined],
+                extractFunction: (o) => (o.members[1] ? o.members[1].fullPath.split(':')[0] : undefined)
+            },
+            {
+                name: 'members.1.virtualServer',
+                inputValue: [undefined, { use: 'testVirtual' }, undefined],
+                expectedValue: [undefined, 'testVirtual', undefined],
+                extractFunction: (o) => (o.members[1] ? o.members[1].name : undefined),
+                referenceObjects: {
+                    testVirtual: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            '1.2.3.4'
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'members.1.enabled',
+                inputValue: [undefined, false, undefined],
+                expectedValue: [undefined, false, undefined],
+                extractFunction: (o) => extractMemberEnabled(o, 1)
+            }
+        ]);
+
+        return assertGTMPoolClass(properties, options);
     });
 });

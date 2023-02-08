@@ -2089,7 +2089,7 @@
       { "id":"enabled" },
       { "id":"disabled" },
       { "id":"depends-on",                "extend": "objArray" },
-      { "id":"name" },
+      { "id":"name",                      "altId": "fullPath" },
       { "id":"member-order" },
       { "id":"ratio" },
       { "id":"priority" },

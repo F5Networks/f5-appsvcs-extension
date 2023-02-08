@@ -332,7 +332,14 @@
                 "server": { "$ref": "#/definitions/Pointer_GSLB_Server" },
                 "virtualServer": {
                     "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
-                    "type": "string"
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_Service"
+                        }
+                    ]
                 },
                 "ratio": {
                     "title": "Ratio",
@@ -380,7 +387,14 @@
                 "server": { "$ref": "#/definitions/Pointer_GSLB_Server" },
                 "virtualServer": {
                     "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
-                    "type": "string"
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_Service"
+                        }
+                    ]
                 },
                 "ratio": {
                     "title": "Ratio",
