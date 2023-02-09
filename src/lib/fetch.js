@@ -1370,13 +1370,17 @@ const parseTopologyCommands = function (context, desiredConfig, trans, diffUpdat
     }
 };
 
-const getTopologyDiff = function (desiredConfig, currentValue, desiredValue, prefilter) {
+const getTopologyDiff = function (currentConfig, desiredConfig, currentValue, desiredValue, prefilter) {
     let ignoreOrder = false;
     const desiredLongestMatch = desiredConfig[constants.gtmSettingsMockPath];
 
     const getRecordValue = function (key, records) {
         return `${records[key]['ldns:']} ${records[key]['server:']} ${records[key]['score:']}`;
     };
+
+    if (currentConfig[constants.gtmSettingsMockPath].properties['topology-longest-match'] !== desiredConfig[constants.gtmSettingsMockPath].properties['topology-longest-match']) {
+        currentValue.properties.records = [];
+    }
 
     if (desiredLongestMatch && desiredLongestMatch.properties['topology-longest-match'] === 'yes') {
         ignoreOrder = true;
@@ -1549,7 +1553,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             if (currentValue.command === 'gtm topology') {
                 // if there's a diff, let's force them to be new
                 // otherwise, let the next deepdiff call detect the no change
-                if (getTopologyDiff(desiredConfig, currentValue, desiredValue, prefilter)) {
+                if (getTopologyDiff(currentConfig, desiredConfig, currentValue, desiredValue, prefilter)) {
                     delete currentConfig[configKey];
                 } else {
                     desiredConfig[configKey] = currentConfig[configKey];

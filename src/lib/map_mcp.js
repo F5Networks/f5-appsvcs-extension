@@ -216,6 +216,9 @@ const translate = {
         obj.signingPassphrase = obj.signerKeyPassphrase || 'none';
         return [normalize.actionableMcp(context, obj, 'sys crypto cert-validator ocsp', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
+    'tm:ltm:alg-log-profile:alg-log-profilestate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'ltm alg-log-profile', util.mcpPath(obj.partition, obj.subPath, obj.name))];
+    },
     'tm:ltm:html-rule:comment-raise-event:comment-raise-eventstate': function (context, obj) {
         obj.description = obj.description || 'none';
         return [normalize.actionableMcp(context, obj, 'ltm html-rule comment-raise-event', util.mcpPath(obj.partition, obj.subPath, obj.name))];
@@ -466,6 +469,9 @@ const translate = {
     'tm:ltm:profile:ftp:ftpstate': function (context, obj) {
         return profile(context, obj, 'ltm profile ftp', '');
     },
+    'tm:ltm:profile:rtsp:rtspstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile rtsp', '');
+    },
     'tm:ltm:profile:statistics:statisticsstate': function (context, obj) {
         return profile(context, obj, 'ltm profile statistics', '');
     },
@@ -564,6 +570,9 @@ const translate = {
     },
     'tm:ltm:profile:smtps:smtpsstate': function (context, obj) {
         return profile(context, obj, 'ltm profile smtps', '');
+    },
+    'tm:ltm:profile:socks:socksstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile socks', '');
     },
     'tm:ltm:profile:stream:streamstate': function (context, obj) {
         obj.target = obj.tmTarget || 'none';

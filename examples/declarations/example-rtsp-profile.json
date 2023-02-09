@@ -1,6 +1,6 @@
 {
     "class": "ADC",
-    "schemaVersion": "3.14.0",
+    "schemaVersion": "3.43.0",
     "id": "Service_TCP",
     "example_RTSP": {
         "class": "Tenant",
@@ -13,7 +13,53 @@
                     "1.1.1.10"
                 ],
                 "profileRTSP": {
-                    "bigip": "/Common/rtsp"
+                    "use": "RTSP_profile"
+                }
+            },
+            "RTSP_profile": {
+                "class": "RTSP_Profile",
+                "remark": "My Remark",
+                "idleTimeout": "indefinite",
+                "maxHeaderSize": 5096,
+                "maxQueuedData": 42768,
+                "unicastRedirect": true,
+                "multicastRedirect": true,
+                "sessionReconnect": true,
+                "realHTTPPersistence": false,
+                "checkSource": false,
+                "proxy": "external",
+                "proxyHeader": "X-Proxy",
+                "RTPPort": 49152,
+                "RTCPPort": 49153,
+                "algLogProfile": {
+                    "use": "ALG_Log_profile"
+                },
+                "logPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                }
+            },
+            "ALG_Log_profile": {
+                "class": "ALG_Log_Profile",
+                "remark": "My Remark",
+                "csvFormat": true,
+                "startControlChannel": {
+                    "action": "enabled",
+                    "includeDestination": false
+                },
+                "endControlChannel": {
+                    "action": "disabled",
+                    "includeDestination": true
+                },
+                "startDataChannel": {
+                    "action": "backup-allocation-only",
+                    "includeDestination": false
+                },
+                "endDataChannel": {
+                    "action": "enabled",
+                    "includeDestination": true
+                },
+                "inboundTransaction": {
+                    "action": "enabled"
                 }
             }
         }

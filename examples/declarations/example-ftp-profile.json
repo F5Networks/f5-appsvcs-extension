@@ -1,22 +1,38 @@
 {
     "class": "ADC",
-    "schemaVersion": "3.10.0",
+    "schemaVersion": "3.43.0",
     "id": "FTP_Profile",
     "TEST_FTP_Profile": {
         "class": "Tenant",
         "Application": {
             "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualAddresses": [
+                    "192.0.2.210"
+                ],
+                "virtualPort": 10,
+                "profileFTP": {
+                    "use": "sampleFTPprofile"
+                }
+            },
             "sampleFTPprofile": {
                 "class": "FTP_Profile",
                 "remark": "description",
                 "port": 300,
-                "ftpsMode": "require",
+                "ftpsMode": "disallow",
                 "enforceTlsSessionReuseEnabled": true,
                 "activeModeEnabled": false,
                 "securityEnabled": true,
                 "translateExtendedEnabled": false,
-                "inheritParentProfileEnabled": true
+                "inheritParentProfileEnabled": true,
+                "algLogProfile": {
+                    "bigip": "/Common/alg_log_profile"
+                },
+                "logPublisher": {
+                    "bigip": "/Common/local-db-publisher"
+                }
+            }
         }
     }
-}
 }

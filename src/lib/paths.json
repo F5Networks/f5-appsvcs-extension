@@ -4,6 +4,10 @@
             "endpoint": "/mgmt/tm/auth/partition"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/alg-log-profile",
+            "modules": ["cgnat"]
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/data-group/internal"
         },
         {
@@ -133,6 +137,9 @@
             "endpoint": "/mgmt/tm/ltm/profile/one-connect"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/rtsp"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/profile/sctp"
         },
         {
@@ -145,10 +152,16 @@
             "endpoint": "/mgmt/tm/ltm/profile/smtps"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/socks"
+        },
+        {
             "endpoint":"/mgmt/tm/ltm/profile/statistics"
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/tcp"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/tftp"
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/udp"

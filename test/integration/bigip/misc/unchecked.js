@@ -32,6 +32,7 @@ const {
     getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
+const gtmUtil = require('../../../../src/lib/util/gtmUtil');
 const util = require('../../../../src/lib/util/util');
 const { validateEnvVars } = require('../../../common/checkEnv');
 
@@ -43,11 +44,6 @@ describe('Unchecked mode', function () {
     let accessToken;
 
     beforeEach(function () {
-        // TODO: Remove this skip when AUTOTOOL-2489 is resolved
-        if (process.env.TEST_IN_AZURE === 'true') {
-            this.skip();
-        }
-
         if (process.env.TEST_IN_AZURE === 'true') {
             return oauth.getTokenForTest()
                 .then((token) => {
@@ -70,30 +66,38 @@ describe('Unchecked mode', function () {
             validateEnvVars(['TEST_RESOURCES_URL']);
         });
 
+        const wafUrl = {
+            url: `https://${policyHost}/asm-policy/sharepoint_template_12.1.xml`
+        };
+
         // APM Profiles are version specific so we need to pull the correct one
-        let url = {
+        let accessUrl = {
             url: `https://${policyHost}/iam-policy/`
         };
         if (util.versionLessThan(getBigIpVersion(), '14.0')) {
-            url = {
+            accessUrl = {
                 url: `https://${policyHost}/iam-policy/profile_ITS_ap_transfer.conf.tar`
             };
         } else if (!util.versionLessThan(getBigIpVersion(), '14.1')
             && util.versionLessThan(getBigIpVersion(), '15.0')) {
-            url.url += '141all.tar';
+            accessUrl.url += '141all.tar';
         } else if (!util.versionLessThan(getBigIpVersion(), '15.1')
             && util.versionLessThan(getBigIpVersion(), '16.0')) {
-            url.url += '151all.tar';
+            accessUrl.url += '151all.tar';
         } else if (!util.versionLessThan(getBigIpVersion(), '16.0')
             && util.versionLessThan(getBigIpVersion(), '16.1')) {
-            url.url += '160all.tar';
+            accessUrl.url += '160all.tar';
         } else {
             // BIG-IP is not a version we are testing
             this.skip();
         }
 
         if (process.env.TEST_IN_AZURE === 'true') {
-            url.authentication = {
+            accessUrl.authentication = {
+                method: 'bearer-token',
+                token: accessToken
+            };
+            wafUrl.authentication = {
                 method: 'bearer-token',
                 token: accessToken
             };
@@ -113,12 +117,12 @@ describe('Unchecked mode', function () {
                     },
                     wafPolicy: {
                         class: 'WAF_Policy',
-                        url: `https://${policyHost}/asm-policy/sharepoint_template_12.1.xml`,
+                        url: wafUrl,
                         ignoreChanges: false
                     },
                     accessProfile: {
                         class: 'Access_Profile',
-                        url,
+                        url: accessUrl,
                         ignoreChanges: false
                     }
                 }
@@ -138,11 +142,11 @@ describe('Unchecked mode', function () {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'no change');
                 declaration.Tenant.Application.caBundle.bundle = '-----BEGIN CERTIFICATE-----\nMIIF+jCCA+KgAwIBAgIQAdFs++0ey5zfaqIxz4xU+TANBgkqhkiG9w0BAQwFADCB\niDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\ncnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\nBAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTUw\nMzExMDAwMDAwWhcNMjUwMzEwMjM1OTU5WjBwMQswCQYDVQQGEwJDTjERMA8GA1UE\nCBMIU2hhbmdoYWkxJTAjBgNVBAoTHFRydXN0QXNpYSBUZWNobm9sb2dpZXMsIElu\nYy4xJzAlBgNVBAMTHlRydXN0QXNpYSBSU0EgRFYgU1NMIFNlcnZlciBDQTCCASIw\nDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKVXxe36oseRAbs4z+/mLAWrYUom\nQDA0DwiDfYyqf8nrTG/wxELxtboEGBF4U5NbEye/i5t9in+mdbzdwpN657myfypS\nl2sC2YyY7ArmRxgTFyrtxhdzBLVnJEly2EAxk06QBwzcEfMJ5dWKpqcDY85K4N/C\nhO4E2BjzZRG7F3kZlo0T2oDbymNUt3J//cFwSiKl4LuSIUmvkUexbEG+75kvMZ5U\n5P3/C/becM61izwn+ftHFS7j9Rn7Hut4yqn+ePUOcBFZ6U02lcRDAPElq3SzyOvW\nmJxUTRiYHrnSK4qFHCBnNmfSlQvKUAo30Az4UiDcro+9YWtriR90DKbZrFECAwEA\nAaOCAXUwggFxMB8GA1UdIwQYMBaAFFN5v1qqK0rPVIDh2JvAnfKyA2bLMB0GA1Ud\nDgQWBBR7FhLOvGeCvXj0NqvcT2sXSgXtpTAOBgNVHQ8BAf8EBAMCAYYwEgYDVR0T\nAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwIgYD\nVR0gBBswGTANBgsrBgEEAbIxAQICMTAIBgZngQwBAgEwUAYDVR0fBEkwRzBFoEOg\nQYY/aHR0cDovL2NybC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUNlcnRpZmlj\nYXRpb25BdXRob3JpdHkuY3JsMHYGCCsGAQUFBwEBBGowaDA/BggrBgEFBQcwAoYz\naHR0cDovL2NydC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUFkZFRydXN0Q0Eu\nY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0GCSqG\nSIb3DQEBDAUAA4ICAQAHygz5l1zWzcKT859aQgyDfUsiLyH+UKJ8jqSzOHb8A7Af\niK/K0HSZrg5tKiU90x2K/SpVuMmXlxNlxs7X1oDRvpgf8FHXZeVqm7fxuaFJ1fRi\nY73w9ClVhuvfYs2ziLyFt99nudgz9o/oroCe6gihR3LJW6jyS5LXcWE+uzv5CgLI\n6cHPjQdpgk8AcjqNBtqGiL7WgXRQMKHyb8jeBozKLi9M/VNW44WSaCs0JzXxBglL\n6fYOqOgF9lqrVVp257R3W4oqhbbHZ/2NY39hqs91YCBWhdVQvBYqM5b9N+v2+aEn\nRRYdyabdHUpMJ+5Jmbf9ydAcCix9eS8QMZbgal3vrwbJR6/MqOvuKcrBXe7j7ZxH\nWhL177r+e9SHzUcpCATDUJrL9fjCoBvWifiP9oPCVHkfpEYD9uu7sc+fBfFJP9V5\nmEQd0Vk5neWsNSq8cpfI7Ok4/R920+BD4an1Pkx9tly8P7Vza8aXSyv3OIplRYgr\n4Qf+6Cp2hVSSHL1Sv8D9TwvCqVvH7Zb1WwvuX4UHKo/Ae1cUiiEyavWGBo9o7bnV\ntyRdxTJmn6f6PeKe1u+HTCBoEuoVF22DJcbwTFiJ2U5voyb+OS6XXvIOIWOP+Imz\n3+WHDNM1GuNGDqz25zKCkl03MvK0Yw2FwT/HhSMSs1VmT5iCzaKXS7YgtGETKg==\n-----END CERTIFICATE-----';
-                declaration.Tenant.Application.wafPolicy.url = `https://${policyHost}/asm-policy/wordpress_template_12.0.xml`;
+                declaration.Tenant.Application.wafPolicy.url.url = `https://${policyHost}/asm-policy/wordpress_template_12.0.xml`;
                 declaration.Tenant.Application.wafPolicy.ignoreChanges = false;
                 declaration.Tenant.Application.accessProfile.ignoreChanges = false;
                 // Test fetching as .gz
-                url.url += '.gz';
+                accessUrl.url += '.gz';
             })
             .then(() => postDeclaration(declaration, { declarationIndex: 2 }, queryParams))
             .then((response) => {
@@ -597,5 +601,165 @@ describe('Unchecked mode', function () {
         ]);
 
         return assertGTMPoolClass(properties);
+    });
+
+    it('GSLB Topology Update Order', function () {
+        // This is the unchecked copy of a GSLB Topology Update Order test
+        assertModuleProvisioned.call(this, 'gtm');
+
+        const globalSettingsKind = 'tm:gtm:global-settings:load-balancing:load-balancingstate';
+        const topologyKind = 'tm:gtm:topology:topologystate';
+
+        const extractFunctions = {
+            longestMatchEnabled(result) {
+                const settings = result.find((r) => r.kind === globalSettingsKind);
+                return settings.topologyLongestMatch === 'yes';
+            },
+            records(result) {
+                const mapToRecord = function (item) {
+                    const rec = {
+                        matchOperator: item.not === 'not' ? 'not-equals' : 'equals',
+                        matchType: item.type,
+                        matchValue: item.value.indexOf('"') > -1
+                            ? item.value.substring(item.value.indexOf('"') + 1, item.value.lastIndexOf('"'))
+                            : item.value
+                    };
+                    if (item.type === 'region') {
+                        rec.matchValue = { bigip: rec.matchValue };
+                    }
+                    if (item.type === 'datacenter') {
+                        rec.matchValue = { use: rec.matchValue.replace('/Common/', '/Common/Shared/') };
+                    }
+                    if (item.type === 'pool') {
+                        rec.matchValue = { use: rec.matchValue };
+                    }
+                    return rec;
+                };
+                return result.filter((r) => r.kind === topologyKind).map((item) => {
+                    const record = {};
+                    const itemName = item.name;
+                    const ldnsIndex = itemName.indexOf('ldns: ') + 6;
+                    const serverIndex = itemName.indexOf('server: ');
+                    record.source = mapToRecord(gtmUtil.parseTopologyItem(
+                        itemName.substring(ldnsIndex, serverIndex).trim()
+                    ));
+                    record.destination = mapToRecord(gtmUtil.parseTopologyItem(
+                        itemName.substring(serverIndex + 8).trim()
+                    ));
+                    record.weight = item.score;
+                    return record;
+                });
+            }
+        };
+
+        const options = {
+            findAll: true,
+            tenantName: 'Common',
+            applicationName: 'Shared',
+            getMcpObject: {
+                itemName: '',
+                itemKind: topologyKind,
+                refItemKind: globalSettingsKind,
+                skipNameCheck: true
+            },
+            getMcpValueDelay: 1000,
+            mcpPath: '/Common/',
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/gtm/region',
+                    data: { name: 'topologyTestRegion' }
+                }
+            ],
+            unchecked: true
+        };
+
+        const country = {
+            source: {
+                matchType: 'country',
+                matchOperator: 'equals',
+                matchValue: 'AD'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.0.0/21'
+            },
+            weight: 100
+        };
+
+        const continent = {
+            source: {
+                matchType: 'continent',
+                matchOperator: 'equals',
+                matchValue: 'AF'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.30.10.0/24'
+            },
+            weight: 100
+        };
+
+        const isp = {
+            source: {
+                matchType: 'isp',
+                matchOperator: 'equals',
+                matchValue: 'Comcast'
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.20.0/24'
+            },
+            weight: 100
+        };
+
+        const region = {
+            source: {
+                matchType: 'region',
+                matchOperator: 'equals',
+                matchValue: {
+                    bigip: '/Common/topologyTestRegion'
+                }
+            },
+            destination: {
+                matchType: 'subnet',
+                matchOperator: 'equals',
+                matchValue: '10.10.10.0/24'
+            },
+            weight: 100
+        };
+
+        const actualRecords = [
+            country,
+            isp,
+            continent,
+            region
+        ];
+        // For longest match algorithm, see https://support.f5.com/csp/article/K14284
+        const orderedRecords = [
+            region,
+            isp,
+            country,
+            continent
+        ];
+
+        const properties = [
+            {
+                name: 'longestMatchEnabled',
+                inputValue: [undefined, false],
+                expectedValue: [true, false],
+                extractFunction: extractFunctions.longestMatchEnabled
+            },
+            {
+                name: 'records',
+                inputValue: [actualRecords, actualRecords],
+                expectedValue: [orderedRecords, actualRecords],
+                extractFunction: extractFunctions.records
+            }
+
+        ];
+        return assertClass('GSLB_Topology_Records', properties, options);
     });
 });

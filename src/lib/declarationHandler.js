@@ -821,11 +821,11 @@ class DeclarationHandler {
 
                 // decl.controls can be undefined
                 // decl can be a stub or .controls just not provided by client
-                let fortune;
-                if (decl.controls && decl.controls.fortune && typeof decl.controls.fortune === 'boolean') {
-                    fortune = getFortune();
+                if (typeof context.request.fortune !== 'undefined') {
+                    if (context.request.fortune) {
+                        response.fortune = getFortune();
+                    }
                 }
-                response.fortune = fortune;
 
                 let promise = Promise.resolve();
                 if ((!currentTask.dryRun)) {

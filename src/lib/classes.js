@@ -18,6 +18,7 @@
 
 module.exports = {
     toMcp: {
+        ALG_Log_Profile: 'ltm alg-log-profile',
         Data_Group: [
             'ltm data-group internal',
             'ltm data-group external'
@@ -74,8 +75,11 @@ module.exports = {
             'ltm monitor udp'
         ],
         FTP_Profile: 'ltm profile ftp',
+        RTSP_Profile: 'ltm profile rtsp',
         SIP_Profile: 'ltm profile sip',
         SMTPS_Profile: 'ltm profile smtps',
+        SOCKS_Profile: 'ltm profile socks',
+        TFTP_Profile: 'ltm profile tftp',
         ILX_Profile: 'ltm profile ilx',
         UDP_Profile: 'ltm profile udp',
         Persist: [

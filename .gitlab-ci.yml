@@ -420,7 +420,7 @@ test_rpms_in_azure:
       artifacts: true
 
 test_rpms_for_this_project:
-  timeout: 7 hours
+  timeout: 8 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
@@ -621,7 +621,7 @@ docs_to_production:
   only:
   # Currently will only deploy to clouddocs.f5.com on commits to docs-latest
   # fill in desired release branch name and uncomment to add deployment from a branch
-    - docs-latest@automation-toolchain/f5-appsvcs
+    - docs-latest
   tags:
     - cm-official-docker-executor
   needs:

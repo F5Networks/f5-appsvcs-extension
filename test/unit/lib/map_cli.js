@@ -19,10 +19,15 @@
 const assert = require('assert');
 
 const EventEmitter = require('events');
+const sinon = require('sinon');
 const mapCli = require('../../../src/lib/map_cli');
 const Context = require('../../../src/lib/context/context');
 
 describe('map_cli', () => {
+    afterEach(() => {
+        sinon.restore();
+    });
+
     describe('.tmshCreate()', () => {
         let context;
 
@@ -1377,6 +1382,54 @@ describe('map_cli', () => {
             assert.deepStrictEqual(result.postTrans, [
                 'catch { tmsh::delete ltm node /Common/Shared/192.0.2.0 } e'
             ]);
+        });
+
+        describe('cleanup virtual addresses', () => {
+            it('should try to delete ltm virtual-address when deleting ltm virtual in /Common', () => {
+                const diff = {
+                    kind: 'E',
+                    path: ['/Tenant/Application/myVirtual'],
+                    lhsCommand: 'ltm virtual',
+                    lhs: '/Common/any:80'
+                };
+                context.host = {
+                    parser: {
+                        virtualAddressList: [
+                            {
+                                fullPath: '/Common/any',
+                                metadata: [
+                                    { name: 'references' }
+                                ]
+                            }
+                        ]
+                    }
+                };
+                const result = mapCli.tmshDelete(context, diff);
+                assert.deepStrictEqual(result.commands, [
+                    'tmsh::delete ltm virtual /Tenant/Application/myVirtual',
+                    'catch { tmsh::delete ltm virtual-address /Common/any } e'
+                ]);
+            });
+
+            it('should not try to delete ltm virtual-address that are not in /Common', () => {
+                const diff = {
+                    kind: 'E',
+                    path: ['/Tenant/Application/myVirtual'],
+                    lhsCommand: 'ltm virtual',
+                    lhs: '/Common/any:80'
+                };
+                context.host = {
+                    parser: {
+                        virtualAddressList: [
+                            { fullPath: '/Common/192.168.0.1' }
+                        ]
+                    }
+                };
+                const result = mapCli.tmshDelete(context, diff);
+                assert.deepStrictEqual(result.commands, [
+                    'tmsh::delete ltm virtual /Tenant/Application/myVirtual'
+                ]);
+            });
         });
 
         it('should generate bash commands for deleting apm profile access', () => {

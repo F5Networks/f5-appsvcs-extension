@@ -120,6 +120,49 @@ describe('Service_TCP', function () {
         return assertClass('Service_TCP', properties);
     });
 
+    it('should build a virtual server with built in SOCKS profile', () => {
+        const options = {
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/net/dns-resolver',
+                    data: {
+                        name: 'testResolver',
+                        partition: 'Common',
+                        routeDomain: '/Common/0'
+                    }
+                }
+            ]
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [8080],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.100']],
+                skipAssert: true
+            },
+            {
+                name: 'profileSOCKS',
+                inputValue: [undefined, { use: 'socksProfile' }, undefined],
+                expectedValue: [undefined, 'socksProfile', undefined],
+                extractFunction: (virtual) => extractProfile(virtual, 'socksProfile'),
+                referenceObjects: {
+                    socksProfile: {
+                        class: 'SOCKS_Profile',
+                        resolver: {
+                            bigip: '/Common/testResolver'
+                        }
+                    }
+                }
+            }
+        ];
+        return assertClass('Service_TCP', properties, options);
+    });
+
     it('should build a virtual server with built in DOS profile', function () {
         assertModuleProvisioned.call(this, 'afm');
         assertModuleProvisioned.call(this, 'asm');

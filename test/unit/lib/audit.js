@@ -317,6 +317,7 @@ describe('audit', () => {
     });
 
     describe('.auditTenant', () => {
+        let declaration = {};
         beforeEach(() => {
             sinon.stub(log, 'updateGlobalSettings').returns();
             sinon.stub(fetch, 'getDesiredConfig').resolves({ desired: {} });
@@ -329,15 +330,14 @@ describe('audit', () => {
             sinon.stub(UpdateRest.prototype, 'update').resolves();
             sinon.stub(UpdaterTmsh.prototype, 'update').resolves();
             sinon.stub(promiseUtil, 'series').resolves([]);
-        });
-
-        const declaration = {
-            tenant: {
-                controls: {
-                    traceResponse: false
+            declaration = {
+                tenant: {
+                    controls: {
+                        traceResponse: false
+                    }
                 }
-            }
-        };
+            };
+        });
 
         it('should not add trace files to context.log', () => {
             context.log = {};
@@ -399,7 +399,7 @@ describe('audit', () => {
                 });
         });
 
-        it('should call getDesiredConfig for tenantCurrent when unchecked mode unabled', () => {
+        it('should call getDesiredConfig for tenantCurrent when unchecked mode enabled', () => {
             context.log = {};
             context.control = {};
             context.tasks.push({ unchecked: true });
@@ -414,6 +414,24 @@ describe('audit', () => {
                     assert.deepStrictEqual(context.log.tenantDesired, { desired: {} });
                     assert.deepStrictEqual(context.log.tenantCurrent, { desired: {} });
                     assert.deepStrictEqual(context.log.tenantDiff, { diff: {} });
+                });
+        });
+
+        it('handle fortune if fortune is set to false', () => {
+            context.log = {};
+            context.control = { fortune: false };
+            context.tasks.push({ unchecked: true });
+            context.target.deviceType = DEVICE_TYPES.BIG_IP;
+            context.host.parser = {
+                digest: sinon.stub()
+            };
+            declaration.tenant.controls.fortune = false;
+
+            return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                .then(() => {
+                    assert.strictEqual(context.request.fortune, false);
+                    assert.deepStrictEqual(context.control, {});
+                    assert.strictEqual(typeof declaration.tenant.controls.fortune, 'undefined');
                 });
         });
 

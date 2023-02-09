@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.43.0",
             "3.42.0",
             "3.41.0",
             "3.40.0",
@@ -243,74 +244,7 @@
           "additionalProperties": false
         },
         "controls": {
-          "title": "Controls",
-          "description": "Options to control configuration process",
-          "type": "object",
-          "$comment": "archiveId and archiveTimestamp reserved for future use.",
-          "properties": {
-            "class": {
-              "title": "Class",
-              "type": "string",
-              "const": "Controls",
-              "default": "Controls"
-            },
-            "logLevel": {
-              "title": "Log level",
-              "description": "Controls the amount of detail in logs produced by the configuration process using RFC 5424 severity levels (default is 'error').  May be overridden on a per-Tenant basis",
-              "type": "string",
-              "enum": [
-                "emergency",
-                "alert",
-                "critical",
-                "error",
-                "warning",
-                "notice",
-                "info",
-                "debug"
-              ],
-              "default": "error"
-            },
-            "trace": {
-              "title": "Trace",
-              "description": "If true, BIG-IP AS3 creates a detailed trace of the configuration process for subsequent analysis (default false).  May be overridden on a per-Tenant basis.  Warning:  trace files may contain sensitive configuration data",
-              "type": "boolean",
-              "default": false
-            },
-            "traceResponse": {
-              "title": "Trace Response",
-              "description": "If true, the response will contain the trace files",
-              "type": "boolean",
-              "default": false
-            },
-            "userAgent": {
-              "title": "User Agent",
-              "description": "User Agent information to include in TEEM report",
-              "type": "string"
-            },
-            "archiveId": {
-              "title": "Archive ID",
-              "description": "Read-only property present when you GET a declaration from configuration system.  Archived versions of declaration are identified by a combination of 'id' and 'archiveId'",
-              "type": [
-                "number",
-                "string"
-              ],
-              "readOnly": true
-            },
-            "archiveTimestamp": {
-              "title": "Archive timestamp",
-              "description": "Read-only property present when you GET a declaration from configuration system.  Indicates when this version (see archiveId) of declaration was archived",
-              "type": "string",
-              "format": "date-time",
-              "readOnly": true
-            },
-            "dryRun": {
-              "title": "Dry-Run Option",
-              "description": "Boolean that indicates if this declaration will be run as a dry-run. If true, the declaration will NOT make any changes to the system, but will respond with whether or not it would.",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/definitions/Controls"
         },
         "scratch": {
           "title": "f5 scratch",
@@ -617,187 +551,6 @@
       },
       "minItems": 1
     },
-    "Basic_Auth": {
-      "title": "Basic Authentication",
-      "description": "Describes the basic authentication to access a resource",
-      "type": "object",
-      "properties": {
-        "method": {
-          "title": "Authentication Method",
-          "description": "Specifies the authentication method",
-          "type": "string",
-          "const": "basic"
-        },
-        "username": {
-          "title": "Username",
-          "description": "Specifies the user name for authentication",
-          "type": "string"
-        },
-        "passphrase": {
-          "title": "Passphrase",
-          "description": "Specifies the password for authentication",
-          "type": "object",
-          "properties": {
-            "allowReuse": {
-              "description": "If true, other declaration objects may reuse this value",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "allOf": [
-            {
-              "$ref": "#/definitions/Secret"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "object"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "secret"
-              }
-            }
-          ]
-        }
-      },
-      "required": [
-        "method",
-        "username",
-        "passphrase"
-      ],
-      "additionalProperties": false
-    },
-    "Bearer_Token": {
-      "title": "Bearer Token Authorization",
-      "description": "Describes using a bearer token to access a resource",
-      "type": "object",
-      "properties": {
-        "method": {
-          "title": "Authentication Method",
-          "description": "Specifies the authentication method",
-          "type": "string",
-          "const": "bearer-token"
-        },
-        "token": {
-          "title": "Token",
-          "description": "Specifies the bearer token",
-          "oneOf": [
-            {
-              "type": "string",
-              "description": "plain text bearer token",
-              "minLength": 1
-            },
-            {
-              "type": "object",
-              "allOf": [
-                {
-                  "required": [
-                    "ciphertext"
-                  ]
-                },
-                {
-                  "$ref": "#/definitions/Secret"
-                }
-              ]
-            }
-          ],
-          "f5PostProcess": {
-            "tag": "longSecret"
-          }
-        }
-      },
-      "required": [
-        "method",
-        "token"
-      ],
-      "additionalProperties": false
-    },
-    "Resource_URL": {
-      "title": "Resource URL",
-      "description": "Describes the URL to remote resource and optional parameters",
-      "oneOf": [
-        {
-          "type": "string",
-          "format": "uri",
-          "f5PostProcess": {
-            "tag": "expand"
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "description": "URL from which to retrieve value",
-              "type": "string",
-              "format": "uri",
-              "f5PostProcess": {
-                "tag": "expand"
-              }
-            },
-            "skipCertificateCheck": {
-              "description": "Skip verification of SSL certificates (default false)",
-              "type": "boolean",
-              "default": false
-            },
-            "authentication": {
-              "description": "Authentication to the remote source",
-              "oneOf": [
-                {
-                  "$ref": "#/definitions/Basic_Auth"
-                },
-                {
-                  "$ref": "#/definitions/Bearer_Token"
-                }
-              ]
-            },
-            "ignoreChanges": {
-              "description": "If false (default), the URL will be fetched in each BIG-IP AS3 declaration deployment. If true, the resource will be created on the first deployment, but not on additional deployments.",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "required": [
-            "url"
-          ]
-        }
-      ]
-    },
-    "Secret_Resource_URL": {
-      "title": "Resource URL",
-      "description": "Describes the URL to remote resource and optional parameters",
-      "oneOf": [
-        {
-          "type": "string",
-          "format": "uri",
-          "f5PostProcess": {
-            "tag": "expand"
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "description": "URL from which to retrieve value",
-              "type": "string",
-              "format": "uri",
-              "f5PostProcess": {
-                "tag": "expand"
-              }
-            },
-            "skipCertificateCheck": {
-              "description": "Skip verification of SSL certificates (default false)",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "required": [
-            "url"
-          ]
-        }
-      ]
-    },
     "Include": {
       "title": "Include",
       "description": "Defines inclusion of one part of the schema into another",
@@ -993,14 +746,11 @@
               "Monitor",
               "TLS_Server",
               "TLS_Client",
-              "Certificate",
-              "CA_Bundle",
-              "Certificate_Validator_OCSP",
               "FIX_Profile",
+              "RTSP_Profile",
               "SIP_Profile",
               "Statistics_Profile",
-              "Analytics_Profile",
-              "Analytics_TCP_Profile",
+              "TFTP_Profile",
               "FTP_Profile",
               "HTML_Rule",
               "HTML_Profile",
@@ -1009,6 +759,7 @@
               "HTTP_Compress",
               "HTTP2_Profile",
               "Multiplex_Profile",
+              "SOCKS_Profile",
               "TCP_Profile",
               "L4_Profile",
               "Classification_Profile",
@@ -1034,7 +785,6 @@
               "SSH_Proxy_Profile",
               "Data_Group",
               "DNS_Cache",
-              "DNS_Logging_Profile",
               "DNS_Profile",
               "DNS_TSIG_Key",
               "DNS_Zone",
@@ -1049,8 +799,8 @@
               "GSLB_Prober_Pool",
               "GSLB_Topology_Records",
               "GSLB_Topology_Region",
+              "ALG_Log_Profile",
               "Security_Log_Profile",
-              "Log_Publisher",
               "Log_Destination",
               "Traffic_Log_Profile",
               "Endpoint_Policy",
@@ -1069,6 +819,13 @@
               "Enforcement_Format_Script",
               "Enforcement_Forwarding_Endpoint",
               "Enforcement_Service_Chain_Endpoint",
+              "Analytics_Profile",
+              "Analytics_TCP_Profile",
+              "CA_Bundle",
+              "Certificate",
+              "Certificate_Validator_OCSP",
+              "DNS_Logging_Profile",
+              "Log_Publisher",
               "UDP_Profile"
             ]
           }
@@ -1306,48 +1063,24 @@
             "if": {
               "properties": {
                 "class": {
-                  "const": "Certificate"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/Certificate"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "CA_Bundle"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/CA_Bundle"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "Certificate_Validator_OCSP"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/Certificate_Validator_OCSP"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
                   "const": "FIX_Profile"
                 }
               }
             },
             "then": {
               "$ref": "#/definitions/FIX_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "RTSP_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/RTSP_Profile"
             }
           },
           {
@@ -1378,24 +1111,12 @@
             "if": {
               "properties": {
                 "class": {
-                  "const": "Analytics_Profile"
+                  "const": "TFTP_Profile"
                 }
               }
             },
             "then": {
-              "$ref": "#/definitions/Analytics_Profile"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "Analytics_TCP_Profile"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/Analytics_TCP_Profile"
+              "$ref": "#/definitions/TFTP_Profile"
             }
           },
           {
@@ -1492,6 +1213,18 @@
             },
             "then": {
               "$ref": "#/definitions/Multiplex_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "SOCKS_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/SOCKS_Profile"
             }
           },
           {
@@ -1798,18 +1531,6 @@
             "if": {
               "properties": {
                 "class": {
-                  "const": "DNS_Logging_Profile"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/DNS_Logging_Profile"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
                   "const": "DNS_Profile"
                 }
               }
@@ -1978,24 +1699,24 @@
             "if": {
               "properties": {
                 "class": {
-                  "const": "Security_Log_Profile"
+                  "const": "ALG_Log_Profile"
                 }
               }
             },
             "then": {
-              "$ref": "#/definitions/Security_Log_Profile"
+              "$ref": "#/definitions/ALG_Log_Profile"
             }
           },
           {
             "if": {
               "properties": {
                 "class": {
-                  "const": "Log_Publisher"
+                  "const": "Security_Log_Profile"
                 }
               }
             },
             "then": {
-              "$ref": "#/definitions/Log_Publisher"
+              "$ref": "#/definitions/Security_Log_Profile"
             }
           },
           {
@@ -2212,6 +1933,90 @@
             },
             "then": {
               "$ref": "#/definitions/Enforcement_Service_Chain_Endpoint"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Analytics_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Analytics_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Analytics_TCP_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Analytics_TCP_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "CA_Bundle"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/CA_Bundle"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Certificate"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Certificate"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Certificate_Validator_OCSP"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Certificate_Validator_OCSP"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "DNS_Logging_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/DNS_Logging_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Log_Publisher"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Log_Publisher"
             }
           },
           {
@@ -2949,6 +2754,9 @@
         },
         "profileRTSP": {
           "$ref": "#/definitions/Pointer_RTSP_Profile"
+        },
+        "profileSOCKS": {
+          "$ref": "#/definitions/Pointer_SOCKS_Profile"
         },
         "profileICAP": {
           "$ref": "#/definitions/Pointer_ICAP_Profile"
@@ -4730,224 +4538,6 @@
         "fallbackPersistenceMethod": [
           "persistenceMethods"
         ]
-      }
-    },
-    "Capture_Filter": {
-      "title": "Capture Filter",
-      "description": "Criteria determining when the system captures a portion of the application traffic",
-      "type": "object",
-      "properties": {
-        "requestCapturedParts": {
-          "title": "Request Captured Parts",
-          "description": "Specifies which parts of the request data the system captures",
-          "type": "string",
-          "enum": [
-            "all",
-            "body",
-            "headers",
-            "none"
-          ],
-          "default": "none"
-        },
-        "responseCapturedParts": {
-          "title": "Response Captured Parts",
-          "description": "Specifies which parts of the response data the system captures",
-          "type": "string",
-          "enum": [
-            "all",
-            "body",
-            "headers",
-            "none"
-          ],
-          "default": "none"
-        },
-        "dosActivity": {
-          "title": "DoS Activity",
-          "description": "Specifies whether the system captures traffic data mitigated by the DoS Layer 7 Enforcer, or traffic regardless of DoS activity",
-          "type": "string",
-          "enum": [
-            "any",
-            "mitigated-by-dosl7"
-          ],
-          "default": "any"
-        },
-        "capturedProtocols": {
-          "title": "Captured Protocols",
-          "description": "Specifies whether the system captures traffic data that is sent using any protocol, or a specific type of protocol",
-          "type": "string",
-          "enum": [
-            "all",
-            "http",
-            "https"
-          ],
-          "default": "all"
-        },
-        "capturedReadyForJsInjection": {
-          "title": "Qualified for JavaScript Injection",
-          "description": "Specifies whether the system captures all traffic data from all transactions or only from transactions that qualify for JavaScript injection",
-          "type": "string",
-          "enum": [
-            "disabled",
-            "enabled"
-          ],
-          "default": "disabled"
-        },
-        "virtualServers": {
-          "title": "Virtual Servers",
-          "description": "Specifies whether the system captures traffic data sent from/to all virtual servers, or only from/to specific virtual servers.  If none are specified then all will be collected.",
-          "type": "array",
-          "items": {
-            "title": "Virtual Server",
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "default": []
-        },
-        "nodeAddresses": {
-          "title": "Node Addresses",
-          "description": "Specifies whether the system captures traffic data sent from/to all nodes, or only from/to specific nodes.  If none are specified then all will be collected.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "default": []
-        },
-        "responseCodes": {
-          "title": "Response Status Codes",
-          "description": "Specifies whether the system captures traffic data based on the HTTP response status codes that the requests return.  If none are specified then all will be collected.",
-          "type": "array",
-          "items": {
-            "title": "Response Status Code",
-            "type": "integer",
-            "minimum": 100,
-            "maximum": 999
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "default": []
-        },
-        "methods": {
-          "title": "HTTP Methods",
-          "description": "Specifies whether the system captures traffic data based on the HTTP method that was requested.  If none are specified then all will be collected.",
-          "type": "array",
-          "items": {
-            "title": "HTTP Method",
-            "type": "string"
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "default": []
-        },
-        "urlFilterType": {
-          "title": "URL Filter Type",
-          "description": "Specifies how the URL path prefixes are interpreted",
-          "type": "string",
-          "enum": [
-            "all",
-            "black-list",
-            "white-list"
-          ],
-          "default": "all"
-        },
-        "urlPathPrefixes": {
-          "title": "URL Path Prefixes",
-          "description": "Specifies URLs the filter type is to be applied to.  If none are specified then all will be collected.",
-          "type": "array",
-          "items": {
-            "title": "URL",
-            "type": "string",
-            "f5PostProcess": {
-              "tag": "expand"
-            }
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "default": []
-        },
-        "userAgentSubstrings": {
-          "title": "User Agent Substrings",
-          "description": "Specifies whether the system captures traffic sent from all browsers, or only traffic sent from a specific browser",
-          "type": "array",
-          "items": {
-            "title": "User Agent Substring",
-            "type": "string",
-            "f5PostProcess": {
-              "tag": "expand"
-            }
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "default": []
-        },
-        "clientIps": {
-          "title": "Client IP Addresses",
-          "description": "Specifies the client IP addresses to collect stats for.  If none are specified, then all will be collected.",
-          "type": "array",
-          "items": {
-            "title": "Client IP Address",
-            "type": "string",
-            "format": "f5ip"
-          },
-          "maxItems": 10,
-          "uniqueItems": true,
-          "default": []
-        },
-        "requestContentFilterSearchPart": {
-          "title": "Request Content Filter Search Part",
-          "description": "Specifies the part of the request that should be filtered by the search string",
-          "type": "string",
-          "enum": [
-            "all",
-            "headers",
-            "body",
-            "none",
-            "uri"
-          ],
-          "default": "none"
-        },
-        "requestContentFilterSearchString": {
-          "title": "Request Content Filter Search String",
-          "description": "Specifies the string the request should be searched for",
-          "type": "string"
-        },
-        "responseContentFilterSearchPart": {
-          "title": "Response Content Filter Search Part",
-          "description": "Specifies the part of the response that should be filtered by the search string",
-          "type": "string",
-          "enum": [
-            "all",
-            "body",
-            "headers",
-            "none"
-          ],
-          "default": "none"
-        },
-        "responseContentFilterSearchString": {
-          "title": "Response Content Filter Search String",
-          "description": "Specifies the string the response should be searched for",
-          "type": "string"
-        }
-      },
-      "dependencies": {
-        "requestContentFilterSearchString": {
-          "properties": {
-            "requestContentFilterSearchPart": {
-              "not": {
-                "const": "none"
-              }
-            }
-          }
-        },
-        "responseContentFilterSearchString": {
-          "properties": {
-            "responseContentFilterSearchPart": {
-              "not": {
-                "const": "none"
-              }
-            }
-          }
-        }
       }
     },
     "Clone_Pools": {
@@ -9687,351 +9277,6 @@
         "class"
       ]
     },
-    "Certificate": {
-      "title": "Certificate",
-      "description": "PKI certificate with optional private-key and/or chain, optional OCSP stapler",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Certificate"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "pkcs12": {
-          "title": "PKCS#12 certificate+key",
-          "description": "The pkcs12 value which may be a url to fetch the binary file from or base64 encoded string",
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5string"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "pkcs12"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "certExtract"
-              }
-            }
-          ]
-        },
-        "pkcs12Options": {
-          "title": "PKCS#12 certificate+key Options",
-          "description": "Options for importing PKCS12 file",
-          "type": "object",
-          "properties": {
-            "keyImportFormat": {
-              "title": "PKCS#12 Private Key Format",
-              "description": "Determines the format in which the private key is saved. Default is PKCS#8.",
-              "type": "string",
-              "enum": [
-                "pkcs8",
-                "openssl-legacy"
-              ],
-              "default": "pkcs8"
-            },
-            "ignoreChanges": {
-              "title": "Ignore changes",
-              "description": "Key has to be decrypted and re-encrypted as part of extraction, resulting in a diff. Set to true to exclude the pkcs12 object for subsequent deployments.",
-              "type": "boolean",
-              "default": false
-            },
-            "internalOnly": {
-              "title": "BIG-IP AS3 internal use only",
-              "description": "BIG-IP AS3 uses this property internally. Any values supplied here will be ignored",
-              "type": "array",
-              "items": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "object",
-                  "array"
-                ]
-              },
-              "readOnly": true
-            }
-          }
-        },
-        "certificate": {
-          "title": "Certificate",
-          "description": "X.509 public-key certificate",
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5string"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "pki-cert"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "bigComponent",
-                "data": [
-                  "query sys file ssl-cert"
-                ]
-              }
-            }
-          ]
-        },
-        "privateKey": {
-          "title": "Private key",
-          "description": "Private key matching certificate's public key (optional)",
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5string"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "pki-key"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "bigComponent",
-                "data": [
-                  "query sys file ssl-key"
-                ]
-              }
-            }
-          ]
-        },
-        "passphrase": {
-          "title": "Passphrase",
-          "description": "If supplied, used to decrypt privateKey at runtime (optional)",
-          "type": "object",
-          "properties": {
-            "allowReuse": {
-              "description": "If true, other declaration objects may reuse this value",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "allOf": [
-            {
-              "$ref": "#/definitions/Secret"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "object"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "secret"
-              }
-            }
-          ]
-        },
-        "chainCA": {
-          "title": "CA chain",
-          "description": "Bundle of one or more CA certificates in trust-chain from root CA to certificate (optional)",
-          "type": [
-            "object",
-            "string"
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/definitions/F5string"
-            },
-            {
-              "$ref": "#/definitions/Pointer_CA_Bundle"
-            }
-          ],
-          "allOf": [
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "pki-bundle"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "bigComponent",
-                "data": [
-                  "query sys file ssl-cert"
-                ]
-              }
-            }
-          ]
-        },
-        "staplerOCSP": {
-          "title": "OCSP Stapler",
-          "description": "BIG-IP AS3 pointer to OCSP Stapler declaration (optional)",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_Certificate_Validator_OCSP"
-            }
-          ]
-        },
-        "issuerCertificate": {
-          "description": "Specfies the name of the issuer certficate for this certificate",
-          "type": "object",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_SSL_Certificate"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "dependencies": {
-        "staplerOCSP": {
-          "required": [
-            "issuerCertificate"
-          ]
-        }
-      },
-      "if": {
-        "required": [
-          "pkcs12"
-        ]
-      },
-      "then": {
-        "dependencies": {
-          "certificate": {
-            "not": {}
-          },
-          "privateKey": {
-            "not": {}
-          }
-        }
-      },
-      "else": {
-        "required": [
-          "certificate"
-        ],
-        "not": {
-          "required": [
-            "pkcs12"
-          ]
-        }
-      },
-      "required": [
-        "class"
-      ]
-    },
-    "CA_Bundle": {
-      "title": "CA_Bundle",
-      "description": "Bundle of one or more PKI Certificate-Authority certificates",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "CA_Bundle"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "bundle": {
-          "description": "Reference to a CA bundle or string of PEM encoded certificates",
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5string"
-            },
-            {
-              "f5PostProcess": {
-                "tag": "fetch",
-                "data": "pki-cert"
-              }
-            },
-            {
-              "f5PostProcess": {
-                "tag": "bigComponent",
-                "data": [
-                  "query sys file ssl-cert"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "class",
-        "bundle"
-      ]
-    },
-    "Certificate_Validator_OCSP": {
-      "title": "Certificate_Validator_OCSP",
-      "description": "OCSP validator for certificates",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Certificate_Validator_OCSP"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "dnsResolver": {
-          "title": "DNS resolver",
-          "description": "BIG-IP AS3 pointer to DNS resolver used to resolve hostnames in client requests",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_DNS_Resolver"
-            }
-          ]
-        },
-        "responderUrl": {
-          "title": "Responder URL",
-          "description": "Specifies the absolute URL that overrides the OCSP responder URL obtained from the certificate's AIA extension(s). This should be a HTTP based URL.",
-          "minLength": 3,
-          "type": "string"
-        },
-        "timeout": {
-          "title": "Timeout",
-          "description": "Specifies the time interval (in seconds) that the BIG-IP waits for before ending the connection to the OCSP responder. The default value is 8",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 300,
-          "default": 8
-        },
-        "signingHashAlgorithm": {
-          "title": "Request Signing Hash Algorithm",
-          "description": "Specifies a hash algorithm used to sign an OCSP request",
-          "type": "string",
-          "enum": [
-            "sha1",
-            "sha256"
-          ],
-          "default": "sha256"
-        },
-        "signingCertificate": {
-          "title": "Request Signing Certificate Object",
-          "description": "Specifies the certificate object to use for OCSP responders that require the request to be signed",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_SSL_Certificate"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "class"
-      ]
-    },
     "Sender_Tag_Mapping": {
       "title": "Sender and Tag Data Group Mapping",
       "description": "Establishes a mapping between a sender value and data group containing tag substitution values",
@@ -10211,6 +9456,166 @@
         "class"
       ]
     },
+    "RTSP_Profile": {
+      "title": "RTSP_Profile",
+      "type": "object",
+      "description": "Real Time Streaming Protocol Profile",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "RTSP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "idleTimeout": {
+          "title": "Idle Timeout",
+          "description": "The number of seconds that a Real-time Transport Protocol (RTP) connection is idle before the connection is eligible for deletion",
+          "if": {
+            "type": "integer"
+          },
+          "then": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "else": {
+            "type": "string",
+            "enum": [
+              "indefinite",
+              "immediate"
+            ]
+          },
+          "default": 300
+        },
+        "maxHeaderSize": {
+          "title": "Maximum Header Size",
+          "description": "The largest RTSP request or response header, in bytes, that the RTSP filter accepts before dropping the connection",
+          "type": "integer",
+          "default": 4096,
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "maxQueuedData": {
+          "title": "Maximum Queued Data",
+          "description": "The maximum amount of data, in bytes, that the RTSP filter buffers before dropping the connection",
+          "type": "integer",
+          "default": 32768,
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "unicastRedirect": {
+          "title": "Unicast Redirect",
+          "description": "When enabled specifies that the client can select the destination port for the streamed data. The destination address for the data is the source of the request.",
+          "type": "boolean",
+          "default": false
+        },
+        "multicastRedirect": {
+          "title": "Multicast Redirect",
+          "description": "When enabled, if you are using multicast streams, specifies that the client has permission to supply a different destination IP address for the streamed data",
+          "type": "boolean",
+          "default": false
+        },
+        "sessionReconnect": {
+          "title": "Session Reconnect",
+          "description": "When enabled specifies that the system persists a resumed control connection to the correct server. Typical clients do not support this behavior.",
+          "type": "boolean",
+          "default": false
+        },
+        "realHTTPPersistence": {
+          "title": "Real HTTP Persistence",
+          "description": "When enabled specifies that the system automatically persists Real Networks-tunneled RTSP data over HTTP, which is over the RTSP port. When disabled, a user can override the default behavior with an iRule.",
+          "type": "boolean",
+          "default": true
+        },
+        "checkSource": {
+          "title": "Check Source",
+          "description": "When true the system uses the source attribute in the transport header to establish the target address of the RTP stream, and before the response is forwarded to the client, updates the value of the source attribute to be the virtual address of the BIG-IP system. When false the system does not change the source attribute.",
+          "type": "boolean",
+          "default": true
+        },
+        "proxy": {
+          "title": "Proxy",
+          "description": "Specifies whether the RTSP profile is associated with an RTSP proxy configuration",
+          "type": "string",
+          "enum": [
+            "external",
+            "internal",
+            "none"
+          ],
+          "default": "none"
+        },
+        "proxyHeader": {
+          "title": "Proxy Header",
+          "description": "When set, specifies the name of the header in the RTSP proxy configuration that is passed from the client-side virtual server to the server-side virtual server. Note that the name of the header must begin with X-. To use the proxyHeader option, you must specify a value for the proxy option. Note that the system removes this header from the request prior to sending the request to the server for processing.",
+          "type": "string"
+        },
+        "RTPPort": {
+          "title": "RTP Port",
+          "description": "The number of the port to use for the RTP service",
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "RTCPPort": {
+          "title": "RTCP Port",
+          "description": "The number of the port to use for the Real Time Control Protocol (RTCP) service. RTCP allows monitoring of real-time data delivery.",
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "algLogProfile": {
+          "description": "ALG log profile pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_ALG_Log_Profile"
+            }
+          ]
+        },
+        "logPublisher": {
+          "description": "Log publisher pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Log_Publisher"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ],
+      "dependencies": {
+        "algLogProfile": {
+          "required": [
+            "logPublisher"
+          ]
+        },
+        "logPublisher": {
+          "required": [
+            "algLogProfile"
+          ]
+        }
+      }
+    },
     "SIP_Profile": {
       "title": "SIP_Profile",
       "type": "object",
@@ -10262,21 +9667,15 @@
         "class"
       ]
     },
-    "Analytics_Profile": {
-      "title": "Analytics_Profile",
+    "TFTP_Profile": {
+      "title": "TFTP_Profile",
       "type": "object",
-      "description": "HTTP analytics profile with configurable options",
-      "f5PostProcess": {
-        "tag": "modules",
-        "data": [
-          "avr"
-        ]
-      },
+      "description": "Trivial File Transer Protocol (TFTP) profile",
       "properties": {
         "class": {
           "title": "Class",
           "type": "string",
-          "const": "Analytics_Profile"
+          "const": "TFTP_Profile"
         },
         "label": {
           "$ref": "#/definitions/Label"
@@ -10284,356 +9683,67 @@
         "remark": {
           "$ref": "#/definitions/Remark"
         },
-        "captureFilter": {
+        "idleTimeout": {
+          "description": "Specifies an idle timeout in seconds. This setting specifies the number of seconds that a connection is idle before the connection is eligible for deletion.",
+          "if": {
+            "type": "integer"
+          },
+          "then": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "else": {
+            "type": "string",
+            "const": "indefinite"
+          },
+          "default": 30
+        },
+        "algLogProfile": {
+          "description": "ALG log profile pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
+          },
           "allOf": [
             {
-              "$ref": "#/definitions/Capture_Filter"
+              "$ref": "#/definitions/Pointer_ALG_Log_Profile"
             }
-          ],
-          "default": {}
+          ]
         },
-        "collectedStatsInternalLogging": {
-          "title": "Collected Statistics Internal Logging",
-          "description": "Specifies that statistics logs are stored in the system",
-          "type": "boolean",
-          "default": true,
-          "$comment": "Always Present"
-        },
-        "collectedStatsExternalLogging": {
-          "title": "Collected Statistics External Logging",
-          "description": "Specifies that statistics logs are stored on a remote server",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Always Present"
-        },
-        "capturedTrafficInternalLogging": {
-          "title": "Captured Traffic Internal Logging",
-          "description": "Specifies that the system captures a portion of the application traffic and sends it to a remote server",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Always Present"
-        },
-        "capturedTrafficExternalLogging": {
-          "title": "Captured Traffic External Logging",
-          "description": "Specifies that the system captures a portion of the application traffic which can then be viewed on the System >> Logs >> Captured Transactions screen",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Always Present"
-        },
-        "externalLoggingPublisher": {
-          "$ref": "#/definitions/Pointer_Log_Publisher"
-        },
-        "notificationBySyslog": {
-          "title": "Notification by syslog",
-          "description": "Specifies that the system sends notifications to the syslog",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Notification Type"
-        },
-        "notificationBySnmp": {
-          "title": "Notification by SNMP",
-          "description": "Specifies that the system sends notifications as SNMP traps",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Notification Type"
-        },
-        "notificationByEmail": {
-          "title": "Notification by Email",
-          "description": "Specifies that the system sends notifications by e-mail",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Notification Type"
-        },
-        "notificationEmailAddresses": {
-          "title": "E-mail Notification Recipients",
-          "description": "The e-mail addresses of a recipient to whom the system should send email notifications",
-          "type": "array",
-          "items": {
-            "title": "Email address",
-            "type": "string",
-            "format": "email"
+        "logPublisher": {
+          "description": "Log publisher pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
           },
-          "uniqueItems": true
-        },
-        "publishIruleStatistics": {
-          "title": "Publish iRule Statistics",
-          "description": "Specifies that the system collects and displays statistics according to the expressions written in an iRule",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Always Present"
-        },
-        "collectMaxTpsAndThroughput": {
-          "title": "Collect Max TPS and Throughput",
-          "description": "Specifies that the system collects statistics for the maximum number of transactions per second, and the maximum amount of traffic moving through the system, both request and response throughput values",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Metric"
-        },
-        "collectPageLoadTime": {
-          "title": "Collect Page Load Time",
-          "description": "Specifies that the system collects statistics of the round-trip latency between client end-users and the servers",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Metric"
-        },
-        "collectClientSideStatistics": {
-          "title": "Collect Client-Side Statistics",
-          "description": "Specifies that the system collects statistics regarding the HTTP request and response times",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Metric"
-        },
-        "collectUserSession": {
-          "title": "Collect User Sessions",
-          "description": "Specifies that the system collects statistics of the number of unique user sessions in the application traffic, as determined by the value of the configured HTTP cookies found in the requests",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Metric"
-        },
-        "collectUrl": {
-          "title": "Collect URL",
-          "description": "Specifies that the system collects statistics of requested URLs",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Entity"
-        },
-        "urlsForStatCollection": {
-          "title": "URLs for Statistics Collection",
-          "description": "Specifies the requested URLs for collecting statistics",
-          "type": "array",
-          "items": {
-            "title": "URL",
-            "type": "string",
-            "f5PostProcess": {
-              "tag": "expand"
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Log_Publisher"
             }
-          },
-          "uniqueItems": true,
-          "$comment": "Collected Entity"
-        },
-        "collectGeo": {
-          "title": "Collect Countries",
-          "description": "Specifies that the system collects statistics of the names of the countries from which that traffic was sent",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Entity"
-        },
-        "countriesForStatCollection": {
-          "title": "Countries for Statistics Collection",
-          "description": "Specifies the countries for collecting statistics",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Enum_Country_Analytics"
-          },
-          "$comment": "uniqueItems: true"
-        },
-        "collectIp": {
-          "title": "Collect Client IP Addresses",
-          "description": "Specifies that the system collects statistics of the IP addresses of where the traffic came from",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Entity"
-        },
-        "collectSubnet": {
-          "title": "Collect Client Subnet",
-          "description": "Specifies that the system collects statistics of client subnets",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Entity"
-        },
-        "subnetsForStatCollection": {
-          "title": "Subnets for Statistics Collection",
-          "description": "Specifies the requested subnets for collecting statistics",
-          "type": "array",
-          "items": {
-            "title": "Subnet",
-            "type": "string",
-            "format": "f5ip"
-          },
-          "uniqueItems": true,
-          "$comment": "Collected Entity"
-        },
-        "collectResponseCode": {
-          "title": "Collect Response Code",
-          "description": "Specifies that the system collects statistics about the distribution of HTTP response codes returned by the servers",
-          "type": "boolean",
-          "default": true,
-          "$comment": "Collected Entity"
-        },
-        "collectUserAgent": {
-          "title": "Collect User Agent",
-          "description": "Specifies that the system collects statistics about browsers used to send traffic",
-          "type": "boolean",
-          "default": false,
-          "$comment": "Collected Entity"
-        },
-        "collectMethod": {
-          "title": "Collect Method",
-          "description": "Specifies that the system collects statistics about the distribution of HTTP methods found in requests",
-          "type": "boolean",
-          "default": true,
-          "$comment": "Collected Entity"
-        },
-        "collectOsAndBrowser": {
-          "title": "Collect Operating System and Browser",
-          "description": "Specifies that the system collect statistics about the OSs and Browsers used to send requests",
-          "type": "boolean",
-          "default": true,
-          "$comment": "Collected Entity"
-        },
-        "sessionCookieSecurity": {
-          "title": "Session Cookie Security",
-          "description": "Specify whether to secure session cookies",
-          "type": "string",
-          "enum": [
-            "always-secure",
-            "never-secure",
-            "ssl-only"
-          ],
-          "default": "ssl-only",
-          "$comment": "Collected Metric"
-        },
-        "sessionTimeoutMinutes": {
-          "title": "Session Timeout in Minutes",
-          "description": "The number of minutes of user non-activity ot allow before the system considers the session to be over",
-          "type": "integer",
-          "minimum": 5,
-          "maximum": 60,
-          "multipleOf": 5,
-          "default": 5,
-          "$comment": "Collected Metric"
+          ]
         }
       },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ],
       "dependencies": {
-        "urlsForStatCollection": {
-          "properties": {
-            "collectUrl": {
-              "const": true
-            }
-          }
+        "algLogProfile": {
+          "required": [
+            "logPublisher"
+          ]
         },
-        "countriesForStatCollection": {
-          "properties": {
-            "collectGeo": {
-              "const": true
-            }
-          }
-        },
-        "subnetsForStatCollection": {
-          "properties": {
-            "collectSubnet": {
-              "const": true
-            }
-          }
+        "logPublisher": {
+          "required": [
+            "algLogProfile"
+          ]
         }
-      },
-      "additionalProperties": false,
-      "required": [
-        "class"
-      ]
-    },
-    "Analytics_TCP_Profile": {
-      "title": "Analytics_TCP_Profile",
-      "type": "object",
-      "description": "TCP Analytics profile with configurable options",
-      "f5PostProcess": {
-        "tag": "modules",
-        "data": [
-          "avr"
-        ]
-      },
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Analytics_TCP_Profile"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "collectedStatsInternalLogging": {
-          "title": "Collected Statistics Internal Logging",
-          "description": "Specifies that statistics logs are stored in the system",
-          "type": "boolean",
-          "default": true
-        },
-        "collectedStatsExternalLogging": {
-          "title": "Collected Statistics External Logging",
-          "description": "Specifies that statistics logs are stored on a remote server",
-          "type": "boolean",
-          "default": false
-        },
-        "externalLoggingPublisher": {
-          "$ref": "#/definitions/Pointer_Log_Publisher"
-        },
-        "collectedByClientSide": {
-          "title": "Collected By Client Side",
-          "description": "Specifies that system collects statistics on the client side",
-          "type": "boolean",
-          "default": true
-        },
-        "collectedByServerSide": {
-          "title": "Collected By Server Side",
-          "description": "Specifies that system collects statistics on the server side",
-          "type": "boolean",
-          "default": true
-        },
-        "collectRemoteHostIp": {
-          "title": "Collect Remote Host IP",
-          "description": "Specifies that the system collects IP addresses with which traffic was exchanged",
-          "type": "boolean",
-          "default": false
-        },
-        "collectRemoteHostSubnet": {
-          "title": "Collect Remote Host Subnet",
-          "description": "Specifies that the system saves the address of the subnet with which traffic was exchanged",
-          "type": "boolean",
-          "default": true
-        },
-        "collectNexthop": {
-          "title": "Collect Next Hop Ethernet Address",
-          "description": "Specifies that the system saves the address to which the traffic is being routed",
-          "type": "boolean",
-          "default": false
-        },
-        "collectContinent": {
-          "title": "Collect Continent",
-          "description": "Specifies that the system saves the name of the continent with which traffic was exchanged",
-          "type": "boolean",
-          "default": true
-        },
-        "collectCountry": {
-          "title": "Collect Country",
-          "description": "Specifies that the system saves the name of the country with which traffic was exchanged",
-          "type": "boolean",
-          "default": true
-        },
-        "collectRegion": {
-          "title": "Collect Region",
-          "description": "Specifies that the system saves the name of the region with which traffic was exchanged",
-          "type": "boolean",
-          "default": true
-        },
-        "collectCity": {
-          "title": "Collect City",
-          "description": "Specifies that the system saves the name of the city with which traffic was exchanged",
-          "type": "boolean",
-          "default": false
-        },
-        "collectPostCode": {
-          "title": "Collect Post Code",
-          "description": "Specifies that the system saves the name of the postcode with which traffic was exchanged",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "class"
-      ]
+      }
     },
     "FTP_Profile": {
       "title": "FTP_Profile",
@@ -10700,12 +9810,52 @@
           "description": "Specifies if the FTP data channel should inherit the TCP profile used by the control channel",
           "type": "boolean",
           "default": false
+        },
+        "algLogProfile": {
+          "description": "ALG log profile pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_ALG_Log_Profile"
+            }
+          ]
+        },
+        "logPublisher": {
+          "description": "Log publisher pointer",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "cgnat"
+            ]
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Log_Publisher"
+            }
+          ]
         }
       },
       "additionalProperties": false,
       "required": [
         "class"
-      ]
+      ],
+      "dependencies": {
+        "algLogProfile": {
+          "required": [
+            "logPublisher"
+          ]
+        },
+        "logPublisher": {
+          "required": [
+            "algLogProfile"
+          ]
+        }
+      }
     },
     "HTML_Rule": {
       "title": "HTML_Rule",
@@ -12240,6 +11390,108 @@
         "class"
       ]
     },
+    "SOCKS_Profile": {
+      "title": "SOCKS_Profile",
+      "description": "Configures a SOCKS (Socket Secure) profile",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "SOCKS_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "protocolVersions": {
+          "description": "Specifies the SOCKS protocol versions that are supported",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "socks4",
+              "socks4a",
+              "socks5"
+            ]
+          },
+          "default": [
+            "socks4",
+            "socks4a",
+            "socks5"
+          ],
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "resolver": {
+          "title": "DNS resolver",
+          "description": "BIG-IP AS3 pointer to DNS resolver used to resolve hostnames in connect requests",
+          "type": "object",
+          "properties": {
+            "bigip": {
+              "title": "BIG-IP resolver",
+              "description": "Pathname of existing BIG-IP net DNS resolver",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "bigip"
+          ],
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query net dns-resolver"
+            ]
+          }
+        },
+        "ipv6First": {
+          "title": "IPv6 first priority",
+          "description": "Specifies the relative order of IPv4 and IPv6 DNS resolutions for URIs. If false (default), then the system performs IPv4 lookup before IPv6.",
+          "type": "boolean",
+          "default": false
+        },
+        "routeDomain": {
+          "description": "The route domain that will be used for outbound connect requests",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65534,
+          "default": 0
+        },
+        "tunnelName": {
+          "title": "Tunnel name",
+          "description": "Name of tunnel used for outbound connect requests",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "default": "socks-tunnel",
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query net tunnels tunnel"
+            ]
+          }
+        },
+        "defaultConnectAction": {
+          "title": "Default Connect Action",
+          "description": "Specifies the behavior of the proxy service for connect requests. If set to 'deny', connect requests will only be honored if there is another virtual server listening for the requested outbound connection. If set to 'allow' outbound connection will be made ragardless of other virtual servers.",
+          "type": "string",
+          "enum": [
+            "deny",
+            "allow"
+          ],
+          "default": "deny"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "resolver"
+      ]
+    },
     "TCP_Profile": {
       "title": "TCP_Profile",
       "description": "Configures a Transmission Control Protocol (TCP) profile",
@@ -13292,57 +12544,6 @@
         "class"
       ]
     },
-    "Constants": {
-      "title": "Constants",
-      "description": "Named values for (re-)use by declaration objects",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Constants"
-        }
-      },
-      "additionalProperties": {
-        "type": [
-          "boolean",
-          "integer",
-          "number",
-          "string",
-          "array",
-          "object"
-        ],
-        "if": {
-          "type": "object",
-          "required": [
-            "protected",
-            "ciphertext"
-          ]
-        },
-        "then": {
-          "properties": {
-            "allowReuse": {
-              "title": "Allow reuse",
-              "description": "If true (default), cryptogram may be reused by different declaration objects, WHICH MAY POSE A SECURITY RISK!",
-              "type": "boolean",
-              "default": true
-            }
-          },
-          "allOf": [
-            {
-              "$ref": "#/definitions/JWE"
-            }
-          ]
-        }
-      },
-      "propertyNames": {
-        "pattern": "^[A-Za-z][0-9A-Za-z_]*$",
-        "maxLength": 64
-      },
-      "required": [
-        "class"
-      ]
-    },
     "Label": {
       "title": "Label",
       "description": "Optional friendly name for this object. Allows 0-64 chars, excluding a few likely to cause trouble with string searching, JS, TCL, or HTML",
@@ -13413,160 +12614,6 @@
         "minProperties": 1,
         "maxProperties": 1
       }
-    },
-    "Secret": {
-      "title": "Secret value",
-      "description": "A value: (a) in a cryptogram in this object; (b) in a cryptogram elsewhere in this declaration; or (c) available from a URL",
-      "type": "object",
-      "properties": {
-        "allowReuse": {
-          "title": "Allow reuse",
-          "description": "If true, other declaration objects may reuse this value",
-          "type": "boolean"
-        },
-        "reuseFrom": {
-          "title": "Reuse from",
-          "description": "BIG-IP AS3 pointer to another JWE cryptogram in this declaration to copy",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "type": "object",
-              "required": [
-                "ciphertext"
-              ]
-            }
-          }
-        },
-        "url": {
-          "title": "URL",
-          "description": "URL from which secret should be fetched",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Secret_Resource_URL"
-            }
-          ]
-        }
-      },
-      "oneOf": [
-        {
-          "required": [
-            "ciphertext"
-          ]
-        },
-        {
-          "required": [
-            "reuseFrom"
-          ]
-        },
-        {
-          "required": [
-            "url"
-          ]
-        }
-      ],
-      "if": {
-        "required": [
-          "ciphertext"
-        ]
-      },
-      "then": {
-        "$ref": "#/definitions/JWE"
-      }
-    },
-    "JWE": {
-      "title": "JWE cryptogram",
-      "description": "A value in a cryptogram which is a Flattened JWE JSON Serialization object.  If 'miniJWE' is true then enc=(none|f5sv) only (in JOSE header)",
-      "type": "object",
-      "properties": {
-        "miniJWE": {
-          "title": "Mini JWE",
-          "description": "If true (default), object is an f5 mini-JWE",
-          "type": "boolean",
-          "default": true
-        },
-        "protected": {
-          "title": "JOSE header",
-          "description": "JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64url-encoded into 'ciphertext').  If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram",
-          "type": "string",
-          "minLength": 2,
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5base64"
-            }
-          ],
-          "default": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
-        },
-        "ciphertext": {
-          "title": "Ciphertext",
-          "description": "Put base64url(data_value) here",
-          "type": "string",
-          "minLength": 2,
-          "allOf": [
-            {
-              "$ref": "#/definitions/F5base64"
-            }
-          ]
-        },
-        "ignoreChanges": {
-          "title": "Ignore changes",
-          "description": "If false (default), the system updates the ciphertext in every BIG-IP AS3 declaration deployment. If true, BIG-IP AS3 creates the ciphertext on first deployment, and leaves it untouched afterwards",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "required": [
-        "protected"
-      ]
-    },
-    "Controls": {
-      "title": "Controls",
-      "description": "Options to control configuration process",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Controls",
-          "default": "Controls"
-        },
-        "logLevel": {
-          "title": "Log level",
-          "description": "Controls the amount of detail in logs produced while configuring this Tenant (default is whole-declaration Controls/logLevel value)",
-          "type": "string",
-          "enum": [
-            "emergency",
-            "alert",
-            "critical",
-            "error",
-            "warning",
-            "notice",
-            "info",
-            "debug"
-          ],
-          "default": "error"
-        },
-        "trace": {
-          "title": "Trace",
-          "description": "If true, BIG-IP AS3 creates a detailed trace of the configuration process for this Tenant for subsequent analysis (default is whole-declaration Controls/trace value).  Warning:  trace files may contain sensitive configuration data",
-          "type": "boolean",
-          "default": false
-        },
-        "traceResponse": {
-          "title": "Trace Response",
-          "description": "If true, the response will contain the trace files",
-          "type": "boolean",
-          "default": false
-        },
-        "fortune": {
-          "title": "Fortune",
-          "description": "If true, BIG-IP AS3 will activate Zoltar mode and read you your fortune",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "additionalProperties": false
     },
     "Metadata": {
       "title": "Metadata",
@@ -17163,66 +16210,6 @@
         }
       }
     },
-    "DNS_Logging_Profile": {
-      "title": "DNS_Logging_Profile",
-      "description": "Configures a Domain Name System (DNS) logging profile",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "DNS_Logging_Profile"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "includeCompleteAnswer": {
-          "description": "Specifies whether the system logs the complete answer from the query",
-          "type": "boolean",
-          "default": true
-        },
-        "includeQueryId": {
-          "description": "Specifies whether the system logs the ID of the query",
-          "type": "boolean",
-          "default": false
-        },
-        "includeSource": {
-          "description": "Specifies whether the system logs the source (the BIG-IP system that receives the packet)",
-          "type": "boolean",
-          "default": true
-        },
-        "includeTimestamp": {
-          "description": "Specifies whether the system logs the timestamp of when the query was created",
-          "type": "boolean",
-          "default": true
-        },
-        "includeView": {
-          "description": "Specifies whether the system includes the view in the log",
-          "type": "boolean",
-          "default": true
-        },
-        "logPublisher": {
-          "$ref": "#/definitions/Pointer_Log_Publisher"
-        },
-        "logQueriesEnabled": {
-          "description": "Specifies whether the system logs queries",
-          "type": "boolean",
-          "default": true
-        },
-        "logResponsesEnabled": {
-          "description": "Specifies whether the systems logs responses",
-          "type": "boolean",
-          "default": false
-        }
-      },
-      "required": [
-        "class",
-        "logPublisher"
-      ]
-    },
     "DNS_Profile": {
       "title": "DNS_Profile",
       "description": "Configures a Domain Name System (DNS) profile",
@@ -19272,266 +18259,6 @@
         "NA",
         "OC",
         "SA"
-      ]
-    },
-    "Enum_Country_Analytics": {
-      "description": "Enum values for Analytics_Profile",
-      "type": "string",
-      "enum": [
-        "Afghanistan",
-        "Aland Islands",
-        "Albania",
-        "Algeria",
-        "American Samoa",
-        "Andorra",
-        "Angola",
-        "Anguilla",
-        "Anonymous Proxy",
-        "Antarctica",
-        "Antigua and Barbuda",
-        "Argentina",
-        "Armenia",
-        "Aruba",
-        "Asia/Pacific Region",
-        "Australia",
-        "Austria",
-        "Azerbaijan",
-        "Bahamas",
-        "Bahrain",
-        "Bangladesh",
-        "Barbados",
-        "Belarus",
-        "Belgium",
-        "Belize",
-        "Benin",
-        "Bermuda",
-        "Bhutan",
-        "Bolivia",
-        "Bonaire, Saint Eustatius and Saba",
-        "Bosnia and Herzegovina",
-        "Botswana",
-        "Bouvet Island",
-        "Brazil",
-        "British Indian Ocean Territory",
-        "Brunei Darussalam",
-        "Bulgaria",
-        "Burkina Faso",
-        "Burundi",
-        "Cambodia",
-        "Cameroon",
-        "Canada",
-        "Cape Verde",
-        "Cayman Islands",
-        "Central African Republic",
-        "Chad",
-        "Chile",
-        "China",
-        "Christmas Island",
-        "Cocos (Keeling) Islands",
-        "Colombia",
-        "Comoros",
-        "Congo",
-        "Congo, The Democratic Republic of the",
-        "Cook Islands",
-        "Costa Rica",
-        "Cote D'Ivoire",
-        "Croatia",
-        "Cuba",
-        "Cyprus",
-        "Czech Republic",
-        "Denmark",
-        "Djibouti",
-        "Dominica",
-        "Dominican Republic",
-        "Ecuador",
-        "Egypt",
-        "El Salvador",
-        "Equatorial Guinea",
-        "Eritrea",
-        "Estonia",
-        "Ethiopia",
-        "Europe",
-        "Falkland Islands (Malvinas)",
-        "Faroe Islands",
-        "Fiji",
-        "Finland",
-        "France",
-        "France, Metropolitan",
-        "French Guiana",
-        "French Polynesia",
-        "French Southern Territories",
-        "Gabon",
-        "Gambia",
-        "Georgia",
-        "Germany",
-        "Ghana",
-        "Gibraltar",
-        "Greece",
-        "Greenland",
-        "Grenada",
-        "Guadeloupe",
-        "Guam",
-        "Guatemala",
-        "Guernsey",
-        "Guinea",
-        "Guinea-Bissau",
-        "Guyana",
-        "Haiti",
-        "Heard Island and McDonald Islands",
-        "Holy See (Vatican City State)",
-        "Honduras",
-        "Hong Kong",
-        "Hungary",
-        "Iceland",
-        "India",
-        "Indonesia",
-        "Iran, Islamic Republic of",
-        "Iraq",
-        "Ireland",
-        "Isle of Man",
-        "Israel",
-        "Italy",
-        "Jamaica",
-        "Japan",
-        "Jersey",
-        "Jordan",
-        "Kazakhstan",
-        "Kenya",
-        "Kiribati",
-        "Korea, Democratic People's Republic of",
-        "Korea, Republic of",
-        "Kuwait",
-        "Kyrgyzstan",
-        "Lao People's Democratic Republic",
-        "Latvia",
-        "Lebanon",
-        "Lesotho",
-        "Liberia",
-        "Libyan Arab Jamahiriya",
-        "Liechtenstein",
-        "Lithuania",
-        "Luxembourg",
-        "Macau",
-        "Macedonia",
-        "Madagascar",
-        "Malawi",
-        "Malaysia",
-        "Maldives",
-        "Mali",
-        "Malta",
-        "Marshall Islands",
-        "Martinique",
-        "Mauritania",
-        "Mauritius",
-        "Mayotte",
-        "Mexico",
-        "Micronesia, Federated States of",
-        "Moldova, Republic of",
-        "Monaco",
-        "Mongolia",
-        "Montenegro",
-        "Montserrat",
-        "Morocco",
-        "Mozambique",
-        "Myanmar",
-        "Namibia",
-        "Nauru",
-        "Nepal",
-        "Netherlands",
-        "Netherlands Antilles",
-        "New Caledonia",
-        "New Zealand",
-        "Nicaragua",
-        "Niger",
-        "Nigeria",
-        "Niue",
-        "Norfolk Island",
-        "Northern Mariana Islands",
-        "Norway",
-        "Oman",
-        "Other",
-        "Pakistan",
-        "Palau",
-        "Palestinian Territory",
-        "Panama",
-        "Papua New Guinea",
-        "Paraguay",
-        "Peru",
-        "Philippines",
-        "Pitcairn Islands",
-        "Poland",
-        "Portugal",
-        "Puerto Rico",
-        "Qatar",
-        "Reunion",
-        "Romania",
-        "Russian Federation",
-        "Rwanda",
-        "Saint Barthelemy",
-        "Saint Helena",
-        "Saint Kitts and Nevis",
-        "Saint Lucia",
-        "Saint Martin",
-        "Saint Pierre and Miquelon",
-        "Saint Vincent and the Grenadines",
-        "Samoa",
-        "San Marino",
-        "Sao Tome and Principe",
-        "Satellite Provider",
-        "Saudi Arabia",
-        "Senegal",
-        "Serbia",
-        "Seychelles",
-        "Sierra Leone",
-        "Singapore",
-        "Slovakia",
-        "Slovenia",
-        "Solomon Islands",
-        "Somalia",
-        "South Africa",
-        "South Georgia and the South Sandwich Islands",
-        "Spain",
-        "Sri Lanka",
-        "Sudan",
-        "Suriname",
-        "Svalbard and Jan Mayen",
-        "Swaziland",
-        "Sweden",
-        "Switzerland",
-        "Syrian Arab Republic",
-        "Taiwan",
-        "Tajikistan",
-        "Tanzania, United Republic of",
-        "Thailand",
-        "Timor-Leste",
-        "Togo",
-        "Tokelau",
-        "Tonga",
-        "Trinidad and Tobago",
-        "Tunisia",
-        "Turkey",
-        "Turkmenistan",
-        "Turks and Caicos Islands",
-        "Tuvalu",
-        "Uganda",
-        "Ukraine",
-        "United Arab Emirates",
-        "United Kingdom",
-        "United States",
-        "United States Minor Outlying Islands",
-        "Unknown",
-        "Uruguay",
-        "Uzbekistan",
-        "Vanuatu",
-        "Venezuela",
-        "Vietnam",
-        "Virgin Islands, British",
-        "Virgin Islands, U.S.",
-        "Wallis and Futuna",
-        "Western Sahara",
-        "Yemen",
-        "Zambia",
-        "Zimbabwe"
       ]
     },
     "Enum_Country_Code_Alpha_2": {
@@ -22231,6 +20958,161 @@
         }
       ]
     },
+    "ALG_Log_Profile": {
+      "type": "object",
+      "title": "ALG_Log_Profile",
+      "description": "Configures an application layer gateway log profle",
+      "f5PostProcess": {
+        "tag": "modules",
+        "data": [
+          "cgnat"
+        ]
+      },
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "ALG_Log_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "csvFormat": {
+          "description": "Generate entries in comma-separated-values (csv) format",
+          "type": "boolean",
+          "default": false
+        },
+        "startControlChannel": {
+          "description": "Event for start of control channel connection",
+          "type": "object",
+          "properties": {
+            "action": {
+              "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+              "type": "string",
+              "enum": [
+                "enabled",
+                "disabled",
+                "backup-allocation-only"
+              ],
+              "default": "disabled"
+            },
+            "includeDestination": {
+              "description": "Include destination address/port in the log message",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "default": {
+            "action": "disabled",
+            "includeDestination": false
+          },
+          "additionalProperties": false
+        },
+        "endControlChannel": {
+          "description": "Event for end of control channel connection",
+          "type": "object",
+          "properties": {
+            "action": {
+              "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+              "type": "string",
+              "enum": [
+                "enabled",
+                "disabled",
+                "backup-allocation-only"
+              ],
+              "default": "enabled"
+            },
+            "includeDestination": {
+              "description": "Include destination address/port in the log message",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "default": {
+            "action": "enabled",
+            "includeDestination": false
+          },
+          "additionalProperties": false
+        },
+        "startDataChannel": {
+          "description": "Event for start of data channel connection",
+          "type": "object",
+          "properties": {
+            "action": {
+              "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+              "type": "string",
+              "enum": [
+                "enabled",
+                "disabled",
+                "backup-allocation-only"
+              ],
+              "default": "disabled"
+            },
+            "includeDestination": {
+              "description": "Include destination address/port in the log message",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "default": {
+            "action": "disabled",
+            "includeDestination": false
+          },
+          "additionalProperties": false
+        },
+        "endDataChannel": {
+          "description": "Event for end of data channel connection",
+          "type": "object",
+          "properties": {
+            "action": {
+              "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. If 'backup-allocation-only' logging is enabled for the event when the ALG is proxy with a LSN, and translation is taken from the backup pool member only.",
+              "type": "string",
+              "enum": [
+                "enabled",
+                "disabled",
+                "backup-allocation-only"
+              ],
+              "default": "enabled"
+            },
+            "includeDestination": {
+              "description": "Include destination address/port in the log message",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "default": {
+            "action": "enabled",
+            "includeDestination": false
+          },
+          "additionalProperties": false
+        },
+        "inboundTransaction": {
+          "description": "Generates event log entries of SIP messages. Triggered by inbound connection to the BIG-IP system",
+          "type": "object",
+          "properties": {
+            "action": {
+              "description": "Specify the logging action to be taken when a particular event is encountered. If 'enabled' logging is enabled for the event, regardless of how the flow is created. If 'disabled' logging is disabled for the event. Inbound transaction log entry could contain both incoming and outgoing messages.",
+              "type": "string",
+              "enum": [
+                "enabled",
+                "disabled"
+              ],
+              "default": "disabled"
+            }
+          },
+          "default": {
+            "action": "disabled"
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
     "Security_Log_Profile": {
       "type": "object",
       "title": "Security_Log_Profile",
@@ -23186,8 +22068,23 @@
           "type": "boolean",
           "default": false
         },
+        "logStartOutboundSessionDestination": {
+          "description": "Include destination address and port with log entry for the start of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+          "type": "boolean",
+          "default": false
+        },
         "logEndOutboundSession": {
           "description": "Generates event log entries at end of translation event for a NAT client. Triggered when the system frees the outbound session.",
+          "type": "boolean",
+          "default": false
+        },
+        "logEndOutboundSessionDestination": {
+          "description": "Include destination address and port with log entry for the end of the translation event for a NAT client. This is applicable only if lsn-legacy-mode is enabled",
+          "type": "boolean",
+          "default": false
+        },
+        "lsnLegacyMode": {
+          "description": "This option specifies whether translation events (and other NAT events) are logged in existing CGNAT/LSN formats (for backward compatibility with LSN events).",
           "type": "boolean",
           "default": false
         },
@@ -23248,7 +22145,41 @@
       "required": [
         "publisher"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "dependencies": {
+        "logStartOutboundSessionDestination": {
+          "if": {
+            "properties": {
+              "logStartOutboundSessionDestination": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "logStartOutboundSession": {
+                "const": true
+              }
+            }
+          }
+        },
+        "logEndOutboundSessionDestination": {
+          "if": {
+            "properties": {
+              "logEndOutboundSessionDestination": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "logEndOutboundSession": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
     },
     "Security_Log_Profile_Nat_Storage_Format": {
       "description": "Specifies the format type for log messages",
@@ -24083,35 +23014,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "Log_Publisher": {
-      "title": "Log_Publisher",
-      "description": "Configures lists of destinations for the common logging interface",
-      "type": "object",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "Log_Publisher"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "destinations": {
-          "description": "specify log destinations for this log publisher to use",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Pointer_Log_Destination"
-          }
-        }
-      },
-      "required": [
-        "class",
-        "destinations"
-      ]
     },
     "Log_Destination": {
       "title": "Log_Destination",
@@ -29054,6 +27956,50 @@
       "minProperties": 1,
       "maxProperties": 1
     },
+    "Pointer_ALG_Log_Profile": {
+      "description": "Reference to a application layer gateway log profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to application layer gateway log profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "ALG_Log_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP application layer gateway log profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm alg-log-profile"
+            ]
+          }
+        }
+      ]
+    },
     "Pointer_API_Protection_Profile": {
       "description": "Reference to a API_Protection_Profile",
       "type": "object",
@@ -29264,94 +28210,6 @@
         }
       ]
     },
-    "Pointer_Certificate_Validator_OCSP": {
-      "description": "Reference to a OCSP Cert Validator",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to OCSP Cert Validator declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "Certificate_Validator_OCSP"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP OCSP Cert Validator",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query sys crypto cert-validator ocsp"
-            ]
-          }
-        }
-      ]
-    },
-    "Pointer_CA_Bundle": {
-      "description": "Reference to a Ca Bundle",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to Ca Bundle declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "CA_Bundle"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP Ca Bundle",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query sys file ssl-cert"
-            ]
-          }
-        }
-      ]
-    },
     "Pointer_Cipher_Group": {
       "description": "Reference to a cipher group",
       "type": "object",
@@ -29551,30 +28409,6 @@
             "tag": "bigComponent",
             "data": [
               "query ltm profile classification"
-            ]
-          }
-        }
-      ]
-    },
-    "Pointer_DNS_Resolver": {
-      "description": "Reference to a DNS resolver",
-      "type": "object",
-      "properties": {
-        "bigip": {
-          "description": "Pathname of existing BIG-IP DNS resolver",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query net dns-resolver"
             ]
           }
         }
@@ -31801,6 +30635,26 @@
       "description": "Reference to a Real Time Streaming Protocol Profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to Real Time Streaming Protocol Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "RTSP_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP Real Time Streaming Protocol Profile",
           "type": "string",
@@ -32022,40 +30876,36 @@
       ]
     },
     "Pointer_Log_Destination": {
+      "title": "Pointer Log Destination",
       "description": "Reference to a log destination",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to log destination declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "Log_Destination"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP log destination",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
       "allOf": [
         {
+          "$ref": "#/definitions/Pointer_BIGIP_Or_Use"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "use": {
+              "f5PostProcess": {
+                "tag": "pointer",
+                "data": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "Log_Destination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
+              }
+            },
+            "bigip": {
+              "format": "f5bigip"
+            }
+          },
           "f5PostProcess": {
             "tag": "bigComponent",
             "data": [
@@ -32068,50 +30918,6 @@
               "query sys log-config destination remote-high-speed-log",
               "query sys log-config destination remote-syslog",
               "query sys log-config destination splunk"
-            ]
-          }
-        }
-      ]
-    },
-    "Pointer_Log_Publisher": {
-      "description": "Reference to a log publisher",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to log publisher declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "Log_Publisher"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP log publisher",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query sys log-config publisher"
             ]
           }
         }
@@ -33055,12 +31861,12 @@
         }
       ]
     },
-    "Pointer_SSL_Certificate": {
-      "description": "Reference to a SSL certificate",
+    "Pointer_SOCKS_Profile": {
+      "description": "Reference to a SOCKS profile",
       "type": "object",
       "properties": {
         "use": {
-          "description": "AS3 pointer to SSL certificate declaration",
+          "description": "AS3 pointer to SOCKS profile declaration",
           "type": "string",
           "minLength": 1,
           "f5PostProcess": {
@@ -33069,7 +31875,7 @@
               "properties": {
                 "class": {
                   "enum": [
-                    "Certificate"
+                    "SOCKS_Profile"
                   ]
                 }
               },
@@ -33080,7 +31886,7 @@
           }
         },
         "bigip": {
-          "description": "Pathname of existing BIG-IP SSL certificate",
+          "description": "Pathname of existing BIG-IP SOCKS profile",
           "type": "string",
           "format": "f5bigip"
         }
@@ -33093,7 +31899,7 @@
           "f5PostProcess": {
             "tag": "bigComponent",
             "data": [
-              "query sys file ssl-cert"
+              "query ltm profile socks"
             ]
           }
         }
@@ -33171,6 +31977,26 @@
       "description": "Reference to a TFTP profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to TFTP profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "TFTP_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP TFTP profile",
           "type": "string",
@@ -33564,6 +32390,2030 @@
               "query ltm profile websocket"
             ]
           }
+        }
+      ]
+    },
+    "Analytics_Profile": {
+      "title": "Analytics Profile",
+      "type": "object",
+      "description": "HTTP Analytics profile with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Analytics_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "captureFilter": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Capture_Filter"
+            }
+          ],
+          "default": {}
+        },
+        "collectGeo": {
+          "title": "Collect Countries",
+          "description": "Specifies that the system collects statistics of the names of the countries from which that traffic was sent",
+          "type": "boolean",
+          "default": false
+        },
+        "collectClientSideStatistics": {
+          "title": "Collect Client-Side Statistics",
+          "description": "Specifies that the system collects statistics regarding the HTTP request and response times",
+          "type": "boolean",
+          "default": false
+        },
+        "collectUrl": {
+          "title": "Collect URL",
+          "description": "Specifies that the system collects statistics of requested URLs",
+          "type": "boolean",
+          "default": false
+        },
+        "collectIp": {
+          "title": "Collect Client IP Addresses",
+          "description": "Specifies that the system collects statistics of the IP addresses of where the traffic came from",
+          "type": "boolean",
+          "default": false
+        },
+        "collectSubnet": {
+          "title": "Collect Client Subnet",
+          "description": "Specifies that the system collects statistics of client subnets",
+          "type": "boolean",
+          "default": false
+        },
+        "collectUserAgent": {
+          "title": "Collect User Agent",
+          "description": "Specifies that the system collects statistics about browsers used to send traffic",
+          "type": "boolean",
+          "default": false
+        },
+        "collectOsAndBrowser": {
+          "title": "Collect Operating System and Browser",
+          "description": "Specifies that the system collect statistics about the OSs and Browsers used to send requests",
+          "type": "boolean",
+          "default": true
+        },
+        "collectResponseCode": {
+          "title": "Collect Response Code",
+          "description": "Specifies that the system collects statistics about the distribution of HTTP response codes returned by the servers",
+          "type": "boolean",
+          "default": true
+        },
+        "collectMethod": {
+          "title": "Collect Method",
+          "description": "Specifies that the system collects statistics about the distribution of HTTP methods found in requests",
+          "type": "boolean",
+          "default": true
+        },
+        "collectMaxTpsAndThroughput": {
+          "title": "Collect Max TPS and Throughput",
+          "description": "Specifies that the system collects statistics for the maximum number of transactions per second, and the maximum amount of traffic moving through the system, both request and response throughput values",
+          "type": "boolean",
+          "default": false
+        },
+        "collectPageLoadTime": {
+          "title": "Collect Page Load Time",
+          "description": "Specifies that the system collects statistics of the round-trip latency between client end-users and the servers",
+          "type": "boolean",
+          "default": false
+        },
+        "collectUserSession": {
+          "title": "Collect User Sessions",
+          "description": "Specifies that the system collects statistics of the number of unique user sessions in the application traffic, as determined by the value of the configured HTTP cookies found in the requests",
+          "type": "boolean",
+          "default": false
+        },
+        "collectedStatsInternalLogging": {
+          "title": "Collected Statistics Internal Logging",
+          "description": "Specifies that statistics logs are stored in the system",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedStatsExternalLogging": {
+          "title": "Collected Statistics External Logging",
+          "description": "Specifies that statistics logs are stored on a remote server",
+          "type": "boolean",
+          "default": false
+        },
+        "capturedTrafficInternalLogging": {
+          "title": "Captured Traffic Internal Logging",
+          "description": "Specifies that the system captures a portion of the application traffic and sends it to a remote server",
+          "type": "boolean",
+          "default": false
+        },
+        "capturedTrafficExternalLogging": {
+          "title": "Captured Traffic External Logging",
+          "description": "Specifies that the system captures a portion of the application traffic which can then be viewed on the System >> Logs >> Captured Transactions screen",
+          "type": "boolean",
+          "default": false
+        },
+        "sessionCookieSecurity": {
+          "title": "Session Cookie Security",
+          "description": "Specify whether to secure session cookies",
+          "type": "string",
+          "enum": [
+            "ssl-only",
+            "always-secure",
+            "never-secure"
+          ],
+          "default": "ssl-only"
+        },
+        "sessionTimeoutMinutes": {
+          "title": "Session Timeout in Minutes",
+          "description": "The number of minutes of user non-activity ot allow before the system considers the session to be over",
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60,
+          "default": 5,
+          "multipleOf": 5
+        },
+        "externalLoggingPublisher": {
+          "$ref": "#/definitions/Pointer_Log_Publisher"
+        },
+        "notificationBySyslog": {
+          "title": "Notification by syslog",
+          "description": "Specifies that the system sends notifications to the syslog",
+          "type": "boolean",
+          "default": false
+        },
+        "notificationBySnmp": {
+          "title": "Notification by SNMP",
+          "description": "Specifies that the system sends notifications as SNMP traps",
+          "type": "boolean",
+          "default": false
+        },
+        "notificationByEmail": {
+          "title": "Notification by Email",
+          "description": "Specifies that the system sends notifications by e-mail",
+          "type": "boolean",
+          "default": false
+        },
+        "notificationEmailAddresses": {
+          "title": "E-mail Notification Recipients",
+          "description": "The e-mail addresses of a recipient to whom the system should send email notifications",
+          "type": "array",
+          "items": {
+            "title": "Email address",
+            "type": "string",
+            "format": "email"
+          },
+          "uniqueItems": true
+        },
+        "publishIruleStatistics": {
+          "title": "Publish iRule Statistics",
+          "description": "Specifies that the system collects and displays statistics according to the expressions written in an iRule",
+          "type": "boolean",
+          "default": false
+        },
+        "urlsForStatCollection": {
+          "title": "URLs for Statistics Collection",
+          "description": "Specifies the requested URLs for collecting statistics",
+          "type": "array",
+          "items": {
+            "title": "URL",
+            "type": "string",
+            "f5PostProcess": {
+              "tag": "expand"
+            }
+          },
+          "uniqueItems": true
+        },
+        "countriesForStatCollection": {
+          "title": "Countries for Statistics Collection",
+          "description": "Specifies the countries for collecting statistics",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Enum_Country_Analytics"
+          }
+        },
+        "subnetsForStatCollection": {
+          "title": "Subnets for Statistics Collection",
+          "description": "Specifies the requested subnets for collecting statistics",
+          "type": "array",
+          "items": {
+            "title": "Subnet",
+            "type": "string",
+            "format": "f5ip"
+          },
+          "uniqueItems": true
+        }
+      },
+      "dependencies": {
+        "urlsForStatCollection": {
+          "properties": {
+            "collectUrl": {
+              "const": true
+            }
+          }
+        },
+        "countriesForStatCollection": {
+          "properties": {
+            "collectGeo": {
+              "const": true
+            }
+          }
+        },
+        "subnetsForStatCollection": {
+          "properties": {
+            "collectSubnet": {
+              "const": true
+            }
+          }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false,
+      "f5PostProcess": {
+        "tag": "modules",
+        "data": [
+          "avr"
+        ]
+      }
+    },
+    "Analytics_TCP_Profile": {
+      "title": "Analytics TCP Profile",
+      "type": "object",
+      "description": "TCP Analytics profile with configurable options",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Analytics_TCP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "collectCity": {
+          "title": "Collect City",
+          "description": "Specifies that the system saves the name of the city with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        },
+        "collectContinent": {
+          "title": "Collect Continent",
+          "description": "Specifies that the system saves the name of the continent with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectCountry": {
+          "title": "Collect Country",
+          "description": "Specifies that the system saves the name of the country with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedByClientSide": {
+          "title": "Collected By Client Side",
+          "description": "Specifies that system collects statistics on the client side",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedByServerSide": {
+          "title": "Collected By Server Side",
+          "description": "Specifies that system collects statistics on the server side",
+          "type": "boolean",
+          "default": true
+        },
+        "collectedStatsExternalLogging": {
+          "title": "Collected Statistics External Logging",
+          "description": "Specifies that statistics logs are stored on a remote server",
+          "type": "boolean",
+          "default": false
+        },
+        "collectedStatsInternalLogging": {
+          "title": "Collected Statistics Internal Logging",
+          "description": "Specifies that statistics logs are stored in the system",
+          "type": "boolean",
+          "default": true
+        },
+        "collectNexthop": {
+          "title": "Collect Next Hop Ethernet Address",
+          "description": "Specifies that the system saves the address to which the traffic is being routed",
+          "type": "boolean",
+          "default": false
+        },
+        "collectPostCode": {
+          "title": "Collect Post Code",
+          "description": "Specifies that the system saves the name of the postcode with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        },
+        "collectRegion": {
+          "title": "Collect Region",
+          "description": "Specifies that the system saves the name of the region with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "collectRemoteHostIp": {
+          "title": "Collect Remote Host IP",
+          "description": "Specifies that the system collects IP addresses with which traffic was exchanged",
+          "type": "boolean",
+          "default": false
+        },
+        "collectRemoteHostSubnet": {
+          "title": "Collect Remote Host Subnet",
+          "description": "Specifies that the system saves the address of the subnet with which traffic was exchanged",
+          "type": "boolean",
+          "default": true
+        },
+        "externalLoggingPublisher": {
+          "$ref": "#/definitions/Pointer_Log_Publisher"
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false,
+      "f5PostProcess": {
+        "tag": "modules",
+        "data": [
+          "avr"
+        ]
+      }
+    },
+    "Basic_Auth": {
+      "title": "Basic Authentication",
+      "type": "object",
+      "description": "Describes the basic authentication to access a resource",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "Specifies the authentication method",
+          "enum": [
+            "basic"
+          ]
+        },
+        "username": {
+          "description": "Specifies the user name for authentication",
+          "type": "string"
+        },
+        "passphrase": {
+          "description": "Specifies the password for authentication",
+          "properties": {
+            "allowReuse": {
+              "type": "boolean",
+              "description": "If true, other declaration objects may reuse this value",
+              "default": false
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Property_Passphrase"
+            },
+            {
+              "f5PostProcess": {
+                "data": "object",
+                "tag": "fetch"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "method",
+        "username",
+        "passphrase"
+      ],
+      "additionalProperties": false
+    },
+    "Bearer_Token": {
+      "title": "Bearer Token Authorization",
+      "description": "Describes using a bearer token to access a resource",
+      "type": "object",
+      "properties": {
+        "method": {
+          "description": "Specifies the authentication method",
+          "type": "string",
+          "const": "bearer-token"
+        },
+        "token": {
+          "description": "Specifies the bearer token",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "plain text bearer token",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "allOf": [
+                {
+                  "required": [
+                    "ciphertext"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/Secret"
+                }
+              ]
+            }
+          ],
+          "f5PostProcess": {
+            "tag": "longSecret"
+          }
+        }
+      },
+      "required": [
+        "method",
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "CA_Bundle": {
+      "title": "CA Bundle",
+      "description": "Bundle of one or more PKI Certificate-Authority certificates",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "CA_Bundle"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "bundle": {
+          "description": "Reference to a CA bundle or string of PEM encoded certificates",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+            },
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "pki-cert"
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": [
+                  "query sys file ssl-cert"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "bundle"
+      ]
+    },
+    "Capture_Filter": {
+      "title": "Capture Filter",
+      "description": "Criteria determining when the system captures a portion of the application traffic",
+      "type": "object",
+      "properties": {
+        "requestCapturedParts": {
+          "title": "Request Captured Parts",
+          "description": "Specifies which parts of the request data the system captures",
+          "type": "string",
+          "enum": [
+            "all",
+            "body",
+            "headers",
+            "none"
+          ],
+          "default": "none"
+        },
+        "responseCapturedParts": {
+          "title": "Response Captured Parts",
+          "description": "Specifies which parts of the response data the system captures",
+          "type": "string",
+          "enum": [
+            "all",
+            "body",
+            "headers",
+            "none"
+          ],
+          "default": "none"
+        },
+        "dosActivity": {
+          "title": "DoS Activity",
+          "description": "Specifies whether the system captures traffic data mitigated by the DoS Layer 7 Enforcer, or traffic regardless of DoS activity",
+          "type": "string",
+          "enum": [
+            "any",
+            "mitigated-by-dosl7"
+          ],
+          "default": "any"
+        },
+        "capturedProtocols": {
+          "title": "Captured Protocols",
+          "description": "Specifies whether the system captures traffic data that is sent using any protocol, or a specific type of protocol",
+          "type": "string",
+          "enum": [
+            "all",
+            "http",
+            "https"
+          ],
+          "default": "all"
+        },
+        "capturedReadyForJsInjection": {
+          "title": "Qualified for JavaScript Injection",
+          "description": "Specifies whether the system captures all traffic data from all transactions or only from transactions that qualify for JavaScript injection",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "default": "disabled"
+        },
+        "virtualServers": {
+          "title": "Virtual Servers",
+          "description": "Specifies whether the system captures traffic data sent from/to all virtual servers, or only from/to specific virtual servers.  If none are specified then all will be collected",
+          "type": "array",
+          "items": {
+            "title": "Virtual Server",
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "nodeAddresses": {
+          "title": "Node Addresses",
+          "description": "Specifies whether the system captures traffic data sent from/to all nodes, or only from/to specific nodes.  If none are specified then all will be collected",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "responseCodes": {
+          "title": "Response Status Codes",
+          "description": "Specifies whether the system captures traffic data based on the HTTP response status codes that the requests return.  If none are specified then all will be collected",
+          "type": "array",
+          "items": {
+            "title": "Response Status Code",
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 999
+          },
+          "maxItems": 10,
+          "uniqueItems": true,
+          "default": []
+        },
+        "methods": {
+          "title": "HTTP Methods",
+          "description": "Specifies whether the system captures traffic data based on the HTTP method that was requested.  If none are specified then all will be collected",
+          "type": "array",
+          "items": {
+            "title": "HTTP Method",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "uniqueItems": true,
+          "default": []
+        },
+        "urlFilterType": {
+          "title": "URL Filter Type",
+          "description": "Specifies how the URL path prefixes are interpreted",
+          "type": "string",
+          "enum": [
+            "all",
+            "black-list",
+            "white-list"
+          ],
+          "default": "all"
+        },
+        "urlPathPrefixes": {
+          "title": "URL Path Prefixes",
+          "description": "Specifies URLs the filter type is to be applied to.  If none are specified then all will be collected",
+          "type": "array",
+          "items": {
+            "title": "URL",
+            "type": "string",
+            "f5PostProcess": {
+              "tag": "expand"
+            }
+          },
+          "maxItems": 10,
+          "uniqueItems": true,
+          "default": []
+        },
+        "userAgentSubstrings": {
+          "title": "User Agent Substrings",
+          "description": "Specifies whether the system captures traffic sent from all browsers, or only traffic sent from a specific browser",
+          "type": "array",
+          "items": {
+            "title": "User Agent Substring",
+            "type": "string",
+            "f5PostProcess": {
+              "tag": "expand"
+            }
+          },
+          "maxItems": 10,
+          "uniqueItems": true,
+          "default": []
+        },
+        "clientIps": {
+          "title": "Client IP Addresses",
+          "description": "Specifies the client IP addresses to collect stats for.  If none are specified, then all will be collected",
+          "type": "array",
+          "items": {
+            "title": "Client IP Address",
+            "type": "string",
+            "format": "f5ip"
+          },
+          "maxItems": 10,
+          "uniqueItems": true,
+          "default": []
+        },
+        "requestContentFilterSearchPart": {
+          "title": "Request Content Filter Search Part",
+          "description": "Specifies the part of the request that should be filtered by the search string",
+          "type": "string",
+          "enum": [
+            "all",
+            "headers",
+            "body",
+            "none",
+            "uri"
+          ],
+          "default": "none"
+        },
+        "requestContentFilterSearchString": {
+          "title": "Request Content Filter Search String",
+          "description": "Specifies the string the request should be searched for",
+          "type": "string"
+        },
+        "responseContentFilterSearchPart": {
+          "title": "Response Content Filter Search Part",
+          "description": "Specifies the part of the response that should be filtered by the search string",
+          "type": "string",
+          "enum": [
+            "all",
+            "body",
+            "headers",
+            "none"
+          ],
+          "default": "none"
+        },
+        "responseContentFilterSearchString": {
+          "title": "Response Content Filter Search String",
+          "description": "Specifies the string the response should be searched for",
+          "type": "string"
+        }
+      },
+      "dependencies": {
+        "requestContentFilterSearchString": {
+          "properties": {
+            "requestContentFilterSearchPart": {
+              "not": {
+                "const": "none"
+              }
+            }
+          }
+        },
+        "responseContentFilterSearchString": {
+          "properties": {
+            "responseContentFilterSearchPart": {
+              "not": {
+                "const": "none"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Configures a Certificate",
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Certificate"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "certificate": {
+          "title": "Certificate",
+          "description": "X.509 public-key certificate",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+            },
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "pki-cert"
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": [
+                  "query sys file ssl-cert"
+                ]
+              }
+            }
+          ]
+        },
+        "privateKey": {
+          "title": "Private Key",
+          "description": "Private key matching certificate's public key (optional)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+            },
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "pki-key"
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": [
+                  "query sys file ssl-key"
+                ]
+              }
+            }
+          ]
+        },
+        "chainCA": {
+          "title": "CA chain",
+          "description": "Bundle of one or more CA certificates in trust-chain from root CA to certificate (optional)",
+          "type": [
+            "object",
+            "string"
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+            },
+            {
+              "$ref": "#/definitions/Pointer_CA_Bundle"
+            }
+          ],
+          "allOf": [
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "pki-bundle"
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "bigComponent",
+                "data": [
+                  "query sys file ssl-cert"
+                ]
+              }
+            }
+          ]
+        },
+        "passphrase": {
+          "title": "Passphrase",
+          "description": "If supplied, used to decrypt privateKey at runtime (optional)",
+          "properties": {
+            "allowReuse": {
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/Property_Passphrase"
+            },
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "object"
+              }
+            }
+          ],
+          "type": "object"
+        },
+        "pkcs12": {
+          "title": "PKCS#12 certificate+key",
+          "description": "The pkcs12 value which may be a url to fetch the binary file from or base64 encoded string",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+            },
+            {
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "pkcs12"
+              }
+            },
+            {
+              "f5PostProcess": {
+                "tag": "certExtract"
+              }
+            }
+          ]
+        },
+        "pkcs12Options": {
+          "title": "PKCS#12 certificate+key Options",
+          "description": "Options for importing PKCS12 file",
+          "type": "object",
+          "properties": {
+            "keyImportFormat": {
+              "title": "PKCS#12 Private Key Format",
+              "description": "Determines the format in which the private key is saved. Default is PKCS#8.",
+              "type": "string",
+              "enum": [
+                "pkcs8",
+                "openssl-legacy"
+              ],
+              "default": "pkcs8"
+            },
+            "ignoreChanges": {
+              "title": "Ignore changes",
+              "description": "Key has to be decrypted and re-encrypted as part of extraction, resulting in a diff. Set to true to exclude the pkcs12 object for subsequent deployments.",
+              "type": "boolean",
+              "default": false
+            },
+            "internalOnly": {
+              "title": "BIG-IP AS3 internal use only",
+              "description": "BIG-IP AS3 uses this property internally. Any values supplied here will be ignored",
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "object",
+                  "array"
+                ]
+              },
+              "readOnly": true
+            }
+          }
+        },
+        "staplerOCSP": {
+          "title": "OCSP Stapler",
+          "description": "BIG-IP AS3 pointer to OCSP Stapler declaration (optional)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Certificate_Validator_OCSP"
+            }
+          ]
+        },
+        "issuerCertificate": {
+          "type": "object",
+          "description": "Specifies the name of the issuer certificate for this certificate",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_SSL_Certificate"
+            }
+          ]
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false,
+      "dependencies": {
+        "staplerOCSP": {
+          "required": [
+            "issuerCertificate"
+          ]
+        }
+      },
+      "if": {
+        "required": [
+          "pkcs12"
+        ]
+      },
+      "then": {
+        "dependencies": {
+          "certificate": {
+            "not": {}
+          },
+          "privateKey": {
+            "not": {}
+          }
+        }
+      },
+      "else": {
+        "required": [
+          "certificate"
+        ],
+        "not": {
+          "required": [
+            "pkcs12"
+          ]
+        }
+      }
+    },
+    "Certificate_Validator_OCSP": {
+      "title": "Certificate_Validator_OCSP",
+      "description": "OCSP validator for certificates",
+      "type": "object",
+      "properties": {
+        "class": {
+          "const": "Certificate_Validator_OCSP",
+          "title": "Class",
+          "type": "string"
+        },
+        "dnsResolver": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_DNS_Resolver"
+            }
+          ],
+          "description": "BIG-IP AS3 pointer to DNS resolver used to resolve hostnames in client requests",
+          "title": "DNS resolver"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "responderUrl": {
+          "description": "Specifies the absolute URL that overrides the OCSP responder URL obtained from the certificate's AIA extension(s). This should be a HTTP based URL.",
+          "minLength": 3,
+          "title": "Responder URL",
+          "type": "string"
+        },
+        "signingCertificate": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_SSL_Certificate"
+            }
+          ],
+          "description": "Specifies the certificate object to use for OCSP responders that require the request to be signed",
+          "title": "Request Signing Certificate Object"
+        },
+        "signingHashAlgorithm": {
+          "default": "sha256",
+          "description": "Specifies a hash algorithm used to sign an OCSP request",
+          "enum": [
+            "sha1",
+            "sha256"
+          ],
+          "title": "Request Signing Hash Algorithm",
+          "type": "string"
+        },
+        "timeout": {
+          "default": 8,
+          "description": "Specifies the time interval (in seconds) that the BIG-IP waits for before ending the connection to the OCSP responder. The default value is 8",
+          "maximum": 300,
+          "minimum": 1,
+          "title": "Timeout",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
+    "Constants": {
+      "title": "Constants",
+      "description": "Named values for (re-)use by declaration objects",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Constants"
+        }
+      },
+      "propertyNames": {
+        "maxLength": 64,
+        "pattern": "^[A-Za-z][0-9A-Za-z_]*$"
+      },
+      "additionalProperties": {
+        "if": {
+          "required": [
+            "protected",
+            "ciphertext"
+          ],
+          "type": "object"
+        },
+        "then": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/JWE"
+            }
+          ],
+          "properties": {
+            "allowReuse": {
+              "default": true,
+              "description": "If true (default), cryptogram may be reused by different declaration objects, WHICH MAY POSE A SECURITY RISK!",
+              "title": "Allow reuse",
+              "type": "boolean"
+            }
+          }
+        },
+        "type": [
+          "boolean",
+          "integer",
+          "number",
+          "string",
+          "array",
+          "object"
+        ]
+      },
+      "required": [
+        "class"
+      ]
+    },
+    "Controls": {
+      "title": "Controls",
+      "type": "object",
+      "description": "Optional controls configuration",
+      "properties": {
+        "archiveId": {
+          "description": "Read-only property present when you GET a declaration from configuration system.  Archived versions of declaration are identified by a combination of 'id' and 'archiveId'",
+          "readOnly": true,
+          "title": "Archive ID",
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "archiveTimestamp": {
+          "description": "Read-only property present when you GET a declaration from configuration system.  Indicates when this version (see archiveId) of declaration was archived",
+          "format": "date-time",
+          "readOnly": true,
+          "title": "Archive timestamp",
+          "type": "string"
+        },
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Controls",
+          "default": "Controls"
+        },
+        "dryRun": {
+          "default": false,
+          "description": "Boolean that indicates if this declaration will be run as a dry-run. If true, the declaration will NOT make any changes to the system, but will respond with whether or not it would.",
+          "title": "Dry-Run Option",
+          "type": "boolean"
+        },
+        "fortune": {
+          "description": "If true, BIG-IP AS3 will activate Zoltar mode and read you your fortune",
+          "title": "Fortune",
+          "type": "boolean"
+        },
+        "logLevel": {
+          "title": "Log level",
+          "description": "Controls the amount of detail in logs produced while configuring this Tenant (default is whole-declaration Controls/logLevel value)",
+          "type": "string",
+          "enum": [
+            "emergency",
+            "alert",
+            "critical",
+            "error",
+            "warning",
+            "notice",
+            "info",
+            "debug"
+          ],
+          "default": "error"
+        },
+        "trace": {
+          "default": false,
+          "description": "If true, BIG-IP AS3 creates a detailed trace of the configuration process for this Tenant for subsequent analysis (default is whole-declaration Controls/trace value).  Warning:  trace files may contain sensitive configuration data",
+          "title": "Trace",
+          "type": "boolean"
+        },
+        "traceResponse": {
+          "title": "Trace Response",
+          "description": "If true, the response will contain the trace files",
+          "type": "boolean",
+          "default": false
+        },
+        "userAgent": {
+          "title": "User Agent",
+          "description": "User Agent information to include in TEEM report",
+          "type": "string"
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
+    "DNS_Logging_Profile": {
+      "title": "DNS Logging Profile",
+      "type": "object",
+      "description": "Configures a Domain Name System (DNS) logging profile",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "DNS_Logging_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "includeCompleteAnswer": {
+          "description": "Specifies whether the system logs the complete answer from the query",
+          "type": "boolean",
+          "default": true
+        },
+        "includeQueryId": {
+          "description": "Specifies whether the system logs the ID of the query",
+          "type": "boolean",
+          "default": false
+        },
+        "includeSource": {
+          "description": "Specifies whether the system logs the source (the BIG-IP system that receives the packet)",
+          "type": "boolean",
+          "default": true
+        },
+        "includeTimestamp": {
+          "description": "Specifies whether the system logs the timestamp of when the query was created",
+          "type": "boolean",
+          "default": true
+        },
+        "includeView": {
+          "description": "Specifies whether the system includes the view in the log",
+          "type": "boolean",
+          "default": true
+        },
+        "logPublisher": {
+          "$ref": "#/definitions/Pointer_Log_Publisher"
+        },
+        "logQueriesEnabled": {
+          "description": "Specifies whether the system logs queries",
+          "type": "boolean",
+          "default": true
+        },
+        "logResponsesEnabled": {
+          "description": "Specifies whether the systems logs responses",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "class",
+        "logPublisher"
+      ],
+      "additionalProperties": false
+    },
+    "Enum_Country_Analytics": {
+      "title": "Enum values for Analytics_Profile",
+      "description": "Enum values for Analytics_Profile",
+      "type": "string",
+      "enum": [
+        "Afghanistan",
+        "Aland Islands",
+        "Albania",
+        "Algeria",
+        "American Samoa",
+        "Andorra",
+        "Angola",
+        "Anguilla",
+        "Anonymous Proxy",
+        "Antarctica",
+        "Antigua and Barbuda",
+        "Argentina",
+        "Armenia",
+        "Aruba",
+        "Asia/Pacific Region",
+        "Australia",
+        "Austria",
+        "Azerbaijan",
+        "Bahamas",
+        "Bahrain",
+        "Bangladesh",
+        "Barbados",
+        "Belarus",
+        "Belgium",
+        "Belize",
+        "Benin",
+        "Bermuda",
+        "Bhutan",
+        "Bolivia",
+        "Bonaire, Saint Eustatius and Saba",
+        "Bosnia and Herzegovina",
+        "Botswana",
+        "Bouvet Island",
+        "Brazil",
+        "British Indian Ocean Territory",
+        "Brunei Darussalam",
+        "Bulgaria",
+        "Burkina Faso",
+        "Burundi",
+        "Cambodia",
+        "Cameroon",
+        "Canada",
+        "Cape Verde",
+        "Cayman Islands",
+        "Central African Republic",
+        "Chad",
+        "Chile",
+        "China",
+        "Christmas Island",
+        "Cocos (Keeling) Islands",
+        "Colombia",
+        "Comoros",
+        "Congo",
+        "Congo, The Democratic Republic of the",
+        "Cook Islands",
+        "Costa Rica",
+        "Cote D'Ivoire",
+        "Croatia",
+        "Cuba",
+        "Cyprus",
+        "Czech Republic",
+        "Denmark",
+        "Djibouti",
+        "Dominica",
+        "Dominican Republic",
+        "Ecuador",
+        "Egypt",
+        "El Salvador",
+        "Equatorial Guinea",
+        "Eritrea",
+        "Estonia",
+        "Ethiopia",
+        "Europe",
+        "Falkland Islands (Malvinas)",
+        "Faroe Islands",
+        "Fiji",
+        "Finland",
+        "France",
+        "France, Metropolitan",
+        "French Guiana",
+        "French Polynesia",
+        "French Southern Territories",
+        "Gabon",
+        "Gambia",
+        "Georgia",
+        "Germany",
+        "Ghana",
+        "Gibraltar",
+        "Greece",
+        "Greenland",
+        "Grenada",
+        "Guadeloupe",
+        "Guam",
+        "Guatemala",
+        "Guernsey",
+        "Guinea",
+        "Guinea-Bissau",
+        "Guyana",
+        "Haiti",
+        "Heard Island and McDonald Islands",
+        "Holy See (Vatican City State)",
+        "Honduras",
+        "Hong Kong",
+        "Hungary",
+        "Iceland",
+        "India",
+        "Indonesia",
+        "Iran, Islamic Republic of",
+        "Iraq",
+        "Ireland",
+        "Isle of Man",
+        "Israel",
+        "Italy",
+        "Jamaica",
+        "Japan",
+        "Jersey",
+        "Jordan",
+        "Kazakhstan",
+        "Kenya",
+        "Kiribati",
+        "Korea, Democratic People's Republic of",
+        "Korea, Republic of",
+        "Kuwait",
+        "Kyrgyzstan",
+        "Lao People's Democratic Republic",
+        "Latvia",
+        "Lebanon",
+        "Lesotho",
+        "Liberia",
+        "Libyan Arab Jamahiriya",
+        "Liechtenstein",
+        "Lithuania",
+        "Luxembourg",
+        "Macau",
+        "Macedonia",
+        "Madagascar",
+        "Malawi",
+        "Malaysia",
+        "Maldives",
+        "Mali",
+        "Malta",
+        "Marshall Islands",
+        "Martinique",
+        "Mauritania",
+        "Mauritius",
+        "Mayotte",
+        "Mexico",
+        "Micronesia, Federated States of",
+        "Moldova, Republic of",
+        "Monaco",
+        "Mongolia",
+        "Montenegro",
+        "Montserrat",
+        "Morocco",
+        "Mozambique",
+        "Myanmar",
+        "Namibia",
+        "Nauru",
+        "Nepal",
+        "Netherlands",
+        "Netherlands Antilles",
+        "New Caledonia",
+        "New Zealand",
+        "Nicaragua",
+        "Niger",
+        "Nigeria",
+        "Niue",
+        "Norfolk Island",
+        "Northern Mariana Islands",
+        "Norway",
+        "Oman",
+        "Other",
+        "Pakistan",
+        "Palau",
+        "Palestinian Territory",
+        "Panama",
+        "Papua New Guinea",
+        "Paraguay",
+        "Peru",
+        "Philippines",
+        "Pitcairn Islands",
+        "Poland",
+        "Portugal",
+        "Puerto Rico",
+        "Qatar",
+        "Reunion",
+        "Romania",
+        "Russian Federation",
+        "Rwanda",
+        "Saint Barthelemy",
+        "Saint Helena",
+        "Saint Kitts and Nevis",
+        "Saint Lucia",
+        "Saint Martin",
+        "Saint Pierre and Miquelon",
+        "Saint Vincent and the Grenadines",
+        "Samoa",
+        "San Marino",
+        "Sao Tome and Principe",
+        "Satellite Provider",
+        "Saudi Arabia",
+        "Senegal",
+        "Serbia",
+        "Seychelles",
+        "Sierra Leone",
+        "Singapore",
+        "Slovakia",
+        "Slovenia",
+        "Solomon Islands",
+        "Somalia",
+        "South Africa",
+        "South Georgia and the South Sandwich Islands",
+        "Spain",
+        "Sri Lanka",
+        "Sudan",
+        "Suriname",
+        "Svalbard and Jan Mayen",
+        "Swaziland",
+        "Sweden",
+        "Switzerland",
+        "Syrian Arab Republic",
+        "Taiwan",
+        "Tajikistan",
+        "Tanzania, United Republic of",
+        "Thailand",
+        "Timor-Leste",
+        "Togo",
+        "Tokelau",
+        "Tonga",
+        "Trinidad and Tobago",
+        "Tunisia",
+        "Turkey",
+        "Turkmenistan",
+        "Turks and Caicos Islands",
+        "Tuvalu",
+        "Uganda",
+        "Ukraine",
+        "United Arab Emirates",
+        "United Kingdom",
+        "United States",
+        "United States Minor Outlying Islands",
+        "Unknown",
+        "Uruguay",
+        "Uzbekistan",
+        "Vanuatu",
+        "Venezuela",
+        "Vietnam",
+        "Virgin Islands, British",
+        "Virgin Islands, U.S.",
+        "Wallis and Futuna",
+        "Western Sahara",
+        "Yemen",
+        "Zambia",
+        "Zimbabwe"
+      ]
+    },
+    "F5_String": {
+      "title": "Common definition for ways to define a value that needs to be resolved",
+      "description": "The value can be either a string, text property, base64 property, url property, etc.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/Property_Text"
+            },
+            "base64": {
+              "$ref": "#/definitions/Property_Base64"
+            },
+            "url": {
+              "$ref": "#/definitions/Resource_URL"
+            },
+            "copyFrom": {
+              "$ref": "#/definitions/Pointer_Copy_From"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1
+        }
+      ]
+    },
+    "JWE": {
+      "title": "JWE cryptogram",
+      "description": "A value in a cryptogram which is a Flattened JWE JSON Serialization object.  If 'miniJWE' is true then enc=(none|f5sv) only (in JOSE header)",
+      "type": "object",
+      "properties": {
+        "ciphertext": {
+          "title": "Ciphertext",
+          "description": "Put base64url(data_value) here",
+          "type": "string",
+          "minLength": 2,
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_Base64"
+            }
+          ]
+        },
+        "ignoreChanges": {
+          "title": "Ignore changes",
+          "description": "If false (default), the system updates the ciphertext in every BIG-IP AS3 declaration deployment. If true, BIG-IP AS3 creates the ciphertext on first deployment, and leaves it untouched afterwards",
+          "type": "boolean",
+          "default": false
+        },
+        "miniJWE": {
+          "title": "Mini JWE",
+          "description": "If true (default), object is an f5 mini-JWE",
+          "type": "boolean",
+          "default": true
+        },
+        "protected": {
+          "title": "JOSE header",
+          "description": "JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64 url-encoded into 'ciphertext'). If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram",
+          "type": "string",
+          "minLength": 2,
+          "allOf": [
+            {
+              "$ref": "#/definitions/Resource_Base64"
+            }
+          ],
+          "default": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
+        }
+      },
+      "required": [
+        "protected"
+      ]
+    },
+    "Log_Publisher": {
+      "title": "Log_Publisher",
+      "description": "Configures lists of destinations for the common logging interface",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Log_Publisher"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "destinations": {
+          "description": "specify log destinations for this log publisher to use",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Pointer_Log_Destination"
+          }
+        }
+      },
+      "required": [
+        "class",
+        "destinations"
+      ]
+    },
+    "Pointer_BIGIP": {
+      "title": "Pointer BIG-IP",
+      "description": "Reference for a BIG-IP object",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Path to BIG-IP object",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bigip"
+      ],
+      "additionalProperties": false
+    },
+    "Pointer_BIGIP_Or_Use": {
+      "title": "Pointer BIG-IP or Use",
+      "description": "Reference for a BIG-IP or Use object",
+      "if": {
+        "type": "object",
+        "required": [
+          "bigip"
+        ]
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/definitions/Pointer_BIGIP"
+          }
+        ]
+      },
+      "else": {
+        "allOf": [
+          {
+            "$ref": "#/definitions/Pointer_Use"
+          }
+        ]
+      }
+    },
+    "Pointer_CA_Bundle": {
+      "title": "Pointer CA Bundle",
+      "description": "Reference to a Ca Bundle",
+      "additionalProperties": false,
+      "maxProperties": 1,
+      "minProperties": 1,
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Ca Bundle",
+          "format": "f5bigip",
+          "type": "string"
+        },
+        "use": {
+          "description": "BIG-IP AS3 pointer to Ca Bundle declaration",
+          "minLength": 1,
+          "type": "string",
+          "f5PostProcess": {
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "CA_Bundle"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            },
+            "tag": "pointer"
+          }
+        }
+      },
+      "type": "object",
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "data": [
+              "query sys file ssl-cert"
+            ],
+            "tag": "bigComponent"
+          }
+        }
+      ]
+    },
+    "Pointer_Certificate_Validator_OCSP": {
+      "title": "Pointer Certificate Validator OCSP",
+      "description": "Reference to a OCSP Cert Validator",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "data": [
+              "query sys crypto cert-validator ocsp"
+            ],
+            "tag": "bigComponent"
+          }
+        }
+      ],
+      "maxProperties": 1,
+      "minProperties": 1,
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP OCSP Cert Validator",
+          "format": "f5bigip",
+          "type": "string"
+        },
+        "use": {
+          "description": "BIG-IP AS3 pointer to OCSP Cert Validator declaration",
+          "f5PostProcess": {
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Certificate_Validator_OCSP"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            },
+            "tag": "pointer"
+          },
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Pointer_Copy_From": {
+      "title": "Copy from pointer",
+      "description": "pointer to declaration object/property from which to copy value",
+      "type": "string"
+    },
+    "Pointer_DNS_Resolver": {
+      "title": "Pointer DNS Resolver",
+      "description": "Reference to a DNS resolver",
+      "type": "object",
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "data": [
+              "query net dns-resolver"
+            ],
+            "tag": "bigComponent"
+          }
+        }
+      ],
+      "maxProperties": 1,
+      "minProperties": 1,
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP DNS resolver",
+          "format": "f5bigip",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Pointer_F5_String_Or_BIGIP": {
+      "title": "Pointer F5 String or BIG-IP",
+      "description": "Reference for a property or BIG-IP object",
+      "if": {
+        "type": "object",
+        "required": [
+          "bigip"
+        ]
+      },
+      "then": {
+        "allOf": [
+          {
+            "$ref": "#/definitions/Pointer_BIGIP"
+          }
+        ]
+      },
+      "else": {
+        "allOf": [
+          {
+            "$ref": "#/definitions/F5_String"
+          }
+        ]
+      }
+    },
+    "Pointer_Log_Publisher": {
+      "title": "Pointer Log Publisher",
+      "description": "Reference to a log publisher",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pointer_BIGIP_Or_Use"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "use": {
+              "f5PostProcess": {
+                "tag": "pointer",
+                "data": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "Log_Publisher"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
+              }
+            },
+            "bigip": {
+              "format": "f5bigip"
+            }
+          },
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query sys log-config publisher"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_SSL_Certificate": {
+      "title": "Pointer SSL Certificate",
+      "description": "Reference to a SSL certificate",
+      "type": "object",
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "data": [
+              "query sys file ssl-cert"
+            ],
+            "tag": "bigComponent"
+          }
+        }
+      ],
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP SSL certificate",
+          "format": "f5bigip",
+          "type": "string"
+        },
+        "use": {
+          "description": "BIG-IP AS3 pointer to SSL certificate declaration",
+          "f5PostProcess": {
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Certificate"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            },
+            "tag": "pointer"
+          },
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "maxProperties": 1,
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "Pointer_String": {
+      "title": "Pointer String",
+      "description": "Reference that is a string",
+      "type": "string"
+    },
+    "Pointer_Use": {
+      "title": "Pointer Use",
+      "description": "Reference for use property",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "Path to object in declaration",
+          "type": "string"
+        }
+      },
+      "required": [
+        "use"
+      ],
+      "additionalProperties": false
+    },
+    "Property_Base64": {
+      "title": "Property Base64",
+      "description": "A Base64-encoded value (base64 property)",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Resource_Base64"
+        }
+      ]
+    },
+    "Property_Passphrase": {
+      "title": "Property Passphrase",
+      "description": "A passphrase (passphrase property)",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Secret"
+        }
+      ],
+      "f5PostProcess": {
+        "tag": "secret"
+      }
+    },
+    "Property_Text": {
+      "title": "Property Text",
+      "description": "A text value (text property)",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Resource_Text"
+        }
+      ]
+    },
+    "Resource_Base64": {
+      "title": "Resource Base64",
+      "description": "A Base64-encoded value",
+      "type": "string",
+      "pattern": "^([0-9A-Za-z/+_-]*|[0-9A-Za-z/+_-]+={1,2})$"
+    },
+    "Resource_Text": {
+      "title": "Resource Text",
+      "description": "UTF-8 text (in JSON string)",
+      "type": "string"
+    },
+    "Resource_URL": {
+      "title": "Resource URL",
+      "description": "The URL for a required resource",
+      "oneOf": [
+        {
+          "type": "string",
+          "f5PostProcess": {
+            "tag": "expand"
+          },
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "authentication": {
+              "description": "Authentication to the remote source",
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/Basic_Auth"
+                },
+                {
+                  "$ref": "#/definitions/Bearer_Token"
+                }
+              ]
+            },
+            "ignoreChanges": {
+              "type": "boolean",
+              "description": "If false (default), the URL will be fetched in each BIG-IP AS3 declaration deployment. If true, the resource will be created on the first deployment, but not on additional deployments",
+              "default": false
+            },
+            "skipCertificateCheck": {
+              "type": "boolean",
+              "description": "Skip verification of SSL certificates (default false)",
+              "default": false
+            },
+            "url": {
+              "type": "string",
+              "description": "URL from which to retrieve value",
+              "f5PostProcess": {
+                "tag": "expand"
+              },
+              "format": "uri"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Secret": {
+      "title": "Secret value",
+      "description": "A value: (a) in a cryptogram in this object; (b) in a cryptogram elsewhere in this declaration; or (c) available from a URL",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "allowReuse": {
+              "title": "Allow reuse",
+              "description": "If true, other declaration objects may reuse this value",
+              "type": "boolean"
+            },
+            "reuseFrom": {
+              "title": "Reuse from",
+              "description": "BIG-IP AS3 pointer to another JWE cryptogram in this declaration to copy",
+              "type": "string",
+              "minLength": 1,
+              "f5PostProcess": {
+                "tag": "pointer",
+                "data": {
+                  "type": "object",
+                  "required": [
+                    "ciphertext"
+                  ]
+                }
+              }
+            },
+            "url": {
+              "title": "URL",
+              "description": "URL from which secret should be fetched",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Secret_Resource_URL"
+                }
+              ]
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "ciphertext"
+              ]
+            },
+            {
+              "required": [
+                "reuseFrom"
+              ]
+            },
+            {
+              "required": [
+                "url"
+              ]
+            }
+          ],
+          "if": {
+            "required": [
+              "ciphertext"
+            ]
+          },
+          "then": {
+            "$ref": "#/definitions/JWE"
+          }
+        }
+      ]
+    },
+    "Secret_Resource_URL": {
+      "title": "Secret Resource URL",
+      "description": "Describes the URL to remote resource and optional parameters",
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri",
+          "f5PostProcess": {
+            "tag": "expand"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "url": {
+              "description": "URL from which to retrieve value",
+              "type": "string",
+              "format": "uri",
+              "f5PostProcess": {
+                "tag": "expand"
+              }
+            },
+            "skipCertificateCheck": {
+              "description": "Skip verification of SSL certificates (default false)",
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       ]
     },

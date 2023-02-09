@@ -1,25 +1,8 @@
 'use strict';
 
-const reporters = ['html', 'progress'];
-let badgeReporter;
-let plugins;
-
-try {
-    const badgeReporterPath = require.resolve('stryker-mutator-badge-reporter');
-    plugins = ['@stryker-mutator/*', badgeReporterPath];
-    reporters.push('badge');
-    badgeReporter = {
-        label: 'mutation'
-    };
-} catch (e) {
-    // ignore failure
-}
-
-module.exports = {
+const config = {
     packageManager: 'npm',
-    plugins,
-    reporters,
-    badgeReporter,
+    reporters: ['html', 'progress'],
     testRunner: 'mocha',
     coverageAnalysis: 'perTest',
     mochaOptions: {
@@ -27,3 +10,16 @@ module.exports = {
     },
     ignoreStatic: true
 };
+
+try {
+    const badgeReporterPath = require.resolve('stryker-mutator-badge-reporter');
+    config.plugins = ['@stryker-mutator/*', badgeReporterPath];
+    config.reporters.push('badge');
+    config.badgeReporter = {
+        label: 'mutation'
+    };
+} catch (e) {
+    // ignore failure
+}
+
+module.exports = config;

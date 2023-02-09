@@ -21,6 +21,7 @@ const as3Schema = require('../../../src/schema/latest/adc-schema.json');
 
 // does not search through AS3 class keys or class-property keys
 const IGNORE_PARENT_KEY = [
+    'default',
     'definitions',
     'dependencies',
     'patternProperties',

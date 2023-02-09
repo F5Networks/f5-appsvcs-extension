@@ -22,57 +22,80 @@ const {
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
 
-describe('FTP_Profile', function () {
+describe('RTSP_Profile', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    function assertFtpProfile(properties) {
-        return assertClass('FTP_Profile', properties);
+    function assertRtspProfile(properties) {
+        return assertClass('RTSP_Profile', properties);
     }
 
     it('All properties', function () {
         const properties = [
             {
                 name: 'remark',
-                inputValue: [undefined, 'description', undefined],
-                expectedValue: ['none', 'description', 'none'],
+                inputValue: [undefined, 'This is a description', undefined],
+                expectedValue: ['none', 'This is a description', 'none'],
                 extractFunction: (o) => o.description || 'none'
             },
             {
-                name: 'port',
-                inputValue: [undefined, 300, undefined],
-                expectedValue: [20, 300, 20]
+                name: 'idleTimeout',
+                inputValue: [undefined, 'immediate', undefined],
+                expectedValue: ['300', 'immediate', '300']
             },
             {
-                name: 'ftpsMode',
-                inputValue: [undefined, 'require', undefined],
-                expectedValue: ['disallow', 'require', 'disallow']
+                name: 'maxHeaderSize',
+                inputValue: [undefined, 5096, undefined],
+                expectedValue: [4096, 5096, 4096]
             },
             {
-                name: 'enforceTlsSessionReuseEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled'],
-                minVersion: '14.0'
+                name: 'maxQueuedData',
+                inputValue: [undefined, 65536, undefined],
+                expectedValue: [32768, 65536, 32768]
             },
             {
-                name: 'activeModeEnabled',
-                inputValue: [undefined, false, undefined],
-                expectedValue: ['enabled', 'disabled', 'enabled'],
-                minVersion: '14.0'
-            },
-            {
-                name: 'securityEnabled',
+                name: 'unicastRedirect',
                 inputValue: [undefined, true, undefined],
                 expectedValue: ['disabled', 'enabled', 'disabled']
             },
             {
-                name: 'translateExtendedEnabled',
+                name: 'multicastRedirect',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
+            },
+            {
+                name: 'sessionReconnect',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
+            },
+            {
+                name: 'realHTTPPersistence',
                 inputValue: [undefined, false, undefined],
                 expectedValue: ['enabled', 'disabled', 'enabled']
             },
             {
-                name: 'inheritParentProfileEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
+                name: 'checkSource',
+                inputValue: [undefined, false, undefined],
+                expectedValue: ['enabled', 'disabled', 'enabled']
+            },
+            {
+                name: 'proxy',
+                inputValue: [undefined, 'internal', undefined],
+                expectedValue: ['none', 'internal', 'none']
+            },
+            {
+                name: 'proxyHeader',
+                inputValue: [undefined, 'X-Proxy', undefined],
+                expectedValue: ['none', 'X-Proxy', 'none']
+            },
+            {
+                name: 'RTPPort',
+                inputValue: [undefined, 49152, undefined],
+                expectedValue: [0, 49152, 0]
+            },
+            {
+                name: 'RTCPPort',
+                inputValue: [undefined, 49153, undefined],
+                expectedValue: [0, 49153, 0]
             }
         ];
 
@@ -80,7 +103,7 @@ describe('FTP_Profile', function () {
             properties.push({
                 name: 'algLogProfile',
                 inputValue: [undefined, { use: 'algLogProfile' }, undefined],
-                expectedValue: ['none', '/TEST_FTP_Profile/Application/algLogProfile', 'none'],
+                expectedValue: ['none', '/TEST_RTSP_Profile/Application/algLogProfile', 'none'],
                 extractFunction: (o) => ((typeof o.logProfile === 'object') ? o.logProfile.fullPath : o.logProfile),
                 referenceObjects: {
                     algLogProfile: {
@@ -96,6 +119,6 @@ describe('FTP_Profile', function () {
             });
         }
 
-        return assertFtpProfile(properties);
+        return assertRtspProfile(properties);
     });
 });

@@ -112,12 +112,25 @@ This declaration creates the following objects on the BIG-IP:
 
 Creating an FTP profile in a declaration
 ````````````````````````````````````````
-This example shows how you can create an FTP profile in a declaration (example 9 showed how to use an existing FTP profile).   See |ftpprofile| in the Schema Reference for more usage options and information.  
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-This declaration creates the following objects on the BIG-IP:
+   Support for including an ALG logging profile and log publisher in an FTP profile is available in BIG-IP AS3 3.43 and later. 
+   
+This example shows how you can create an FTP profile in a declaration (the previous example showed how to use an existing FTP profile).   
+
+See |ftpprofile| in the Schema Reference for more usage options and information.
+
+**New in BIG-IP AS3 3.43** |br|
+BIG-IP AS3 3.43 adds the ability to include an :ref:`ALG Log Profile<alglog>` and log publisher to an FTP profile, allowing flexibility when setting logging parameters.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
+
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on an AS3 version prior to 3.43, it will fail.  Remove the ALG profile and log publisher for previous versions):
 
 - Partition (tenant) named **TEST_FTP_Profile**.
-- A FTP profile named **sampleFTPprofile**
+- An Application named **Application**
+- A virtual server named **service** that references the FTP profile
+- A FTP profile named **sampleFTPprofile** which includes an ALG Log profile and log publisher.
 
 .. literalinclude:: ../../examples/declarations/example-ftp-profile.json
    :language: json
@@ -130,16 +143,27 @@ This declaration creates the following objects on the BIG-IP:
 .. _tftpprof:
 
 
-Using an existing TFTP profile in a declaration
-```````````````````````````````````````````````
-This example shows how can use TFTP (Trivial File Transfer Protocol) profiles that already exist on your BIG-IP system in a BIG-IP AS3 declaration.  The TFTP profile enables you to configure the BIG-IP system to read and write files from or to a remote server. See the |tftpdoc| chapter of the BIG-IP documentation for detailed information.
+Creating a TFTP profile in a declaration
+````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-See |tftppoint| in the :ref:`Schema Reference<schema-reference>` for usage options.
+   Support for creating a TFTP profile is available in BIG-IP AS3 3.43 and later. 
+
+This updated example shows how you can create a TFTP (Trivial File Transfer Protocol) profile in a declaration using BIG-IP AS3 3.43 and later.  In previous versions of BIG-IP AS3, you could reference an existing profile, but not create one.
+
+The TFTP profile allows you to configure the BIG-IP system to read and write files from or to a remote server. See the |tftpdoc| chapter of the BIG-IP documentation for detailed information.
+
+See |tftpp| in the Schema Reference for information on available properties and AS3 usage options.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
 
 This declaration creates the following objects on the BIG-IP:
 
-- Partition (tenant) named **Exampe_Service_UDP**. 
-- A virtual service named **service** that references an existing TFTP profile on the BIG-IP system.
+- Partition (tenant) named **Example_Service_UDP**. 
+- An Application named **Application**.
+- A virtual service named **service** that references the TFTP profile
+- A TFTP profile named **TFTP_profile** with a number of configured properties.
+- An :ref:`ALG Log Profile<alglog>` named **ALG_Log_profile** with a number of configured properties.
 
 .. literalinclude:: ../../examples/declarations/example-tftp-profile.json
    :language: json
@@ -329,9 +353,9 @@ This declaration creates the following objects on the BIG-IP:
 
    <a href="https://support.f5.com/csp/article/K13675" target="_blank">Overview of the stateless virtual server</a>
 
-.. |tftppoint| raw:: html
+.. |tftpp| raw:: html
 
-   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#pointer-tftp-profile" target="_blank">Pointer_TFTP</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#tftp-profile" target="_blank">TFTP_Profile</a>
 
 .. |tftpdoc| raw:: html
 

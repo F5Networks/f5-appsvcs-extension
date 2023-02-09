@@ -338,6 +338,67 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:alg-log-profile:alg-log-profilestate', () => {
+            it('should convert', () => {
+                const obj = {
+                    kind: 'tm:ltm:alg-log-profile:alg-log-profilestate',
+                    name: 'item',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/item',
+                    csvFormat: 'enabled',
+                    endControlChannel: {
+                        action: 'enabled'
+                    },
+                    endDataChannel: {
+                        action: 'enabled'
+                    },
+                    inboundTransaction: {
+                        action: 'enabled'
+                    },
+                    startControlChannel: {
+                        action: 'enabled',
+                        elements: [
+                            'destination'
+                        ]
+                    },
+                    startDataChannel: {
+                        action: 'disabled'
+                    }
+                };
+                defaultContext.target.tmosVersion = '14.0';
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/Tenant/item',
+                    command: 'ltm alg-log-profile',
+                    properties: {
+                        'csv-format': 'enabled',
+                        'start-control-channel': {
+                            action: 'enabled',
+                            elements: {
+                                destination: {}
+                            }
+                        },
+                        'end-control-channel': {
+                            action: 'enabled',
+                            elements: {}
+                        },
+                        'inbound-transaction': {
+                            action: 'enabled'
+                        },
+                        'start-data-channel': {
+                            action: 'disabled',
+                            elements: {}
+                        },
+                        'end-data-channel': {
+                            action: 'enabled',
+                            elements: {}
+                        }
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:ltm:profile:analytics:analyticsstate', () => {
             it('should not throw an error if a analytics profile does not have a traffic-capture field', () => {
                 const obj = {
@@ -358,6 +419,144 @@ describe('map_mcp', () => {
                 }];
 
                 translate[obj.kind](defaultContext, obj, referenceConfig);
+            });
+        });
+
+        describe('tm:ltm:profile:rtsp:rtspstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:rtsp:rtspstate',
+                    name: 'myRtsp',
+                    partition: 'myApp',
+                    subPath: 'Application1',
+                    fullPath: '/myApp/Application1/myRtsp',
+                    checkSource: 'enabled',
+                    description: 'My Description',
+                    idleTimeout: 'indefinite',
+                    logProfile: '/Common/alg_log_profile',
+                    logPublisher: '/Common/local-db-publisher',
+                    logPublisherReference: {
+                        link: 'https://localhost/mgmt/tm/sys/log-config/publisher/~Common~local-db-publisher?ver=17.0.0'
+                    },
+                    maxHeaderSize: 4096,
+                    maxQueuedData: 32768,
+                    multicastRedirect: 'disabled',
+                    proxy: 'internal',
+                    proxyHeader: 'proxy-header',
+                    realHttpPersistence: 'enabled',
+                    rtcpPort: 0,
+                    rtpPort: 0,
+                    sessionReconnect: 'disabled',
+                    unicastRedirect: 'disabled'
+                };
+
+                defaultContext.target.provisionedModules = ['cgnat'];
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application1/myRtsp',
+                    command: 'ltm profile rtsp',
+                    properties: {
+                        'check-source': 'enabled',
+                        description: '"My Description"',
+                        'idle-timeout': 'indefinite',
+                        'log-profile': '/Common/alg_log_profile',
+                        'log-publisher': '/Common/local-db-publisher',
+                        'max-header-size': 4096,
+                        'max-queued-data': 32768,
+                        'multicast-redirect': 'disabled',
+                        proxy: '"internal"',
+                        'proxy-header': '"proxy-header"',
+                        'real-http-persistence': 'enabled',
+                        'rtcp-port': 0,
+                        'rtp-port': 0,
+                        'session-reconnect': 'disabled',
+                        'unicast-redirect': 'disabled'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:socks:socksstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:socks:socksstate',
+                    name: 'socksExample',
+                    partition: 'myApp',
+                    subPath: 'Application',
+                    fullPath: '/myApp/Application/socksExample',
+                    defaultConnectHandling: 'allow',
+                    description: 'My Description',
+                    dnsResolver: '/Common/f5-aws-dns',
+                    dnsResolverReference: {
+                        link: 'https://localhost/mgmt/tm/net/dns-resolver/~Common~f5-aws-dns?ver=17.0.0'
+                    },
+                    ipv6First: 'yes',
+                    protocolVersions: [
+                        'socks4',
+                        'socks4a',
+                        'socks5'
+                    ],
+                    routeDomain: '/Common/2222',
+                    routeDomainReference: {
+                        link: 'https://localhost/mgmt/tm/net/route-domain/~Common~2222?ver=17.0.0'
+                    },
+                    tunnelName: '/Common/socks-tunnel',
+                    tunnelNameReference: {
+                        link: 'https://localhost/mgmt/tm/net/tunnels/tunnel/~Common~socks-tunnel?ver=17.0.0'
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application/socksExample',
+                    command: 'ltm profile socks',
+                    properties: {
+                        description: '"My Description"',
+                        'protocol-versions': {
+                            socks4: {},
+                            socks4a: {},
+                            socks5: {}
+                        },
+                        'dns-resolver': '/Common/f5-aws-dns',
+                        ipv6: 'yes',
+                        'route-domain': '/Common/2222',
+                        'tunnel-name': '/Common/socks-tunnel',
+                        'default-connect-handling': 'allow'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:tftp:tftpstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:tftp:tftpstate',
+                    name: 'myTftp',
+                    partition: 'myApp',
+                    subPath: 'Application1',
+                    fullPath: '/myApp/Application1/myTftp',
+                    description: 'My Description',
+                    idleTimeout: 'indefinite',
+                    logProfile: '/Common/alg_log_profile',
+                    logPublisher: '/Common/local-db-publisher'
+                };
+
+                defaultContext.target.provisionedModules = ['cgnat'];
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application1/myTftp',
+                    command: 'ltm profile tftp',
+                    properties: {
+                        description: '"My Description"',
+                        'idle-timeout': 'indefinite',
+                        'log-profile': '/Common/alg_log_profile',
+                        'log-publisher': '/Common/local-db-publisher'
+                    },
+                    ignore: []
+                });
             });
         });
 

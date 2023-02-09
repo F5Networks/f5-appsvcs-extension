@@ -396,14 +396,25 @@ This declaration creates the following objects on the BIG-IP:
 
 .. _rtsp-ex:
 
-Referencing an existing RTSP profile in a declaration
-`````````````````````````````````````````````````````
-This example shows how you can reference an RTSP profile that exists on the BIG-IP system in your declarations. For information on RTSP, see |rtspref|; for information on the RTSP profile, see the |rtspdoc|.  You can also see |rtsppt| and |servtcp| in the Schema Reference for usage.
+Creating an RTSP profile in a declaration
+`````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-This declaration creates the following objects on the BIG-IP:
+   Support for creating RSTP profiles in a declaration is available in AS3 3.43 and later. 
+
+This updated example shows how you can create an RTSP profile in a declaration using BIG-IP AS3 3.43 and later.  In previous versions of BIG-IP AS3, you could reference an existing profile, but not create one. For information on RTSP, see |rtspref|; for information on the RTSP profile, see the |rtspdoc|.  
+
+See |rtsp| in the Schema Reference for AS3 options and usage.
+
+.. IMPORTANT:: In the following example, the **algLogProfile** and **logPublisher** properties require the CGNAT module to be provisioned and BIG-IP version to be 15.1 or higher.
+
+This declaration creates the following objects on the BIG-IP (**NOTE** If you attempt to use this declaration on an AS3 version prior to 3.43, it will fail.  Remove the ALG profile and log publisher for previous versions):
 
 - Partition (tenant) named **example_RTSP**.
-- A virtual service named **RTSP_vs** which includes the **profileRTSP** property referencing an existing RTSP profile on the target BIG-IP.
+- An Application named **App1**.
+- A virtual service named **RTSP_vs** which references the RTSP profile
+- An RTSP profile named **RTSP_profile** with a number of configured properties.
+- An :ref:`ALG Log Profile<alglog>` named **ALG_Log_profile** with a number of configured properties.
 
 .. literalinclude:: ../../examples/declarations/example-rtsp-profile.json
    :language: json
@@ -803,7 +814,7 @@ Configuring a Statistics profile in a declaration
 
    Support for Statistics profiles is available in BIG-IP AS3 v3.41 and later. 
 
-This example shows how you can configure a Statistics profile to the TLS_Server class in a declaration using the new **Statistics_Profile** class.
+This example shows how you can configure a Statistics profile to the TLS_Server class in a declaration using the **Statistics_Profile** class introduced in AS3 3.43.
 
 The Statistics profile provides user-defined statistical counters. Each profile contains 32 settings (Field1 through Field32), which define named counters. Using a Tcl-based iRule command, you can use the names to manipulate the counters while processing traffic.  For more information, see |stats1| in the BIG-IP documentation and |stats2| in the TMSH reference.
 
@@ -824,11 +835,49 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<profile-examples>`
 
+|
 
+.. _socks:
+
+Configuring a SOCKS profile in a declaration
+````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for SOCKS profiles is available in BIG-IP AS3 v3.43 and later. 
+
+This example shows how you can configure a SOCKS (Socket Secure) profile in a declaration using the **SOCKS_Profile** class introduced in AS3 3.43.
+
+You can use the SOCKS profile to configure the BIG-IP system to handle proxy requests and function as a gateway. By configuring browser traffic to use the proxy, you can control whether to allow or deny a requested connection. For more information on the SOCKS profile, see |socksdocs| in the BIG-IP documentation.
+
+See |socksref| in the Schema Reference for options and BIG-IP AS3 usage.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **Tenant**.
+- An Application named **Application**.
+- A virtual server named **TCP** that references a SOCKS profile.
+- A SOCKS profile named **socksProfile** with a number of properties configured.
+
+
+.. literalinclude:: ../../examples/declarations/example-using-socks-profile.json
+   :language: json
+
+
+:ref:`Back to top<profile-examples>`
+
+
+
+.. |socksdocs| raw:: html
+
+   <a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-profiles-reference/services-profiles.html#GUID-54B29220-772F-4D3B-9352-AB70922DA41C" target="_blank">SOCKS Profile</a>
+
+.. |socksref| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#socks-profile" target="_blank">SOCKS Profile</a>
 
 .. |streamprof| raw:: html
 
-   < a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#stream-profile" target="_blank">Stream Profile</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#stream-profile" target="_blank">Stream Profile</a>
 
 .. |streamprofile| raw:: html
 
@@ -921,11 +970,11 @@ This declaration creates the following objects on the BIG-IP:
 
 .. |rtspdoc| raw:: html
 
-   <a href="https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-local-traffic-management-profiles-reference-14-1-0/02.html#GUID-2C8C75A0-1A12-417D-8C92-6943C345403F" target="_blank">RTSP documentation</a>
+   <a href="https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-local-traffic-management-profiles-reference/services-profiles.html#GUID-2C8C75A0-1A12-417D-8C92-6943C345403F" target="_blank">RTSP documentation</a>
 
-.. |rtsppt| raw:: html
+.. |rtsp| raw:: html
 
-   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#pointer-rtsp-profile" target="_blank">Pointer_RTSP_Profile</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#rtsp-profile" target="_blank">RTSP_Profile</a>
 
 .. |servtcp| raw:: html
 

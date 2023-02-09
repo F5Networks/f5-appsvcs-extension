@@ -1,0 +1,45 @@
+{
+    "class": "ADC",
+    "label": "Sample Security Log Profile NAT",
+    "schemaVersion": "3.43.0",
+    "id": "Security_Log_Profile_NAT",
+    "Sample_sec_log_profile_nat": {
+        "class": "Tenant",
+        "A1": {
+            "class": "Application",
+            "secLogNAT": {
+                "class": "Security_Log_Profile",
+                "nat": {
+                    "publisher": {
+                        "bigip": "/Common/default-ipsec-log-publisher"
+                    },
+                    "logErrors": true,
+                    "logSubscriberId": true,
+                    "logQuotaExceeded": true,
+                    "logStartInboundSession": true,
+                    "logEndInboundSession": true,
+                    "logStartOutboundSession": true,
+                    "logStartOutboundSessionDestination": false,
+                    "logEndOutboundSession": true,
+                    "logEndOutboundSessionDestination": false,
+                    "lsnLegacyMode": false,
+                    "rateLimitAggregate": 100,
+                    "rateLimitErrors": 10,
+                    "rateLimitQuotaExceeded": 20,
+                    "rateLimitStartInboundSession": 30,
+                    "rateLimitEndInboundSession": 40,
+                    "rateLimitStartOutboundSession": 50,
+                    "rateLimitEndOutboundSession": 60,
+                    "formatErrors": {
+                        "fields": [
+                            "context-name",
+                            "event-name",
+                            "dest-ip"
+                        ],
+                        "delimiter": "."
+                    }
+                }
+            }
+        }
+    }
+}
