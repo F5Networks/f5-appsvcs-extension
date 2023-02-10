@@ -242,6 +242,7 @@ function buildSharedSchema() {
         'DNS_Logging_Profile',
         'Enum_Country_Analytics',
         'F5_String',
+        'HTTP_Compress',
         'JWE',
         'Log_Publisher',
         'Pointer_BIGIP',

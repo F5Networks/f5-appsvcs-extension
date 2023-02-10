@@ -16,7 +16,7 @@
     "smoke": "mocha test/integration/bigip/ --recursive --grep '__smoke'"
   },
   "devDependencies": {
-    "@automation-toolchain/f5-appsvcs-schema": "^0.8.6",
+    "@automation-toolchain/f5-appsvcs-schema": "^0.8.11",
     "@f5devcentral/atg-shared-utilities-dev": "^0.2.11",
     "@f5devcentral/eslint-config-f5-atg": "^0.1.8",
     "aws-sdk": "^2.1289.0",
