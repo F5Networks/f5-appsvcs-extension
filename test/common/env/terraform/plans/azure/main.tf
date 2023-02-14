@@ -64,12 +64,16 @@ resource "azurerm_role_assignment" "vm0_assignment" {
 }
 
 resource "azurerm_virtual_machine" "vm0" {
+  # We need to create list of interfaces here. depends_on accepts only calculated list of values
+  # we cannot use ternary operator here like we do for network_interface_ids,
+  # so locals section below will do the trick.
+  depends_on                   = [ local.interface_list ]
   name                         = "${module.utils.env_prefix}-vm0"
   location                     = var.location
   resource_group_name          = module.utils.env_prefix
   primary_network_interface_id = azurerm_network_interface.mgmt0.id
   vm_size                      = var.instance_size
-  network_interface_ids        = var.nic_count == 1 ? [azurerm_network_interface.mgmt0.id] : [azurerm_network_interface.mgmt0.id, azurerm_network_interface.internal0.id, azurerm_network_interface.external0.id]
+  network_interface_ids        = local.interface_list
 
   # This means the OS Disk will be deleted when Terraform destroys the Virtual Machine
   # NOTE: This may not be optimal in all cases.
@@ -113,4 +117,9 @@ resource "azurerm_virtual_machine" "vm0" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+# TODO: Make this logic smarter to handle 2 NICs case.
+locals {
+  interface_list = var.nic_count == 1 ? [ azurerm_network_interface.mgmt0.id ] : [ azurerm_network_interface.mgmt0.id, azurerm_network_interface.internal0.id, azurerm_network_interface.external0.id ]
 }
