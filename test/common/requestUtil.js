@@ -28,7 +28,9 @@ function responseHandler(response, options, callback) {
     response.on('data', (chunk) => { data += chunk; });
     response.on('end', () => {
         if (response.statusCode >= 400) {
-            callback(new Error(`Received unexpected ${response.statusCode} status code: ${data}`));
+            const error = new Error(`Received unexpected ${response.statusCode} status code: ${data}`);
+            error.code = response.statusCode;
+            callback(error);
             return;
         }
 
@@ -132,7 +134,7 @@ function validateRequestEnvVars(requestOptions) {
     if (typeof requestOptions.host === 'undefined') {
         validateEnvVars(['AS3_HOST']);
     }
-    if (typeof requestOptions.auth === 'undefined') {
+    if (typeof requestOptions.auth === 'undefined' && requestOptions.protocol !== 'http:') {
         validateEnvVars(['AS3_USERNAME', 'AS3_PASSWORD']);
     }
 }

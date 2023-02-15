@@ -383,16 +383,16 @@ deploy_for_other_project:
     - fi
     - export FILE_VERBOSITY=verbose
     - if [ "$REGRESSION_SCHEDULE" = "nightly" ]; then
-    -   npx mocha test/integration/bigip/property test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    -   npm run integration -- $TEST_REPORTER_OPTIONS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    -   npm run property -- $TEST_REPORTER_OPTIONS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "smoke" ]; then
     -   npm run smoke -- $TEST_REPORTER_OPTIONS
     - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
     -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
-    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    -   npm run property -- $TEST_REPORTER_OPTIONS --exit
     - else
-    -   npx mocha test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    -   npm run misc -- $TEST_REPORTER_OPTIONS --exit
     - fi
 
 test_rpms_in_azure:
@@ -554,7 +554,7 @@ create_docs:
     - if [ "$CI_COMMIT_REF_NAME" = "docs-staging" ] || [ "$CI_COMMIT_REF_NAME" = "docs-0.0" ] || [ "$CI_COMMIT_REF_NAME" = "docs-latest" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.13.1" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.5.1" ]; then
     -   rm -rf docs/_templates
     - fi
-    - npm install mocha@7.2.0
+    - npm install mocha@10.2
     - make html
     - API_DOCS_INDEX=${DOCS_BUILD_DIR}/refguide/apidocs.html
     - cp apidocs/index.html ${API_DOCS_INDEX}

@@ -1,19 +1,23 @@
 # AS3 Testing
 AS3 testing makes use of [Mocha](https://mochajs.org/) as a test runner.
-The Mocha [usage](https://mochajs.org/#usage) documentation is worth taking a look at to learn how to do things like stopping on the first failure with the `--bail` option and filtering the tests that are run with the `--grep` option.
-If `npx` is available on your system, you can run the locally installed version of Mocha (from `npm install`) by using `npx mocha`.
-To run a specific test or directory of tests, specify that file or directory in the Mocha command: `npx mocha test/unit`.
+The Mocha [usage](https://mochajs.org/#usage) documentation is worth taking a look at to learn how to do things like stopping on the first failure with the `--bail` option and filtering the tests that are run with the `--grep` option. Other options we use:
+* If `npx` is available on your system, you can run the locally installed version of Mocha (from `npm install`) by using `npx mocha`.
+* To run a specific test or directory of tests, specify that file or directory in the Mocha command: `npx mocha test/unit`.
 Since mocha defaults to looking in the `test` directory for tests, all tests can be run with the command `npx mocha --recursive`.
-The `--recursive` option tells mocha to look in sub-directories for tests.
+* The `--recursive` option tells mocha to look in sub-directories for tests.
+## For integation testing
+* The `--require` option tells Mocha where its hooks are. Proper usage for us is
+`--require test/integration/bigip/property/mochaHooks.js`
+* The `--parallel` option tells mocha to run the tests in parallel. This only works on mocha version 8+ so is limited to integration testing.
 
 ## Environment Variables
 One of the easiest ways to get information into Mocha (e.g. test targets and credentials) is through environment variables, and this is how we do it for AS3 testing.
 Environment variables are required for running any of the integration tests, but the unit tests do not make use of any environment variables.
 Below is a list of the environment variables that some tests look for:
 
-* AS3_HOST -- The IP address, and optionally port, of a BIG-IP target (Example: 192.0.2.42:8443)
-* AS3_USERNAME -- The username to authenticate to a BIG-IP with
-* AS3_PASSWORD -- The password to authenticate to a BIG-IP with
+AS3 integration tests can be run in serial mode or in parallel mode and there are some differences in environment variables based on the mode
+
+### All modes
 * TEST_RESOURCES_URL -- The URL at which to find policies and certs required for certain integration tests
     * propertiesAccessProfile.js
     * propertiesCertificate.js
@@ -34,6 +38,17 @@ Below is a list of the environment variables that some tests look for:
 * DOCKER_ID -- The ID of a container running an AS3 image
 * CONSUL_URI -- The URI of the Consul server
 * CONSUL_URI_NODES -- The URI of the nodes that are registered on the Consul server
+
+### Integration test serial mode
+* AS3_HOST -- The IP address, and optionally port, of a BIG-IP target (Example: 192.0.2.42:8443)
+* AS3_USERNAME -- The username to authenticate to a BIG-IP with
+* AS3_PASSWORD -- The password to authenticate to a BIG-IP with
+
+### Integration test parallel mode
+* PARALLEL - set to `true`
+* RESERVATION_SERVER_HOST - The IP address of the reservation server from which to reserve a host for a test suite
+* RESERVATION_SERVER_PORT - Port of the reservation server
+* SERVER_SET - The ID of the server set for this test run (pipeline)
 
 ## BIG-IP Integration Tests
 Location: `test/integration/bigip`

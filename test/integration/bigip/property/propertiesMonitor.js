@@ -361,7 +361,7 @@ describe('Monitor', function () {
         return assertClass('Monitor', properties);
     });
 
-    it('HTTP/2', function () {
+    it('HTTP_2', function () {
         if (util.versionLessThan(getBigIpVersion(), '15.1')) {
             this.skip();
         }

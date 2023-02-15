@@ -13,7 +13,10 @@
     "coverage": "nyc npm test",
     "test-mutation": "npm run build-schema && npx stryker run",
     "build-image": "./scripts/build/image-build.sh",
-    "smoke": "mocha test/integration/bigip/ --recursive --grep '__smoke'"
+    "smoke": "mocha test/integration/bigip/ --require test/integration/bigip/property/mochaHooks.js --recursive --grep '__smoke'",
+    "integration": "mocha test/integration/bigip/property test/integration/bigip/misc --require test/integration/bigip/property/mochaHooks.js",
+    "property": "mocha test/integration/bigip/property --require test/integration/bigip/property/mochaHooks.js",
+    "misc": "mocha test/integration/bigip/misc --require test/integration/bigip/property/mochaHooks.js"
   },
   "devDependencies": {
     "@automation-toolchain/f5-appsvcs-schema": "^0.8.11",

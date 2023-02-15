@@ -20,6 +20,9 @@ const fs = require('fs');
 const rimraf = require('rimraf');
 const Mocha = require('mocha');
 const schema = require('../../src/schema/latest/adc-schema.json');
+const propertiesCommon = require('../../test/integration/bigip/property/propertiesCommon');
+const globalSetup = require('../../test/integration/bigip/property/mochaHooks').mochaGlobalSetup;
+const rootHooks = require('../../test/integration/bigip/property/mochaHooks').mochaHooks;
 
 const rimrafPromise = (filepath, options) => {
     if (options === undefined || options === null) options = {};
@@ -33,6 +36,9 @@ function generateTestDeclarations() {
     const mocha = new Mocha({ reporter: 'dot' });
 
     process.env.DRY_RUN = true;
+    propertiesCommon.getDefaultOptions().dryRun = true;
+    mocha.globalSetup(globalSetup);
+    mocha.rootHooks(rootHooks);
     fs.readdirSync(dir).forEach((file) => mocha.addFile(`${dir}/${file}`));
 
     return new Promise((resolve, reject) => {
@@ -44,8 +50,6 @@ function generateTestDeclarations() {
 }
 
 function combineDeclarations() {
-    const dir = './test/logs';
-    let file;
     let current;
     const declaration = {
         class: 'ADC',
@@ -93,45 +97,49 @@ function combineDeclarations() {
         }
     };
 
-    const tests = fs.readdirSync(`${dir}`)
-        .filter((name) => !name.includes('Collection'))
-        .filter((name) => !name.includes('.log'))
-        .filter((name) => !name.includes('Selftest'))
-        .filter((name) => !name.includes('SNAT_Pool.Update from IPv4 to mix'))
-        .filter((name) => !name.includes('GSLB_Data_Center.All Properties'))
-        .filter((name) => !name.includes('GSLB Prober Pool.All Properties'))
-        .filter((name) => !name.includes('GSLB_Server'))
-        .filter((name) => !name.includes('GSLB_Topology_Records'))
-        .filter((name) => !name.includes('GSLB_Topology_Region'))
-        .filter((name) => !name.includes('Service_Generic.Share address with pool'))
-        .filter((name) => !name.includes('iRule.default - created under correct path'))
-        .filter((name) => !name.includes('iRule.default - created with correct text value from base64'))
-        .filter((name) => !name.includes('Certificate - PKCS12.Cert - OpenSSL CLI generated with passphrase'))
-        .filter((name) => !name.includes('L4_Profile.Defaults'))
-        .filter((name) => !name.includes('Pool.Mix Common and AS3 nodes'))
-        .filter((name) => !name.includes('Security_Log_Profile.Basic'))
-        .filter((name) => !name.includes('TCP_Profile.Defaults'))
-        .filter((name) => !name.includes('TCP_Profile.intNegativeOne'))
-        .filter((name) => !name.includes('TCP_Profile.intZero'))
-        .filter((name) => !name.includes('Firewall_Port_List.Undefined Ports'))
-        .filter((name) => !name.includes('Firewall_Address_List.Undefined Addresses'))
-        .filter((name) => !name.includes('UDP_Profile.Defaults'))
-        .filter((name) => !name.includes('DOS_Profile.should ERROR if only asm is enabled and these variables are set'));
+    const dir = './test/logs';
+    const suiteNames = fs.readdirSync(`${dir}`)
+        .filter((name) => !name.includes('.log'));
+    let testDirs = [];
+    suiteNames.forEach((suiteName) => {
+        fs.readdirSync(`${dir}/${suiteName}`).forEach((testName) => {
+            testDirs.push(`${dir}/${suiteName}/${testName}`);
+        });
+    });
+
+    testDirs = testDirs
+        .filter((name) => !name.includes('SNAT_Pool/Update from IPv4 to mix'))
+        .filter((name) => !name.includes('GSLB_Data_Center/All Properties'))
+        .filter((name) => !name.includes('GSLB Prober Pool/All Properties'))
+        .filter((name) => !name.includes('Service_Generic/Share address with pool'))
+        .filter((name) => !name.includes('iRule/default - created under correct path'))
+        .filter((name) => !name.includes('iRule/default - created with correct text value from base64'))
+        .filter((name) => !name.includes('Certificate - PKCS12/Cert - OpenSSL CLI generated with passphrase'))
+        .filter((name) => !name.includes('L4_Profile/Defaults'))
+        .filter((name) => !name.includes('Pool/Mix Common and AS3 nodes'))
+        .filter((name) => !name.includes('Security_Log_Profile/Basic'))
+        .filter((name) => !name.includes('TCP_Profile/Defaults'))
+        .filter((name) => !name.includes('TCP_Profile/intNegativeOne'))
+        .filter((name) => !name.includes('TCP_Profile/intZero'))
+        .filter((name) => !name.includes('Firewall_Port_List/Undefined Ports'))
+        .filter((name) => !name.includes('Firewall_Address_List/Undefined Addresses'))
+        .filter((name) => !name.includes('UDP_Profile/Defaults'))
+        .filter((name) => !name.includes('DOS_Profile/should ERROR if only asm is enabled and these variables are set'));
 
     let tenantNum = 0;
     let tenantName;
     let sharedTestItem = 0;
 
     // Add tenants from property tests
-    tests.forEach((test) => {
-        file = fs.readdirSync(`${dir}/${test}`)
+    testDirs.forEach((testDir) => {
+        const files = fs.readdirSync(testDir)
             .filter((name) => name.includes('.1.json') || name.includes('.0.json'));
 
-        if (file[0]) {
-            if (file[1]) {
-                current = JSON.parse(fs.readFileSync(`${dir}/${test}/${file[1]}`));
+        if (files[0]) {
+            if (files[1]) {
+                current = JSON.parse(fs.readFileSync(`${testDir}/${files[1]}`));
             } else {
-                current = JSON.parse(fs.readFileSync(`${dir}/${test}/${file[0]}`));
+                current = JSON.parse(fs.readFileSync(`${testDir}/${files[0]}`));
             }
             tenantName = Object.keys(current.declaration || []).find((key) => key.includes('TEST_'));
             if (!tenantName && current.Common && current.Common.Shared) {

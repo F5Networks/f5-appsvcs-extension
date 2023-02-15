@@ -153,7 +153,7 @@ describe('constants', function () {
             });
     });
 
-    it('should use correct profile when constants are in Common/Shared', () => {
+    it('should use correct profile when constants are in Common~Shared', () => {
         const declaration = {
             class: 'ADC',
             schemaVersion: '3.34.0',
