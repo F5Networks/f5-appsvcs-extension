@@ -100,7 +100,7 @@ function createTaskProvider(sdItem) {
             provObj.providerOptions.nodes = [{ id: `${path.dirname(sdItem.name)}/${sdItem.hostname}` }];
         } else if (sdItem.name) { // Static Node
             const routeDomain = sdItem.routeDomain ? `%${sdItem.routeDomain}` : '';
-            provObj.providerOptions.nodes = sdItem.serverAddresses.map((addr) => ({
+            provObj.providerOptions.nodes = (sdItem.serverAddresses || []).map((addr) => ({
                 id: `${path.dirname(sdItem.name)}/${addr}${routeDomain}`
             }));
             provObj.providerOptions.nodes = provObj.providerOptions.nodes.concat(

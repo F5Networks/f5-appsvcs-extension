@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice
+- AUTOTOOL-3521: ([GitHub Issue 660](https://github.com/F5Networks/f5-appsvcs-extension/issues/660)): Address_Discovery static node type does not work
 
 ### Changed
 

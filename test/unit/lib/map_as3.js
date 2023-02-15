@@ -10173,6 +10173,137 @@ describe('map_as3', () => {
                 }
             );
         });
+
+        it('should handle static addressDiscovery', () => {
+            const item = {
+                class: 'Address_Discovery',
+                addressDiscovery: 'static',
+                serverAddresses: [
+                    '10.10.20.20'
+                ]
+            };
+            const results = translate.Address_Discovery(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs,
+                [
+                    {
+                        path: '/tenantId/10.10.20.20',
+                        command: 'ltm node',
+                        properties: {
+                            address: '10.10.20.20',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/tenantId/~tenantId~Mw8jIQ9ayaeMCzGE5ohjjiLouhPkGjtOc8ltKOwh3m03D',
+                        command: 'mgmt shared service-discovery task',
+                        properties: {
+                            schemaVersion: '1.0.0',
+                            id: '~tenantId~Mw8jIQ9ayaeMCzGE5ohjjiLouhPkGjtOc8ltKOwh3m03D',
+                            updateInterval: 0,
+                            resources: {},
+                            provider: 'static',
+                            providerOptions: {
+                                nodes: {
+                                    0: {
+                                        id: '/tenantId/10.10.20.20'
+                                    }
+                                }
+                            },
+                            metadata: {
+                                configuredBy: 'AS3'
+                            },
+                            routeDomain: 0
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
+
+        it('should handle fqdn addressDiscovery', () => {
+            const item = {
+                class: 'Address_Discovery',
+                addressDiscovery: 'fqdn',
+                queryInterval: 0
+            };
+            const results = translate.Address_Discovery(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs,
+                [
+                    {
+                        path: '/tenantId/undefined',
+                        command: 'ltm node',
+                        properties: {
+                            fqdn: {
+                                interval: 'ttl'
+                            },
+                            metadata: {
+                                fqdnPrefix: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/tenantId/~tenantId~QN1zwZgXTd5Lwki0G9SPjfYxQHdNsEEA3eGTUKNL4BQ3D',
+                        command: 'mgmt shared service-discovery task',
+                        properties: {
+                            schemaVersion: '1.0.0',
+                            id: '~tenantId~QN1zwZgXTd5Lwki0G9SPjfYxQHdNsEEA3eGTUKNL4BQ3D',
+                            updateInterval: 0,
+                            resources: {},
+                            provider: 'static',
+                            providerOptions: {
+                                nodes: {}
+                            },
+                            metadata: {
+                                configuredBy: 'AS3'
+                            },
+                            routeDomain: 0
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
+
+        it('should handle bigip reference with static addressDiscovery', () => {
+            const item = {
+                class: 'Address_Discovery',
+                addressDiscovery: 'static',
+                bigip: '/Common/testNode'
+            };
+            const results = translate.Address_Discovery(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs,
+                [
+                    {
+                        path: '/tenantId/~tenantId~6mbpio9KDu96TxgO5SB4HwI7bIKU3dfDaVWe2BH74DdY3D',
+                        command: 'mgmt shared service-discovery task',
+                        properties: {
+                            schemaVersion: '1.0.0',
+                            id: '~tenantId~6mbpio9KDu96TxgO5SB4HwI7bIKU3dfDaVWe2BH74DdY3D',
+                            updateInterval: 0,
+                            resources: {},
+                            provider: 'static',
+                            providerOptions: {
+                                nodes: {
+                                    0: {
+                                        id: '/Common/testNode'
+                                    }
+                                }
+                            },
+                            metadata: {
+                                configuredBy: 'AS3'
+                            },
+                            routeDomain: 0
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
     });
 
     describe('HTTP2_Profile', () => {
