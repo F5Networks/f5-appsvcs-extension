@@ -191,6 +191,12 @@
                     "minimum": 0,
                     "maximum": 4294967295,
                     "default": 3600
+                },
+                "clientSubnetPreferred": {
+                    "title": "Client Subnet Preferred",
+                    "description": "Specifies that this domain should use the edns0 client subnet option when using topology load balancing. If the query does not contain a client subnet option, the system will fall back to the default option of using the source address.",
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "if": {

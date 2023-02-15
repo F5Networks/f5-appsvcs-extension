@@ -224,6 +224,11 @@ describe('GSLB Domain', function () {
                 name: 'ttlPersistence',
                 inputValue: [undefined, 4294967295, undefined],
                 expectedValue: [3600, 4294967295, 3600]
+            },
+            {
+                name: 'clientSubnetPreferred',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
             }
         ];
         const opts = {
@@ -348,6 +353,11 @@ describe('GSLB Domain', function () {
                 name: 'ttlPersistence',
                 inputValue: [undefined, 4294967295, undefined],
                 expectedValue: [3600, 4294967295, 3600]
+            },
+            {
+                name: 'clientSubnetPreferred',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
             }
         ];
         const opts = {

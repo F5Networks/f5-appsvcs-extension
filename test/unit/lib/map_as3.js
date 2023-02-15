@@ -9126,6 +9126,7 @@ describe('map_as3', () => {
         it('should return a proper wideip AAAA config with pools', () => {
             const item = {
                 class: 'GSLB_Domain',
+                clientSubnetPreferred: true,
                 domainName: 'example.edu',
                 enabled: true,
                 poolLbMode: 'round-robin',
@@ -9157,7 +9158,8 @@ describe('map_as3', () => {
                                     '/ten/app/pool1': { order: 0, ratio: 1 }
                                 },
                                 'pools-cname': {},
-                                rules: {}
+                                rules: {},
+                                'topology-prefer-edns0-client-subnet': 'enabled'
                             }
                         }
                     ]
@@ -9168,6 +9170,7 @@ describe('map_as3', () => {
         it('should return a proper wideip AAAA config without pools', () => {
             const item = {
                 class: 'GSLB_Domain',
+                clientSubnetPreferred: true,
                 domainName: 'example.edu',
                 enabled: true,
                 poolLbMode: 'round-robin',
@@ -9190,7 +9193,8 @@ describe('map_as3', () => {
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
-                                rules: {}
+                                rules: {},
+                                'topology-prefer-edns0-client-subnet': 'enabled'
                             }
                         }
                     ]
@@ -9201,6 +9205,7 @@ describe('map_as3', () => {
         it('should return a proper wideip AAAA config with iRules', () => {
             const item = {
                 class: 'GSLB_Domain',
+                clientSubnetPreferred: true,
                 domainName: 'example.edu',
                 enabled: true,
                 poolLbMode: 'round-robin',
@@ -9232,7 +9237,8 @@ describe('map_as3', () => {
                                     '/ten/app/rule1': {},
                                     '/ten/app/rule2': {},
                                     '/Common/rule3': {}
-                                }
+                                },
+                                'topology-prefer-edns0-client-subnet': 'enabled'
                             }
                         }
                     ]
