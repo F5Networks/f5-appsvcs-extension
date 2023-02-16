@@ -396,7 +396,7 @@ deploy_for_other_project:
     - fi
 
 test_rpms_in_azure:
-  timeout: 8 hours
+  timeout: 12 hours
   rules:
     - if: '$SKIP_TEST_IN_AZURE =~ /true/i'
       when: never
@@ -420,7 +420,7 @@ test_rpms_in_azure:
       artifacts: true
 
 test_rpms_for_this_project:
-  timeout: 8 hours
+  timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
@@ -444,7 +444,7 @@ test_rpms_for_this_project:
       artifacts: true
 
 test_rpms_for_other_project:
-  timeout: 8 hours
+  timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
