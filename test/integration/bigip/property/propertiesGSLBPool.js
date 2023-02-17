@@ -19,8 +19,11 @@
 const {
     assertClass,
     assertModuleProvisioned,
+    getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
+
+const util = require('../../../../src/lib/util/util');
 
 describe('GSLB Pool', function () {
     this.timeout(GLOBAL_TIMEOUT);
@@ -544,7 +547,13 @@ describe('GSLB Pool', function () {
         return assertGTMPoolClass(properties, { tenantName: 'Common', applicationName: 'Shared' });
     });
 
-    it('should create GSLB_Pool that uses a use pointer', () => {
+    it('should create GSLB_Pool that uses a use pointer', function () {
+        // On versions less than 14.1, we can't create a self-ip on single-nic
+        // unless it matches the admin IP.
+        if (util.versionLessThan(getBigIpVersion(), '14.1')) {
+            this.skip();
+        }
+
         const options = {
             bigipItems: [
                 {
