@@ -11,6 +11,10 @@ Document Revision History
         - Description
         - Date
 
+      * - 3.44
+        - Updated the documentation for AS3 v3.44.0. This release contains the following changes: |br| * Added support for referencing a virtual server in a GSLB pool with a use pointer (see :ref:`GSLB Pool with use pointer<gslbpooluse>`)  |br| *  |br| |br| Issues Resolved: |br| * Service with partial mask and custom route domain fails to POST twice |br| * Address_Discovery static node type does not work, `GitHub Issue 660 <https://github.com/F5Networks/f5-appsvcs-extension/issues/660>`_
+        - 3-21-23
+
       * - 3.43
         - Updated the documentation for AS3 v3.43.0. This release contains the following changes: |br| * Added new properties for the Security Log Profile NAT object (see :ref:`Security Log Profile NAT<slnat>`), `GitHub Issue 533 <https://github.com/F5Networks/f5-appsvcs-extension/issues/533>`_  |br| * Added support for ALG Log profiles (see :ref:`ALG Log Profile<alglog>`), `GitHub Issue 619 <https://github.com/F5Networks/f5-appsvcs-extension/issues/619>`_ |br| * Added support for creating RTSP profiles (see the updated :ref:`RTSP example<rtsp-ex>`), `GitHub Issue 575 <https://github.com/F5Networks/f5-appsvcs-extension/issues/575>`_ |br| * Added support for creating TFTP profiles (see the updated :ref:`TFTP example<tftpprof>`), `GitHub Issue 576 <https://github.com/F5Networks/f5-appsvcs-extension/issues/576>`_ |br| * Added support for the ALG Log profile and log publisher on FTP profiles (see the updated :ref:`FTP example<ftpprof>`), `GitHub Issue 570 <https://github.com/F5Networks/f5-appsvcs-extension/issues/570>`_ |br| * Added support for SOCKS profiles (see :ref:`SOCKS profile<socks>`) |br| * Added a note about using **virtualPort** on a service for applications that use non-standard ports (see :ref:`Notes and Tips <notestips>`) |br| |br| Issues Resolved: |br| * Shared virtual addresses are not removed when no longer in use |br| * Unchecked mode fails when URLs have authentication
         - 2-9-23
