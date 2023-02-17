@@ -503,7 +503,7 @@ teardown_azure:
     - if: '$SKIP_TEARDOWN =~ /true/i'
       when: never
     - if: '$TEST_IN_AZURE =~ /true/i'
-      when: on_success
+      when: always
   variables:
     F5_DISABLE_CERT_VERIFY: 'true'
     TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
@@ -523,9 +523,9 @@ teardown_openstack:
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: on_success
+      when: always
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
-      when: on_success
+      when: always
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
   before_script:
