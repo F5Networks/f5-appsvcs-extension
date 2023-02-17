@@ -285,7 +285,7 @@ This declaration creates the following objects on the BIG-IP (this declaration d
 
 |
 
-.. _gslbvs:
+.. _gslbpooluse:
 
 
 Referencing a virtual server in a GSLB pool with a use pointer
