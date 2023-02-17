@@ -9158,8 +9158,7 @@ describe('map_as3', () => {
                                     '/ten/app/pool1': { order: 0, ratio: 1 }
                                 },
                                 'pools-cname': {},
-                                rules: {},
-                                'topology-prefer-edns0-client-subnet': 'enabled'
+                                rules: {}
                             }
                         }
                     ]
@@ -9193,8 +9192,7 @@ describe('map_as3', () => {
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
-                                rules: {},
-                                'topology-prefer-edns0-client-subnet': 'enabled'
+                                rules: {}
                             }
                         }
                     ]
@@ -9237,7 +9235,51 @@ describe('map_as3', () => {
                                     '/ten/app/rule1': {},
                                     '/ten/app/rule2': {},
                                     '/Common/rule3': {}
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        it('should return a proper wideip AAAA config with pools on 14.1+', () => {
+            defaultContext.target.tmosVersion = '14.1';
+            const item = {
+                class: 'GSLB_Domain',
+                clientSubnetPreferred: true,
+                domainName: 'example.edu',
+                enabled: true,
+                poolLbMode: 'round-robin',
+                pools: [
+                    { use: '/ten/app/pool1', ratio: 1 },
+                    { use: '/ten/app/pool2', ratio: 2 },
+                    { use: '/ten/app/pool3', ratio: 3 }
+                ],
+                resourceRecordType: 'AAAA'
+            };
+
+            const results = translate.GSLB_Domain(defaultContext, 'ten', 'app', 'example.edu', item);
+            return assert.deepStrictEqual(
+                results,
+                {
+                    configs: [
+                        {
+                            command: 'gtm wideip aaaa',
+                            ignore: [],
+                            path: '/ten/app/example.edu',
+                            properties: {
+                                aliases: {},
+                                enabled: true,
+                                'last-resort-pool': 'none',
+                                'pool-lb-mode': 'round-robin',
+                                pools: {
+                                    '/ten/app/pool2': { order: 1, ratio: 2 },
+                                    '/ten/app/pool3': { order: 2, ratio: 3 },
+                                    '/ten/app/pool1': { order: 0, ratio: 1 }
                                 },
+                                'pools-cname': {},
+                                rules: {},
                                 'topology-prefer-edns0-client-subnet': 'enabled'
                             }
                         }

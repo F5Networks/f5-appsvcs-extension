@@ -228,7 +228,8 @@ describe('GSLB Domain', function () {
             {
                 name: 'clientSubnetPreferred',
                 inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                minVersion: '14.1'
             }
         ];
         const opts = {
@@ -357,7 +358,8 @@ describe('GSLB Domain', function () {
             {
                 name: 'clientSubnetPreferred',
                 inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                minVersion: '14.1'
             }
         ];
         const opts = {
