@@ -12,7 +12,7 @@ Document Revision History
         - Date
 
       * - 3.44
-        - Updated the documentation for AS3 v3.44.0. This release contains the following changes: |br| * Added support for referencing a virtual server in a GSLB pool with a use pointer (see :ref:`GSLB Pool with use pointer<gslbpooluse>`)  |br| * Added support for Prefer Client Subnet for GSLB Domains (see |gslbd| in the Schema Reference) |br| |br| Issues Resolved: |br| * Service with partial mask and custom route domain fails to POST twice |br| * Address_Discovery static node type does not work, `GitHub Issue 660 <https://github.com/F5Networks/f5-appsvcs-extension/issues/660>`_
+        - Updated the documentation for AS3 v3.44.0. This release contains the following changes: |br| * Added support for referencing a virtual server in a GSLB pool with a use pointer (see :ref:`GSLB Pool with use pointer<gslbpooluse>`)  |br| * Added support for Prefer Client Subnet for GSLB Domains (see |gslbd| in the Schema Reference) |br| |br| Issues Resolved: |br| * Service with partial mask and custom route domain fails to POST twice |br| * Address_Discovery static node type does not work, `GitHub Issue 660 <https://github.com/F5Networks/f5-appsvcs-extension/issues/660>`_ |br| * Expose TLS_Server option to enable/disable "default profile for SNI", `GitHub Issue 274 <https://github.com/F5Networks/f5-appsvcs-extension/issues/274>`_
         - 3-21-23
 
       * - 3.43
