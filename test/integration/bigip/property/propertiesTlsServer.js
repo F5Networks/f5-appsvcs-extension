@@ -120,16 +120,23 @@ describe('TLS_Server', function () {
             {
                 name: 'certificates',
                 inputValue: [
+                    [{ certificate: 'tlsservercert' }],
+                    [{ certificate: 'tlsservercert', sniDefault: true }],
                     [{ certificate: 'tlsservercert' }]
                 ],
                 expectedValue: [
-                    `/TEST_${testName}/Application/tlsservercert.crt`
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'false'],
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'false']
                 ],
                 referenceObjects: {
                     tlsservercert: tlsServerRef,
                     theStapler: staplerRef
                 },
-                extractFunction: (o) => o.certKeyChain[0].cert
+                extractFunction: (o) => [
+                    o.certKeyChain[0].cert,
+                    o.sniDefault
+                ]
             },
 
             // Tested
@@ -141,8 +148,8 @@ describe('TLS_Server', function () {
             },
             {
                 name: 'requireSNI',
-                inputValue: [undefined, true, true, undefined],
-                expectedValue: ['false', 'true', 'true', 'false']
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['false', 'true', 'false']
             },
             {
                 name: 'alertTimeout',
@@ -375,7 +382,8 @@ describe('TLS_Server', function () {
                 inputValue: [[
                     {
                         enabled: false,
-                        certificate: 'webcert1'
+                        certificate: 'webcert1',
+                        sniDefault: true
                     },
                     {
                         matchToSNI: 'www.wheeee.com',
@@ -731,14 +739,16 @@ describe('TLS_Server', function () {
                         {
                             enabled: undefined,
                             matchToSNI: 'www.wheeee.com',
-                            certificate: 'webcert2'
+                            certificate: 'webcert2',
+                            sniDefault: true
                         }
                     ],
                     [
                         {
                             enabled: false,
                             certificate: 'webcert1',
-                            proxyCertificate: 'proxyCert'
+                            proxyCertificate: 'proxyCert',
+                            sniDefault: true
                         },
                         {
                             enabled: false,
@@ -750,7 +760,8 @@ describe('TLS_Server', function () {
                     [
                         {
                             enabled: undefined,
-                            certificate: 'webcert1'
+                            certificate: 'webcert1',
+                            sniDefault: true
                         },
                         {
                             enabled: undefined,
@@ -776,7 +787,7 @@ describe('TLS_Server', function () {
                             ],
                             mode: 'enabled',
                             serverName: 'none',
-                            sniDefault: 'true'
+                            sniDefault: 'false'
                         },
                         {
                             name: `${getItemName({ tenantName: `TEST_${testName}` })}-1-`,
@@ -793,7 +804,7 @@ describe('TLS_Server', function () {
                             ],
                             mode: 'enabled',
                             serverName: 'www.wheeee.com',
-                            sniDefault: 'false'
+                            sniDefault: 'true'
                         }
                     ],
                     [

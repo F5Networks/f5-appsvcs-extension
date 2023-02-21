@@ -5421,6 +5421,12 @@
                                 "description": "If value is FQDN (wildcard okay), ignore all names in certificate and select this cert when SNI matches value (or by default)",
                                 "type": "string"
                             },
+                            "sniDefault": {
+                                "title": "Default SNI",
+                                "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false",
+                                "type": "boolean",
+                                "default": false
+                            },
                             "enabled": {
                                 "title": "Enabled",
                                 "description": "Enables SSL processing",
@@ -5891,6 +5897,18 @@
                     "type": "string",
                     "format": "hostname",
                     "default": "none"
+                },
+                "sniDefault": {
+                    "title": "Default SNI",
+                    "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false",
+                    "type": "boolean",
+                    "default": false
+                },
+                "requireSNI": {
+                    "title": "Require SNI",
+                    "description": "When a client sends no or unknown SNI and Require SNI is false (default), the system uses the primary certificate, otherwise the system rejects the client",
+                    "type": "boolean",
+                    "default": false
                 },
                 "alertTimeout": {
                     "title": "Alert Timeout",

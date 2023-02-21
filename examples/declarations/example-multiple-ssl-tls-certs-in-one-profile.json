@@ -25,7 +25,8 @@
                         "certificate": "webcert1"
                     },
                     {
-                        "certificate": "webcert2"
+                        "certificate": "webcert2",
+                        "sniDefault": true
                     }]
                 },
                 "webcert1": {

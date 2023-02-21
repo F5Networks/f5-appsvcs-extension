@@ -1349,7 +1349,7 @@ const translate = {
             genCert(tlsItem, obj.certificate, 'SERVER');
             genCert(tlsItem, obj.proxyCertificate, 'CA');
 
-            tlsItem['sni-default'] = index === 0;
+            tlsItem.sniDefault = obj.sniDefault;
             tlsItem.matchToSNI = obj.matchToSNI || 'none';
             tlsItem.mode = obj.enabled;
 

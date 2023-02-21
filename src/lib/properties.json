@@ -624,7 +624,7 @@
     { "id":"renegotiation",                 "altId": "renegotiationEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"retain-certificate",            "altId": "retainCertificateEnabled", "truth": "true", "falsehood": "false" },
     { "id":"secure-renegotiation" },
-    { "id":"sni-default",                   "truth": "true", "falsehood": "false" },
+    { "id":"sni-default",                   "altId": "sniDefault", "truth": "true", "falsehood": "false" },
     { "id":"sni-require",                   "altId": "requireSNI", "truth": "true", "falsehood": "false" },
     { "id":"server-name",                   "altId": "matchToSNI"},
     { "id":"ssl-c3d",                       "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
@@ -711,6 +711,8 @@
     { "id":"secure-renegotiation" },
     { "id":"server-name",                     "altId": "sendSNI" },
     { "id":"session-ticket",                  "truth": "enabled", "falsehood": "disabled", "altId": "sessionTickets" },
+    { "id":"sni-default",                     "altId": "sniDefault", "truth": "true", "falsehood": "false" },
+    { "id":"sni-require",                     "altId": "requireSNI", "truth": "true", "falsehood": "false" },
     { "id":"ssl-c3d",                         "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy",               "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy-bypass",        "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
@@ -2221,7 +2223,7 @@
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
     { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred" }
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
   ],
   "gtm wideip a pools": [
     { "id":"name" },
@@ -2241,7 +2243,7 @@
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
     { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred" }
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
   ],
   "gtm wideip aaaa pools": [
     { "id":"name" },
@@ -2260,7 +2262,7 @@
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
     { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred" }
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
   ],
   "gtm wideip cname pools": [
     { "id":"name" },
@@ -2280,7 +2282,7 @@
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
     { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred" }
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
   ],
   "gtm wideip mx pools": [
     { "id":"name" },
