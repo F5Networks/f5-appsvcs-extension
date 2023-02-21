@@ -7536,7 +7536,8 @@ describe('map_as3', () => {
                         {
                             matchToSNI: 'www.somehost.com',
                             enabled: false,
-                            certificate: '/tenantId/appId/webcert1'
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
                         },
                         {
                             enabled: true,
@@ -7593,7 +7594,7 @@ describe('map_as3', () => {
                     }
                 );
                 assert.deepEqual(profile2.properties['server-name'], 'none');
-                assert.deepEqual(profile2.properties['sni-default'], 'false');
+                assert.deepEqual(profile2.properties['sni-default'], undefined);
                 assert.deepEqual(profile2.properties.mode, 'enabled');
 
                 const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
@@ -7610,7 +7611,7 @@ describe('map_as3', () => {
                     }
                 );
                 assert.deepEqual(profile3.properties['server-name'], 'none');
-                assert.deepEqual(profile3.properties['sni-default'], 'false');
+                assert.deepEqual(profile3.properties['sni-default'], undefined);
                 assert.deepEqual(profile3.properties.mode, 'enabled');
             });
 
