@@ -363,17 +363,11 @@ function postDeclaration(declaration, logInfo, queryParams, path) {
     let promise = Promise.resolve();
 
     if (logInfo) {
-        promise = promise.then(() => new Promise((resolve, reject) => {
+        promise = promise.then(() => {
             const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.declarationIndex}.json`;
             const declBody = JSON.stringify(declaration, null, 4);
-            fs.writeFile(fileName, declBody, (error) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                resolve();
-            });
-        }));
+            fs.writeFileSync(fileName, declBody);
+        });
     }
 
     logEvent(`posting declaration ${logInfo ? logInfo.declarationIndex : ''}`);
@@ -468,14 +462,47 @@ function postDeclarationToFail(declaration) {
         });
 }
 
-function patch(path, body, headerObject) {
-    logEvent('patch request');
+/**
+ * Sends a patch request
+ *
+ * @param {string} path - path to PATCH
+ * @param {object} body - JSON body to be submitted
+ * @param {object} [options] - options for function
+ * @param {object} [options.headers] - additional headers to add to request
+ * @param {object} [options.logInfo] - info needed to log request and results. If present, logs are written
+ * @param {number} [options.logInfo.patchIndex] - patch index we are processing
+ */
+function patch(path, body, options) {
+    const headers = (options || {}).headers;
+    const logInfo = (options || {}).logInfo;
+    let promise = Promise.resolve();
+
+    if (logInfo) {
+        promise = promise.then(() => {
+            const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.patchIndex}.patch.json`;
+            const patchBody = JSON.stringify(body, null, 4);
+            fs.writeFileSync(fileName, patchBody);
+        });
+    }
+
+    logEvent(`patch request ${logInfo ? logInfo.patchIndex : ''}`);
+
     const requestOptions = {
         path,
         body,
-        headers: headerObject
+        headers
     };
-    return requestUtil.patch(requestOptions);
+    return promise
+        .then(() => requestUtil.patch(requestOptions))
+        .then((response) => {
+            logEvent(`patch response ${logInfo ? logInfo.patchIndex : ''}`);
+            if (logInfo) {
+                const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.patchIndex}.patch.response.json`;
+                const responseBody = JSON.stringify(response.body, null, 4);
+                fs.writeFileSync(fileName, responseBody);
+            }
+            return response;
+        });
 }
 
 function getDeclaration(declaration) {

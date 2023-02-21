@@ -125,7 +125,14 @@ describe('Test Auth Tokens', function () {
             .then((response) => assert.strictEqual(response.body.results[0].code, 200))
             .then(() => getPath('/mgmt/shared/appsvcs/declare', true, header))
             .then((response) => assert.strictEqual(response.statusCode, 200))
-            .then(() => patch('/mgmt/shared/appsvcs/declare', patchDecl, header))
+            .then(() => patch(
+                '/mgmt/shared/appsvcs/declare',
+                patchDecl,
+                {
+                    logInfo: { patchIndex: 0 },
+                    headers: header
+                }
+            ))
             .then((response) => assert.strictEqual(response.body.results[0].code, 200))
             .then(() => deleteUser(randomUser))
             .then((response) => assert.strictEqual(response, 200));
