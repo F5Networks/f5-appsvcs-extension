@@ -121,35 +121,35 @@ describe('SNAT Pools and SNAT Translations', function () {
                 let result = (response.body.items || [])
                     .find((n) => n.fullPath === '/Tenant/Application/snatPool1') || {};
                 assert.deepStrictEqual(result.members, [
-                    '/Tenant/Application/192.0.96.10',
-                    '/Tenant/Application/192.0.96.11',
-                    '/Tenant/Application/192.0.96.12'
+                    '/Tenant/192.0.96.10',
+                    '/Tenant/192.0.96.11',
+                    '/Tenant/192.0.96.12'
                 ], 'snatPool1 should have 192.0.96.[10-12] as members');
                 result = (response.body.items || [])
                     .find((n) => n.fullPath === '/Tenant/Application/snatPool2') || {};
                 assert.deepStrictEqual(result.members, [
-                    '/Tenant/Application/192.0.96.11',
-                    '/Tenant/Application/192.0.96.12',
-                    '/Tenant/Application/192.0.96.13'
+                    '/Tenant/192.0.96.11',
+                    '/Tenant/192.0.96.12',
+                    '/Tenant/192.0.96.13'
                 ], 'snatPool1 should have 192.0.96.[11-13] as members');
             })
             // check results 2
             .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/snat-translation' }))
             .then((response) => {
                 let result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.10') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.10') || {};
                 assert.strictEqual(result.arp, 'enabled', '192.0.96.10 should exist and have arp enabled');
 
                 result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.11') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.11') || {};
                 assert.strictEqual(result.arp, 'disabled', '192.0.96.11 should exist and have arp disabled');
 
                 result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.12') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.12') || {};
                 assert.strictEqual(result.arp, 'enabled', '192.0.96.11 should exist and have arp enabled');
 
                 result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.12') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.12') || {};
                 assert.strictEqual(result.arp, 'enabled', '192.0.96.13 should exist and have arp enabled');
             })
             // POST #0 again
@@ -252,10 +252,10 @@ describe('SNAT Pools and SNAT Translations', function () {
             .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/snat-translation' }))
             .then((response) => {
                 let result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.10') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.10') || {};
                 assert.strictEqual(result.arp, 'enabled');
                 result = (response.body.items || [])
-                    .find((n) => n.fullPath === '/Tenant/Application/192.0.96.11') || {};
+                    .find((n) => n.fullPath === '/Tenant/192.0.96.11') || {};
                 assert.strictEqual(result.arp, 'disabled');
             })
             // POST #0 again

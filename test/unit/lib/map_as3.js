@@ -299,7 +299,7 @@ describe('map_as3', () => {
                 {
                     command: 'ltm snat-translation',
                     ignore: [],
-                    path: '/tenantId/appId/192.0.2.100',
+                    path: '/tenantId/192.0.2.100',
                     properties: {
                         address: '192.0.2.100',
                         arp: 'enabled',
@@ -339,7 +339,7 @@ describe('map_as3', () => {
                 {
                     command: 'ltm snat-translation',
                     ignore: [],
-                    path: '/tenantId/appId/2001:db8::1',
+                    path: '/tenantId/2001:db8::1',
                     properties: {
                         description: '"my remark"',
                         address: '2001:db8::1',
@@ -2450,7 +2450,7 @@ describe('map_as3', () => {
             const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration);
             assert.strictEqual(results.configs[0].path, '/dot.test/test_http/test_http-self');
             assert.strictEqual(results.configs[0].command, 'ltm snatpool');
-            assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/test_http/10.204.64.249%2']).length, 0);
+            assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/10.204.64.249%2']).length, 0);
             assert.strictEqual(results.configs[1].path, '/dot.test/test_http/test_http');
             assert.strictEqual(results.configs[1].command, 'ltm virtual');
             assert.strictEqual(results.configs[1].properties.destination, '/dot.test/10.204.64.249%2:443');
@@ -3950,7 +3950,7 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-self',
                     properties: {
                         members: {
-                            '/tenantId/appId/123.123.123.123': {}
+                            '/tenantId/123.123.123.123': {}
                         }
                     }
                 },
@@ -3970,7 +3970,7 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-1--self',
                     properties: {
                         members: {
-                            '/tenantId/appId/1.1.1.1%22': {}
+                            '/tenantId/1.1.1.1%22': {}
                         }
                     }
                 },

@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3521: ([GitHub Issue 660](https://github.com/F5Networks/f5-appsvcs-extension/issues/660)): Address_Discovery static node type does not work
 - AUTOTOOL-3606: ([GitHub Issue 274](https://github.com/F5Networks/f5-appsvcs-extension/issues/274)): expose TLS_Server option to enable/disable "default profile for SNI"
 - AUTOTOOL-3325: Improve error handling in SettingsHandler
+- AUTOTOOL-3657: Invalid SNAT_Translation error when multiple Tenants with SNAT_Pools are declared
 
 ### Changed
 

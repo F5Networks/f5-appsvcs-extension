@@ -2109,10 +2109,10 @@ const translate = {
         item.members = {};
         item.snatAddresses.forEach((addr) => {
             addr = ipUtil.minimizeIP(addr);
-            item.members[util.mcpPath(tenantId, appId, addr)] = {};
+            item.members[util.mcpPath(tenantId, undefined, addr)] = {};
             context.request.postProcessing.push(
                 {
-                    name: `/${tenantId}/${appId}/${addr}`,
+                    name: `/${tenantId}/${addr}`,
                     snatPoolAddress: addr
                 }
             );
@@ -2132,7 +2132,7 @@ const translate = {
         item.address = ipUtil.minimizeIP(item.address);
         context.request.postProcessing.push(
             {
-                name: `/${tenantId}/${appId}/${item.address}`,
+                name: `/${tenantId}/${item.address}`,
                 snatTranslationAddress: item.address
             }
         );
@@ -2141,7 +2141,7 @@ const translate = {
         // When BIGIP auto generates a translation it picks the address as the name of the object.
         // For the maintenance of translations moving between auto generated and user specified it is easier to always
         // make the translation names the same as the address.
-        return { configs: [normalize.actionableMcp(context, item, 'ltm snat-translation', util.mcpPath(tenantId, appId, item.address))] };
+        return { configs: [normalize.actionableMcp(context, item, 'ltm snat-translation', util.mcpPath(tenantId, undefined, item.address))] };
     },
 
     /**
