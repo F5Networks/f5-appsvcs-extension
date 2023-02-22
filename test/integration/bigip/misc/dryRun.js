@@ -161,7 +161,13 @@ describe('dryRun testing', function () {
                     value: '4.3.2.1'
                 }
             ];
-            return assert.isFulfilled(patch('/mgmt/shared/appsvcs/declare?controls.dryRun=true', patchBody));
+            return assert.isFulfilled(patch(
+                '/mgmt/shared/appsvcs/declare?controls.dryRun=true',
+                patchBody,
+                {
+                    logInfo: { patchIndex: 0 }
+                }
+            ));
         })
         .then((response) => {
             assert.strictEqual(response.body.results[0].code, 200);

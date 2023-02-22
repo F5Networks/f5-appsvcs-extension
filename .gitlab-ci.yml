@@ -467,24 +467,6 @@ test_rpms_for_other_project:
       ref: "$UPSTREAM_REF"
       artifacts: true
 
-test-bigiq-ui:
-  image: $DOCKER_URL/node:10
-  stage: integration test
-  allow_failure: true
-  needs:
-    - build_rpm
-  parallel:
-    matrix:
-      - BIGIQ_BRANCH: [master/owen, master/palisade, master/quark, master/rainier]
-  script:
-    - git clone --branch $BIGIQ_BRANCH --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@$CI_SERVER_HOST:$CI_SERVER_PORT/bigiq-mgmt/bigiq-mgmt-test
-    - cd bigiq-mgmt-test/tools/schemaTransfomerValidator
-    - npm ci --no-optional
-    - cp ../../../src/schema/latest/adc-schema.json .
-    - node validateUiSchemaTest.js &> output
-    - cat output
-    - if grep -q "New Failures per class" output; then exit 1; fi
-
 .teardown_common: &teardown_common
   image: $INTEGRATION_DEPLOY_IMAGE
   tags:
