@@ -1,6 +1,5 @@
 # F5 BIG-IP Application Services 3 Extension (AS3)
 
-[![Slack Status](https://f5cloudsolutions.herokuapp.com/badge.svg)](https://f5cloudsolutions.herokuapp.com)
 [![Releases](https://img.shields.io/github/release/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-appsvcs-extension/releases)
 [![Issues](https://img.shields.io/github/issues/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-appsvcs-extension/issues)
 
