@@ -953,7 +953,8 @@
     { "id":"cache-uri-include-override",            "extend": "array", "altId": "uriIncludeOverrideList" },
     { "id":"cache-uri-pinned",                      "extend": "array", "altId": "uriPinnedList" },
     { "id":"metadata-cache-max-size",               "altId": "metadataMaxSize" },
-    { "id":"defaults-from",                         "altId": "parentProfile" }
+    { "id":"defaults-from",                         "altId": "parentProfile" },
+    { "id":"description",                           "altId": "remark", "quotedString": true }
   ],
   "ltm dns nameserver": [
     { "id":"address" },

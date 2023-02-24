@@ -8897,7 +8897,6 @@
             "maxLength": 64
         },
 
-
         "Remark": {
             "title": "Remark",
             "description": "Arbitrary (brief) text pertaining to this object. Allows 0-64 chars, excluding only control characters, double-quote, and backslash.  This is permissive enough that you should worry about XSS attacks",
@@ -9268,125 +9267,6 @@
                     "default": true
                 }
             },
-            "additionalProperties": false
-        },
-
-        "HTTP_Acceleration_Profile": {
-            "title": "HTTP_Acceleration_Profile",
-            "type": "object",
-            "description": "Configures a web-acceleration profile",
-
-            "properties": {
-                "class": {
-                    "type": "string",
-                    "const": "HTTP_Acceleration_Profile"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "parentProfile": {
-                    "description": "The profile that this profile inherits values from",
-                    "allOf": [
-                        { "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile" }
-                    ],
-                    "default": { "bigip": "/Common/webacceleration" }
-                },
-                "agingRate": {
-                    "description": "Rate at which a cache entry ages",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 10,
-                    "default": 9
-                },
-                "ignoreHeaders": {
-                    "description": "Which cache disabling headers will be ignored by the system",
-                    "type": "string",
-                    "enum": [
-                        "all",
-                        "max-age",
-                        "none"
-                    ],
-                    "default": "all"
-                },
-                "insertAgeHeaderEnabled": {
-                    "description": "Age and date headers are inserted into the response when enabled",
-                    "type": "boolean",
-                    "default": true
-                },
-                "maximumAge": {
-                    "description": "How long the system will consider the cached content will be valid",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 3600
-                },
-                "maximumEntries": {
-                    "description": "The maximum number of entries that can reside in the cache",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 10000
-                },
-                "maximumObjectSize": {
-                    "description": "The largest object that the system will cache",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 50000
-                },
-                "minimumObjectSize": {
-                    "description": "The smallest object that the system will cache",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 500
-                },
-                "cacheSize": {
-                    "description": "The maximum size (in megabytes) for the cache",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 100
-                },
-                "uriExcludeList": {
-                    "description": "A list of URIs that will be excluded from the cache",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "uriIncludeList": {
-                    "description": "A list of URIs that will be cacheable",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "uriIncludeOverrideList": {
-                    "description": "A list of URIs that should be cached even though they may normally not be due to existing constraints",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "uriPinnedList": {
-                    "description": "A list of URIs that are kept in the cache regardless of maxAge or expiry settings",
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
-                },
-                "metadataMaxSize": {
-                    "description": "The maximum size of the metadata cache",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 25
-                }
-            },
-            "required": [ "class" ],
             "additionalProperties": false
         },
 
