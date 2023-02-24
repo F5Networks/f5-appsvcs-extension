@@ -17,11 +17,32 @@ stages:
   - docs
 
 variables:
+  BIGIP_IMAGE:
+    description: The name of the BIG-IP image to use for integration testing. Names are specific to the deploy environment.
+  DO_DOWNLOAD_DIR: do_rpm
+  DOCS_BUILD_DIR: "docs/_build/html"
+  FORCE_INTEGRATION_TEST:
+    description: Force a run of integration testing. Otherwise, decision is based on pipeline type.
+    value: "false"
+    options:
+      - "true"
+      - "false"
   GIT_DEPTH: "10"
   IMAGE_NAME: f5-as3-container
-  DOCS_BUILD_DIR: "docs/_build/html"
+  RPM_PACKAGE_URL:
+    description: URL from which to download the RPM to test. By default use the RPM from the build_rpm job.
+  TEST_CODE_VERSION:
+    description: AS3 branch/tag from which to get integration tests.
+    value: "$CI_COMMIT_REF_NAME"
+  REGRESSION_SCHEDULE:
+    description: Type of schedule to run for integration tests.
+    value: nightly
+    options:
+      - nightly
+      - performance
+      - remote
+      - smoke
   TF_DIRECTORY: test/common/env/terraform
-  DO_DOWNLOAD_DIR: do_rpm
   TF_HTTP_LOCK_METHOD: POST
   TF_HTTP_UNLOCK_METHOD: DELETE
   TF_HTTP_USERNAME: ${CI_REGISTRY_USER}
@@ -245,7 +266,11 @@ build_api_docs:
     - export AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
     - CREDS=$AS3_USERNAME:$AS3_PASSWORD
     - cd -
-    - if [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
+    - if [[ -n "$RPM_PACKAGE_URL" ]]; then
+    -   echo using RPM "$RPM_PACKAGE_URL" from RPM_PACKAGE_URL env var
+    -   export RPM_PACKAGE=$(basename "$RPM_PACKAGE_URL")
+    -   curl -o "$RPM_PACKAGE" "$RPM_PACKAGE_URL"
+    - elif [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
     -   echo using RPM from cross-project pipeline
     -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
     - else
@@ -253,12 +278,12 @@ build_api_docs:
     -   export RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
     - fi
     - echo "Configuring $AS3_HOST"
-    - echo "export AS3_HOST=$AS3_HOST" >> deploy.env
-    - echo "export AS3_USERNAME=$AS3_USERNAME" >> deploy.env
-    - echo "export AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
+    - echo "AS3_HOST=$AS3_HOST" >> deploy.env
+    - echo "AS3_USERNAME=$AS3_USERNAME" >> deploy.env
+    - echo "AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
     - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
     -   echo "Configuring target host $TARGET_HOST"
-    -   echo "export TARGET_HOST=$TARGET_HOST" >> deploy.env
+    -   echo "TARGET_HOST=$TARGET_HOST" >> deploy.env
     - fi
     - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
         # If we do NOT skip deployment DO does need installed
@@ -280,8 +305,8 @@ build_api_docs:
     - fi
   artifacts:
     when: always
-    paths:
-      - deploy.env
+    reports:
+      dotenv: deploy.env
     expire_in: 1 day
   retry:
     max: 1
@@ -318,6 +343,7 @@ deploy_for_this_project:
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   needs:
     - job: build_rpm
       artifacts: true
@@ -376,23 +402,38 @@ deploy_for_other_project:
     - apt-get update && apt-get install -y jq --no-install-recommends
     - npm ci --no-optional
     - npm install --no-optional
-    - source deploy.env
+    - if [[ "$TEST_CODE_VERSION" != $"CI_COMMIT_REF_NAME" ]]; then
+    -   echo running test code from "$TEST_CODE_VERSION"
+    -   TOP_DIR=$(pwd)
+    -   TEST_CODE_DIR=test_code_repo/f5-appsvcs-extension
+    -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/f5-appsvcs-extension.git "$TEST_CODE_DIR"
+    -   cd "$TEST_CODE_DIR"
+    -   npm run build-schema
+    -   cd "$TOP_DIR"
+    - else
+    -   echo running test code from current branch
+    -   TEST_CODE_DIR=.
+    - fi
+    - MOCHA_OPTS=$TEST_REPORTER_OPTIONS
+    - if [[ -f ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js ]]; then
+    -   MOCHA_OPTS="${MOCHA_OPTS} --require ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js"
+    - fi
     - echo "TESTING WITH IMAGE ${BIGIP_IMAGE}"
     - if [ "$SMOKE_TEST" = "true" ]; then
     -   export REGRESSION_SCHEDULE="smoke"
     - fi
     - export FILE_VERBOSITY=verbose
     - if [ "$REGRESSION_SCHEDULE" = "nightly" ]; then
-    -   npm run integration -- $TEST_REPORTER_OPTIONS --exit
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property ${TEST_CODE_DIR}/test/integration/bigip/misc $MOCHA_OPTS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   npm run property -- $TEST_REPORTER_OPTIONS --exit
+    -   npm run property -- $MOCHA_OPTS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "smoke" ]; then
-    -   npm run smoke -- $TEST_REPORTER_OPTIONS
+    -   npm run smoke -- $MOCHA_OPTS
     - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
     -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
-    -   npm run property -- $TEST_REPORTER_OPTIONS --exit
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property $MOCHA_OPTS --exit
     - else
-    -   npm run misc -- $TEST_REPORTER_OPTIONS --exit
+    -   npm run misc -- $MOCHA_OPTS --exit
     - fi
 
 test_rpms_in_azure:
@@ -427,6 +468,7 @@ test_rpms_for_this_project:
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   <<: *test_rpms_common
   artifacts:
     name: f5-appsvcs-extension-$CI_BUILD_REF
@@ -507,6 +549,8 @@ teardown_openstack:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: always
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+      when: always
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
       when: always
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"

@@ -50,6 +50,14 @@ AS3 integration tests can be run in serial mode or in parallel mode and there ar
 * RESERVATION_SERVER_PORT - Port of the reservation server
 * SERVER_SET - The ID of the server set for this test run (pipeline)
 
+### Testing from GitLab UI
+When testing from the GitLab UI, you have the option of running a manual test with various AS3 runtime and test code versions
+* Go to GitLab f5-appsvcs-extension -> CI/CD -> Run Pipeline
+  * BIGIP_IMAGE -- The name of the BIG-IP image to use
+  * FORCE_INTEGRATION_TEST -- Set to true
+  * RPM_PACKAGE_URL -- If you want to get the RPM from somewhere besides the build_rpm job, enter the the URL to the file
+  * TEST_CODE_VERSION -- The branch or tag from which to pull test code
+
 ## BIG-IP Integration Tests
 Location: `test/integration/bigip`
 
@@ -122,6 +130,8 @@ The range and number of steps can be adjusted by modifying `test/performance/per
 
 NOTE: Information on an alternative set of performance tests for AS3 can be found on Confluence under the name `AS3 Performance Testing`.
 
+NOTE: See also [Performance Testing](#performance-testing) for information on collecting performance data with Jaeger
+
 ## Unit Tests
 Location: `test/unit`
 
@@ -147,6 +157,7 @@ This testing should be done with the previous release and LTS release.
 1. Confirm the delete was successful.
 
 ## Performance testing
+Aside from the [specialized performance tests](#performance-tests), we can also collect performance information on standard property tests.
 ### Set up Jaeger collector
 #### Run Ubuntu instance in VIO
 
@@ -191,7 +202,7 @@ This testing should be done with the previous release and LTS release.
 
 #### Run Jaeger
 
-docker run -d --name jaeger --restart --network host -p 6831:6831/udp -p 6832:6832/udp -p 16686:16686 -p 14268:14268 -e SPAN_STORAGE_TYPE=cassandra jaegertracing/all-in-one:1.31
+docker run -d --name jaeger --restart --network host -p 6831:6831/udp -p 6832:6832/udp -p 16686:16686 -p 14268:14268 -e SPAN_STORAGE_TYPE=cassandra -e JAEGER_SAMPLER_TYPE=const -e JAEGER_SAMPLER_PARAM=1 jaegertracing/all-in-one:1.31
 
 Jaeger will be running at http://<ip_address>:16686 (go/as3jaeger)
 
