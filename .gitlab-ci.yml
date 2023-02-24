@@ -402,11 +402,17 @@ deploy_for_other_project:
     - apt-get update && apt-get install -y jq --no-install-recommends
     - npm ci --no-optional
     - npm install --no-optional
+    - REPO=f5-appsvcs-extension
     - if [[ "$TEST_CODE_VERSION" != $"CI_COMMIT_REF_NAME" ]]; then
     -   echo running test code from "$TEST_CODE_VERSION"
+    -   if [[ "$TEST_CODE_VERSION" =~ ^v ]]; then
+    -     if [[ "$TEST_CODE_VERSION" < v3.42.0 ]]; then
+    -       REPO=f5-appsvcs
+    -     fi
+    -   fi
     -   TOP_DIR=$(pwd)
     -   TEST_CODE_DIR=test_code_repo/f5-appsvcs-extension
-    -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/f5-appsvcs-extension.git "$TEST_CODE_DIR"
+    -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/${REPO}.git "$TEST_CODE_DIR"
     -   cd "$TEST_CODE_DIR"
     -   npm run build-schema
     -   cd "$TOP_DIR"
