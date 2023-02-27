@@ -420,7 +420,7 @@ deploy_for_other_project:
     -   TEST_CODE_DIR=test_code_repo/f5-appsvcs-extension
     -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/${REPO}.git "$TEST_CODE_DIR"
     -   cd "$TEST_CODE_DIR"
-    -   npm run build-schema
+    -   node scripts/build/schema-build.js
     -   cd "$TOP_DIR"
     - else
     -   echo running test code from current branch
