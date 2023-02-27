@@ -40,13 +40,14 @@ resource "azurerm_subnet" "external" {
   depends_on = [azurerm_network_security_group.deployment]
 }
 
-resource "azurerm_public_ip" "pip0" {
-  name                  = "${module.utils.env_prefix}-mgmt-pip0"
+resource "azurerm_public_ip" "pip" {
+  count                 = var.bigip_count
+  name                  = "${module.utils.env_prefix}-mgmt-pip-${count.index}"
   location              = var.location
   resource_group_name   = module.utils.env_prefix
   allocation_method     = "Static"
   sku                   = "Standard"
-  depends_on = [azurerm_resource_group.deployment]
+  depends_on            = [azurerm_resource_group.deployment]
 }
 
 resource "azurerm_network_security_group" "deployment" {
@@ -66,64 +67,68 @@ resource "azurerm_network_security_group" "deployment" {
   }
 }
 
-resource "azurerm_network_interface" "mgmt0" {
-  name                            = "${module.utils.env_prefix}-mgmt0"
+resource "azurerm_network_interface" "mgmt" {
+  count                           = var.bigip_count
+  name                            = "${module.utils.env_prefix}-mgmt-${count.index}"
   location                        = var.location
   resource_group_name             = azurerm_resource_group.deployment.name
   ip_configuration {
-    name                          = "${module.utils.env_prefix}-mgmt0"
+    name                          = "${module.utils.env_prefix}-mgmt-${count.index}"
     subnet_id                     = azurerm_subnet.mgmt.id
     private_ip_address_allocation = "Static"
-    private_ip_address            = "10.0.0.4"
-    public_ip_address_id          = azurerm_public_ip.pip0.id
+    # Due to Azure limitation of networking, we have to use address starting with 4.
+    # More here:
+    # https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-faq#are-there-any-restrictions-on-using-ip-addresses-within-these-subnets
+    private_ip_address            = "10.0.0.${count.index + 4}"
+    public_ip_address_id          = azurerm_public_ip.pip[count.index].id
   }
-
-  depends_on = [azurerm_network_security_group.deployment]
+  depends_on                      = [azurerm_network_security_group.deployment]
 }
 
-resource "azurerm_network_interface_security_group_association" "mgmt0" {
-  network_interface_id      = azurerm_network_interface.mgmt0.id
+resource "azurerm_network_interface_security_group_association" "mgmt" {
+  count                     = var.bigip_count
+  network_interface_id      = azurerm_network_interface.mgmt[count.index].id
   network_security_group_id = azurerm_network_security_group.deployment.id
-  depends_on = [azurerm_network_interface.mgmt0]
 }
 
-resource "azurerm_network_interface" "internal0" {
-  name                            = "${module.utils.env_prefix}-int0"
+resource "azurerm_network_interface" "internal" {
+  # If we're creating instance with less than three NICs, we don't want to create extra interfaces. 
+  count                           = var.nic_count > 2 ? var.bigip_count : 0
+  name                            = "${module.utils.env_prefix}-int-${count.index}"
   location                        = var.location
   resource_group_name             = azurerm_resource_group.deployment.name
   ip_configuration {
-    name                          = "${module.utils.env_prefix}-int0"
+    name                          = "${module.utils.env_prefix}-int-${count.index}"
     subnet_id                     = azurerm_subnet.internal.id
     private_ip_address_allocation = "Static"
-    private_ip_address            = "10.0.1.4"
+    private_ip_address            = "10.0.1.${count.index + 4}"
   }
-
   depends_on = [azurerm_network_security_group.deployment]
 }
 
-resource "azurerm_network_interface_security_group_association" "internal0" {
-  network_interface_id      = azurerm_network_interface.internal0.id
+resource "azurerm_network_interface_security_group_association" "internal" {
+  count                     = var.nic_count > 2 ? var.bigip_count : 0
+  network_interface_id      = azurerm_network_interface.internal[count.index].id
   network_security_group_id = azurerm_network_security_group.deployment.id
-  depends_on = [azurerm_network_interface.internal0]
 }
 
-resource "azurerm_network_interface" "external0" {
-  name                            = "${module.utils.env_prefix}-ext0"
+resource "azurerm_network_interface" "external" {
+  count                           = var.nic_count > 1 ? var.bigip_count : 0
+  name                            = "${module.utils.env_prefix}-ext-${count.index}"
   location                        = var.location
   resource_group_name             = azurerm_resource_group.deployment.name
   ip_configuration {
-    name                          = "${module.utils.env_prefix}-ext0"
+    name                          = "${module.utils.env_prefix}-ext-${count.index}"
     subnet_id                     = azurerm_subnet.external.id
     private_ip_address_allocation = "Static"
-    private_ip_address            = "10.0.2.4"
+    private_ip_address            = "10.0.2.${count.index + 4}"
     primary                       = true
   }
-
   depends_on = [azurerm_network_security_group.deployment]
 }
 
-resource "azurerm_network_interface_security_group_association" "external0" {
-  network_interface_id      = azurerm_network_interface.external0.id
+resource "azurerm_network_interface_security_group_association" "external" {
+  count                     = var.nic_count > 1 ? var.bigip_count : 0
+  network_interface_id      = azurerm_network_interface.external[count.index].id
   network_security_group_id = azurerm_network_security_group.deployment.id
-  depends_on = [azurerm_network_interface.external0]
 }
