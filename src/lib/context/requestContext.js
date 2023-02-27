@@ -316,7 +316,8 @@ function setTracer(hostContext, reqContext) {
     const tracerOpts = {
         logger: log,
         tags: {
-            [tracerTags.APP.VERSION]: hostContext.as3VersionInfo
+            [tracerTags.APP.VERSION]: hostContext.as3VersionInfo.version,
+            [tracerTags.APP.RELEASE]: hostContext.as3VersionInfo.release
         }
     };
 

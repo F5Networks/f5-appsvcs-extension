@@ -45,6 +45,7 @@ const Tags = {
     },
     APP: {
         VERSION: 'app.version',
+        RELEASE: 'app.release',
         COMPONENT: 'app.component'
     },
     ERROR: 'error'

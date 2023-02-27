@@ -21,6 +21,12 @@ variables:
     description: The name of the BIG-IP image to use for integration testing. Names are specific to the deploy environment.
   DO_DOWNLOAD_DIR: do_rpm
   DOCS_BUILD_DIR: "docs/_build/html"
+  F5_PERF_TRACING_ENABLED:
+    description: Send performance traces to Jaeger
+    value: "false"
+    options:
+      - "true"
+      - "false"
   FORCE_INTEGRATION_TEST:
     description: Force a run of integration testing. Otherwise, decision is based on pipeline type.
     value: "false"
