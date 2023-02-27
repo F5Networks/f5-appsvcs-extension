@@ -1450,7 +1450,7 @@ const translate = {
             } else {
                 item.bundle = pkcs12Obj.certificates.join('\n');
             }
-            item.privateKey = pkcs12Obj.privateKey;
+            item.privateKey = pkcs12Obj.privateKey; // gitleaks:allow
             if (item.pkcs12Options.ignoreChanges) {
                 item.ignore.checksum = 'checksum';
             }
