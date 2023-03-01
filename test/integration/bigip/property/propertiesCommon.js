@@ -30,6 +30,15 @@ const constants = require('../../../../src/lib/constants');
 const requestUtil = require('../../../common/requestUtilPromise');
 const { validateEnvVars } = require('../../../common/checkEnv');
 
+function onLoad() {
+    if (process.argv.indexOf('--require') === -1 && process.argv.indexOf('--skip-require') === -1) {
+        console.log('Missing `--require` command line argument. You should run with `--require test/integration/bigip/property/mochaHooks.js` or `--skip-require`.');
+        process.exit(1);
+    }
+}
+
+onLoad();
+
 const consoleOptions = {
     declarations: false, // display the declarations that are created
     expectedActual: false, // display expected and actual values
