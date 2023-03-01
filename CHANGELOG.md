@@ -13,6 +13,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3606: ([GitHub Issue 274](https://github.com/F5Networks/f5-appsvcs-extension/issues/274)): expose TLS_Server option to enable/disable "default profile for SNI"
 - AUTOTOOL-3325: Improve error handling in SettingsHandler
 - AUTOTOOL-3657: Invalid SNAT_Translation error when multiple Tenants with SNAT_Pools are declared
+- AUTOTOOL-3666: ([GitHub Issue 691](https://github.com/F5Networks/f5-appsvcs-extension/issues/691)): HTTP_Acceleration_Profile does not handle backslashes in uriExcludeList, uriIncludeList, uriIncludeOverrideList, and uriPinnedList properties.
 
 ### Changed
 

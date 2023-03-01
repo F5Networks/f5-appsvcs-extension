@@ -1592,17 +1592,21 @@ describe('map_as3', () => {
             minimumObjectSize: 2000,
             cacheSize: 200,
             uriExcludeList: [
-                '.'
+                '.',
+                '/test1/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriIncludeList: [
-                'www.uri.com'
+                'www.uri.com',
+                '/test2/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriIncludeOverrideList: [
                 '1.1.2.2',
-                '2.2.3.3'
+                '2.2.3.3',
+                '/test3/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriPinnedList: [
-                '///'
+                '///',
+                '/test4/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             metadataMaxSize: 20
         };
@@ -1623,17 +1627,21 @@ describe('map_as3', () => {
                             'cache-object-min-size': 2000,
                             'cache-size': 200,
                             'cache-uri-exclude': {
-                                '.': {}
+                                '"."': {},
+                                '"/test1/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-include': {
-                                'www.uri.com': {}
+                                '"www.uri.com"': {},
+                                '"/test2/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-include-override': {
-                                '1.1.2.2': {},
-                                '2.2.3.3': {}
+                                '"1.1.2.2"': {},
+                                '"2.2.3.3"': {},
+                                '"/test3/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-pinned': {
-                                '///': {}
+                                '"///"': {},
+                                '"/test4/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'defaults-from': 'accel',
                             'metadata-cache-max-size': 20
@@ -1739,8 +1747,8 @@ describe('map_as3', () => {
         it('check uriExcludeList values', () => {
             const expected = [
                 {},
-                { exclude1: {} },
-                { exclude1: {}, exclude2: {} }
+                { '"exclude1"': {} },
+                { '"exclude1"': {}, '"exclude2"': {} }
             ];
             [[], ['exclude1'], ['exclude1', 'exclude2']].forEach((value, index) => {
                 item.uriExcludeList = value;
@@ -1753,8 +1761,8 @@ describe('map_as3', () => {
         it('check uriIncludeList values', () => {
             const expected = [
                 {},
-                { include1: {} },
-                { include1: {}, include2: {} }
+                { '"include1"': {} },
+                { '"include1"': {}, '"include2"': {} }
             ];
             [[], ['include1'], ['include1', 'include2']].forEach((value, index) => {
                 item.uriIncludeList = value;
@@ -1767,8 +1775,8 @@ describe('map_as3', () => {
         it('check uriIncludeOverrideList values', () => {
             const expected = [
                 {},
-                { include1: {} },
-                { include1: {}, include2: {} }
+                { '"include1"': {} },
+                { '"include1"': {}, '"include2"': {} }
             ];
             [[], ['include1'], ['include1', 'include2']].forEach((value, index) => {
                 item.uriIncludeOverrideList = value;
@@ -1781,8 +1789,8 @@ describe('map_as3', () => {
         it('check uriPinnedList values', () => {
             const expected = [
                 {},
-                { pinned1: {} },
-                { pinned1: {}, pinned2: {} }
+                { '"pinned1"': {} },
+                { '"pinned1"': {}, '"pinned2"': {} }
             ];
             [[], ['pinned1'], ['pinned1', 'pinned2']].forEach((value, index) => {
                 item.uriPinnedList = value;
