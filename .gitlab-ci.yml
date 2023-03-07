@@ -254,7 +254,7 @@ build_api_docs:
   timeout: 2 hours
   script:
     - apk update
-    # Need to add bash, because included sh doen't support arrays
+    # Need to add bash, because included sh doesn't support arrays
     # used in build_harness_file.sh script to get IP addresses.
     - apk add bash npm gettext
     - cd "$TF_ROOT"
