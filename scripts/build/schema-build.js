@@ -244,6 +244,7 @@ function buildSharedSchema() {
         'F5_String',
         'HTTP_Compress',
         'HTTP_Acceleration_Profile',
+        'HTTP2_Profile',
         'JWE',
         'Log_Publisher',
         'Pointer_BIGIP',
