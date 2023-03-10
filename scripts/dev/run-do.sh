@@ -26,7 +26,7 @@ DECLARATION_FILE=$3
 DECLARATION_RENDERED=$(envsubst < "$DECLARATION_FILE")
 
 wait_for_availability() {
-    echo "Waiting for DO availablility"
+    echo "Waiting for DO availablility on $HOST"
     MAX_TRIES=300
     counter=1
     CURL_COMMAND="curl -sku $CREDS --fail --silent https://${HOST}/mgmt/shared/declarative-onboarding/available"
@@ -34,11 +34,11 @@ wait_for_availability() {
         ((counter++))
         sleep 10
     done
-    echo "DO is available"
+    echo "DO is available on $HOST"
 }
 
 post_delcaration() {
-    echo "Posting declaration"
+    echo "Posting declaration to $HOST"
     curl -sku $CREDS -X POST -H \'Content-Type: application/json\' --data "$DECLARATION_RENDERED" https://${HOST}/mgmt/shared/declarative-onboarding
 }
 

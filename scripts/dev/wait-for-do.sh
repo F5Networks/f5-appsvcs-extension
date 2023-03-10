@@ -34,7 +34,7 @@ check_echo_js_endpoint() {
         echo "INFO $INFO"
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $ECHO_JS_URL${NC}"
+        echo -e "${RED}Max tries reached while waiting for $ECHO_JS_URL on $TARGET${NC}"
         exit 1
     fi
     set -e
@@ -52,7 +52,7 @@ get_bigip_version() {
         INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$DEVICE_INFO_URL")
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $DEVICE_INFO_URL${NC}"
+        echo -e "${RED}Max tries reached while waiting for $DEVICE_INFO_URL on $TARGET${NC}"
         exit 1
     fi
     version=$(echo $INFO | jq -r .version)
@@ -79,11 +79,11 @@ wait_for_do() {
     code=$(get_do_status_code)
     until [[ $code == 200 || $counter -gt $MAX_TRIES ]]; do
         if [[ $(( $counter % 10 )) == 0 ]]; then
-            echo "Current DO status code $code"
+            echo "Current DO status code $code on $TARGET"
         fi
         if [[ $code -ge 400 ]]; then
             message=$(get_do_status_message)
-            echo -e "${RED}DO failed. Code: $code, Message: $message${NC}"
+            echo -e "${RED}DO failed. Code: $code, Message: $message on $TARGET${NC}"
             exit 1
         fi
         ((counter++))
@@ -91,14 +91,14 @@ wait_for_do() {
         code=$(get_do_status_code)
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $DO_URL${NC}"
+        echo -e "${RED}Max tries reached while waiting for $DO_URL on $TARGET${NC}"
         exit 1
     fi
-    echo "Current DO status code $code"
+    echo "Current DO status code $code on $TARGET"
     set -e
 }
 
-echo "Waiting for REST framework to be available"
+echo "Waiting for REST framework to be available on $TARGET"
 check_echo_js_endpoint
 
 echo "Getting BIG-IP version"
@@ -110,6 +110,6 @@ if [[ $major -lt 13 ]]; then
     exit 0
 fi
 
-echo "Waiting for DO to complete"
+echo "Waiting for DO to complete on $TARGET"
 wait_for_do
-echo "DO is done"
+echo "DO is done on $TARGET"
