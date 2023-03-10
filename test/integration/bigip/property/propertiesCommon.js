@@ -31,7 +31,9 @@ const requestUtil = require('../../../common/requestUtilPromise');
 const { validateEnvVars } = require('../../../common/checkEnv');
 
 function onLoad() {
-    if (process.argv.indexOf('--require') === -1 && process.argv.indexOf('--skip-require') === -1) {
+    // In case of parallel run we'll have separate processes spawned to run tests(worker.js)
+    // So skip this check.
+    if (process.argv.indexOf('--require') === -1 && process.argv.indexOf('--skip-require') === -1 && !process.env.PARALLEL) {
         console.log('Missing `--require` command line argument. You should run with `--require test/integration/bigip/property/mochaHooks.js` or `--skip-require`.');
         process.exit(1);
     }
