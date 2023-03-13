@@ -98,6 +98,11 @@ Tag master with the release version, for example: 3.10.0 (Note: if you are taggi
   * Edit the AS3 schedule to set the `gitBranch` variable to the LTS branch.
   * Run the AS3 schedule.
   * After the build completes, edit the AS3 schedule to set the `gitBranch` variable back to develop.
+* Using the GUI create a tag off the LTS branch (e.g. 3.36.1)
+  * In the GUI go to `Repository -> Tags -> New tag`.
+  * The name of the tag should be the LTS version with a 'v' at the front (e.g. v3.36.1).
+  * Update the `createFrom` to point at the LTS branch.
+  * Set the message to: `LTS release v<LTS version>` (e.g. "LTS release v3.36.1")
 * Merge the release branch CHANGELOG into develop and create an MR for this.
 
 ## Documentation Release process
