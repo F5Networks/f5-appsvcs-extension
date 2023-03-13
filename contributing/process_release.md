@@ -103,7 +103,8 @@ Tag master with the release version, for example: 3.10.0 (Note: if you are taggi
   * The name of the tag should be the LTS version with a 'v' at the front (e.g. v3.36.1).
   * Update the `createFrom` to point at the LTS branch.
   * Set the message to: `LTS release v<LTS version>` (e.g. "LTS release v3.36.1")
-* Merge the release branch CHANGELOG into develop and create an MR for this.
+* Merge the LTS branch (without updating the package version) into develop and create an MR for this.
+* Merge the LTS branch (only update package version if LTS is latest) into master and create an MR for this.
 
 ## Documentation Release process
 * After the third sprint is finished and the release branch has been created, checkout out the dev release branch and then merge it into **doc-release-branch**.
