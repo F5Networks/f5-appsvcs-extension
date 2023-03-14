@@ -259,7 +259,15 @@ For instructions, see :ref:`Disabling Service Discovery<undiscover>`.
 
 |
 
+.. _irulechars:
 
+Why is my iRule failing in an AS3 declaration when I know it's valid?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you have an iRule in an AS3 declaration which is returning 422 errors, it may be because you have special characters such as ``<`` or ``>`` in a comment the iRule.  
+
+These characters, even when they are properly commented out, cause 422 errors in an AS3 declaration.
+
+As a workaround, remove any ``<`` or ``>`` characters in the iRule comments.
 
 
 
