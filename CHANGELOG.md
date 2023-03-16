@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- AUTOTOOL-3724: Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
 
 ### Changed
 
