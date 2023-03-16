@@ -271,8 +271,6 @@ If you have an iRule in an AS3 declaration which is returning 422 errors, there 
 
 
 
-
-
 .. |br| raw:: html
 
    <br />
