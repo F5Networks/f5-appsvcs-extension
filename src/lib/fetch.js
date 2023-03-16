@@ -190,6 +190,7 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
     });
 
     createDefaultSnatTranslations(config, snatPoolAddresses);
+    return postProcessing.filter((o) => (!o.snatTranslationAddress && !o.snatPoolAddress));
 };
 
 function createDefaultSnatTranslations(config, snatPoolAddresses) {
@@ -648,7 +649,7 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
         desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
     }
     if (context.request.postProcessing.length > 0) {
-        desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
+        context.request.postProcessing = desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
     }
     updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
     updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);
@@ -1102,11 +1103,7 @@ const updateAddressesWithRouteDomain = function (configs, tenantId) {
         if (cfg.command === 'ltm virtual-address') {
             let destAddr = cfg.properties.address;
             if (!util.isEmptyOrUndefined(defaultRd) && !destAddr.includes('%')) {
-                let cidr = ipUtil.getCidrFromNetmask(cfg.properties.mask);
-                if ((ipUtil.isIPv4(destAddr) && cidr === '/32') || cidr === '/0' || cidr === '/128') {
-                    cidr = '';
-                }
-                destAddr = `${destAddr}%${defaultRd}${cidr}`;
+                destAddr = `${destAddr}%${defaultRd}`;
                 cfg.properties.address = destAddr;
             }
             if (destAddr.includes('%')) {

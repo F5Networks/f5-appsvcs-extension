@@ -45,6 +45,7 @@ const Tags = {
     },
     APP: {
         VERSION: 'app.version',
+        RELEASE: 'app.release',
         COMPONENT: 'app.component'
     },
     ERROR: 'error'
@@ -255,7 +256,7 @@ class Span extends BaseSpan {
 }
 
 /**
- * Provides functionality for tracing. Currently supported: jeager-client (will only load module if enabled).
+ * Provides functionality for tracing. Currently supported: jaeger-client (will only load module if enabled).
  * A disabled tracer will be a no-op implementation.
  *
  * @class Tracer

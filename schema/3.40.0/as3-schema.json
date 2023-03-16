@@ -551,7 +551,7 @@
         },
         "targetTokens": {
           "title": "Target tokens",
-          "description": "One or more HTTP headers (each a property, like 'X-F5-Auth-Token': 'MF6APSRUYKTMSDBEOOEWLCNSO2') you want to send with queries to the targetHost management service as authentication/authorization tokens",
+          "description": "One or more HTTP headers (each a property, like 'X-F5-Auth-Token': 'ABC123') you want to send with queries to the targetHost management service as authentication/authorization tokens",
           "type": "object",
           "patternProperties": {
             "^[^\\x00-\\x20:\\x7f-\\xff]{1,254}$": {

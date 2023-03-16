@@ -86,14 +86,16 @@ describe('HTTP_Acceleration_Profile', function () {
                 inputValue: [
                     undefined,
                     [
-                        '.'
+                        '.',
+                        '/test1/prefix?key=ms\\.spa\\.'
                     ],
                     undefined
                 ],
                 expectedValue: [
                     [],
                     [
-                        '.'
+                        '.',
+                        '/test1/prefix?key=ms\\.spa\\.'
                     ],
                     []
                 ],
@@ -104,14 +106,16 @@ describe('HTTP_Acceleration_Profile', function () {
                 inputValue: [
                     undefined,
                     [
-                        'www.uri.com'
+                        'www.uri.com',
+                        '/test2/prefix?key=ms\\.spa\\.'
                     ],
                     undefined
                 ],
                 expectedValue: [
                     [],
                     [
-                        'www.uri.com'
+                        'www.uri.com',
+                        '/test2/prefix?key=ms\\.spa\\.'
                     ],
                     []
                 ],
@@ -123,7 +127,8 @@ describe('HTTP_Acceleration_Profile', function () {
                     undefined,
                     [
                         '1.1.2.2',
-                        '2.2.3.3'
+                        '2.2.3.3',
+                        '/test3/prefix?key=ms\\.spa\\.'
                     ],
                     undefined
                 ],
@@ -131,7 +136,8 @@ describe('HTTP_Acceleration_Profile', function () {
                     [],
                     [
                         '1.1.2.2',
-                        '2.2.3.3'
+                        '2.2.3.3',
+                        '/test3/prefix?key=ms\\.spa\\.'
                     ],
                     []
                 ],
@@ -142,14 +148,16 @@ describe('HTTP_Acceleration_Profile', function () {
                 inputValue: [
                     undefined,
                     [
-                        '///'
+                        '///',
+                        '/test4/prefix?key=ms\\.spa\\.'
                     ],
                     undefined
                 ],
                 expectedValue: [
                     [],
                     [
-                        '///'
+                        '///',
+                        '/test4/prefix?key=ms\\.spa\\.'
                     ],
                     []
                 ],

@@ -549,6 +549,87 @@ const updateMember = function updateMember(member) {
     }
 };
 
+const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, item, sdRequired, resources, pool) {
+    const configs = [];
+
+    const addMember = function addMember(poolItem, def) {
+        def.fqdn = {};
+        if (def.name) {
+            const delimiter = def.name.includes(':') ? '.' : ':';
+            def.name += delimiter + def.servicePort;
+        }
+        if (def.rateLimit === -1) { def.rateLimit = 'disabled'; }
+        if (def.addressDiscovery === 'fqdn') {
+            def.fqdn.autopopulate = def.autoPopulate;
+        } else {
+            def.fqdn.autopopulate = 'disabled';
+        }
+        def.metadata = [{ name: 'source', value: 'declaration' }];
+        if (!sdRequired) {
+            poolItem.members.push(normalize.actionableMcp(context, def, 'ltm pool members', null).properties);
+        }
+    };
+
+    if (item.bigip) {
+        item.name = item.bigip;
+        if (pool) {
+            addMember(pool, item);
+        }
+    } else if (item.addressDiscovery === 'fqdn') {
+        let nodeTenant = tenantId;
+        let nodeApp = newAppId;
+        if (item.shareNodes) {
+            nodeTenant = 'Common';
+            nodeApp = null;
+        }
+        const config = this.FQDN_Node(context, nodeTenant, nodeApp, item).configs[0];
+        configs.push(config);
+        item.name = config.path;
+        if (pool) {
+            addMember(pool, item);
+        }
+    } else if (item.addressDiscovery === 'static') {
+        const addresses = (item.serverAddresses || []).map((address) => address);
+        const serverNames = {};
+        (item.servers || []).forEach((server) => {
+            addresses.push(server.address);
+            const rawAddress = server.address.split('%')[0];
+            serverNames[rawAddress] = server.name;
+        });
+        addresses.forEach((addr) => {
+            const rawAddress = addr.split('%')[0];
+            if (!addr.includes('%') && item.routeDomain) {
+                addr = addr.concat(`%${item.routeDomain}`);
+            }
+            addr = addr.includes('%') && addr.split('%')[1] === '0' ? addr.split('%')[0] : addr;
+            addr = ipUtil.minimizeIP(addr);
+            let nodeTenant = tenantId;
+            let nodeApp = newAppId;
+            if (item.shareNodes) {
+                nodeTenant = 'Common';
+                nodeApp = null;
+            }
+            // If it's a named server, use that name. Otherwise, use the address as the name
+            const rawName = serverNames[rawAddress] || addr;
+            item.name = util.mcpPath(nodeTenant, nodeApp, rawName);
+            if (pool) {
+                addMember(pool, item);
+            }
+            configs.push(this.Node(context, nodeTenant, nodeApp, addr, rawName).configs);
+        });
+    }
+
+    if (sdRequired && !item.addressDiscovery.use) {
+        const tenant = (item.shareNodes) ? 'Common' : tenantId;
+        const task = serviceDiscovery.createTask(item, tenant, resources);
+        const sdPath = util.mcpPath(tenantId, null, task.id);
+        serviceDiscovery.prepareTaskForNormalize(task);
+        configs.push(normalize.actionableMcp(context, task, 'mgmt shared service-discovery task', sdPath));
+    }
+
+    return configs;
+};
+
 /**
  * The translate function array handles AS3 class customizations.
  * Schema-validated input is translated to actionable desired config.
@@ -1268,7 +1349,7 @@ const translate = {
             genCert(tlsItem, obj.certificate, 'SERVER');
             genCert(tlsItem, obj.proxyCertificate, 'CA');
 
-            tlsItem['sni-default'] = index === 0;
+            tlsItem.sniDefault = obj.sniDefault;
             tlsItem.matchToSNI = obj.matchToSNI || 'none';
             tlsItem.mode = obj.enabled;
 
@@ -1369,7 +1450,7 @@ const translate = {
             } else {
                 item.bundle = pkcs12Obj.certificates.join('\n');
             }
-            item.privateKey = pkcs12Obj.privateKey;
+            item.privateKey = pkcs12Obj.privateKey; // gitleaks:allow
             if (item.pkcs12Options.ignoreChanges) {
                 item.ignore.checksum = 'checksum';
             }
@@ -1822,7 +1903,8 @@ const translate = {
     },
 
     Address_Discovery(context, tenantId, appId, itemId, item) {
-        const configs = [];
+        let configs = [];
+        const newAppId = (tenantId === 'Common') ? 'Shared' : undefined;
         item.resources = item.resources || [];
 
         item.resources.forEach((resource) => {
@@ -1831,12 +1913,8 @@ const translate = {
         });
 
         item.path = util.mcpPath(tenantId, appId, itemId);
-        const tenant = (item.shareNodes) ? 'Common' : tenantId;
-        const task = serviceDiscovery.createTask(item, tenant, item.resources);
-        const sdPath = util.mcpPath(tenantId, null, task.id);
-        serviceDiscovery.prepareTaskForNormalize(task);
-        configs.push(normalize.actionableMcp(context, task, 'mgmt shared service-discovery task', sdPath));
-
+        configs = configs.concat(addressDiscovery
+            .call(this, context, tenantId, newAppId, item, true, item.resources));
         return { configs };
     },
 
@@ -1844,7 +1922,7 @@ const translate = {
      * Defines a group of servers to be targeted by a virtual.
      */
     Pool(context, tenantId, appId, itemId, item) {
-        const configs = [];
+        let configs = [];
         const path = util.mcpPath(tenantId, appId, itemId);
         const memberDefs = item.members || [];
         const newAppId = (tenantId === 'Common') ? 'Shared' : undefined;
@@ -1867,24 +1945,6 @@ const translate = {
         const sdRequired = memberDefs.some((def) => def.addressDiscovery
             && ['static', 'fqdn'].indexOf(def.addressDiscovery) === -1);
 
-        const addMember = function addMember(poolItem, def) {
-            def.fqdn = {};
-            if (def.name) {
-                const delimiter = def.name.includes(':') ? '.' : ':';
-                def.name += delimiter + def.servicePort;
-            }
-            if (def.rateLimit === -1) { def.rateLimit = 'disabled'; }
-            if (def.addressDiscovery === 'fqdn') {
-                def.fqdn.autopopulate = def.autoPopulate;
-            } else {
-                def.fqdn.autopopulate = 'disabled';
-            }
-            def.metadata = [{ name: 'source', value: 'declaration' }];
-            if (!sdRequired) {
-                poolItem.members.push(normalize.actionableMcp(context, def, 'ltm pool members', null).properties);
-            }
-        };
-
         // rebuild item.members: each AS3 member can contain multiple addresses
         item.members = [];
         item.ignore = item.ignore || {};
@@ -1893,56 +1953,8 @@ const translate = {
             updateMember(def);
 
             if (def.enable) {
-                if (def.bigip) {
-                    def.name = def.bigip;
-                    addMember(item, def);
-                } else if (def.addressDiscovery === 'fqdn') {
-                    let nodeTenant = tenantId;
-                    let nodeApp = newAppId;
-                    if (def.shareNodes) {
-                        nodeTenant = 'Common';
-                        nodeApp = null;
-                    }
-                    const config = translate.FQDN_Node(context, nodeTenant, nodeApp, def).configs[0];
-                    configs.push(config);
-                    def.name = config.path;
-                    addMember(item, def);
-                } else if (def.addressDiscovery === 'static') {
-                    const addresses = (def.serverAddresses || []).map((address) => address);
-                    const serverNames = {};
-                    (def.servers || []).forEach((server) => {
-                        addresses.push(server.address);
-                        const rawAddress = server.address.split('%')[0];
-                        serverNames[rawAddress] = server.name;
-                    });
-                    addresses.forEach((addr) => {
-                        const rawAddress = addr.split('%')[0];
-                        if (!addr.includes('%') && def.routeDomain) {
-                            addr = addr.concat(`%${def.routeDomain}`);
-                        }
-                        addr = addr.includes('%') && addr.split('%')[1] === '0' ? addr.split('%')[0] : addr;
-                        addr = ipUtil.minimizeIP(addr);
-                        let nodeTenant = tenantId;
-                        let nodeApp = newAppId;
-                        if (def.shareNodes) {
-                            nodeTenant = 'Common';
-                            nodeApp = null;
-                        }
-                        // If it's a named server, use that name. Otherwise, use the address as the name
-                        const rawName = serverNames[rawAddress] || addr;
-                        def.name = util.mcpPath(nodeTenant, nodeApp, rawName);
-                        addMember(item, def);
-                        configs.push(translate.Node(context, nodeTenant, nodeApp, addr, rawName).configs);
-                    });
-                }
-
-                if (sdRequired && !def.addressDiscovery.use) {
-                    const tenant = (def.shareNodes) ? 'Common' : tenantId;
-                    const task = serviceDiscovery.createTask(def, tenant, [{ item, path }]);
-                    const sdPath = util.mcpPath(tenantId, null, task.id);
-                    serviceDiscovery.prepareTaskForNormalize(task);
-                    configs.push(normalize.actionableMcp(context, task, 'mgmt shared service-discovery task', sdPath));
-                }
+                configs = configs.concat(addressDiscovery
+                    .call(this, context, tenantId, newAppId, def, sdRequired, [{ item, path }], item));
             }
         });
 
@@ -2097,10 +2109,10 @@ const translate = {
         item.members = {};
         item.snatAddresses.forEach((addr) => {
             addr = ipUtil.minimizeIP(addr);
-            item.members[util.mcpPath(tenantId, appId, addr)] = {};
+            item.members[util.mcpPath(tenantId, undefined, addr)] = {};
             context.request.postProcessing.push(
                 {
-                    name: `/${tenantId}/${appId}/${addr}`,
+                    name: `/${tenantId}/${addr}`,
                     snatPoolAddress: addr
                 }
             );
@@ -2120,7 +2132,7 @@ const translate = {
         item.address = ipUtil.minimizeIP(item.address);
         context.request.postProcessing.push(
             {
-                name: `/${tenantId}/${appId}/${item.address}`,
+                name: `/${tenantId}/${item.address}`,
                 snatTranslationAddress: item.address
             }
         );
@@ -2129,7 +2141,7 @@ const translate = {
         // When BIGIP auto generates a translation it picks the address as the name of the object.
         // For the maintenance of translations moving between auto generated and user specified it is easier to always
         // make the translation names the same as the address.
-        return { configs: [normalize.actionableMcp(context, item, 'ltm snat-translation', util.mcpPath(tenantId, appId, item.address))] };
+        return { configs: [normalize.actionableMcp(context, item, 'ltm snat-translation', util.mcpPath(tenantId, undefined, item.address))] };
     },
 
     /**
@@ -4288,6 +4300,11 @@ const translate = {
                     currentTask.metadata = currentTask.metadata || {};
                     currentTask.metadata.gslbPool = { needsWait: true };
                 }
+
+                if (typeof member.virtualServer === 'object') {
+                    member.virtualServer = member.virtualServer.use || member.virtualServer.bigip;
+                }
+
                 member.name = `${bigipPath(member, 'server').replace('/Shared', '')}:${member.virtualServer}`;
                 if (member.dependsOn && member.dependsOn !== 'none') {
                     member.dependsOn.forEach((dependsOn, index) => {

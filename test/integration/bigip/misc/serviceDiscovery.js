@@ -798,5 +798,145 @@ describe('Service Discovery', function () {
                     assert.deepStrictEqual(tasks[1].id, '~TEST_Address_Discovery~Application~testItem2');
                 });
         });
+
+        it('should handle static and fqdn addressDiscovery with Address_Discovery', () => {
+            const declaration = {
+                class: 'AS3',
+                declaration: {
+                    class: 'ADC',
+                    schemaVersion: '3.44.0',
+                    id: 'Address_Discovery',
+                    controls: {
+                        class: 'Controls',
+                        trace: true,
+                        logLevel: 'debug',
+                        traceResponse: true
+                    },
+                    TEST_Address_Discovery: {
+                        class: 'Tenant',
+                        Application: {
+                            class: 'Application',
+                            staticAddressDiscovery: {
+                                class: 'Address_Discovery',
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '10.10.20.20'
+                                ]
+                            },
+                            staticWithBigipAddressDiscovery: {
+                                class: 'Address_Discovery',
+                                addressDiscovery: 'static',
+                                bigip: '/Common/testNode'
+                            },
+                            fqdnAddressDiscovery: {
+                                class: 'Address_Discovery',
+                                addressDiscovery: 'fqdn',
+                                hostname: 'www.f5.com'
+                            },
+                            pool: {
+                                class: 'Pool',
+                                members: [
+                                    {
+                                        servicePort: 80,
+                                        addressDiscovery: {
+                                            use: 'staticAddressDiscovery'
+                                        }
+                                    },
+                                    {
+                                        servicePort: 8080,
+                                        addressDiscovery: {
+                                            use: 'staticWithBigipAddressDiscovery'
+                                        }
+                                    },
+                                    {
+                                        servicePort: 100,
+                                        addressDiscovery: {
+                                            use: 'fqdnAddressDiscovery'
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            };
+            const bigipItems = [
+                {
+                    endpoint: '/mgmt/tm/ltm/node',
+                    data: {
+                        name: 'testNode',
+                        partition: 'Common',
+                        address: '1.2.3.4'
+                    }
+                }
+            ];
+
+            return postBigipItems(bigipItems)
+                .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/service-discovery/task',
+                        retryCount: 10,
+                        retryInterval: 1000,
+                        retryIf: (error, response) => response.body.items
+                            .some((item) => item.lastDiscoveryResult.status === 'Pending')
+                    };
+                    return requestUtil.get(options);
+                })
+                .then((result) => {
+                    const tasks = result.body.items;
+                    assert.deepStrictEqual(
+                        tasks[0].providerOptions,
+                        {
+                            type: 'static',
+                            nodes: [
+                                {
+                                    id: '/TEST_Address_Discovery/10.10.20.20'
+                                }
+                            ]
+                        }
+                    );
+                    assert.deepStrictEqual(
+                        tasks[1].providerOptions,
+                        {
+                            type: 'static',
+                            nodes: [
+                                {
+                                    id: '/Common/testNode'
+                                }
+                            ]
+                        }
+                    );
+                    assert.deepStrictEqual(
+                        tasks[2].providerOptions,
+                        {
+                            type: 'static',
+                            nodes: [
+                                {
+                                    id: '/TEST_Address_Discovery/www.f5.com'
+                                }
+                            ]
+                        }
+                    );
+                    const options = {
+                        path: '/mgmt/tm/ltm/pool/~TEST_Address_Discovery~Application~pool/members'
+                    };
+                    return requestUtil.get(options);
+                })
+                // Remove comments and run this test several times once AUTOTOOL-3677 is completed
+                /* .then((result) => {
+                    const members = result.body.items.map((member) => member.name);
+                    assert.deepStrictEqual(
+                        members,
+                        [
+                            '_auto_108.138.94.42:100',
+                            'testNode:8080',
+                            '10.10.20.20:80',
+                            'www.f5.com:100'
+                        ]
+                    );
+                }) */
+                .finally(() => deleteDeclaration().then(() => deleteBigipItems(bigipItems)));
+        });
     });
 });

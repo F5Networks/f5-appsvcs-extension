@@ -361,11 +361,6 @@
         "class": "HTTP2_Profile",
         "tmshPath": "ltm profile http2"
     },
-    "HTTP_Acceleration_Profile": {
-        "name": "HTTP Acceleration Profile",
-        "class": "HTTP_Acceleration_Profile",
-        "tmshPath": "ltm profile web-acceleration"
-    },
     "ILX_Profile": {
         "name": "iRules LX Profile",
         "tmshPath": "ltm profile ilx"
@@ -431,21 +426,6 @@
         "name": "fast L4 profile",
         "class": "L4_Profile",
         "tmshPath": "ltm profile fastl4"
-    },
-    "Log_Destination": {
-        "name": "log destination",
-        "class": "Log_Destination",
-        "tmshPath":[
-            "sys log-config destination alertd",
-            "sys log-config destination arcsight",
-            "sys log-config destination ipfix",
-            "sys log-config destination local-database",
-            "sys log-config destination local-syslog",
-            "sys log-config destination management-port",
-            "sys log-config destination remote-high-speed-log",
-            "sys log-config destination remote-syslog",
-            "sys log-config destination splunk"
-        ]
     },
     "Radius_Profile": {
         "name": "radius profile",

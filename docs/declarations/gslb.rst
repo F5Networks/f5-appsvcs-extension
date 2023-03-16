@@ -281,7 +281,37 @@ This declaration creates the following objects on the BIG-IP (this declaration d
 .. literalinclude:: ../../examples/declarations/example-gslb-discovery.json
    :language: json
 
-:ref:`Back to top<sd-examples>`
+:ref:`Back to top<gslbexamples>`
+
+|
+
+.. _gslbpooluse:
+
+
+Referencing a virtual server in a GSLB pool with a use pointer
+``````````````````````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for referencing a virtual server with a use pointer in a GSLB pool is available in BIG-IP AS3 v3.44 and later. You must have BIG-IP DNS (formerly GTM) provisioned to use these features.
+
+This example shows how you can reference a virtual server in a GSLB pool with a **use** pointer to a virtual server defined in the declaration. In previous versions, you would have to include the full path to the virtual server on the BIG-IP.  See |poolref| and |useref| in the :ref:`Schema Reference<schema-reference>` for usage options and additional features for GSLB.
+
+.. NOTE:: When using GSLB features, you must be aware of the items pointed out in :ref:`Warnings<gslbnote>`, notably BIG-IP AS3 completely overwrites non-AS3 topologies when a declaration is submitted.  
+
+
+This declaration creates the following objects on the BIG-IP:
+
+- A GSLB data center named **testDataCenter**.
+- A GSLB server named **testServer** with one device and a reference to the data center.
+- A tenant named **TEST_GSLB_Pool**.
+- An Application named **application**.
+- A GSLB pool named **gslbPool** with use pointers to the GSLB server and the virtual server defined below it.
+- A virtual server named **virtualServer** referred to in the GSLB pool.
+
+.. literalinclude:: ../../examples/declarations/example-gslb-pool-virtual-server-use-ref.json
+   :language: json
+
+:ref:`Back to top<gslbexamples>`
 
 
 .. |dnsexpress| raw:: html
@@ -331,6 +361,10 @@ This declaration creates the following objects on the BIG-IP (this declaration d
 .. |poolref| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#gslb-pool">GSLB_Pool</a>
+
+.. |useref| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#pointer-gslb-pool">Pointer_GSLB_Pool</a>
 
 .. |poolmember| raw:: html
 

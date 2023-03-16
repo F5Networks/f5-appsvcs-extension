@@ -30,14 +30,23 @@ const constants = require('../../../../src/lib/constants');
 const requestUtil = require('../../../common/requestUtilPromise');
 const { validateEnvVars } = require('../../../common/checkEnv');
 
+function onLoad() {
+    // In case of parallel run we'll have separate processes spawned to run tests(worker.js)
+    // So skip this check.
+    if (process.argv.indexOf('--require') === -1 && process.argv.indexOf('--skip-require') === -1 && !process.env.PARALLEL) {
+        console.log('Missing `--require` command line argument. You should run with `--require test/integration/bigip/property/mochaHooks.js` or `--skip-require`.');
+        process.exit(1);
+    }
+}
+
+onLoad();
+
 const consoleOptions = {
     declarations: false, // display the declarations that are created
     expectedActual: false, // display expected and actual values
     postRequest: false, // display the declaration we are about to POST
     postResult: false // display the result from the POST
 };
-
-let stream;
 
 let BIGIP_VERSION = '0.0.0';
 let PROVISIONED_MODULES = [];
@@ -66,14 +75,31 @@ const DEFAULT_OPTIONS = {
     traceResponse: true
 };
 
+let eventStream;
 let testInfo;
-function getTestInfo(currentTest) {
-    const testName = `${currentTest.parent.title}.${currentTest.title}`.replace('/', '');
-    const testDir = `test/logs/${testName}`;
-    return {
-        testName,
-        testDir
-    };
+
+function setProvisionedModules(provisionedModules) {
+    PROVISIONED_MODULES = provisionedModules.slice();
+}
+
+function setBigIpVersion(version) {
+    BIGIP_VERSION = version;
+}
+
+function getDefaultOptions() {
+    return DEFAULT_OPTIONS;
+}
+
+function setTestInfo(info) {
+    testInfo = info;
+}
+
+function setEventStream(logStream) {
+    eventStream = logStream;
+}
+
+function getEventStream() {
+    return eventStream;
 }
 
 function extractPolicy(virtual, name) {
@@ -348,17 +374,11 @@ function postDeclaration(declaration, logInfo, queryParams, path) {
     let promise = Promise.resolve();
 
     if (logInfo) {
-        promise = promise.then(() => new Promise((resolve, reject) => {
+        promise = promise.then(() => {
             const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.declarationIndex}.json`;
             const declBody = JSON.stringify(declaration, null, 4);
-            fs.writeFile(fileName, declBody, (error) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-                resolve();
-            });
-        }));
+            fs.writeFileSync(fileName, declBody);
+        });
     }
 
     logEvent(`posting declaration ${logInfo ? logInfo.declarationIndex : ''}`);
@@ -453,14 +473,47 @@ function postDeclarationToFail(declaration) {
         });
 }
 
-function patch(path, body, headerObject) {
-    logEvent('patch request');
+/**
+ * Sends a patch request
+ *
+ * @param {string} path - path to PATCH
+ * @param {object} body - JSON body to be submitted
+ * @param {object} [options] - options for function
+ * @param {object} [options.headers] - additional headers to add to request
+ * @param {object} [options.logInfo] - info needed to log request and results. If present, logs are written
+ * @param {number} [options.logInfo.patchIndex] - patch index we are processing
+ */
+function patch(path, body, options) {
+    const headers = (options || {}).headers;
+    const logInfo = (options || {}).logInfo;
+    let promise = Promise.resolve();
+
+    if (logInfo) {
+        promise = promise.then(() => {
+            const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.patchIndex}.patch.json`;
+            const patchBody = JSON.stringify(body, null, 4);
+            fs.writeFileSync(fileName, patchBody);
+        });
+    }
+
+    logEvent(`patch request ${logInfo ? logInfo.patchIndex : ''}`);
+
     const requestOptions = {
         path,
         body,
-        headers: headerObject
+        headers
     };
-    return requestUtil.patch(requestOptions);
+    return promise
+        .then(() => requestUtil.patch(requestOptions))
+        .then((response) => {
+            logEvent(`patch response ${logInfo ? logInfo.patchIndex : ''}`);
+            if (logInfo) {
+                const fileName = `${testInfo.testDir}/${testInfo.testName}.${logInfo.patchIndex}.patch.response.json`;
+                const responseBody = JSON.stringify(response.body, null, 4);
+                fs.writeFileSync(fileName, responseBody);
+            }
+            return response;
+        });
 }
 
 function getDeclaration(declaration) {
@@ -1320,56 +1373,6 @@ function assertMultipleItems(as3Class, properties, count, sharedObjects, constan
         });
 }
 
-function getBigIpVersionAsync() {
-    if (DEFAULT_OPTIONS.dryRun) {
-        return Promise.resolve('100.0.0.0');
-    }
-    return Promise.resolve()
-        .then(() => {
-            const requestOptions = {
-                path: '/mgmt/tm/sys/version',
-                host: process.env.TARGET_HOST || process.env.AS3_HOST
-            };
-            return requestUtil.get(requestOptions);
-        })
-        .then((result) => {
-            const entry = result.body.entries[Object.keys(result.body.entries)[0]];
-            return entry.nestedStats.entries.Version.description;
-        })
-        .catch((error) => {
-            error.message = `Unable to get BIG-IP version: ${error.message}`;
-            throw error;
-        });
-}
-
-function getProvisionedModulesAsync() {
-    if (DEFAULT_OPTIONS.dryRun) {
-        return Promise.resolve(['afm', 'asm', 'gtm', 'pem', 'ltm', 'avr']);
-    }
-    return Promise.resolve()
-        .then(() => {
-            const requestOptions = {
-                path: '/mgmt/tm/sys/provision',
-                host: process.env.TARGET_HOST || process.env.AS3_HOST
-            };
-            return requestUtil.get(requestOptions);
-        })
-        .then((response) => {
-            const body = response.body;
-            if (!body.items) {
-                throw new Error(`Could not find provisioned modules:\n${JSON.stringify(body, null, 2)}`);
-            }
-
-            return body.items
-                .filter((m) => m.level !== 'none')
-                .map((m) => m.name);
-        })
-        .catch((error) => {
-            error.message = `Unable to get BIG-IP module list: ${error.message}`;
-            throw error;
-        });
-}
-
 function runTestCases(className, testCases, extractFunctions, overrideValues,
     skipAsserts, mcpClass, referenceObjects, sharedObjects, options) {
     testCases.forEach((testCase, index) => {
@@ -1415,38 +1418,6 @@ function runTestCases(className, testCases, extractFunctions, overrideValues,
         });
     });
 }
-
-function mkdirPromise(path) {
-    return new Promise((resolve, reject) => {
-        fs.mkdir(path, (error) => {
-            if (error && error.code !== 'EEXIST') reject(error);
-            else resolve();
-        });
-    });
-}
-
-before(function () {
-    this.timeout(60000);
-    return getProvisionedModulesAsync()
-        .then((modules) => { PROVISIONED_MODULES = modules; })
-        .then(getBigIpVersionAsync)
-        .then((version) => { BIGIP_VERSION = version; })
-        .then(() => {
-            if (DEFAULT_OPTIONS.dryRun) {
-                return Promise.resolve();
-            }
-            return Promise.resolve()
-                .then(() => requestUtil.delete({ path: '/mgmt/shared/appsvcs/declare' }))
-                .catch((error) => {
-                    error.message = `Unable to clear AS3 state: ${error.message}`;
-                    throw error;
-                });
-        })
-        .then(() => mkdirPromise('test/logs'))
-        .then(() => {
-            stream = fs.createWriteStream('test/logs/eventLog.log');
-        });
-});
 
 /**
  * Checks to see if all services are running by repeatedly checking until the BIGIP is Active
@@ -1534,43 +1505,6 @@ function removeToken(token) {
     return requestUtil.delete(requestOptions);
 }
 
-beforeEach(function () {
-    this.timeout(300000);
-    testInfo = getTestInfo(this.currentTest);
-    logEvent(`========== STARTING ==========\n  ${testInfo.testName}`);
-    return mkdirPromise(testInfo.testDir)
-        .then(() => {
-            if (!DEFAULT_OPTIONS.dryRun) {
-                return Promise.resolve()
-                    .then(() => getAuthToken())
-                    .then((token) => {
-                        DEFAULT_OPTIONS.token = token;
-                    })
-                    .catch((error) => {
-                        error.message = `Unable to fetch auth token: ${error.message}`;
-                        throw error;
-                    });
-            }
-            return Promise.resolve();
-        });
-});
-
-afterEach(function () {
-    this.timeout(300000);
-    logEvent(`COMPLETED ${testInfo.testName}`);
-    const token = DEFAULT_OPTIONS.token;
-    let promise = Promise.resolve();
-    if (token) {
-        promise = promise.then(() => removeToken(token));
-    }
-
-    return promise;
-});
-
-after(() => {
-    stream.end(); // Best practice to close it manually then relying on autoclose
-});
-
 function getProvisionedModules() {
     return PROVISIONED_MODULES;
 }
@@ -1602,7 +1536,8 @@ function getPreFetchFunctions(properties, index) {
     return Promise.all(preFetchPromises);
 }
 
-function logEvent(eventString) {
+function logEvent(eventString, logStream) {
+    const stream = logStream || getEventStream();
     stream.write(`${new Date()}: ${eventString}\n`);
 }
 
@@ -1638,5 +1573,12 @@ module.exports = {
     patch,
     logEvent,
     getAuthToken,
+    removeToken,
+    setProvisionedModules,
+    setBigIpVersion,
+    setEventStream,
+    getEventStream,
+    getDefaultOptions,
+    setTestInfo,
     GLOBAL_TIMEOUT
 };

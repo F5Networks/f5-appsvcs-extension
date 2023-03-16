@@ -59,7 +59,7 @@ check_echo_js_endpoint() {
         INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$ECHO_JS_URL")
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $ECHO_JS_URL${NC}"
+        echo -e "${RED}Max tries reached while waiting for $ECHO_JS_URL on $TARGET${NC}"
         exit 1
     fi
     set -e
@@ -77,18 +77,18 @@ check_info_endpoint() {
         INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$INFO_URL")
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $INFO_URL${NC}"
+        echo -e "${RED}Max tries reached while waiting for $INFO_URL on $TARGET${NC}"
         exit 1
     fi
     set -e
 }
 
-echo "Waiting for REST framework to be available"
+echo "Waiting for REST framework to be available on $TARGET"
 check_echo_js_endpoint
 
 # If this is AS3, get list of existing f5-appsvcs packages on target and uninstall them
 if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
-    echo "Getting list of existing f5-appsvcs packages on target"
+    echo "Getting list of existing f5-appsvcs packages on $TARGET"
     TASK=$(curl $CURL_FLAGS -H "Content-Type: application/json" \
         -X POST https://$TARGET/mgmt/shared/iapp/package-management-tasks -d "{operation: 'QUERY'}")
     poll_task $(echo $TASK | jq -r .id)
@@ -105,7 +105,7 @@ if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
 fi
 
 #Remove previous RPMs uploaded on target
-echo "Removing previous RPMs from target"
+echo "Removing previous RPMs from $TARGET"
 curl ${CURL_FLAGS} -X DELETE https://$TARGET/mgmt/shared/file-transfer/uploads/$RPM_NAME
 
 #Upload new RPM to target
@@ -121,10 +121,10 @@ poll_task $(echo $TASK | jq -r .id)
 
 # If this is AS3, check availability
 if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
-    echo "Waiting for appsvcs/info endpoint to be available"
+    echo "Waiting for appsvcs/info endpoint to be available on $TARGET"
     check_info_endpoint "https://$TARGET/mgmt/shared/appsvcs/info"
 
-    echo "Waiting for service-discovery/info endpoint to be available"
+    echo "Waiting for service-discovery/info endpoint to be available on $TARGET"
     check_info_endpoint "https://$TARGET/mgmt/shared/service-discovery/info"
 fi
 

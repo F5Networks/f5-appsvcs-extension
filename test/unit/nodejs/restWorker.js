@@ -152,7 +152,10 @@ describe('restWorker', () => {
             const restOp = createRestOpMock(405, done);
             restOp.method = 'Get';
             restOp.setPathName('/shared/appsvcs/declare');
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.CONTAINER };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.CONTAINER,
+                as3VersionInfo: {}
+            };
 
             assert.doesNotThrow(() => restWorker.onGet(restOp));
         });
@@ -172,7 +175,10 @@ describe('restWorker', () => {
             });
             restOp.method = 'Get';
             restOp.setPathName('/shared/appsvcs/settings');
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.BIG_IP };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.BIG_IP,
+                as3VersionInfo: {}
+            };
             restWorker.asyncHandler = { cleanRecords: () => {} };
 
             assert.doesNotThrow(() => restWorker.onGet(restOp));
@@ -198,7 +204,10 @@ describe('restWorker', () => {
             const restOp = createRestOpMock(405, done);
             restOp.method = 'Delete';
             restOp.setPathName('/shared/appsvcs/declare');
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.BIG_IQ };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.BIG_IQ,
+                as3VersionInfo: {}
+            };
 
             assert.doesNotThrow(() => restWorker.onDelete(restOp));
         });
@@ -206,7 +215,10 @@ describe('restWorker', () => {
         it('Container - should fail with 405', function (done) {
             const restOp = createRestOpMock(405, done);
             restOp.method = 'Delete';
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.CONTAINER };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.CONTAINER,
+                as3VersionInfo: {}
+            };
 
             assert.doesNotThrow(() => restWorker.onDelete(restOp));
         });
@@ -218,12 +230,20 @@ describe('restWorker', () => {
             restOp.method = 'Post';
             restOp.body = 'test bad JSON';
 
+            restWorker.hostContext = {
+                as3VersionInfo: {}
+            };
+
             assert.doesNotThrow(() => restWorker.onPost(restOp));
         });
 
         it('Any host - should fail with an early exit and 408 if the body is empty', function (done) {
             const restOp = createRestOpMock(408, done);
             restOp.method = 'Post';
+
+            restWorker.hostContext = {
+                as3VersionInfo: {}
+            };
 
             assert.doesNotThrow(() => restWorker.onPost(restOp));
         });
@@ -244,7 +264,10 @@ describe('restWorker', () => {
             restOp.method = 'Post';
             restOp.body = { burstHandlingEnabled: true };
             restOp.setPathName('/shared/appsvcs/settings');
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.BIG_IP };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.BIG_IP,
+                as3VersionInfo: {}
+            };
             restWorker.asyncHandler = { cleanRecords: () => {} };
 
             assert.doesNotThrow(() => restWorker.onPost(restOp));
@@ -269,7 +292,10 @@ describe('restWorker', () => {
         it('Container - should fail with 405', function (done) {
             const restOp = createRestOpMock(405, done);
             restOp.method = 'Patch';
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.CONTAINER };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.CONTAINER,
+                as3VersionInfo: {}
+            };
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
         });
 
@@ -278,12 +304,20 @@ describe('restWorker', () => {
             restOp.method = 'Patch';
             restOp.body = 'test bad JSON';
 
+            restWorker.hostContext = {
+                as3VersionInfo: {}
+            };
+
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
         });
 
         it('Any host - should fail with an early exit and 408 if the body is empty', function (done) {
             const restOp = createRestOpMock(408, done);
             restOp.method = 'Patch';
+
+            restWorker.hostContext = {
+                as3VersionInfo: {}
+            };
 
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
         });
@@ -302,7 +336,10 @@ describe('restWorker', () => {
             }];
             restOp.setPathName('/shared/appsvcs/settings');
             restOp.uri.href = '/shared/appsvcs/settings';
-            restWorker.hostContext = { deviceType: constants.DEVICE_TYPES.BIG_IP };
+            restWorker.hostContext = {
+                deviceType: constants.DEVICE_TYPES.BIG_IP,
+                as3VersionInfo: {}
+            };
             restWorker.asyncHandler = { cleanRecords: () => {} };
 
             assert.doesNotThrow(() => restWorker.onPatch(restOp));

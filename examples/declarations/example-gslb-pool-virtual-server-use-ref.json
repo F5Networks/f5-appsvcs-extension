@@ -1,0 +1,53 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.44.0",
+    "id": "GSLB_Pool",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDataCenter": {
+            	"class": "GSLB_Data_Center"
+            },
+            "testServer": {
+                "class": "GSLB_Server",
+                "dataCenter": {
+                    "use": "testDataCenter"
+                },
+                "devices": [
+                    {
+                        "address": "10.10.10.10"
+                    }
+                ],
+                "virtualServerDiscoveryMode": "enabled-no-delete"
+            }
+        }
+    },
+    "TEST_GSLB_Pool": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "gslbPool": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "A",
+                "members": [
+                    {
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": {
+                            "use": "virtualServer"
+                        }
+                    }
+                ]
+            },
+            "virtualServer": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.10.1.1"
+                ]
+            }
+        }
+    }
+}
