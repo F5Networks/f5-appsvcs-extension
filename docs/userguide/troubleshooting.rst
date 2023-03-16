@@ -261,13 +261,13 @@ For instructions, see :ref:`Disabling Service Discovery<undiscover>`.
 
 .. _irulechars:
 
-Why is my iRule failing in an AS3 declaration when I know it's valid?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you have an iRule in an AS3 declaration which is returning 422 errors, it may be because you have special characters such as ``<`` or ``>`` in a comment the iRule.  
+Why is my iRule failing in an AS3 declaration when I know it is valid?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you have an iRule in an AS3 declaration which is returning 422 errors, there are two things to look for.
 
-These characters, even when they are properly commented out, cause 422 errors in an AS3 declaration.
+- If the error message is **HTML Tag-like Content in the Request URL/Body** look for special characters in iRule comments and remove or replace them.  
 
-As a workaround, remove any ``<`` or ``>`` characters in the iRule comments.
+- If the error message contains **[braces are required around the expression]** where the expression appears to be the entire iRule, this may be because of a valid UTF-8 or Unicode character in the iRule that iControl REST does not parse correctly.  Try finding and removing or replacing any such characters.  This is documented in |K44543159|.
 
 
 
@@ -285,4 +285,6 @@ As a workaround, remove any ``<`` or ``>`` characters in the iRule comments.
 
    <a href="https://techdocs.f5.com/kb/en-us/products/big-ip_apm/manuals/product/apm-portal-access-13-0-0/1.html" target="_blank">APM documentation</a>
 
-   
+.. |K44543159| raw:: html
+
+   <a href="https://my.f5.com/manage/s/article/K44543159" target="_blank">K44543159</a>
