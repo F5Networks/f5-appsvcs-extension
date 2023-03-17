@@ -245,7 +245,6 @@ As a workaround, uninstall the package and then reinstall it.
 - Select the appropriate package, and then click **Uninstall**
 - Click **Import** and provide the path of package to reinstall it.
 
-
 |
 
 .. _disablesd:
