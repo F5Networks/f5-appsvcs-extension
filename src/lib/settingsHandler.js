@@ -48,6 +48,19 @@ class SettingsHandler {
                     break;
                 }
                 return Promise.resolve();
+            })
+            .catch((err) => {
+                log.error(`Unable to complete AS3 settings request:\n${err}`);
+                const status = err.status || restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR;
+                const result = restUtil.buildOpResult(
+                    status,
+                    'Settings request failed',
+                    {
+                        code: status,
+                        message: err.message
+                    }
+                );
+                restUtil.completeRequest(restOperation, result);
             });
     }
 }

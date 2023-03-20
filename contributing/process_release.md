@@ -16,40 +16,51 @@
 * When doing internal pre-releases, these markdown files are used when creating the release email
   * Web pages copy well into Outlook, so it is useful to convert the markdown to HTML using something like pandoc
 
-
-## Process for release candidates
-* Run the AS3 schedule from the atg-build repository in GitLab
-  * This will update and commit build number changes to `package.json` and `package-lock.json`
-  * This will also tag the appropriate branch with the updated version (e.g. v3.10.0-4)
-* Send build availability email to the as3_users distribution list that includes the release notes
-
 ## Process for release
-### Begin process release at the very beginning of the first sprint of a new release, by performing the following actions:
+### Begin process release at the very beginning of the first sprint of a new release, by performing the following actions
 * Create a new release branch using the major version, minor version and patch number as the name (e.g 3.10.0)
-  * Create the branch directly off of the tag in the previous step to ensure that the branch contains the expected commit history
-  * It is also recommended to create the branch using the GUI to avoid any issues with an out-of-date local repository
+  * Using the GitLab UI, create the branch from `develop` to avoid any issues with an out-of-date local repository
 * Point the `gitBranch` variable in the AS3 schedule in the atg-build repository at the release branch
-* Run the AS3 schedule from the atg-build repository in GitLab
-  * This will update and commit build number changes to `package.json` and `package-lock.json`
-  * This will also tag the appropriate branch with the updated `<version>-<build>` (e.g. v3.10.0-4)
+* Run the AS3 schedule from the atg-build repository in GitLab. This will:
+  * Update and commit build number changes to `package.json` and `package-lock.json`
+  * Tag the appropriate branch with the updated `<version>-<build>` (e.g. v3.10.0-4)
+  * Upload the build to Artifactory
+  * Send an email to the team with build details
 * Point the `gitBranch` variable in the AS3 schedule in the atg-build repository back to `develop`
 * Download and copy the built schema file to the correct locations
   * From Artifactory f5-automation-toolchain-generic/f5-appsvcs/`<version>-<build>`, download as3-schema-`<version>-<build>`.json
+  * git fetch
+  * git switch `<release_branch>`
   * mkdir -p schema/`<version>`
   * rm schema/latest/*
-  * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema-`<version>-<build>`.json
+  * cp as3-schema-`<version>-<build>`.json schema/latest/
   * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema.json
-  * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema-`<version>-<build>`.json
+  * cp as3-schema-`<version>-<build>`.json schema/`<version>`/
   * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema.json
+  * git add schema/latest schema/`<version>`
+  * git commit -m 'Update schema files for release'
+  * git push
 * Prepare the develop branch for the next development cycle
   * Create a new branch off of develop like any other development task
   * Update version changes to `package.json` and `package-lock.json`.  The release number of the new version should start at 0 (e.g. 3.10.0-4 would become 3.11.0-0).
   * Update the `info.version` property in `docs/openapi.yaml` to the new AS3 version (e.g. 3.27.0).
   * Add a new version to the beginning of the schemaVersion enum in `src/schema/latest/core-schema.js` using the preexisting format.
-  * Adding a new block to `CHANGELOG.md` would also be appreciated.
+  * Add a new block to `CHANGELOG.md` with the following content
+    ```
+    ## <new_version>
+
+    ### Added
+
+    ### Fixed
+
+    ### Changed
+
+    ### Removed
+
+    ```
   * Create a merge request like for any other development task and announce on Teams `AS3-DO General`.
 
-### Perform actions after go ahead from Go/No-Go meeting:
+### Perform actions after go ahead from Go/No-Go meeting
 Merge the release branch into develop and master following the steps below for each merge.
 * Navigate to the `Merge Requests` page and click on `New merge request` in the upper right corner.
 * Select the release branch as the `source branch`.
@@ -84,6 +95,7 @@ Tag master with the release version, for example: 3.10.0 (Note: if you are taggi
 * Add a new CHANGELOG section that looks like
     ```
     ## 3.36.1
+
     ### Added
 
     ### Fixed
@@ -92,13 +104,20 @@ Tag master with the release version, for example: 3.10.0 (Note: if you are taggi
     - Promoted to LTS
 
     ### Removed
+
     ```
 * Create an MR for these changes. Important: Remember to set the branch you are merging into to the LTS branch.
 * Go to the atg-build project in GitLab
   * Edit the AS3 schedule to set the `gitBranch` variable to the LTS branch.
   * Run the AS3 schedule.
   * After the build completes, edit the AS3 schedule to set the `gitBranch` variable back to develop.
-* Merge the release branch CHANGELOG into develop and create an MR for this.
+* Using the GUI create a tag off the LTS branch (e.g. 3.36.1)
+  * In the GUI go to `Repository -> Tags -> New tag`.
+  * The name of the tag should be the LTS version with a 'v' at the front (e.g. v3.36.1).
+  * Update the `createFrom` to point at the LTS branch.
+  * Set the message to: `LTS release v<LTS version>` (e.g. "LTS release v3.36.1")
+* Merge the LTS branch (without updating the package version) into develop and create an MR for this.
+* Merge the LTS branch (only update package version if LTS is latest) into master and create an MR for this.
 
 ## Documentation Release process
 * After the third sprint is finished and the release branch has been created, checkout out the dev release branch and then merge it into **doc-release-branch**.

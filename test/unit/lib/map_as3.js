@@ -299,7 +299,7 @@ describe('map_as3', () => {
                 {
                     command: 'ltm snat-translation',
                     ignore: [],
-                    path: '/tenantId/appId/192.0.2.100',
+                    path: '/tenantId/192.0.2.100',
                     properties: {
                         address: '192.0.2.100',
                         arp: 'enabled',
@@ -339,7 +339,7 @@ describe('map_as3', () => {
                 {
                     command: 'ltm snat-translation',
                     ignore: [],
-                    path: '/tenantId/appId/2001:db8::1',
+                    path: '/tenantId/2001:db8::1',
                     properties: {
                         description: '"my remark"',
                         address: '2001:db8::1',
@@ -1592,17 +1592,21 @@ describe('map_as3', () => {
             minimumObjectSize: 2000,
             cacheSize: 200,
             uriExcludeList: [
-                '.'
+                '.',
+                '/test1/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriIncludeList: [
-                'www.uri.com'
+                'www.uri.com',
+                '/test2/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriIncludeOverrideList: [
                 '1.1.2.2',
-                '2.2.3.3'
+                '2.2.3.3',
+                '/test3/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriPinnedList: [
-                '///'
+                '///',
+                '/test4/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             metadataMaxSize: 20
         };
@@ -1623,17 +1627,21 @@ describe('map_as3', () => {
                             'cache-object-min-size': 2000,
                             'cache-size': 200,
                             'cache-uri-exclude': {
-                                '.': {}
+                                '"."': {},
+                                '"/test1/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-include': {
-                                'www.uri.com': {}
+                                '"www.uri.com"': {},
+                                '"/test2/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-include-override': {
-                                '1.1.2.2': {},
-                                '2.2.3.3': {}
+                                '"1.1.2.2"': {},
+                                '"2.2.3.3"': {},
+                                '"/test3/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-pinned': {
-                                '///': {}
+                                '"///"': {},
+                                '"/test4/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'defaults-from': 'accel',
                             'metadata-cache-max-size': 20
@@ -1739,8 +1747,8 @@ describe('map_as3', () => {
         it('check uriExcludeList values', () => {
             const expected = [
                 {},
-                { exclude1: {} },
-                { exclude1: {}, exclude2: {} }
+                { '"exclude1"': {} },
+                { '"exclude1"': {}, '"exclude2"': {} }
             ];
             [[], ['exclude1'], ['exclude1', 'exclude2']].forEach((value, index) => {
                 item.uriExcludeList = value;
@@ -1753,8 +1761,8 @@ describe('map_as3', () => {
         it('check uriIncludeList values', () => {
             const expected = [
                 {},
-                { include1: {} },
-                { include1: {}, include2: {} }
+                { '"include1"': {} },
+                { '"include1"': {}, '"include2"': {} }
             ];
             [[], ['include1'], ['include1', 'include2']].forEach((value, index) => {
                 item.uriIncludeList = value;
@@ -1767,8 +1775,8 @@ describe('map_as3', () => {
         it('check uriIncludeOverrideList values', () => {
             const expected = [
                 {},
-                { include1: {} },
-                { include1: {}, include2: {} }
+                { '"include1"': {} },
+                { '"include1"': {}, '"include2"': {} }
             ];
             [[], ['include1'], ['include1', 'include2']].forEach((value, index) => {
                 item.uriIncludeOverrideList = value;
@@ -1781,8 +1789,8 @@ describe('map_as3', () => {
         it('check uriPinnedList values', () => {
             const expected = [
                 {},
-                { pinned1: {} },
-                { pinned1: {}, pinned2: {} }
+                { '"pinned1"': {} },
+                { '"pinned1"': {}, '"pinned2"': {} }
             ];
             [[], ['pinned1'], ['pinned1', 'pinned2']].forEach((value, index) => {
                 item.uriPinnedList = value;
@@ -2450,7 +2458,7 @@ describe('map_as3', () => {
             const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration);
             assert.strictEqual(results.configs[0].path, '/dot.test/test_http/test_http-self');
             assert.strictEqual(results.configs[0].command, 'ltm snatpool');
-            assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/test_http/10.204.64.249%2']).length, 0);
+            assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/10.204.64.249%2']).length, 0);
             assert.strictEqual(results.configs[1].path, '/dot.test/test_http/test_http');
             assert.strictEqual(results.configs[1].command, 'ltm virtual');
             assert.strictEqual(results.configs[1].properties.destination, '/dot.test/10.204.64.249%2:443');
@@ -3950,7 +3958,7 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-self',
                     properties: {
                         members: {
-                            '/tenantId/appId/123.123.123.123': {}
+                            '/tenantId/123.123.123.123': {}
                         }
                     }
                 },
@@ -3970,7 +3978,7 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-1--self',
                     properties: {
                         members: {
-                            '/tenantId/appId/1.1.1.1%22': {}
+                            '/tenantId/1.1.1.1%22': {}
                         }
                     }
                 },
@@ -7536,7 +7544,8 @@ describe('map_as3', () => {
                         {
                             matchToSNI: 'www.somehost.com',
                             enabled: false,
-                            certificate: '/tenantId/appId/webcert1'
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
                         },
                         {
                             enabled: true,
@@ -7593,7 +7602,7 @@ describe('map_as3', () => {
                     }
                 );
                 assert.deepEqual(profile2.properties['server-name'], 'none');
-                assert.deepEqual(profile2.properties['sni-default'], 'false');
+                assert.deepEqual(profile2.properties['sni-default'], undefined);
                 assert.deepEqual(profile2.properties.mode, 'enabled');
 
                 const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
@@ -7610,7 +7619,7 @@ describe('map_as3', () => {
                     }
                 );
                 assert.deepEqual(profile3.properties['server-name'], 'none');
-                assert.deepEqual(profile3.properties['sni-default'], 'false');
+                assert.deepEqual(profile3.properties['sni-default'], undefined);
                 assert.deepEqual(profile3.properties.mode, 'enabled');
             });
 
@@ -9158,8 +9167,7 @@ describe('map_as3', () => {
                                     '/ten/app/pool1': { order: 0, ratio: 1 }
                                 },
                                 'pools-cname': {},
-                                rules: {},
-                                'topology-prefer-edns0-client-subnet': 'enabled'
+                                rules: {}
                             }
                         }
                     ]
@@ -9193,8 +9201,7 @@ describe('map_as3', () => {
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
-                                rules: {},
-                                'topology-prefer-edns0-client-subnet': 'enabled'
+                                rules: {}
                             }
                         }
                     ]
@@ -9237,7 +9244,51 @@ describe('map_as3', () => {
                                     '/ten/app/rule1': {},
                                     '/ten/app/rule2': {},
                                     '/Common/rule3': {}
+                                }
+                            }
+                        }
+                    ]
+                }
+            );
+        });
+
+        it('should return a proper wideip AAAA config with pools on 14.1+', () => {
+            defaultContext.target.tmosVersion = '14.1';
+            const item = {
+                class: 'GSLB_Domain',
+                clientSubnetPreferred: true,
+                domainName: 'example.edu',
+                enabled: true,
+                poolLbMode: 'round-robin',
+                pools: [
+                    { use: '/ten/app/pool1', ratio: 1 },
+                    { use: '/ten/app/pool2', ratio: 2 },
+                    { use: '/ten/app/pool3', ratio: 3 }
+                ],
+                resourceRecordType: 'AAAA'
+            };
+
+            const results = translate.GSLB_Domain(defaultContext, 'ten', 'app', 'example.edu', item);
+            return assert.deepStrictEqual(
+                results,
+                {
+                    configs: [
+                        {
+                            command: 'gtm wideip aaaa',
+                            ignore: [],
+                            path: '/ten/app/example.edu',
+                            properties: {
+                                aliases: {},
+                                enabled: true,
+                                'last-resort-pool': 'none',
+                                'pool-lb-mode': 'round-robin',
+                                pools: {
+                                    '/ten/app/pool2': { order: 1, ratio: 2 },
+                                    '/ten/app/pool3': { order: 2, ratio: 3 },
+                                    '/ten/app/pool1': { order: 0, ratio: 1 }
                                 },
+                                'pools-cname': {},
+                                rules: {},
                                 'topology-prefer-edns0-client-subnet': 'enabled'
                             }
                         }

@@ -5,7 +5,7 @@ The Mocha [usage](https://mochajs.org/#usage) documentation is worth taking a lo
 * To run a specific test or directory of tests, specify that file or directory in the Mocha command: `npx mocha test/unit`.
 Since mocha defaults to looking in the `test` directory for tests, all tests can be run with the command `npx mocha --recursive`.
 * The `--recursive` option tells mocha to look in sub-directories for tests.
-## For integation testing
+## For integration testing
 * The `--require` option tells Mocha where its hooks are. Proper usage for us is
 `--require test/integration/bigip/property/mochaHooks.js`
 * The `--parallel` option tells mocha to run the tests in parallel. This only works on mocha version 8+ so is limited to integration testing.
@@ -49,6 +49,14 @@ AS3 integration tests can be run in serial mode or in parallel mode and there ar
 * RESERVATION_SERVER_HOST - The IP address of the reservation server from which to reserve a host for a test suite
 * RESERVATION_SERVER_PORT - Port of the reservation server
 * SERVER_SET - The ID of the server set for this test run (pipeline)
+
+### Testing from GitLab UI
+When testing from the GitLab UI, you have the option of running a manual test with various AS3 runtime and test code versions
+* Go to GitLab f5-appsvcs-extension -> CI/CD -> Run Pipeline
+  * BIGIP_IMAGE -- The name of the BIG-IP image to use
+  * FORCE_INTEGRATION_TEST -- Set to true
+  * RPM_PACKAGE_URL -- If you want to get the RPM from somewhere besides the build_rpm job, enter the the URL to the file
+  * TEST_CODE_VERSION -- The branch or tag from which to pull test code
 
 ## BIG-IP Integration Tests
 Location: `test/integration/bigip`
@@ -122,6 +130,8 @@ The range and number of steps can be adjusted by modifying `test/performance/per
 
 NOTE: Information on an alternative set of performance tests for AS3 can be found on Confluence under the name `AS3 Performance Testing`.
 
+NOTE: See also [Performance Testing](#performance-testing) for information on collecting performance data with Jaeger
+
 ## Unit Tests
 Location: `test/unit`
 
@@ -147,8 +157,10 @@ This testing should be done with the previous release and LTS release.
 1. Confirm the delete was successful.
 
 ## Performance testing
-### Set up Jaeger collector
-#### Run Ubuntu instance in VIO
+Aside from the [specialized performance tests](#performance-tests), we can also collect performance information on standard property tests.
+### Set up for Jaeger collector
+More info at https://logz.io/blog/jaeger-and-the-elk-stack/
+1. Run Ubuntu instance in VIO
 
     + Name: as3-jaeger-collector
     + Image: Ubuntu18.04LTS-pristine
@@ -157,29 +169,13 @@ This testing should be done with the previous release and LTS release.
 
     Set root user password to our usual
 
-#### Install Java
-
+1. Install Java
+    ```
     apt update
     apt install openjdk-8-jdk -y
-
-#### Install Cassandra
-
-    echo "deb http://www.apache.org/dist/cassandra/debian 40x main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list
-    curl -O https://downloads.apache.org/cassandra/KEYS
-    apt-key add KEYS
-    rm KEYS
-    apt update
-    apt install cassandra
-
-#### Configure Cassandra for Jaeger
-
-    git clone https://github.com/jaegertracing/jaeger.git
-    cd jaeger
-    MODE=test ./plugin/storage/cassandra/schema/create.sh | cqlsh
-    cd -
-
-#### Install Docker
-
+    ```
+1. Install Docker
+    ```
     apt update
     apt -y install apt-transport-https ca-certificates curl gnupg lsb-release
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -188,17 +184,31 @@ This testing should be done with the previous release and LTS release.
       $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt update
     apt -y install docker-ce docker-ce-cli containerd.io
+    ```
+1. Install and run ElasticSearch
+    ```
+    docker pull elasticsearch:6.8.0
+    docker run --rm -d --name=elasticsearch -e "ES_JAVA_OPTS=-Xms500m -Xmx500m" -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "xpack.security.enabled=false" elasticsearch:6.8.0
+    ```
+1. Install and run Kibana
+    ```
+    docker pull kibana:6.8.0
+    docker run --rm -d --link=elasticsearch --name=kibana -p 5601:5601 kibana:6.8.0
+    ```
+1. Install and run Jaeger
+    ```
+    docker pull rancher/jaegertracing-all-in-one:1.20.0
+    docker run --rm -d --link=elasticsearch --name=jaeger -e SPAN_STORAGE_TYPE=elasticsearch -e ES_SERVER_URLS=http://elasticsearch:9200 -e JAEGER_SAMPLER_TYPE=const -e JAEGER_SAMPLER_PARAM=1 -e ES_TAGS_AS_FIELDS_ALL=true -p 6831:6831/udp -p 6832:6832/udp -p 14268:14268 -p 16686:16686 rancher/jaegertracing-all-in-one:1.20.0
+    ```
+    * Jaeger UI will be running at http://<ip_address>:16686 (go/as3jaeger)
+    * Kibana will be running at http://<ip_address>:5601
 
-#### Run Jaeger
-
-docker run -d --name jaeger --restart --network host -p 6831:6831/udp -p 6832:6832/udp -p 16686:16686 -p 14268:14268 -e SPAN_STORAGE_TYPE=cassandra jaegertracing/all-in-one:1.31
-
-Jaeger will be running at http://<ip_address>:16686 (go/as3jaeger)
-
-### Turn on tracing in AS3
+1. Turn on tracing in AS3
 Post to the settings endpoint with
-
+    ```
     {
         "performanceTracingEnabled": true,
         "performanceTracingEndpoint": "http://<ip_address>:14268/api/traces",
     }
+    ```
+1. Once there is some data, go to the kibana UI and add an index pattern of `jaeger-span-*`. See [Kibana Docs](https://www.elastic.co/guide/en/kibana/index.html)

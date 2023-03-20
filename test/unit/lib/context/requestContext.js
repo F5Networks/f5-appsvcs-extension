@@ -91,6 +91,7 @@ describe('RequestContext', () => {
                 hostContext = new HostContext();
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
+                hostContext.as3VersionInfo = {};
             });
 
             after(() => {

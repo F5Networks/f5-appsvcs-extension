@@ -15,7 +15,7 @@ if "%1" == "" goto help
 
 node scripts/build/schema-build-doc.js
 node scripts/build/schema-to-rst.js
-node scripts/build/generate-all-properties-declaration.js
+node scripts/build/generate-all-properties-declaration.js -- --skip-require
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (

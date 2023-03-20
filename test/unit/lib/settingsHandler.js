@@ -105,6 +105,18 @@ describe('settingsHandler', () => {
             return assert.isFulfilled(SettingsHandler.process(context, restOp))
                 .then(() => restOpPromise);
         });
+
+        it('should return an error when the schema file does not exist', () => {
+            restOp.method = 'Post';
+            restOp.body = {};
+            sinon.stub(fs, 'readFileSync').throws(new Error('ENOENT: no such file or directory, open \'invalid/schema/path\''));
+            const restOpPromise = createRestOpCompletePromise(restOp, 500, {
+                code: 500,
+                message: 'ENOENT: no such file or directory, open \'invalid/schema/path\''
+            });
+            return assert.isFulfilled(SettingsHandler.process(context, restOp, 'invalid/schema/path'))
+                .then(() => restOpPromise);
+        });
     });
 
     describe('onPost', function () {

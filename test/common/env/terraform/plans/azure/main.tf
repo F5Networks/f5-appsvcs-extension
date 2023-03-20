@@ -56,24 +56,26 @@ resource "azurerm_role_definition" "azurerm_role_def" {
   ]
 }
 
-resource "azurerm_role_assignment" "vm0_assignment" {
+resource "azurerm_role_assignment" "vm_assignment" {
+  count                 = var.bigip_count
   depends_on            = [azurerm_role_definition.azurerm_role_def]
   scope                 = data.azurerm_subscription.primary.id
   role_definition_id    = azurerm_role_definition.azurerm_role_def.role_definition_resource_id
-  principal_id          = lookup(azurerm_virtual_machine.vm0.identity[0], "principal_id")
+  principal_id          = lookup(azurerm_virtual_machine.vm[count.index].identity[0], "principal_id")
 }
 
-resource "azurerm_virtual_machine" "vm0" {
+resource "azurerm_virtual_machine" "vm" {
+  count                        = var.bigip_count
   # We need to create list of interfaces here. depends_on accepts only calculated list of values
   # we cannot use ternary operator here like we do for network_interface_ids,
   # so locals section below will do the trick.
   depends_on                   = [ local.interface_list ]
-  name                         = "${module.utils.env_prefix}-vm0"
+  name                         = "as3-bigip-${module.utils.env_prefix}-${count.index}"
   location                     = var.location
   resource_group_name          = module.utils.env_prefix
-  primary_network_interface_id = azurerm_network_interface.mgmt0.id
+  primary_network_interface_id = azurerm_network_interface.mgmt[count.index].id
   vm_size                      = var.instance_size
-  network_interface_ids        = local.interface_list
+  network_interface_ids        = var.nic_count == 1 ? [ azurerm_network_interface.mgmt[count.index].id ] : [ azurerm_network_interface.mgmt[count.index].id, azurerm_network_interface.external[count.index].id ]
 
   # This means the OS Disk will be deleted when Terraform destroys the Virtual Machine
   # NOTE: This may not be optimal in all cases.
@@ -97,14 +99,14 @@ resource "azurerm_virtual_machine" "vm0" {
   }
 
   storage_os_disk {
-    name              = "osdisk0"
+    name              = "osdisk-${module.utils.env_prefix}-${count.index}"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name  = "f5vm0"
+    computer_name  = "f5vm-${module.utils.env_prefix}-${count.index}"
     admin_username = var.admin_username
     admin_password = module.utils.admin_password
     custom_data    = "${data.template_file.custom_data.rendered}"
@@ -121,5 +123,5 @@ resource "azurerm_virtual_machine" "vm0" {
 
 # TODO: Make this logic smarter to handle 2 NICs case.
 locals {
-  interface_list = var.nic_count == 1 ? [ azurerm_network_interface.mgmt0.id ] : [ azurerm_network_interface.mgmt0.id, azurerm_network_interface.internal0.id, azurerm_network_interface.external0.id ]
+  interface_list = var.nic_count == 1 ? [ azurerm_network_interface.mgmt[*].id ] : [ azurerm_network_interface.mgmt[*].id, azurerm_network_interface.internal[*].id, azurerm_network_interface.external[*].id ]
 }

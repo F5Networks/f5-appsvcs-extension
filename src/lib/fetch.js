@@ -190,6 +190,7 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
     });
 
     createDefaultSnatTranslations(config, snatPoolAddresses);
+    return postProcessing.filter((o) => (!o.snatTranslationAddress && !o.snatPoolAddress));
 };
 
 function createDefaultSnatTranslations(config, snatPoolAddresses) {
@@ -648,7 +649,7 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
         desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
     }
     if (context.request.postProcessing.length > 0) {
-        desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
+        context.request.postProcessing = desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
     }
     updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
     updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);

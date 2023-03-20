@@ -11,6 +11,10 @@ Document Revision History
         - Description
         - Date
 
+      * - 3.44
+        - Updated the documentation for AS3 v3.44.0. This release contains the following changes: |br| * Added support for referencing a virtual server in a GSLB pool with a use pointer (see :ref:`GSLB Pool with use pointer<gslbpooluse>`)  |br| * Added support for Prefer Client Subnet for GSLB Domains (see |gslbd| in the Schema Reference) |br| |br| Issues Resolved: |br| * Service with partial mask and custom route domain fails to POST twice |br| * Address_Discovery static node type does not work, `GitHub Issue 660 <https://github.com/F5Networks/f5-appsvcs-extension/issues/660>`_ |br| * Expose TLS_Server option to enable/disable "default profile for SNI", `GitHub Issue 274 <https://github.com/F5Networks/f5-appsvcs-extension/issues/274>`_ |br| * Improve error handling in SettingsHandler |br| * Invalid SNAT_Translation error when multiple Tenants with SNAT_Pools are declared |br| * HTTP_Acceleration_Profile does not handle backslashes in uriExcludeList, uriIncludeList, uriIncludeOverrideList, and uriPinnedList properties, `GitHub Issue 691 <https://github.com/F5Networks/f5-appsvcs-extension/issues/691>`_
+        - 3-27-23
+
       * - 3.43
         - Updated the documentation for AS3 v3.43.0. This release contains the following changes: |br| * Added new properties for the Security Log Profile NAT object (see :ref:`Security Log Profile NAT<slnat>`), `GitHub Issue 533 <https://github.com/F5Networks/f5-appsvcs-extension/issues/533>`_  |br| * Added support for ALG Log profiles (see :ref:`ALG Log Profile<alglog>`), `GitHub Issue 619 <https://github.com/F5Networks/f5-appsvcs-extension/issues/619>`_ |br| * Added support for creating RTSP profiles (see the updated :ref:`RTSP example<rtsp-ex>`), `GitHub Issue 575 <https://github.com/F5Networks/f5-appsvcs-extension/issues/575>`_ |br| * Added support for creating TFTP profiles (see the updated :ref:`TFTP example<tftpprof>`), `GitHub Issue 576 <https://github.com/F5Networks/f5-appsvcs-extension/issues/576>`_ |br| * Added support for the ALG Log profile and log publisher on FTP profiles (see the updated :ref:`FTP example<ftpprof>`), `GitHub Issue 570 <https://github.com/F5Networks/f5-appsvcs-extension/issues/570>`_ |br| * Added support for SOCKS profiles (see :ref:`SOCKS profile<socks>`) |br| * Added a note about using **virtualPort** on a service for applications that use non-standard ports (see :ref:`Notes and Tips <notestips>`) |br| |br| Issues Resolved: |br| * Shared virtual addresses are not removed when no longer in use |br| * Unchecked mode fails when URLs have authentication
         - 2-9-23
@@ -349,3 +353,7 @@ Document Revision History
 .. |tlss| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#tls-server" target="_blank">TLS_Server</a>
+
+.. |gslbd| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#gslb-domain" target="_blank">GSLB_Domain</a>
