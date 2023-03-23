@@ -39,7 +39,7 @@ Using multiple SSL/TLS certificates in a single profile
 
 This simple example shows how you can use multiple SSL/TLS certificates in a single TLS_Server object in BIG-IP AS3 3.7.0 and later.   See the :ref:`Schema Reference<schema-reference>` for usage options for using these features in your BIG-IP AS3 declarations.
 
-.. NOTE:: The example declaration has been updated with the BIG-IP AS3 3.24 release to include a **chainCA** (a bundle of one or more CA certificates in trust-chain from root CA to certificate).
+.. NOTE:: The example declaration has been updated with the BIG-IP AS3 3.24 release to include a **chainCA** (a bundle of one or more CA certificates in trust-chain from root CA to certificate). It has also been updated in 3.44 to include the **sniDefault** property for TLS_Server certificates and TLS_Client. When **sniDefault** is set to **true**, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false.
 
 This declaration creates the following objects on the BIG-IP:
 
