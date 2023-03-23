@@ -35,6 +35,8 @@
  *   target context tokens, which can be set per declaration.
  * isMultiDecl - Only set to true if the request is a multideclaration.
  *   Otherwise it is undefined.
+ * isPerApp - Detects if the request used the per-app interface and sets the
+ *   boolean appropriately.
  * declarations - An array of wrapped and normalized subdeclarations
  * dryRun - A boolean to indicate if the task is to run as a dry-run
  *
@@ -181,15 +183,21 @@ function checkIfAllowed(reqContext, hostContext) {
         break;
     }
 
-    const result = {
-        failed: !allowed
-    };
+    const result = {};
 
     if (!allowed) {
         result.errorCode = STATUS_CODES.METHOD_NOT_ALLOWED;
         result.error = `${method.toUpperCase()} method is not allowed on ${deviceType}. Please use POST method with an action of "${postAction}".`;
+    } else if (reqContext.isPerApp) {
+        // check if using multiple tenants or applications are used
+        if (reqContext.subPath.indexOf(',') !== -1) {
+            result.errorCode = STATUS_CODES.BAD_REQUEST;
+            result.error = `declare/${reqContext.subPath} is an invalid path. Only 1 tenant and 1 application may be specified in the URL.`;
+            allowed = false;
+        }
     }
 
+    result.failed = !allowed;
     return result;
 }
 
@@ -278,10 +286,13 @@ function buildInitialContext(restOperation) {
     context.fullPath = getFullPath(restOperation);
     context.pathName = getPathName(context.fullPath);
     context.subPath = getComponentsAfterPathName(context.fullPath, context.pathName)[0];
-    context.queryParams = getQueryParams(context.fullPath, context.pathName);
     if (context.subPath === '') {
+        context.isPerApp = false;
         delete context.subPath;
+    } else {
+        context.isPerApp = context.subPath.split('/')[1] === 'applications';
     }
+    context.queryParams = getQueryParams(context.fullPath, context.pathName);
     context.eventEmitter = new EventEmitter();
     return context;
 }

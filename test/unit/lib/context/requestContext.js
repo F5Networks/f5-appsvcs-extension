@@ -47,41 +47,31 @@ describe('RequestContext', () => {
         sinon.restore();
     });
 
-    const validDecl = {
-        class: 'ADC',
-        schemaVersion: '3.15.0',
-        id: 'Service_Address',
-        controls: {
-            class: 'Controls',
-            trace: true,
-            logLevel: 'debug'
-        },
-        tenantId: {
-            class: 'Tenant',
-            defaultRouteDomain: 222,
-            appId: {
-                class: 'Application',
-                template: 'generic',
-                itemId: {
-                    class: 'Service_Address',
-                    virtualAddress: '121.121.121.121/24',
-                    arpEnabled: true,
-                    icmpEcho: 'enable',
-                    routeAdvertisement: 'disable',
-                    spanningEnabled: false,
-                    trafficGroup: 'default'
-                },
-                enable: true
-            },
-            enable: true,
-            optimisticLockKey: ''
-        },
-        updateMode: 'selective'
-    };
-    const expectedValidDecl = util.simpleCopy(validDecl);
+    let validDecl;
+    let expectedValidDecl;
 
-    // TODO: maybe we shouldn't be splitting by endpoint
     describe('/declare', () => {
+        beforeEach(() => {
+            validDecl = {
+                class: 'ADC',
+                schemaVersion: '3.15.0',
+                id: 'Service_Address',
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug'
+                },
+                tenantId: {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application'
+                    }
+                },
+                updateMode: 'selective'
+            };
+            expectedValidDecl = util.simpleCopy(validDecl);
+        });
+
         describe('valid requests on BIGIP', () => {
             let path;
             let hostContext;
@@ -92,10 +82,6 @@ describe('RequestContext', () => {
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
                 hostContext.as3VersionInfo = {};
-            });
-
-            after(() => {
-                sinon.restore();
             });
 
             it('should build the correct GET context', () => {
@@ -417,20 +403,8 @@ describe('RequestContext', () => {
                                     },
                                     tenantId1: {
                                         class: 'Tenant',
-                                        defaultRouteDomain: 220,
                                         appId: {
-                                            class: 'Application',
-                                            template: 'generic',
-                                            itemId: {
-                                                class: 'Service_Address',
-                                                virtualAddress: '121.121.121.122/24',
-                                                arpEnabled: true,
-                                                icmpEcho: 'enable',
-                                                routeAdvertisement: 'disable',
-                                                spanningEnabled: false,
-                                                trafficGroup: 'default'
-                                            },
-                                            enable: true
+                                            class: 'Application'
                                         },
                                         enable: true,
                                         optimisticLockKey: ''
@@ -449,18 +423,7 @@ describe('RequestContext', () => {
                                         class: 'Tenant',
                                         defaultRouteDomain: 222,
                                         appId: {
-                                            class: 'Application',
-                                            template: 'generic',
-                                            itemId: {
-                                                class: 'Service_Address',
-                                                virtualAddress: '121.121.121.121/24',
-                                                arpEnabled: true,
-                                                icmpEcho: 'enable',
-                                                routeAdvertisement: 'disable',
-                                                spanningEnabled: false,
-                                                trafficGroup: 'default'
-                                            },
-                                            enable: true
+                                            class: 'Application'
                                         },
                                         enable: true,
                                         optimisticLockKey: ''
@@ -479,18 +442,7 @@ describe('RequestContext', () => {
                                         class: 'Tenant',
                                         defaultRouteDomain: 222,
                                         appId: {
-                                            class: 'Application',
-                                            template: 'generic',
-                                            itemId: {
-                                                class: 'Service_Address',
-                                                virtualAddress: '121.121.121.121/24',
-                                                arpEnabled: true,
-                                                icmpEcho: 'enable',
-                                                routeAdvertisement: 'disable',
-                                                spanningEnabled: false,
-                                                trafficGroup: 'default'
-                                            },
-                                            enable: true
+                                            class: 'Application'
                                         },
                                         enable: true,
                                         optimisticLockKey: ''
@@ -518,6 +470,201 @@ describe('RequestContext', () => {
                             assert.strictEqual(ctxt.tasks[2].action, 'deploy');
                         });
                 });
+            });
+        });
+    });
+
+    describe('/declare/tenant/applications', () => {
+        let path;
+        let hostContext;
+
+        beforeEach(() => {
+            path = '/shared/appsvcs/declare';
+            hostContext = new HostContext();
+
+            hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
+            hostContext.as3VersionInfo = {};
+
+            validDecl = {
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug'
+                },
+                app1: {
+                    class: 'Application'
+                }
+            };
+            expectedValidDecl = util.simpleCopy(validDecl);
+        });
+
+        describe('valid', () => {
+            it('should validate a per-app DELETE request with "/declare/tenant/applications/app1', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Delete';
+                restOp.setPath(`${path}/tenant/applications/app1`);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.ok(typeof ctxt.request.eventEmitter !== 'undefined');
+                        delete ctxt.request.eventEmitter;
+                        assert.deepStrictEqual(
+                            ctxt.request,
+                            {
+                                basicAuth: undefined,
+                                body: {
+                                    class: 'AS3',
+                                    action: 'remove'
+                                },
+                                error: undefined,
+                                fullPath: '/shared/appsvcs/declare/tenant/applications/app1',
+                                isMultiDecl: false,
+                                isPerApp: true,
+                                method: 'Delete',
+                                pathName: 'declare',
+                                postProcessing: [],
+                                queryParams: [],
+                                subPath: 'tenant/applications/app1',
+                                token: undefined,
+                                tracer: { _enabled: false }
+                            }
+                        );
+                        assert.deepEqual(
+                            ctxt.tasks,
+                            [
+                                {
+                                    class: 'AS3',
+                                    action: 'remove',
+                                    dryRun: false,
+                                    redeployAge: 0,
+                                    redeployUpdateMode: 'original',
+                                    persist: true,
+                                    syncToGroup: '',
+                                    historyLimit: 4,
+                                    logLevel: 'warning',
+                                    trace: false,
+                                    retrieveAge: 0,
+                                    targetHost: 'localhost',
+                                    targetPort: 8100,
+                                    targetUsername: '',
+                                    targetPassphrase: '',
+                                    targetTokens: {},
+                                    targetTimeout: 150,
+                                    resourceTimeout: 5,
+                                    protocol: 'http',
+                                    urlPrefix: 'http://admin:@localhost:8100',
+                                    localBigip: true
+                                }
+                            ]
+                        );
+                    });
+            });
+
+            it('should validate a per-app GET request with "/declare/tenant/applications', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Get';
+
+                restOp.setPath(`${path}/tenant/applications`);
+                restOp.setBody(Object.assign({}, validDecl));
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.request.error);
+                        assert.strictEqual(ctxt.request.method, 'Get');
+                        assert.strictEqual(ctxt.request.pathName, 'declare');
+                        assert.strictEqual(ctxt.request.subPath, 'tenant/applications');
+                        assert.deepStrictEqual(ctxt.request.queryParams, []);
+                        assert.strictEqual(ctxt.request.isPerApp, true);
+                        assert.deepEqual(
+                            ctxt.tasks,
+                            [
+                                {
+                                    class: 'AS3',
+                                    action: 'retrieve',
+                                    dryRun: false,
+                                    redeployAge: 0,
+                                    redeployUpdateMode: 'original',
+                                    persist: true,
+                                    syncToGroup: '',
+                                    historyLimit: 4,
+                                    logLevel: 'warning',
+                                    trace: false,
+                                    retrieveAge: 0,
+                                    targetHost: 'localhost',
+                                    targetPort: 8100,
+                                    targetUsername: '',
+                                    targetPassphrase: '',
+                                    targetTokens: {},
+                                    targetTimeout: 150,
+                                    resourceTimeout: 5,
+                                    protocol: 'http',
+                                    urlPrefix: 'http://admin:@localhost:8100',
+                                    localBigip: true
+                                }
+                            ]
+                        );
+                        assert.deepEqual(
+                            ctxt.request.body,
+                            {
+                                class: 'AS3',
+                                action: 'retrieve'
+                            }
+                        );
+                    });
+            });
+        });
+
+        describe('invalid', () => {
+            it('should invalidate a per-app GET request with "/declare/tenant,tenantId2/applications/app1', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Get';
+                restOp.setPath(`${path}/tenant,tenantId2/applications/app1`);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.ok(typeof ctxt.eventEmitter !== 'undefined');
+                        delete ctxt.eventEmitter;
+                        assert.deepStrictEqual(
+                            ctxt,
+                            {
+                                method: 'Get',
+                                error: 'declare/tenant,tenantId2/applications/app1 is an invalid path. Only 1 tenant and 1 application may be specified in the URL.',
+                                body: null,
+                                errorCode: 400,
+                                fullPath: '/shared/appsvcs/declare/tenant,tenantId2/applications/app1',
+                                isPerApp: true,
+                                pathName: 'declare',
+                                queryParams: [],
+                                subPath: 'tenant,tenantId2/applications/app1'
+                            }
+                        );
+                    });
+            });
+
+            it('should invalidate a per-app GET request with "/declare/tenant/applications/app1,app2', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Get';
+                restOp.setPath(`${path}/tenant/applications/app1,app2`);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.ok(typeof ctxt.eventEmitter !== 'undefined');
+                        delete ctxt.eventEmitter;
+                        assert.deepStrictEqual(
+                            ctxt,
+                            {
+                                method: 'Get',
+                                error: 'declare/tenant/applications/app1,app2 is an invalid path. Only 1 tenant and 1 application may be specified in the URL.',
+                                body: null,
+                                errorCode: 400,
+                                fullPath: '/shared/appsvcs/declare/tenant/applications/app1,app2',
+                                isPerApp: true,
+                                pathName: 'declare',
+                                queryParams: [],
+                                subPath: 'tenant/applications/app1,app2'
+                            }
+                        );
+                    });
             });
         });
     });
