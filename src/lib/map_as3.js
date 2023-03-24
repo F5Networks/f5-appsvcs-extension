@@ -1560,8 +1560,9 @@ const translate = {
         const configs = [];
 
         item.localZones = item.localZones || 'none';
+        item.forwardZones = item.forwardZones || 'none';
 
-        configs.push(normalize.actionableMcp(context, item, 'ltm dns cache transparent', util.mcpPath(tenantId, appId, itemId)));
+        configs.push(normalize.actionableMcp(context, item, `ltm dns cache ${item.type}`, util.mcpPath(tenantId, appId, itemId)));
         return { configs };
     },
 

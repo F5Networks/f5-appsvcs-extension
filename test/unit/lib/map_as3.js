@@ -10535,100 +10535,423 @@ describe('map_as3', () => {
     });
 
     describe('DNS_Cache', () => {
-        let baseConfig;
+        describe('Transparent', () => {
+            let baseConfig;
 
-        beforeEach(() => {
-            defaultContext.target.tmosVersion = '14.0.0.0';
+            beforeEach(() => {
+                defaultContext.target.tmosVersion = '14.0.0.0';
 
-            baseConfig = {
-                configs: [
-                    {
-                        command: 'ltm dns cache transparent',
-                        ignore: [],
-                        path: '/tenantId/appId/itemId'
-                    }
-                ]
-            };
-        });
+                baseConfig = {
+                    configs: [
+                        {
+                            command: 'ltm dns cache transparent',
+                            ignore: [],
+                            path: '/tenantId/appId/itemId'
+                        }
+                    ]
+                };
+            });
 
-        it('should create correct config with default values', () => {
-            const item = {
-                class: 'DNS_Cache',
-                type: 'transparent',
-                answerDefaultZones: false,
-                messageCacheSize: 1048576,
-                recordCacheSize: 10485760,
-                recordRotationMethod: 'none'
-            };
+            it('should create correct config with default values', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    type: 'transparent',
+                    answerDefaultZones: false,
+                    messageCacheSize: 1048576,
+                    recordCacheSize: 10485760,
+                    recordRotationMethod: 'none'
+                };
 
-            const expected = baseConfig;
-            expected.configs[0].properties = {
-                'answer-default-zones': 'no',
-                'local-zones': 'none',
-                'msg-cache-size': 1048576,
-                'rrset-cache-size': 10485760,
-                'rrset-rotate': 'none'
-            };
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'answer-default-zones': 'no',
+                    'local-zones': 'none',
+                    'msg-cache-size': 1048576,
+                    'rrset-cache-size': 10485760,
+                    'rrset-rotate': 'none'
+                };
 
-            const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
-            assert.deepStrictEqual(result, expected);
-        });
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
 
-        it('should create correct config with all properties', () => {
-            const item = {
-                class: 'DNS_Cache',
-                label: 'test label',
-                remark: 'test remark',
-                type: 'transparent',
-                answerDefaultZones: true,
-                localZones: {
-                    '_sip._tcp.example.com': {
-                        type: 'static',
-                        records: [
-                            '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
-                        ]
-                    },
-                    'tworecords.com': {
-                        type: 'transparent',
-                        records: [
-                            'wiki.tworecords.com 300 IN A 10.10.10.125',
-                            'wiki.tworecords.com 300 IN A 10.10.10.126'
-                        ]
-                    }
-                },
-                messageCacheSize: 100,
-                recordCacheSize: 200,
-                recordRotationMethod: 'query-id'
-            };
-
-            const expected = baseConfig;
-            expected.configs[0].properties = {
-                'answer-default-zones': 'yes',
-                description: '"test remark"',
-                'local-zones': {
-                    '_sip._tcp.example.com': {
-                        name: '_sip._tcp.example.com',
-                        records: {
-                            '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+            it('should create correct config with all properties', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    label: 'test label',
+                    remark: 'test remark',
+                    type: 'transparent',
+                    answerDefaultZones: true,
+                    localZones: {
+                        '_sip._tcp.example.com': {
+                            type: 'static',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ]
                         },
-                        type: 'static'
+                        'tworecords.com': {
+                            type: 'transparent',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ]
+                        }
                     },
-                    'tworecords.com': {
-                        name: 'tworecords.com',
-                        records: {
-                            '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
-                            '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
-                        },
-                        type: 'transparent'
-                    }
-                },
-                'msg-cache-size': 100,
-                'rrset-cache-size': 200,
-                'rrset-rotate': 'query-id'
-            };
+                    messageCacheSize: 100,
+                    recordCacheSize: 200,
+                    recordRotationMethod: 'query-id'
+                };
 
-            const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
-            assert.deepStrictEqual(result, expected);
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'answer-default-zones': 'yes',
+                    description: '"test remark"',
+                    'local-zones': {
+                        '_sip._tcp.example.com': {
+                            name: '_sip._tcp.example.com',
+                            records: {
+                                '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                            },
+                            type: 'static'
+                        },
+                        'tworecords.com': {
+                            name: 'tworecords.com',
+                            records: {
+                                '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                            },
+                            type: 'transparent'
+                        }
+                    },
+                    'msg-cache-size': 100,
+                    'rrset-cache-size': 200,
+                    'rrset-rotate': 'query-id'
+                };
+
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
+        });
+        describe('Resolver', () => {
+            let baseConfig;
+
+            beforeEach(() => {
+                defaultContext.target.tmosVersion = '14.0.0.0';
+
+                baseConfig = {
+                    configs: [
+                        {
+                            command: 'ltm dns cache resolver',
+                            ignore: [],
+                            path: '/tenantId/appId/itemId'
+                        }
+                    ]
+                };
+            });
+
+            it('should create correct config with default values', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    type: 'resolver',
+                    answerDefaultZones: false,
+                    messageCacheSize: 1048576,
+                    recordCacheSize: 10485760,
+                    recordRotationMethod: 'none'
+                };
+
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'answer-default-zones': 'no',
+                    'forward-zones': 'none',
+                    'local-zones': 'none',
+                    'msg-cache-size': 1048576,
+                    'root-hints': {},
+                    'rrset-cache-size': 10485760,
+                    'rrset-rotate': 'none'
+                };
+
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
+
+            it('should create correct config with all properties', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    label: 'test label',
+                    remark: 'test remark',
+                    type: 'resolver',
+                    answerDefaultZones: true,
+                    localZones: {
+                        '_sip._tcp.example.com': {
+                            type: 'static',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ]
+                        },
+                        'tworecords.com': {
+                            type: 'transparent',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ]
+                        }
+                    },
+                    messageCacheSize: 100,
+                    recordCacheSize: 200,
+                    recordRotationMethod: 'query-id',
+                    allowedQueryTime: 201,
+                    maxConcurrentQueries: 2048,
+                    maxConcurrentTcp: 24,
+                    maxConcurrentUdp: 8193,
+                    msgCacheSize: 0,
+                    nameserverCacheCount: 16537,
+                    randomizeQueryNameCase: false,
+                    rootHints: [
+                        '10.0.0.1'
+                    ],
+                    unwantedQueryReplyThreshold: 1,
+                    forwardZones: {
+                        singleRecord: {
+                            nameservers: [
+                                '10.0.0.1:53'
+                            ]
+                        },
+                        twoRecords: {
+                            nameservers: [
+                                '10.0.0.2:53',
+                                '10.0.0.3:53'
+                            ]
+                        }
+                    },
+                    useIpv6: false,
+                    useTcp: false,
+                    useIpv4: true,
+                    useUdp: true
+                };
+
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'allowed-query-time': 201,
+                    'answer-default-zones': 'yes',
+                    description: '"test remark"',
+                    'local-zones': {
+                        '_sip._tcp.example.com': {
+                            name: '_sip._tcp.example.com',
+                            records: {
+                                '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                            },
+                            type: 'static'
+                        },
+                        'tworecords.com': {
+                            name: 'tworecords.com',
+                            records: {
+                                '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                            },
+                            type: 'transparent'
+                        }
+                    },
+                    'msg-cache-size': 100,
+                    'nameserver-cache-count': 16537,
+                    'randomize-query-name-case': 'no',
+                    'root-hints': {
+                        '10.0.0.1': {}
+                    },
+                    'forward-zones': {
+                        singleRecord: {
+                            name: 'singleRecord',
+                            nameservers: {
+                                '10.0.0.1:53': {}
+                            }
+                        },
+                        twoRecords: {
+                            name: 'twoRecords',
+                            nameservers: {
+                                '10.0.0.2:53': {},
+                                '10.0.0.3:53': {}
+                            }
+                        }
+                    },
+                    'rrset-cache-size': 200,
+                    'rrset-rotate': 'query-id',
+                    'unwanted-query-reply-threshold': 1,
+                    'max-concurrent-queries': 2048,
+                    'max-concurrent-tcp': 24,
+                    'max-concurrent-udp': 8193,
+                    'use-ipv6': 'no',
+                    'use-tcp': 'no',
+                    'use-ipv4': 'yes',
+                    'use-udp': 'yes'
+                };
+
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
+        });
+        describe('Validating-resolver', () => {
+            let baseConfig;
+
+            beforeEach(() => {
+                defaultContext.target.tmosVersion = '14.0.0.0';
+
+                baseConfig = {
+                    configs: [
+                        {
+                            command: 'ltm dns cache validating-resolver',
+                            ignore: [],
+                            path: '/tenantId/appId/itemId'
+                        }
+                    ]
+                };
+            });
+
+            it('should create correct config with default values', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    type: 'validating-resolver',
+                    answerDefaultZones: false,
+                    messageCacheSize: 1048576,
+                    recordCacheSize: 10485760,
+                    recordRotationMethod: 'none'
+                };
+
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'answer-default-zones': 'no',
+                    'forward-zones': 'none',
+                    'local-zones': 'none',
+                    'msg-cache-size': 1048576,
+                    'root-hints': {},
+                    'rrset-cache-size': 10485760,
+                    'rrset-rotate': 'none',
+                    'trust-anchors': {}
+                };
+
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
+
+            it('should create correct config with all properties', () => {
+                const item = {
+                    class: 'DNS_Cache',
+                    label: 'test label',
+                    remark: 'test remark',
+                    type: 'validating-resolver',
+                    answerDefaultZones: true,
+                    localZones: {
+                        '_sip._tcp.example.com': {
+                            type: 'static',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ]
+                        },
+                        'tworecords.com': {
+                            type: 'transparent',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ]
+                        }
+                    },
+                    messageCacheSize: 100,
+                    recordCacheSize: 200,
+                    recordRotationMethod: 'query-id',
+                    allowedQueryTime: 201,
+                    maxConcurrentQueries: 2048,
+                    maxConcurrentTcp: 24,
+                    maxConcurrentUdp: 8193,
+                    msgCacheSize: 0,
+                    nameserverCacheCount: 16537,
+                    randomizeQueryNameCase: false,
+                    rootHints: [
+                        '10.0.0.1'
+                    ],
+                    unwantedQueryReplyThreshold: 1,
+                    forwardZones: {
+                        singleRecord: {
+                            nameservers: [
+                                '10.0.0.1:53'
+                            ]
+                        },
+                        twoRecords: {
+                            nameservers: [
+                                '10.0.0.2:53',
+                                '10.0.0.3:53'
+                            ]
+                        }
+                    },
+                    trustAnchors: [
+                        '. IN DS 0000 8 1 AAAAAAAAAAAAAAAAAAAA',
+                        '. IN DS 0000 8 1 BBBBBBBBBBBBBBBBBBBB'
+                    ],
+                    useIpv6: false,
+                    useTcp: false,
+                    useIpv4: true,
+                    useUdp: true
+                };
+
+                const expected = baseConfig;
+                expected.configs[0].properties = {
+                    'allowed-query-time': 201,
+                    'answer-default-zones': 'yes',
+                    description: '"test remark"',
+                    'local-zones': {
+                        '_sip._tcp.example.com': {
+                            name: '_sip._tcp.example.com',
+                            records: {
+                                '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                            },
+                            type: 'static'
+                        },
+                        'tworecords.com': {
+                            name: 'tworecords.com',
+                            records: {
+                                '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                            },
+                            type: 'transparent'
+                        }
+                    },
+                    'msg-cache-size': 100,
+                    'nameserver-cache-count': 16537,
+                    'randomize-query-name-case': 'no',
+                    'root-hints': {
+                        '10.0.0.1': {}
+                    },
+                    'forward-zones': {
+                        singleRecord: {
+                            name: 'singleRecord',
+                            nameservers: {
+                                '10.0.0.1:53': {}
+                            }
+                        },
+                        twoRecords: {
+                            name: 'twoRecords',
+                            nameservers: {
+                                '10.0.0.2:53': {},
+                                '10.0.0.3:53': {}
+                            }
+                        }
+                    },
+                    'trust-anchors': {
+                        '". IN DS 0000 8 1 AAAAAAAAAAAAAAAAAAAA"': {},
+                        '". IN DS 0000 8 1 BBBBBBBBBBBBBBBBBBBB"': {}
+                    },
+                    'rrset-cache-size': 200,
+                    'rrset-rotate': 'query-id',
+                    'unwanted-query-reply-threshold': 1,
+                    'max-concurrent-queries': 2048,
+                    'max-concurrent-tcp': 24,
+                    'max-concurrent-udp': 8193,
+                    'use-ipv6': 'no',
+                    'use-tcp': 'no',
+                    'use-ipv4': 'yes',
+                    'use-udp': 'yes'
+                };
+
+                const result = translate.DNS_Cache(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(result, expected);
+            });
         });
     });
 

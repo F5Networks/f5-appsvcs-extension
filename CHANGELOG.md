@@ -17,6 +17,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 - AUTOTOOL-3572: Support "use" reference for virtualServer under GSLB_Pool
 - AUTOTOOL-3655: ([GitHub Issue 688](https://github.com/F5Networks/f5-appsvcs-extension/issues/688)): Option to prefer client subnet in GSLB_Domain
+- AUTOTOOL-3342: ([GitHub Issue 568](https://github.com/F5Networks/f5-appsvcs-extension/issues/568)): Support resolver and validating-resolver DNS caches
 
 ### Fixed
 - AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice

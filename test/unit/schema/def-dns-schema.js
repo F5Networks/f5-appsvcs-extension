@@ -121,4 +121,97 @@ describe('def-dns-schema.json', () => {
             assert.strictEqual(validate(decl), true, JSON.stringify(validate.errors, null, 4));
         });
     });
+
+    describe('DNS_Cache_Resolver', () => {
+        let decl;
+
+        beforeEach(() => {
+            decl = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: '',
+                tenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        test: {
+                            class: 'DNS_Cache',
+                            type: 'resolver',
+                            allowedQueryTime: 201,
+                            answerDefaultZones: false,
+                            messageCacheSize: 1048575,
+                            maxConcurrentQueries: 1025,
+                            maxConcurrentTcp: 21,
+                            maxConcurrentUdp: 8193,
+                            msgCacheSize: 10485761,
+                            nameserverCacheCount: 16531,
+                            randomizeQueryNameCase: false,
+                            rootHints: ['10.0.0.1'],
+                            rrsetCacheSize: 10485761,
+                            rrsetRotates: 'query-id',
+                            unwantedQueryReplyThreshold: 1,
+                            useIpv4: false,
+                            useIpv6: true,
+                            useTcp: false,
+                            useUdp: true
+                        }
+                    }
+                }
+            };
+        });
+
+        it('should validate with minimum values', () => {
+            assert.strictEqual(validate(decl), true, JSON.stringify(validate.errors, null, 4));
+        });
+    });
+
+    describe('DNS_Cache_Validating_Resolver', () => {
+        let decl;
+
+        beforeEach(() => {
+            decl = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: '',
+                tenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        test: {
+                            class: 'DNS_Cache',
+                            type: 'validating-resolver',
+                            allowedQueryTime: 201,
+                            answerDefaultZones: true,
+                            dlvAnchors: ['mydomain.local'],
+                            ignoreCd: true,
+                            keyCacheSize: 1048577,
+                            messageCacheSize: 1048577,
+                            maxConcurrentQueries: 1025,
+                            maxConcurrentTcp: 21,
+                            maxConcurrentUdp: 8193,
+                            msgCacheSize: 10485761,
+                            nameserverCacheCount: 16537,
+                            prefetchKey: false,
+                            randomizeQueryNameCase: false,
+                            rootHints: ['10.0.0.1'],
+                            rrsetCacheSize: 10485761,
+                            rrsetRotates: 'query-id',
+                            trustAnchors: ['domain.local'],
+                            unwantedQueryReplyThreshold: 1,
+                            useIpv4: false,
+                            useIpv6: true,
+                            useTcp: false,
+                            useUdp: true
+                        }
+                    }
+                }
+            };
+        });
+
+        it('should validate with minimum values', () => {
+            assert.strictEqual(validate(decl), true, JSON.stringify(validate.errors, null, 4));
+        });
+    });
 });

@@ -399,6 +399,270 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:dns:cache:transparent:transparentstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:dns:cache:transparent:transparentstate',
+                    name: 'dns.cache.test',
+                    partition: 'testPartition',
+                    fullPath: '/testPartition/testPartition/dns.cache.test',
+                    localZones: [
+                        {
+                            tmName: 'norecords.com',
+                            type: 'type-transparent'
+                        },
+                        {
+                            tmName: '_sip._tcp.example.com',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ],
+                            type: 'transparent'
+                        },
+                        {
+                            tmName: 'tworecords.com',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ],
+                            type: 'transparent'
+                        }
+                    ]
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/testPartition/testPartition/dns.cache.test',
+                    command: 'ltm dns cache transparent',
+                    properties: {
+                        'local-zones': {
+                            '_sip._tcp.example.com': {
+                                name: '_sip._tcp.example.com',
+                                records: {
+                                    '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                                },
+                                type: 'transparent'
+                            },
+                            'norecords.com': {
+                                name: 'norecords.com',
+                                records: {},
+                                type: 'type-transparent'
+                            },
+                            'tworecords.com': {
+                                name: 'tworecords.com',
+                                records: {
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                                },
+                                type: 'transparent'
+                            }
+                        }
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:dns:cache:resolver:resolverstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:dns:cache:resolver:resolverstate',
+                    name: 'dns.cache.test',
+                    partition: 'testPartition',
+                    fullPath: '/testPartition/testPartition/dns.cache.test',
+                    localZones: [
+                        {
+                            tmName: 'norecords.com',
+                            type: 'type-transparent'
+                        },
+                        {
+                            tmName: '_sip._tcp.example.com',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ],
+                            type: 'transparent'
+                        },
+                        {
+                            tmName: 'tworecords.com',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ],
+                            type: 'transparent'
+                        }
+                    ],
+                    forwardZones: [
+                        {
+                            name: 'singleRecord',
+                            nameservers: [
+                                {
+                                    name: '10.0.0.1:53'
+                                }
+                            ]
+                        },
+                        {
+                            name: 'twoRecords',
+                            nameservers: [
+                                {
+                                    name: '10.0.0.2:53'
+                                },
+                                {
+                                    name: '10.0.0.3:53'
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/testPartition/testPartition/dns.cache.test',
+                    command: 'ltm dns cache resolver',
+                    properties: {
+                        'local-zones': {
+                            '_sip._tcp.example.com': {
+                                name: '_sip._tcp.example.com',
+                                records: {
+                                    '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                                },
+                                type: 'transparent'
+                            },
+                            'norecords.com': {
+                                name: 'norecords.com',
+                                records: {},
+                                type: 'type-transparent'
+                            },
+                            'tworecords.com': {
+                                name: 'tworecords.com',
+                                records: {
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                                },
+                                type: 'transparent'
+                            }
+                        },
+                        'forward-zones': {
+                            singleRecord: {
+                                name: 'singleRecord',
+                                nameservers: {
+                                    '10.0.0.1:53': {}
+                                }
+                            },
+                            twoRecords: {
+                                name: 'twoRecords',
+                                nameservers: {
+                                    '10.0.0.2:53': {},
+                                    '10.0.0.3:53': {}
+                                }
+                            }
+                        },
+                        'root-hints': {}
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:dns:cache:validating-resolver:validating-resolverstate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:ltm:dns:cache:validating-resolver:validating-resolverstate',
+                    name: 'dns.cache.test',
+                    partition: 'testPartition',
+                    fullPath: '/testPartition/testPartition/dns.cache.test',
+                    localZones: [
+                        {
+                            tmName: 'norecords.com',
+                            type: 'type-transparent'
+                        },
+                        {
+                            tmName: '_sip._tcp.example.com',
+                            records: [
+                                '_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com'
+                            ],
+                            type: 'transparent'
+                        },
+                        {
+                            tmName: 'tworecords.com',
+                            records: [
+                                'wiki.tworecords.com 300 IN A 10.10.10.125',
+                                'wiki.tworecords.com 300 IN A 10.10.10.126'
+                            ],
+                            type: 'transparent'
+                        }
+                    ],
+                    forwardZones: [
+                        {
+                            name: 'singleRecord',
+                            nameservers: [
+                                {
+                                    name: '10.0.0.1:53'
+                                }
+                            ]
+                        },
+                        {
+                            name: 'twoRecords',
+                            nameservers: [
+                                {
+                                    name: '10.0.0.2:53'
+                                },
+                                {
+                                    name: '10.0.0.3:53'
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/testPartition/testPartition/dns.cache.test',
+                    command: 'ltm dns cache validating-resolver',
+                    properties: {
+                        'local-zones': {
+                            '_sip._tcp.example.com': {
+                                name: '_sip._tcp.example.com',
+                                records: {
+                                    '"_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"': {}
+                                },
+                                type: 'transparent'
+                            },
+                            'norecords.com': {
+                                name: 'norecords.com',
+                                records: {},
+                                type: 'type-transparent'
+                            },
+                            'tworecords.com': {
+                                name: 'tworecords.com',
+                                records: {
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.125"': {},
+                                    '"wiki.tworecords.com 300 IN A 10.10.10.126"': {}
+                                },
+                                type: 'transparent'
+                            }
+                        },
+                        'forward-zones': {
+                            singleRecord: {
+                                name: 'singleRecord',
+                                nameservers: {
+                                    '10.0.0.1:53': {}
+                                }
+                            },
+                            twoRecords: {
+                                name: 'twoRecords',
+                                nameservers: {
+                                    '10.0.0.2:53': {},
+                                    '10.0.0.3:53': {}
+                                }
+                            }
+                        },
+                        'root-hints': {},
+                        'trust-anchors': {}
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:ltm:profile:analytics:analyticsstate', () => {
             it('should not throw an error if a analytics profile does not have a traffic-capture field', () => {
                 const obj = {

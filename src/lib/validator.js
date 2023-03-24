@@ -138,7 +138,7 @@ const extraKeys = (val) => {
  */
 const skipObject = (val) => {
     // Only add to this check if the (val) object can have arbitrary data within it
-    const checks = ['metadata', 'localZones', 'environmentVariables'];
+    const checks = ['metadata', 'localZones', 'forwardZones', 'environmentVariables'];
     return checks.indexOf(val) !== -1;
 };
 
