@@ -54,6 +54,7 @@ describe('config', () => {
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
 
         return Promise.resolve()
             .then(() => Config.injectSettings(localStorageDataGroup))
@@ -62,7 +63,8 @@ describe('config', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }));
     });
 
@@ -72,12 +74,14 @@ describe('config', () => {
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
         const newSettings = {
             asyncTaskStorage: 'memory',
             burstHandlingEnabled: true,
             performanceTracingEnabled: true,
             performanceTracingEndpoint: 'http://192.168.0.1:14268/api/traces',
-            serviceDiscoveryEnabled: false
+            serviceDiscoveryEnabled: false,
+            webhook: 'https://www.example.com'
         };
 
         return Promise.resolve()
@@ -105,14 +109,16 @@ describe('config', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }))
             .then(() => assert.deepStrictEqual(storageData, {
                 asyncTaskStorage: 'data-group',
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }));
     });
 

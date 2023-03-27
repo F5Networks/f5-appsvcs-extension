@@ -37,6 +37,15 @@
             "description": "A boolean that controls if Service Discovery features are enabled",
             "type": "boolean",
             "default": true
+        },
+        "webhook": {
+            "description": "URL to post results to",
+            "type": "string",
+            "oneOf": [
+                {"format": "uri"},
+                {"const": ""}
+            ],
+            "default": ""
         }
     },
     "additionalProperties": false

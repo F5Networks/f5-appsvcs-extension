@@ -759,7 +759,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].installServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(installSpy.called, 'cloubLibUtils.install should have been called');
+                    assert.ok(installSpy.called, 'cloudLibUtils.install should have been called');
                 });
         });
 
@@ -780,7 +780,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].uninstallServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(uninstallSpy.called, 'cloubLibUtils.ensureUninstall should have been called');
+                    assert.ok(uninstallSpy.called, 'cloudLibUtils.ensureUninstall should have been called');
                 });
         });
 

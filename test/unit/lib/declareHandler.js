@@ -17,6 +17,7 @@
 'use strict';
 
 const sinon = require('sinon');
+const nock = require('nock');
 const proxyquire = require('proxyquire');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
@@ -38,11 +39,11 @@ const log = require('../../../src/lib/log');
 const Queue = require('../../../src/lib/queue');
 const config = require('../../../src/lib/config');
 const Tracer = require('../../../src/lib/tracer').Tracer;
+const STATUS_CODES = require('../../../src/lib/constants').STATUS_CODES;
 
 describe('DeclareHandler', () => {
-    const STATUS_CODES = restUtil.STATUS_CODES;
     const mockSuccess = DeclarationHandler.buildResult(
-        restUtil.STATUS_CODES.OK,
+        STATUS_CODES.OK,
         undefined,
         { results: [], declaration: {} }
     );
@@ -121,6 +122,7 @@ describe('DeclareHandler', () => {
 
     afterEach(() => {
         sinon.restore();
+        nock.cleanAll();
     });
 
     describe('single declaration request', () => {
@@ -1482,6 +1484,65 @@ describe('DeclareHandler', () => {
                         );
                     });
             });
+
+            it('should call webhook if there is one', () => {
+                config.getAllSettings.restore();
+                sinon.stub(config, 'getAllSettings').resolves({
+                    webhook: 'http://www.example.com/webhook'
+                });
+
+                nock('http://www.example.com')
+                    .post('/webhook')
+                    .reply(200);
+
+                restOp.method = 'Post';
+
+                context.request = {
+                    // simulate case when we need to uninstall during POST
+                    subPath: 'Tenant',
+                    method: 'Post',
+                    action: 'deploy',
+                    pathName: 'declare',
+                    tracer: new Tracer('test tracer', { enabled: false })
+                };
+                context.tasks = [
+                    {
+                        targetHost: '192.0.2.8',
+                        targetPort: 8100,
+                        protocol: 'http',
+                        urlPrefix: 'http:admin:@localhost:8100',
+                        targetTokens: { 'X-F5-Auth-Token': 'test' },
+                        timeSlip: 0,
+                        action: 'deploy',
+                        declaration: {
+                            class: 'ADC',
+                            schemaVersion: '3.0.0',
+                            id: 'GoAsync',
+                            Tenant: {
+                                class: 'Tenant'
+                            }
+                        }
+                    }
+                ];
+
+                const expResult = {
+                    id: mockNewUuid,
+                    results: [{
+                        code: 0,
+                        host: '',
+                        message: msgServDiscUninstall,
+                        runTime: 0,
+                        tenant: ''
+                    }],
+                    declaration: {},
+                    selfLink: `https://localhost/mgmt/shared/appsvcs/task/${mockNewUuid}`
+                };
+
+                return assertResultAndRestComplete(context, restOp, expResult, code)
+                    .then(() => {
+                        assert.ok(nock.isDone());
+                    });
+            });
         });
 
         describe('sync behavior', () => {
@@ -1912,7 +1973,7 @@ describe('DeclareHandler', () => {
                     code: 422,
                     message: 'Error(s): \'Invalid/Duplicate\': another request exists with the same targetHost-declaration tenant, declaration target, and/or declaration tenant-app'
                 };
-                code = restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY;
+                code = STATUS_CODES.UNPROCESSABLE_ENTITY;
                 expResult = {
                     code,
                     items: [
@@ -1963,7 +2024,7 @@ describe('DeclareHandler', () => {
                     }
                 ];
 
-                code = restUtil.STATUS_CODES.MULTI_STATUS;
+                code = STATUS_CODES.MULTI_STATUS;
                 expResult = {
                     code,
                     items: [
@@ -1991,7 +2052,7 @@ describe('DeclareHandler', () => {
                             }
                         },
                         {
-                            code: restUtil.STATUS_CODES.BAD_REQUEST,
+                            code: STATUS_CODES.BAD_REQUEST,
                             message: 'for action "deploy", a declaration is required.'
                         }
                     ]

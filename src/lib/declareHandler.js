@@ -30,6 +30,7 @@ const log = require('./log');
 const Config = require('./config');
 
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
+const STATUS_CODES = require('./constants').STATUS_CODES;
 
 const VALIDATOR_ERR_PREFIX = 'Invalid data property:';
 
@@ -110,7 +111,7 @@ class DeclareHandler {
 
 /**
  * builds the result of parsing a request
- * no errorMessage returns sucess:true
+ * no errorMessage returns success:true
  *
  * @private
  * @returns {object} - returns ```{ success: boolean, errorMessage: string }```
@@ -119,7 +120,7 @@ function buildParseResult(errorMessage, statusCode) {
     return {
         errorMessage,
         success: !errorMessage,
-        statusCode: statusCode || (errorMessage ? restUtil.STATUS_CODES.BAD_REQUEST : restUtil.STATUS_CODES.OK)
+        statusCode: statusCode || (errorMessage ? STATUS_CODES.BAD_REQUEST : STATUS_CODES.OK)
     };
 }
 
@@ -490,12 +491,12 @@ function processDeclInArray(item, index, context) {
         if (!item.validatorResult.isValid) {
             errorMessage += `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
         }
-        declResult = restUtil.buildOpResult(restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
+        declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
         return Promise.resolve(declResult);
     }
     if (!item.validatorResult.isValid) {
         errorMessage = `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
-        declResult = restUtil.buildOpResult(restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
+        declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
         return Promise.resolve(declResult);
     }
 
@@ -553,6 +554,15 @@ function processRequest(context) {
                 } else {
                     restUtil.completeRequest(context.request.restOp, result);
                 }
+            }
+            return result;
+        })
+        .then((result) => {
+            if (context.request.async) {
+                // For async requests, completeRequest (which checks the webhook) was called
+                // previously to send the task id, so we still need to check for the webhook here
+                // to send the actual result
+                restUtil.checkWebhook(context.request.restOp, result);
             }
             return result;
         })
@@ -714,7 +724,7 @@ function reportError(context, error) {
     let message;
     let code;
 
-    if (error.code === restUtil.STATUS_CODES.SERVICE_UNAVAILABLE_ERROR) {
+    if (error.code === STATUS_CODES.SERVICE_UNAVAILABLE_ERROR) {
         message = `Error: ${error.message}`;
         log.error(`ERROR: ${error.message}`);
         code = error.code;
@@ -724,7 +734,7 @@ function reportError(context, error) {
     } else {
         message = `An unexpected error occurred. See logs for details. Error: ${error.message}`;
         log.error(`ERROR: ${error.message} : ${error.stack}`);
-        code = restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR;
+        code = STATUS_CODES.INTERNAL_SERVER_ERROR;
     }
 
     const opResult = restUtil.buildOpResult(code, message);

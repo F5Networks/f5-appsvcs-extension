@@ -27,7 +27,7 @@ class RestOperationMock {
             // this is the full path
             path: '/shared/appsvcs/all'
         };
-        this.method = null;
+        this.method = '';
         this.headers = {};
     }
 

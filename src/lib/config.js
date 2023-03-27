@@ -26,7 +26,8 @@ const defaults = {
     burstHandlingEnabled: false,
     performanceTracingEnabled: false,
     performanceTracingEndpoint: '',
-    serviceDiscoveryEnabled: true
+    serviceDiscoveryEnabled: true,
+    webhook: ''
 };
 
 let storage = null;
