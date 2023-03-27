@@ -163,7 +163,7 @@ describe('def-gslb-monitors-schema.json', () => {
                                 label: 'A label',
                                 remark: 'This is an external monitor',
                                 monitorType: 'external',
-                                targetAddress: '1.2.3.4',
+                                targetAddress: '192.0.2.4',
                                 interval: 25,
                                 upInterval: 100,
                                 timeUntilUp: 1000,

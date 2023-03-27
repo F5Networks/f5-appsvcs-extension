@@ -399,7 +399,7 @@ describe('postValidator', () => {
                         template: 'generic',
                         testItem: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             profileBotDefense: {
                                 bigip: '/Common/bot-defense'
                             }

@@ -123,7 +123,7 @@ describe('adcParser', function () {
                         template: 'http',
                         serviceMain: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['198.200.198.200'],
+                            virtualAddresses: ['192.0.2.200'],
                             virtualPort: 80
                         }
                     }
@@ -174,7 +174,7 @@ describe('adcParser', function () {
                                     addressRealm: 'private',
                                     region: 'us-west-2-lax-1',
                                     accessKeyId: 'xxxxx',
-                                    secretAccessKey: 'xxxxx',
+                                    secretAccessKey: 'secret',
                                     credentialUpdate: false
                                 }
                             ]
@@ -248,7 +248,7 @@ describe('adcParser', function () {
                         template: 'http',
                         serviceMain: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['198.200.198.200'],
+                            virtualAddresses: ['192.0.2.200'],
                             virtualPort: 80
                         }
                     }
@@ -278,7 +278,7 @@ describe('adcParser', function () {
                 id: 'testBIGIQ-encrypt',
                 class: 'ADC',
                 schemaVersion: '3.0.0',
-                target: { address: '1.1.1.1' },
+                target: { address: '192.0.2.1' },
                 testTenant: {
                     class: 'Tenant',
                     app: {
@@ -287,7 +287,7 @@ describe('adcParser', function () {
                         webcert1: {
                             class: 'Certificate',
                             certificate: '-----BEGIN CERTIFICATE-----theCert-----END CERTIFICATE-----',
-                            privateKey: '-----BEGIN RSA PRIVATE KEY-----theKey-----END RSA PRIVATE KEY-----',
+                            privateKey: '-----BEGIN RSA PRIVATE KEY-----theKey-----END RSA PRIVATE KEY-----', // gitleaks:allow
                             passphrase: {
                                 ciphertext: 'mumblemumble',
                                 protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0'
@@ -310,7 +310,7 @@ describe('adcParser', function () {
                 id: 'testBIGIQ-expand',
                 class: 'ADC',
                 schemaVersion: '3.0.0',
-                target: { address: '1.1.1.1' },
+                target: { address: '192.0.2.1' },
                 testTenant: {
                     class: 'Tenant',
                     app: {
@@ -318,7 +318,7 @@ describe('adcParser', function () {
                         template: 'http',
                         serviceMain: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['198.100.198.100']
+                            virtualAddresses: ['192.0.2.100']
                         }
                     }
                 }
@@ -336,7 +336,7 @@ describe('adcParser', function () {
                 id: 'testBIGIQ-encrypt',
                 class: 'ADC',
                 schemaVersion: '3.0.0',
-                target: { address: '1.1.1.1' },
+                target: { address: '192.0.2.1' },
                 testTenant: {
                     class: 'Tenant',
                     app: {

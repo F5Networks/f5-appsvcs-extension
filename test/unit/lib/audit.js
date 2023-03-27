@@ -81,7 +81,7 @@ describe('audit', () => {
                 port: 8100,
                 basicAuth: 'HeresSomeBasicAuth'
             };
-            context.target.tokens = { 'X-F5-Auth-Token': 'someTargetTokens' };
+            context.target.tokens = { 'X-F5-Auth-Token': 'validtoken' };
             context.tasks = [{ urlPrefix: 'http://admin@localhost:8100' }];
 
             const isDeleted = [false, false];
@@ -467,10 +467,10 @@ describe('audit', () => {
 
                 // These tests need uncheckedDiff and empty tenantCurrentConfig to copy or not copy contents into
                 uncheckedDiff = {
-                    '/Common/Service_Address-1.1.1.11': {
+                    '/Common/Service_Address-192.0.2.11': {
                         command: 'ltm virtual-address',
                         properties: {
-                            address: '1.1.1.11',
+                            address: '192.0.2.11',
                             arp: 'enabled',
                             'icmp-echo': 'enabled',
                             mask: '255.255.255.255',
@@ -497,7 +497,7 @@ describe('audit', () => {
                             'auto-lasthop': 'default',
                             'connection-limit': 0,
                             description: '"Shared"',
-                            destination: '/Common/1.1.1.11:8080',
+                            destination: '/Common/192.0.2.11:8080',
                             'ip-protocol': 'tcp',
                             'last-hop-pool': 'none',
                             mask: '255.255.255.255',

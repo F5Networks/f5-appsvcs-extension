@@ -682,7 +682,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -697,7 +697,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -722,7 +722,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1093,7 +1093,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1117,7 +1117,7 @@ describe('DeclareHandler', () => {
                                     remark: 'description',
                                     virtualPort: 123,
                                     virtualAddresses: [
-                                        '1.1.1.10'
+                                        '192.0.2.110'
                                     ]
                                 }
                             }
@@ -1175,7 +1175,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1199,7 +1199,7 @@ describe('DeclareHandler', () => {
                                     remark: 'description',
                                     virtualPort: 123,
                                     virtualAddresses: [
-                                        '1.1.1.10'
+                                        '192.0.2.110'
                                     ]
                                 }
                             }
@@ -1921,7 +1921,7 @@ describe('DeclareHandler', () => {
                                 remark: 'description',
                                 virtualPort: 123,
                                 virtualAddresses: [
-                                    '1.1.1.10'
+                                    '192.0.2.110'
                                 ]
                             }
                         }
@@ -1941,7 +1941,7 @@ describe('DeclareHandler', () => {
                                 remark: 'description',
                                 virtualPort: 123,
                                 virtualAddresses: [
-                                    '1.1.1.20'
+                                    '192.0.2.120'
                                 ]
                             }
                         }
@@ -2010,7 +2010,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -2044,7 +2044,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -2085,20 +2085,20 @@ describe('DeclareHandler', () => {
                     {
                         class: 'AS3',
                         action: 'retrieve',
-                        targetHost: '198.168.17.1',
+                        targetHost: '192.0.2.1',
                         targetPort: 443,
                         protocol: 'https',
-                        urlPrefix: 'https://198.168.17.1:443',
+                        urlPrefix: 'https://192.0.2.1:443',
                         targetTokens: { 'X-F5-Auth-Token': 'test1' },
                         timeSlip: 0
                     },
                     {
                         class: 'AS3',
                         action: 'retrieve',
-                        targetHost: '198.168.17.2',
+                        targetHost: '192.0.2.2',
                         targetPort: 443,
                         protocol: 'https',
-                        urlPrefix: 'https://198.168.17.2:443',
+                        urlPrefix: 'https://192.0.2.2:443',
                         targetTokens: { 'X-F5-Auth-Token': 'test2' },
                         timeSlip: 0
                     }
@@ -2121,19 +2121,19 @@ describe('DeclareHandler', () => {
                 return assertResultAndRestComplete(context, restOp, expResult, code)
                     .then(() => {
                         assert.deepStrictEqual(controlsUsed[0], {
-                            targetHost: '198.168.17.1',
+                            targetHost: '192.0.2.1',
                             targetPort: 443,
                             protocol: 'https',
-                            urlPrefix: 'https://198.168.17.1:443',
+                            urlPrefix: 'https://192.0.2.1:443',
                             targetTokens: { 'X-F5-Auth-Token': 'test1' },
                             timeSlip: 0
                         });
 
                         assert.deepStrictEqual(controlsUsed[1], {
-                            targetHost: '198.168.17.2',
+                            targetHost: '192.0.2.2',
                             targetPort: 443,
                             protocol: 'https',
-                            urlPrefix: 'https://198.168.17.2:443',
+                            urlPrefix: 'https://192.0.2.2:443',
                             targetTokens: { 'X-F5-Auth-Token': 'test2' },
                             timeSlip: 0
                         });
@@ -2168,7 +2168,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.20'
+                                            '192.0.2.120'
                                         ]
                                     }
                                 }
@@ -2192,7 +2192,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -2221,7 +2221,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.20'
+                                                '192.0.2.120'
                                             ]
                                         }
                                     }
@@ -2244,7 +2244,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -2288,10 +2288,10 @@ describe('DeclareHandler', () => {
                 };
                 context.tasks = [
                     {
-                        targetHost: '192.16.17.18',
+                        targetHost: '192.0.2.18',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.18:8100',
+                        urlPrefix: 'https://192.0.2.18:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync1' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2305,10 +2305,10 @@ describe('DeclareHandler', () => {
                         }
                     },
                     {
-                        targetHost: '192.16.17.19',
+                        targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2422,10 +2422,10 @@ describe('DeclareHandler', () => {
                 };
                 context.tasks = [
                     {
-                        targetHost: '192.16.17.19',
+                        targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAutoAsync1' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2439,10 +2439,10 @@ describe('DeclareHandler', () => {
                         }
                     },
                     {
-                        targetHost: '192.16.17.20',
+                        targetHost: '192.0.2.20',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.20:8100',
+                        urlPrefix: 'https://192.0.2.20:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAutoAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2539,8 +2539,8 @@ describe('DeclareHandler', () => {
                                 }
                             ]
                         );
-                        assert.strictEqual(context.tasks[0].resolvedHostIp, '192.16.17.19');
-                        assert.strictEqual(context.tasks[1].resolvedHostIp, '192.16.17.20');
+                        assert.strictEqual(context.tasks[0].resolvedHostIp, '192.0.2.19');
+                        assert.strictEqual(context.tasks[1].resolvedHostIp, '192.0.2.20');
                     });
             });
         });

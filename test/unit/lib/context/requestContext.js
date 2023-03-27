@@ -64,7 +64,7 @@ describe('RequestContext', () => {
                 template: 'generic',
                 itemId: {
                     class: 'Service_Address',
-                    virtualAddress: '121.121.121.121/24',
+                    virtualAddress: '192.0.2.110/30',
                     arpEnabled: true,
                     icmpEcho: 'enable',
                     routeAdvertisement: 'disable',
@@ -423,7 +423,7 @@ describe('RequestContext', () => {
                                             template: 'generic',
                                             itemId: {
                                                 class: 'Service_Address',
-                                                virtualAddress: '121.121.121.122/24',
+                                                virtualAddress: '192.0.2.120/30',
                                                 arpEnabled: true,
                                                 icmpEcho: 'enable',
                                                 routeAdvertisement: 'disable',
@@ -453,7 +453,7 @@ describe('RequestContext', () => {
                                             template: 'generic',
                                             itemId: {
                                                 class: 'Service_Address',
-                                                virtualAddress: '121.121.121.121/24',
+                                                virtualAddress: '192.0.2.110/30',
                                                 arpEnabled: true,
                                                 icmpEcho: 'enable',
                                                 routeAdvertisement: 'disable',
@@ -483,7 +483,7 @@ describe('RequestContext', () => {
                                             template: 'generic',
                                             itemId: {
                                                 class: 'Service_Address',
-                                                virtualAddress: '121.121.121.121/24',
+                                                virtualAddress: '192.0.2.110/30',
                                                 arpEnabled: true,
                                                 icmpEcho: 'enable',
                                                 routeAdvertisement: 'disable',

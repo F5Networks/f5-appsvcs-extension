@@ -29,7 +29,7 @@ describe('bigiq', () => {
             targetHost: 'my.device.com'
         };
         context.tasks.push({ urlPrefix: 'https://localhost' });
-        context.target.tmosVersion = '7.0.0.1.0.0.6';
+        context.target.tmosVersion = '7.0.0';
         context.target.tokens = {
             'X-F5-Auth-Token': 'Credentials written in crayon'
         };

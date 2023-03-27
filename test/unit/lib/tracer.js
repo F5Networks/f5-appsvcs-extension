@@ -291,13 +291,13 @@ describe('Tracer lib', function () {
         it('should build correct deviceInfo tags', () => {
             const deviceInfo = {
                 hostname: 'my.bigip.test',
-                version: '14.1.2.6',
+                version: '14.1.2.6', // gitleaks:allow
                 product: 'BIG-IP',
                 platform: 'Z100',
                 platformMarketingName: 'BIG-IP Virtual Edition',
                 edition: 'Point Release 6',
                 build: '0.0.2',
-                restFrameworkVersion: '14.1.2.6-0.0.2',
+                restFrameworkVersion: '14.1.2.6-0.0.2', // gitleaks:allow
                 isClustered: false,
                 isVirtual: true,
                 generation: 0,
@@ -309,7 +309,7 @@ describe('Tracer lib', function () {
                 'device.platform': 'Z100',
                 'device.platform_name': 'BIG-IP Virtual Edition',
                 'device.product': 'BIG-IP',
-                'device.version': '14.1.2.6',
+                'device.version': '14.1.2.6', // gitleaks:allow
                 'device.build': '0.0.2',
                 'device.edition': 'Point Release 6'
             });

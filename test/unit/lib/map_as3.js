@@ -194,11 +194,11 @@ describe('map_as3', () => {
                             message: 'The message!',
                             facility: 'local1',
                             priority: 'debug',
-                            ipAddress: '1.2.3.4',
+                            ipAddress: '192.0.2.4',
                             port: 123
                         }
                     },
-                    expected: 'log proxy-request write message "The message!" facility local1 priority debug ip-address 1.2.3.4 port 123'
+                    expected: 'log proxy-request write message "The message!" facility local1 priority debug ip-address 192.0.2.4 port 123'
                 }
             ];
 
@@ -567,7 +567,7 @@ describe('map_as3', () => {
                         addressDiscovery: 'static',
                         servicePort: 80,
                         serverAddresses: [
-                            '1.2.3.4'
+                            '192.0.2.4'
                         ],
                         routeDomain: 100,
                         enable: true
@@ -582,9 +582,9 @@ describe('map_as3', () => {
                     {
                         command: 'ltm node',
                         ignore: [],
-                        path: '/tenantId/1.2.3.4%100',
+                        path: '/tenantId/192.0.2.4%100',
                         properties: {
-                            address: '1.2.3.4%100',
+                            address: '192.0.2.4%100',
                             metadata: {}
                         }
                     }
@@ -592,16 +592,16 @@ describe('map_as3', () => {
             });
 
             it('should use route domain in serverAddresses if specified in address and routeDomain property is also used', () => {
-                item.members[0].serverAddresses[0] = '1.2.3.4%123';
+                item.members[0].serverAddresses[0] = '192.0.2.4%123';
                 const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
                 assert.deepEqual(
                     config,
                     {
                         command: 'ltm node',
                         ignore: [],
-                        path: '/tenantId/1.2.3.4%123',
+                        path: '/tenantId/192.0.2.4%123',
                         properties: {
-                            address: '1.2.3.4%123',
+                            address: '192.0.2.4%123',
                             metadata: {}
                         }
                     }
@@ -616,9 +616,9 @@ describe('map_as3', () => {
                     {
                         command: 'ltm node',
                         ignore: [],
-                        path: '/tenantId/1.2.3.4',
+                        path: '/tenantId/192.0.2.4',
                         properties: {
-                            address: '1.2.3.4',
+                            address: '192.0.2.4',
                             metadata: {}
                         }
                     }
@@ -626,16 +626,16 @@ describe('map_as3', () => {
             });
 
             it('should remove route domain from server address when it is 0', () => {
-                item.members[0].serverAddresses[0] = '1.2.3.4%0';
+                item.members[0].serverAddresses[0] = '192.0.2.4%0';
                 const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
                 assert.deepEqual(
                     config,
                     {
                         command: 'ltm node',
                         ignore: [],
-                        path: '/tenantId/1.2.3.4',
+                        path: '/tenantId/192.0.2.4',
                         properties: {
-                            address: '1.2.3.4',
+                            address: '192.0.2.4',
                             metadata: {}
                         }
                     }
@@ -659,9 +659,9 @@ describe('map_as3', () => {
                     {
                         command: 'ltm node',
                         ignore: [],
-                        path: '/tenantId/1.2.3.4%100',
+                        path: '/tenantId/192.0.2.4%100',
                         properties: {
-                            address: '1.2.3.4%100',
+                            address: '192.0.2.4%100',
                             metadata: {}
                         }
                     }
@@ -1444,7 +1444,7 @@ describe('map_as3', () => {
         let baseConfig;
 
         beforeEach(() => {
-            defaultContext.target.tmosVersion = '15.1.0.0';
+            defaultContext.target.tmosVersion = '15.1.0';
 
             baseConfig = {
                 configs: [
@@ -1478,7 +1478,7 @@ describe('map_as3', () => {
         });
 
         it('should create correct config with default values on 16.1', () => {
-            defaultContext.target.tmosVersion = '16.1.0.0';
+            defaultContext.target.tmosVersion = '16.1.0';
 
             const item = {
                 class: 'WebSocket_Profile',
@@ -1600,8 +1600,8 @@ describe('map_as3', () => {
                 '/test2/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriIncludeOverrideList: [
-                '1.1.2.2',
-                '2.2.3.3',
+                '192.0.2.2',
+                '192.0.2.3',
                 '/test3/prefix\\\\?key=ms\\\\.spa\\\\.'
             ],
             uriPinnedList: [
@@ -1635,8 +1635,8 @@ describe('map_as3', () => {
                                 '"/test2/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-include-override': {
-                                '"1.1.2.2"': {},
-                                '"2.2.3.3"': {},
+                                '"192.0.2.2"': {},
+                                '"192.0.2.3"': {},
                                 '"/test3/prefix\\\\\\\\\\?key=ms\\\\\\\\.spa\\\\\\\\."': {}
                             },
                             'cache-uri-pinned': {
@@ -1880,7 +1880,7 @@ describe('map_as3', () => {
         it('should generate expected PEM iRule from text', () => {
             const item = {
                 class: 'Enforcement_iRule',
-                iRule: 'when PEM_POLICY {PEM::session create 192.0.3.10 subscriber-id a123 subscriber-type e164'
+                iRule: 'when PEM_POLICY {PEM::session create 192.0.2.10 subscriber-id a123 subscriber-type e164'
             };
             const declaration = {
                 class: 'ADC',
@@ -1898,14 +1898,14 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Enforcement_iRule',
-                            irule: 'when PEM_POLICY {PEM::session create 192.0.3.10 subscriber-id a123 subscriber-type e164'
+                            irule: 'when PEM_POLICY {PEM::session create 192.0.2.10 subscriber-id a123 subscriber-type e164'
                         }
                     }
                 }
             };
             const results = translate.Enforcement_iRule(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expectedCommand = 'pem irule';
-            const expectedIRule = 'when PEM_POLICY {PEM::session create 192.0.3.10 subscriber-id a123 subscriber-type e164';
+            const expectedIRule = 'when PEM_POLICY {PEM::session create 192.0.2.10 subscriber-id a123 subscriber-type e164';
             assert.strictEqual(results.configs[0].command, expectedCommand);
             assert.strictEqual(results.configs[0].properties['api-anonymous'], expectedIRule);
         });
@@ -1924,7 +1924,7 @@ describe('map_as3', () => {
         it('should return a basic Service_Address config', () => {
             const item = {
                 class: 'Service_Address',
-                virtualAddress: '123.123.123.123',
+                virtualAddress: '192.0.2.123',
                 arpEnabled: true,
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
@@ -1947,7 +1947,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123',
+                            virtualAddress: '192.0.2.123',
                             arpEnabled: true,
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
@@ -1964,7 +1964,7 @@ describe('map_as3', () => {
             };
             const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expected = {
-                ip: '123.123.123.123',
+                ip: '192.0.2.123',
                 mask: '255.255.255.255'
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
@@ -1972,7 +1972,7 @@ describe('map_as3', () => {
         it('should return a config with network mask via /CIDR', () => {
             const item = {
                 class: 'Service_Address',
-                virtualAddress: '123.123.123.123/13',
+                virtualAddress: '192.0.2.123/13',
                 arpEnabled: false,
                 icmpEcho: 'disable',
                 routeAdvertisement: 'enable',
@@ -1995,7 +1995,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123/13',
+                            virtualAddress: '192.0.2.123/13',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -2012,7 +2012,7 @@ describe('map_as3', () => {
             };
             const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expected = {
-                ip: '123.123.123.123',
+                ip: '192.0.2.123',
                 mask: '255.248.0.0'
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
@@ -2020,7 +2020,7 @@ describe('map_as3', () => {
         it('should return a config with user set route domain', () => {
             const item = {
                 class: 'Service_Address',
-                virtualAddress: '123.123.123.123%2222',
+                virtualAddress: '192.0.2.123%2222',
                 arpEnabled: true,
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
@@ -2043,7 +2043,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123%2222',
+                            virtualAddress: '192.0.2.123%2222',
                             arpEnabled: true,
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
@@ -2060,7 +2060,7 @@ describe('map_as3', () => {
             };
             const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expected = {
-                ip: '123.123.123.123%2222',
+                ip: '192.0.2.123%2222',
                 mask: '255.255.255.255'
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
@@ -2068,7 +2068,7 @@ describe('map_as3', () => {
         it('should return a config with user set route domain and /CIDR', () => {
             const item = {
                 class: 'Service_Address',
-                virtualAddress: '123.123.123.123%2222/24',
+                virtualAddress: '192.0.2.123%2222/24',
                 arpEnabled: true,
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
@@ -2091,7 +2091,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123%2222/24',
+                            virtualAddress: '192.0.2.123%2222/24',
                             arpEnabled: true,
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
@@ -2108,7 +2108,7 @@ describe('map_as3', () => {
             };
             const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expected = {
-                ip: '123.123.123.123%2222',
+                ip: '192.0.2.123%2222',
                 mask: '255.255.255.0'
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
@@ -2116,7 +2116,7 @@ describe('map_as3', () => {
         it('should return a config using the default route domain and /CIDR', () => {
             const item = {
                 class: 'Service_Address',
-                virtualAddress: '123.123.123.123/24',
+                virtualAddress: '192.0.2.123/24',
                 arpEnabled: true,
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
@@ -2140,7 +2140,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123/24',
+                            virtualAddress: '192.0.2.123/24',
                             arpEnabled: true,
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
@@ -2156,7 +2156,7 @@ describe('map_as3', () => {
             };
             const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             const expected = {
-                ip: '123.123.123.123%222',
+                ip: '192.0.2.123%222',
                 mask: '255.255.255.0'
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
@@ -2963,7 +2963,7 @@ describe('map_as3', () => {
             });
 
             it('should allow "infinite" on 13.1', () => {
-                defaultContext.target.tmosVersion = '13.1.0.0';
+                defaultContext.target.tmosVersion = '13.1.0';
                 return assertValue('infinite', '0', defaultContext);
             });
             it('should allow 10', () => {
@@ -3026,10 +3026,10 @@ describe('map_as3', () => {
                 class: 'Service_HTTP',
                 virtualAddresses: [
                     '0.0.0.0',
-                    '1.1.1.1',
-                    '123.123.123.123%222',
-                    '123.32.0.0/12',
-                    '20.20.20.0%50/24',
+                    '192.0.2.1',
+                    '192.0.2.123%222',
+                    '192.0.2.40/30',
+                    '192.0.2.36%50/30',
                     '::%25',
                     '2001:0db8:85a3:0000:0000:8a2e:0370:7334/128',
                     '2001:0db8:85a3:0000:0000:0000:0000:0000/64'
@@ -3083,10 +3083,10 @@ describe('map_as3', () => {
                             class: 'Service_HTTP',
                             virtualAddresses: [
                                 '0.0.0.0',
-                                '1.1.1.1',
-                                '123.123.123.123%222',
-                                '123.32.0.0/12',
-                                '20.20.20.0%50/24',
+                                '192.0.2.1',
+                                '192.0.2.123%222',
+                                '192.0.2.40/30',
+                                '192.0.2.36%50/30',
                                 '::%25',
                                 '2001:0db8:85a3:0000:0000:8a2e:0370:7334/128',
                                 '2001:0db8:85a3:0000:0000:0000:0000:0000/64'
@@ -3110,51 +3110,51 @@ describe('map_as3', () => {
                     }
                 },
                 {
-                    path: '/tenantId/Service_Address-1.1.1.1',
-                    properties: { address: '1.1.1.1', mask: '255.255.255.255' }
+                    path: '/tenantId/Service_Address-192.0.2.1',
+                    properties: { address: '192.0.2.1', mask: '255.255.255.255' }
                 },
                 {
                     path: '/tenantId/appId/itemId-1-',
                     properties: {
-                        destination: '/tenantId/1.1.1.1:123',
+                        destination: '/tenantId/192.0.2.1:123',
                         source: '0.0.0.0/0',
                         mask: '255.255.255.255'
                     }
                 },
                 {
-                    path: '/tenantId/Service_Address-123.123.123.123%222',
-                    properties: { address: '123.123.123.123%222', mask: '255.255.255.255' }
+                    path: '/tenantId/Service_Address-192.0.2.123%222',
+                    properties: { address: '192.0.2.123%222', mask: '255.255.255.255' }
                 },
                 {
                     path: '/tenantId/appId/itemId-2-',
                     properties: {
-                        destination: '/tenantId/123.123.123.123%222:123',
+                        destination: '/tenantId/192.0.2.123%222:123',
                         source: '0.0.0.0%222/0',
                         mask: '255.255.255.255'
                     }
                 },
                 {
-                    path: '/tenantId/Service_Address-123.32.0.0',
-                    properties: { address: '123.32.0.0', mask: '255.240.0.0' }
+                    path: '/tenantId/Service_Address-192.0.2.40',
+                    properties: { address: '192.0.2.40', mask: '255.255.255.252' }
                 },
                 {
                     path: '/tenantId/appId/itemId-3-',
                     properties: {
-                        destination: '/tenantId/123.32.0.0:123',
+                        destination: '/tenantId/192.0.2.40:123',
                         source: '0.0.0.0/0',
-                        mask: '255.240.0.0'
+                        mask: '255.255.255.252'
                     }
                 },
                 {
-                    path: '/tenantId/Service_Address-20.20.20.0%50',
-                    properties: { address: '20.20.20.0%50', mask: '255.255.255.0' }
+                    path: '/tenantId/Service_Address-192.0.2.36%50',
+                    properties: { address: '192.0.2.36%50', mask: '255.255.255.252' }
                 },
                 {
                     path: '/tenantId/appId/itemId-4-',
                     properties: {
-                        destination: '/tenantId/20.20.20.0%50:123',
+                        destination: '/tenantId/192.0.2.36%50:123',
                         source: '0.0.0.0%50/0',
-                        mask: '255.255.255.0'
+                        mask: '255.255.255.252'
                     }
                 },
                 {
@@ -3204,8 +3204,8 @@ describe('map_as3', () => {
             const item = {
                 class: 'Service_HTTP',
                 virtualAddresses: [
-                    ['123.28.0.0%222/14', '123.40.0.0%222/14'],
-                    ['1.1.0.0%0/20', '1.1.1.0/24'],
+                    ['192.0.2.28%222/30', '192.0.2.20%222/30'],
+                    ['192.0.2.24%0/30', '192.0.2.32/30'],
                     [
                         '2001:0db8:85a3:0000:0000:8a2e:0370:7300/120',
                         '2001:0db8:85a3:0000:0000:8a2e:0370:7400/120'
@@ -3262,12 +3262,12 @@ describe('map_as3', () => {
                             class: 'Service_HTTP',
                             virtualAddresses: [
                                 [
-                                    '123.28.0.0%222/14',
-                                    '123.40.0.0%222/14'
+                                    '192.0.2.28%222/30',
+                                    '192.0.2.20%222/30'
                                 ],
                                 [
-                                    '1.1.0.0%0/20',
-                                    '1.1.1.0/24'
+                                    '192.0.2.24%0/30',
+                                    '192.0.2.32/30'
                                 ],
                                 [
                                     '2001:0db8:85a3:0000:0000:8a2e:0370:7300/120',
@@ -3289,27 +3289,27 @@ describe('map_as3', () => {
             };
             const expected = [
                 {
-                    path: '/tenantId/Service_Address-123.28.0.0%222',
-                    properties: { address: '123.28.0.0%222', mask: '255.252.0.0' }
+                    path: '/tenantId/Service_Address-192.0.2.28%222',
+                    properties: { address: '192.0.2.28%222', mask: '255.255.255.252' }
                 },
                 {
                     path: '/tenantId/appId/itemId',
                     properties: {
-                        destination: '/tenantId/123.28.0.0%222:123',
-                        source: '123.40.0.0%222/14',
-                        mask: '255.252.0.0'
+                        destination: '/tenantId/192.0.2.28%222:123',
+                        source: '192.0.2.20%222/30',
+                        mask: '255.255.255.252'
                     }
                 },
                 {
-                    path: '/tenantId/Service_Address-1.1.0.0',
-                    properties: { address: '1.1.0.0', mask: '255.255.240.0' }
+                    path: '/tenantId/Service_Address-192.0.2.24',
+                    properties: { address: '192.0.2.24', mask: '255.255.255.252' }
                 },
                 {
                     path: '/tenantId/appId/itemId-1-',
                     properties: {
-                        destination: '/tenantId/1.1.0.0:123',
-                        source: '1.1.1.0/24',
-                        mask: '255.255.240.0'
+                        destination: '/tenantId/192.0.2.24:123',
+                        source: '192.0.2.32/30',
+                        mask: '255.255.255.252'
                     }
                 },
                 {
@@ -3363,15 +3363,15 @@ describe('map_as3', () => {
                         itemId: {
                             virtualAddresses: [
                                 {
-                                    address: '1.2.3.0',
+                                    address: '192.0.2.120',
                                     mask: '255.255.255.0'
                                 },
                                 [{
-                                    address: '9.8.0.0',
+                                    address: '233.252.0.0',
                                     mask: '255.255.0.0'
                                 }],
                                 {
-                                    address: '123.123.123.123%23',
+                                    address: '192.0.2.123%23',
                                     mask: '255.255.255.255'
                                 }
                             ]
@@ -3400,12 +3400,12 @@ describe('map_as3', () => {
             const item = {
                 class: 'Service_HTTP',
                 virtualAddresses: [
-                    { bigip: '/Common/1.2.3.0' },
+                    { bigip: '/Common/192.0.2.120' },
                     [
-                        { bigip: '/Common/9.8.0.0' },
-                        '5.5.0.0/16'
+                        { bigip: '/Common/233.252.0.0' },
+                        '192.0.2.44/30'
                     ],
-                    { bigip: '/Common/123.123.123.123%23' },
+                    { bigip: '/Common/192.0.2.123%23' },
                     [
                         { bigip: '/Common/wildcard_v4_rtd0' },
                         '0.0.0.0/0'
@@ -3464,16 +3464,16 @@ describe('map_as3', () => {
                             class: 'Service_HTTP',
                             virtualAddresses: [
                                 {
-                                    bigip: '/Common/1.2.3.0'
+                                    bigip: '/Common/192.0.2.120'
                                 },
                                 [
                                     {
-                                        bigip: '/Common/9.8.0.0'
+                                        bigip: '/Common/233.252.0.0'
                                     },
-                                    '5.5.0.0/16'
+                                    '192.0.2.44/30'
                                 ],
                                 {
-                                    bigip: '/Common/123.123.123.123%23'
+                                    bigip: '/Common/192.0.2.123%23'
                                 },
                                 [
                                     {
@@ -3497,7 +3497,7 @@ describe('map_as3', () => {
                 {
                     path: '/tenantId/appId/itemId',
                     properties: {
-                        destination: '/Common/1.2.3.0:123',
+                        destination: '/Common/192.0.2.120:123',
                         source: '0.0.0.0/0',
                         mask: '255.255.255.0'
                     }
@@ -3505,15 +3505,15 @@ describe('map_as3', () => {
                 {
                     path: '/tenantId/appId/itemId-1-',
                     properties: {
-                        destination: '/Common/9.8.0.0:123',
-                        source: '5.5.0.0/16',
+                        destination: '/Common/233.252.0.0:123',
+                        source: '192.0.2.44/30',
                         mask: '255.255.0.0'
                     }
                 },
                 {
                     path: '/tenantId/appId/itemId-2-',
                     properties: {
-                        destination: '/Common/123.123.123.123%23:123',
+                        destination: '/Common/192.0.2.123%23:123',
                         source: '0.0.0.0%23/0',
                         mask: '255.255.255.255'
                     }
@@ -3620,7 +3620,7 @@ describe('map_as3', () => {
                         template: 'shared',
                         testAddr: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123%0',
+                            virtualAddress: '192.0.2.123%0',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -3638,7 +3638,7 @@ describe('map_as3', () => {
                         },
                         testRouteAddr: {
                             class: 'Service_Address',
-                            virtualAddress: '1.1.1.0%22/25',
+                            virtualAddress: '192.0.2.32%22/30',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -3713,9 +3713,9 @@ describe('map_as3', () => {
                 {
                     path: '/tenantId/appId/itemId-2-',
                     properties: {
-                        destination: '/tenantId/1.1.1.0%22:123',
+                        destination: '/tenantId/192.0.2.32%22:123',
                         source: '0.0.0.0%22/0',
-                        mask: '255.255.255.128'
+                        mask: '255.255.255.252'
                     }
                 },
                 {
@@ -3769,7 +3769,7 @@ describe('map_as3', () => {
                 virtualAddresses: [
                     [
                         { use: '/Common/Shared/testAddr' },
-                        '1.2.3.4/32'
+                        '192.0.2.4/32'
                     ]
                 ],
                 virtualPort: 123,
@@ -3824,7 +3824,7 @@ describe('map_as3', () => {
                                     {
                                         use: '/Common/Shared/testAddr'
                                     },
-                                    '1.2.3.4/32'
+                                    '192.0.2.4/32'
                                 ]
                             ],
                             virtualPort: 123
@@ -3838,7 +3838,7 @@ describe('map_as3', () => {
                         template: 'shared',
                         testAddr: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123%0',
+                            virtualAddress: '192.0.2.123%0',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -3852,7 +3852,7 @@ describe('map_as3', () => {
                 path: '/tenantId/appId/itemId',
                 properties: {
                     destination: '/Common/Shared/testAddr:123',
-                    source: '1.2.3.4/32',
+                    source: '192.0.2.4/32',
                     mask: '255.255.255.255'
                 }
             }];
@@ -3934,7 +3934,7 @@ describe('map_as3', () => {
                         template: 'shared',
                         testAddr: {
                             class: 'Service_Address',
-                            virtualAddress: '123.123.123.123',
+                            virtualAddress: '192.0.2.123',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -3943,7 +3943,7 @@ describe('map_as3', () => {
                         },
                         testRouteAddr: {
                             class: 'Service_Address',
-                            virtualAddress: '1.1.1.1%22',
+                            virtualAddress: '192.0.2.1%22',
                             arpEnabled: false,
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
@@ -3958,7 +3958,7 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-self',
                     properties: {
                         members: {
-                            '/tenantId/123.123.123.123': {}
+                            '/tenantId/192.0.2.123': {}
                         }
                     }
                 },
@@ -3978,14 +3978,14 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId-1--self',
                     properties: {
                         members: {
-                            '/tenantId/1.1.1.1%22': {}
+                            '/tenantId/192.0.2.1%22': {}
                         }
                     }
                 },
                 {
                     path: '/tenantId/appId/itemId-1-',
                     properties: {
-                        destination: '/tenantId/1.1.1.1%22:123',
+                        destination: '/tenantId/192.0.2.1%22:123',
                         source: '0.0.0.0%22/0',
                         mask: '255.255.255.255',
                         'source-address-translation': {
@@ -4018,7 +4018,7 @@ describe('map_as3', () => {
             item = {
                 class: 'Service_TCP',
                 remark: 'description',
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 enable: true
             };
             declaration = {
@@ -4034,7 +4034,7 @@ describe('map_as3', () => {
                             class: 'Service_TCP',
                             remark: 'description',
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ]
                         }
                     }
@@ -4431,7 +4431,7 @@ describe('map_as3', () => {
             item = {
                 class: 'Service_HTTP',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 persistenceMethods: ['source-address'],
                 enable: true,
                 adminState: 'enable'
@@ -4449,7 +4449,7 @@ describe('map_as3', () => {
                             class: 'Service_HTTP',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             adminState: 'enable'
                         },
@@ -4544,7 +4544,7 @@ describe('map_as3', () => {
             item = {
                 class: 'Service_HTTP',
                 virtualPort: 80,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileHTML: { bigip: '/Common/html' },
                 profileTCP: {
                     bigip: '/Common/f5-tcp-progressive',
@@ -4566,7 +4566,7 @@ describe('map_as3', () => {
                             class: 'Service_HTTP',
                             virtualPort: 80,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             profileHTML: { bigip: '/Common/html' }
                         }
@@ -4592,7 +4592,7 @@ describe('map_as3', () => {
                 item = {
                     class: 'Service_HTTP',
                     virtualAddresses: [
-                        '1.2.3.4'
+                        '192.0.2.4'
                     ],
                     virtualPort: 80,
                     enable: true,
@@ -4625,7 +4625,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/tenantId/appId/myHTTP'
@@ -4660,7 +4660,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/tenantId/appId/myHTTP'
@@ -4697,7 +4697,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/tenantId/appId/myHTTP'
@@ -4731,7 +4731,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/tenantId/Shared/myHTTP'
@@ -4769,7 +4769,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/Common/Shared/myHTTP'
@@ -4805,7 +4805,7 @@ describe('map_as3', () => {
                 item = {
                     class: 'Service_HTTP',
                     virtualAddresses: [
-                        '1.2.3.4'
+                        '192.0.2.4'
                     ],
                     virtualPort: 80,
                     enable: true,
@@ -4832,7 +4832,7 @@ describe('map_as3', () => {
                         class: 'Application',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/tenantId/appId/httpProfile'
@@ -4864,7 +4864,7 @@ describe('map_as3', () => {
                         template: 'generic',
                         itemId: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4'],
+                            virtualAddresses: ['192.0.2.4'],
                             virtualPort: 80,
                             profileHTTP: {
                                 use: '/Common/Shared/httpProfile'
@@ -5273,7 +5273,7 @@ describe('map_as3', () => {
     describe('NAT_Source_Translation', () => {
         it('should handle exclude addresses and handle exclude address lists', () => {
             const item = {
-                excludeAddresses: ['3.4.5.6', { use: 'natSourceAddressList' }]
+                excludeAddresses: ['192.0.2.6', { use: 'natSourceAddressList' }]
             };
 
             defaultContext.target.tmosVersion = '14.1';
@@ -5292,7 +5292,7 @@ describe('map_as3', () => {
                             natSourceAddressList: {}
                         },
                         'exclude-addresses': {
-                            '3.4.5.6': {}
+                            '192.0.2.6': {}
                         }
                     },
                     ignore: []
@@ -5343,7 +5343,7 @@ describe('map_as3', () => {
                 class: 'Service_TCP',
                 remark: 'description',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileFTP: { bigip: '/Common/ftp' },
                 profilePPTP: { bigip: '/Common/pptp' },
                 persistenceMethods: ['source-address'],
@@ -5374,7 +5374,7 @@ describe('map_as3', () => {
                             remark: 'description',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             persistenceMethods: [
                                 'source-address'
@@ -5399,10 +5399,10 @@ describe('map_as3', () => {
                 {
                     configs: [
                         {
-                            path: '/tenantId/Service_Address-1.1.1.10',
+                            path: '/tenantId/Service_Address-192.0.2.10',
                             command: 'ltm virtual-address',
                             properties: {
-                                address: '1.1.1.10',
+                                address: '192.0.2.10',
                                 arp: 'enabled',
                                 'icmp-echo': 'enabled',
                                 mask: '255.255.255.255',
@@ -5420,7 +5420,7 @@ describe('map_as3', () => {
                                 'auto-lasthop': 'default',
                                 'connection-limit': 0,
                                 description: '"description"',
-                                destination: '/tenantId/1.1.1.10:123',
+                                destination: '/tenantId/192.0.2.10:123',
                                 enabled: true,
                                 'ip-protocol': 'tcp',
                                 'last-hop-pool': 'none',
@@ -5462,7 +5462,7 @@ describe('map_as3', () => {
                 class: 'Service_TCP',
                 remark: 'description',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileSIP: { bigip: '/Common/sip' },
                 persistenceMethods: ['source-address'],
                 layer4: 'tcp',
@@ -5491,7 +5491,7 @@ describe('map_as3', () => {
                             remark: 'description',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             persistenceMethods: [
                                 'source-address'
@@ -5519,7 +5519,7 @@ describe('map_as3', () => {
             const item = {
                 class: 'Service_TCP',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 persistenceMethods: ['source-address'],
                 layer4: 'tcp',
                 mqttEnabled: true,
@@ -5547,7 +5547,7 @@ describe('map_as3', () => {
                             class: 'Service_TCP',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             persistenceMethods: [
                                 'source-address'
@@ -5573,7 +5573,7 @@ describe('map_as3', () => {
                 class: 'Service_TCP',
                 remark: 'description',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileILX: { bigip: '/Common/ilx' },
                 persistenceMethods: ['source-address'],
                 layer4: 'tcp',
@@ -5602,7 +5602,7 @@ describe('map_as3', () => {
                             remark: 'description',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             persistenceMethods: [
                                 'source-address'
@@ -5683,7 +5683,7 @@ describe('map_as3', () => {
                 class: 'Service_TCP',
                 remark: 'description',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileICAP: { bigip: '/Common/icap' },
                 layer4: 'tcp',
                 profileTCP: 'normal',
@@ -5711,7 +5711,7 @@ describe('map_as3', () => {
                             remark: 'description',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             profileICAP: {
                                 bigip: '/Common/icap'
@@ -6060,7 +6060,7 @@ describe('map_as3', () => {
                 class: 'Service_SCTP',
                 remark: 'description',
                 virtualPort: 123,
-                virtualAddresses: ['1.1.1.10'],
+                virtualAddresses: ['192.0.2.10'],
                 profileSCTP: { bigip: '/Common/sctp' },
                 persistenceMethods: ['source-address'],
                 layer4: 'sctp',
@@ -6080,7 +6080,7 @@ describe('map_as3', () => {
                             remark: 'description',
                             virtualPort: 123,
                             virtualAddresses: [
-                                '1.1.1.10'
+                                '192.0.2.10'
                             ],
                             profileSCTP: {
                                 bigip: '/Common/sctp'
@@ -6442,7 +6442,7 @@ describe('map_as3', () => {
     describe('WAF_Policy', () => {
         const context = {
             target: {
-                tmosVersion: '13.1.0.8.0.0.3'
+                tmosVersion: '13.1.0'
             },
             control: {
                 host: 'localhost'
@@ -7219,8 +7219,8 @@ describe('map_as3', () => {
                     serviceMain: {
                         class: 'Service_HTTPS',
                         virtualAddresses: [
-                            '198.19.192.91',
-                            '198.19.192.92'
+                            '192.0.2.91',
+                            '192.0.2.92'
                         ],
                         serverTLS: 'tlsServer'
                     },
@@ -7287,8 +7287,8 @@ describe('map_as3', () => {
                 const item = {
                     class: 'Service_HTTPS',
                     virtualAddresses: [
-                        '198.19.192.91',
-                        '198.19.192.92'
+                        '192.0.2.91',
+                        '192.0.2.92'
                     ],
                     enable: true,
                     redirect80: true,
@@ -7305,13 +7305,13 @@ describe('map_as3', () => {
                     adminState: 'enable'
                 };
 
-                defaultContext.target.tmosVersion = '13.1.0.8.0.0.3';
+                defaultContext.target.tmosVersion = '13.1.0';
                 defaultContext.targetHost = 'localhost';
 
                 const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
                 const serviceMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain');
                 assert.strictEqual(serviceMain.command, 'ltm virtual');
-                assert.strictEqual(serviceMain.properties.destination, '/tenantId/198.19.192.91:443');
+                assert.strictEqual(serviceMain.properties.destination, '/tenantId/192.0.2.91:443');
                 assert.strictEqual(serviceMain.properties['vlans-enabled'], ' ');
                 assert.deepStrictEqual(serviceMain.properties.vlans,
                     {
@@ -7322,7 +7322,7 @@ describe('map_as3', () => {
 
                 const serviceMainAddtl = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain-1-');
                 assert.strictEqual(serviceMainAddtl.command, 'ltm virtual');
-                assert.strictEqual(serviceMainAddtl.properties.destination, '/tenantId/198.19.192.92:443');
+                assert.strictEqual(serviceMainAddtl.properties.destination, '/tenantId/192.0.2.92:443');
                 assert.strictEqual(serviceMainAddtl.properties['vlans-enabled'], ' ');
                 assert.deepStrictEqual(serviceMainAddtl.properties.vlans,
                     {
@@ -7333,7 +7333,7 @@ describe('map_as3', () => {
 
                 const redirectMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain-Redirect-');
                 assert.strictEqual(redirectMain.command, 'ltm virtual');
-                assert.strictEqual(redirectMain.properties.destination, '/tenantId/198.19.192.91:80');
+                assert.strictEqual(redirectMain.properties.destination, '/tenantId/192.0.2.91:80');
                 assert.strictEqual(redirectMain.properties['vlans-enabled'], ' ');
                 assert.deepStrictEqual(redirectMain.properties.vlans,
                     {
@@ -7344,7 +7344,7 @@ describe('map_as3', () => {
 
                 const redirectMainAddtl = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain-Redirect--1-');
                 assert.strictEqual(redirectMainAddtl.command, 'ltm virtual');
-                assert.strictEqual(redirectMainAddtl.properties.destination, '/tenantId/198.19.192.92:80');
+                assert.strictEqual(redirectMainAddtl.properties.destination, '/tenantId/192.0.2.92:80');
                 assert.strictEqual(redirectMainAddtl.properties['vlans-enabled'], ' ');
                 assert.deepStrictEqual(redirectMainAddtl.properties.vlans,
                     {
@@ -7359,7 +7359,7 @@ describe('map_as3', () => {
                     class: 'Service_HTTPS',
                     virtualAddresses: [
                         [
-                            '7.7.7.7/32',
+                            '192.0.2.7/32',
                             '10.0.0.0/24'
                         ]
                     ],
@@ -7377,13 +7377,13 @@ describe('map_as3', () => {
                     ]
                 };
 
-                defaultContext.target.tmosVersion = '13.1.0.8.0.0.3';
+                defaultContext.target.tmosVersion = '13.1.0';
                 defaultContext.targetHost = 'localhost';
 
                 const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
                 const serviceMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain');
                 assert.strictEqual(serviceMain.command, 'ltm virtual');
-                assert.strictEqual(serviceMain.properties.destination, '/tenantId/7.7.7.7:443');
+                assert.strictEqual(serviceMain.properties.destination, '/tenantId/192.0.2.7:443');
                 assert.strictEqual(serviceMain.properties.mask, '255.255.255.255');
                 assert.strictEqual(serviceMain.properties.source, '10.0.0.0/24');
                 assert.strictEqual(serviceMain.properties['vlans-disabled'], ' ');
@@ -7395,7 +7395,7 @@ describe('map_as3', () => {
 
                 const redirectMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain-Redirect-');
                 assert.strictEqual(redirectMain.command, 'ltm virtual');
-                assert.strictEqual(redirectMain.properties.destination, '/tenantId/7.7.7.7:80');
+                assert.strictEqual(redirectMain.properties.destination, '/tenantId/192.0.2.7:80');
                 assert.strictEqual(redirectMain.properties.mask, '255.255.255.255');
                 assert.strictEqual(redirectMain.properties.source, '10.0.0.0/24');
                 assert.strictEqual(redirectMain.properties['vlans-disabled'], ' ');
@@ -7410,7 +7410,7 @@ describe('map_as3', () => {
                 const item = {
                     class: 'Service_HTTPS',
                     virtualAddresses: [
-                        '198.19.192.91'
+                        '192.0.2.91'
                     ],
                     enable: true,
                     redirect80: true,
@@ -7423,19 +7423,19 @@ describe('map_as3', () => {
                     virtualType: 'standard'
                 };
 
-                defaultContext.target.tmosVersion = '13.1.0.8.0.0.3';
+                defaultContext.target.tmosVersion = '13.1.0';
                 defaultContext.targetHost = 'localhost';
 
                 const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
                 const serviceMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain');
                 assert.strictEqual(serviceMain.command, 'ltm virtual');
-                assert.strictEqual(serviceMain.properties.destination, '/Common/198.19.192.91:443');
+                assert.strictEqual(serviceMain.properties.destination, '/Common/192.0.2.91:443');
                 assert.strictEqual(serviceMain.properties['vlans-disabled'], ' ');
                 assert.deepStrictEqual(serviceMain.properties.vlans, {});
 
                 const redirectMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain-Redirect-');
                 assert.strictEqual(redirectMain.command, 'ltm virtual');
-                assert.strictEqual(redirectMain.properties.destination, '/Common/198.19.192.91:80');
+                assert.strictEqual(redirectMain.properties.destination, '/Common/192.0.2.91:80');
                 assert.strictEqual(redirectMain.properties['vlans-disabled'], ' ');
                 assert.deepStrictEqual(redirectMain.properties.vlans, {});
             });
@@ -7444,8 +7444,8 @@ describe('map_as3', () => {
                 const item = {
                     class: 'Service_HTTPS',
                     virtualAddresses: [
-                        '198.19.192.91',
-                        '198.19.192.92'
+                        '192.0.2.91',
+                        '192.0.2.92'
                     ],
                     enable: true,
                     redirect80: true,
@@ -7488,8 +7488,8 @@ describe('map_as3', () => {
                 const item = {
                     class: 'Service_HTTPS',
                     virtualAddresses: [
-                        '198.19.192.91',
-                        '198.19.192.92'
+                        '192.0.2.91',
+                        '192.0.2.92'
                     ],
                     enable: true,
                     redirect80: true,
@@ -8963,7 +8963,7 @@ describe('map_as3', () => {
                         timeUntilUp: 30,
                         timeout: 81,
                         'up-interval': 5,
-                        username: 'sql-user'
+                        username: 'user'
                     };
 
                     const results = translate.Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
@@ -8980,7 +8980,7 @@ describe('map_as3', () => {
                                 send: '"SELECT * FROM db_name"',
                                 timeout: 81,
                                 'time-until-up': 30,
-                                username: 'sql-user',
+                                username: 'user',
                                 'up-interval': 5,
                                 count: 10,
                                 database: 'sales',
@@ -9302,16 +9302,16 @@ describe('map_as3', () => {
         it('should return a config with minimum item values for 13+ versions', () => {
             const item = {
                 class: 'GSLB_Server',
-                devices: [{ address: '1.2.3.3' }],
+                devices: [{ address: '192.0.2.3' }],
                 virtualServers: [
                     {
-                        address: '1.2.3.4',
+                        address: '192.0.2.4',
                         port: 1000,
                         enabled: true,
                         addressTranslationPort: 0
                     },
                     {
-                        address: '1.2.3.5',
+                        address: '192.0.2.5',
                         port: 1111,
                         enabled: true,
                         addressTranslationPort: 0
@@ -9334,7 +9334,7 @@ describe('map_as3', () => {
                                 },
                                 'as3-virtuals': {
                                     persist: 'true',
-                                    value: '1.2.3.4:1000_1.2.3.5:1111'
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
                                 }
                             },
                             monitor: '/Common/bigip',
@@ -9342,20 +9342,20 @@ describe('map_as3', () => {
                             devices: {
                                 0: {
                                     addresses: {
-                                        '1.2.3.3': { translation: 'none' }
+                                        '192.0.2.3': { translation: 'none' }
                                     }
                                 }
                             },
                             'virtual-servers': {
                                 0: {
-                                    destination: '1.2.3.4:1000',
+                                    destination: '192.0.2.4:1000',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
                                     'translation-port': 0
                                 },
                                 1: {
-                                    destination: '1.2.3.5:1111',
+                                    destination: '192.0.2.5:1111',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
@@ -9371,16 +9371,16 @@ describe('map_as3', () => {
         it('minimum set for two devices for 13+ versions', () => {
             const item = {
                 class: 'GSLB_Server',
-                devices: [{ address: '1.2.3.2' }, { address: '1.2.3.3' }],
+                devices: [{ address: '192.0.2.2' }, { address: '192.0.2.3' }],
                 virtualServers: [
                     {
-                        address: '1.2.3.4',
+                        address: '192.0.2.4',
                         port: 1000,
                         enabled: true,
                         addressTranslationPort: 0
                     },
                     {
-                        address: '1.2.3.5',
+                        address: '192.0.2.5',
                         port: 1111,
                         enabled: true,
                         addressTranslationPort: 0
@@ -9403,7 +9403,7 @@ describe('map_as3', () => {
                                 },
                                 'as3-virtuals': {
                                     persist: 'true',
-                                    value: '1.2.3.4:1000_1.2.3.5:1111'
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
                                 }
                             },
                             monitor: '/Common/bigip',
@@ -9411,25 +9411,25 @@ describe('map_as3', () => {
                             devices: {
                                 0: {
                                     addresses: {
-                                        '1.2.3.2': { translation: 'none' }
+                                        '192.0.2.2': { translation: 'none' }
                                     }
                                 },
                                 1: {
                                     addresses: {
-                                        '1.2.3.3': { translation: 'none' }
+                                        '192.0.2.3': { translation: 'none' }
                                     }
                                 }
                             },
                             'virtual-servers': {
                                 0: {
-                                    destination: '1.2.3.4:1000',
+                                    destination: '192.0.2.4:1000',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
                                     'translation-port': 0
                                 },
                                 1: {
-                                    destination: '1.2.3.5:1111',
+                                    destination: '192.0.2.5:1111',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
@@ -9445,17 +9445,17 @@ describe('map_as3', () => {
         it('should return a config with the specified names or indexes for 13+ versions', () => {
             const item = {
                 class: 'GSLB_Server',
-                devices: [{ address: '1.2.3.3' }],
+                devices: [{ address: '192.0.2.3' }],
                 virtualServers: [
                     {
-                        address: '1.2.3.4',
+                        address: '192.0.2.4',
                         port: 1000,
                         enabled: true,
                         addressTranslationPort: 0,
                         name: 'foobar'
                     },
                     {
-                        address: '1.2.3.5',
+                        address: '192.0.2.5',
                         port: 1111,
                         enabled: true,
                         addressTranslationPort: 0
@@ -9475,7 +9475,7 @@ describe('map_as3', () => {
                             devices: {
                                 0: {
                                     addresses: {
-                                        '1.2.3.3': { translation: 'none' }
+                                        '192.0.2.3': { translation: 'none' }
                                     }
                                 }
                             },
@@ -9486,21 +9486,21 @@ describe('map_as3', () => {
                                 },
                                 'as3-virtuals': {
                                     persist: 'true',
-                                    value: '1.2.3.4:1000_1.2.3.5:1111'
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
                                 }
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
                             'virtual-servers': {
                                 foobar: {
-                                    destination: '1.2.3.4:1000',
+                                    destination: '192.0.2.4:1000',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
                                     'translation-port': 0
                                 },
                                 1: {
-                                    destination: '1.2.3.5:1111',
+                                    destination: '192.0.2.5:1111',
                                     enabled: true,
                                     monitor: [],
                                     'translation-address': 'none',
@@ -10367,7 +10367,7 @@ describe('map_as3', () => {
         let baseConfig;
 
         beforeEach(() => {
-            defaultContext.target.tmosVersion = '13.1.0.0';
+            defaultContext.target.tmosVersion = '13.1.0';
 
             baseConfig = {
                 configs: [
@@ -10463,7 +10463,7 @@ describe('map_as3', () => {
         let baseConfig;
 
         beforeEach(() => {
-            defaultContext.target.tmosVersion = '13.1.0.0';
+            defaultContext.target.tmosVersion = '13.1.0';
 
             baseConfig = {
                 configs: [
@@ -10539,7 +10539,7 @@ describe('map_as3', () => {
             let baseConfig;
 
             beforeEach(() => {
-                defaultContext.target.tmosVersion = '14.0.0.0';
+                defaultContext.target.tmosVersion = '14.0.0';
 
                 baseConfig = {
                     configs: [
@@ -10636,7 +10636,7 @@ describe('map_as3', () => {
             let baseConfig;
 
             beforeEach(() => {
-                defaultContext.target.tmosVersion = '14.0.0.0';
+                defaultContext.target.tmosVersion = '14.0.0';
 
                 baseConfig = {
                     configs: [
@@ -10792,7 +10792,7 @@ describe('map_as3', () => {
             let baseConfig;
 
             beforeEach(() => {
-                defaultContext.target.tmosVersion = '14.0.0.0';
+                defaultContext.target.tmosVersion = '14.0.0';
 
                 baseConfig = {
                     configs: [

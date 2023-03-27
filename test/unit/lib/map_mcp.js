@@ -96,7 +96,7 @@ describe('map_mcp', () => {
                     name: '0',
                     fullPath: '0',
                     generation: 6234,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/rewrite/~Common~foo~bar~testItem/uri-rules/0?ver=13.1.1.3',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/rewrite/~Common~foo~bar~testItem/uri-rules/0?ver=13.1.1',
                     appService: 'none',
                     client,
                     server,
@@ -135,7 +135,7 @@ describe('map_mcp', () => {
                         name: '0',
                         fullPath: '0',
                         generation: 14269,
-                        selfLink: 'https://localhost/mgmt/tm/ltm/policy-strategy/~Common~foo~bar~testItem/operands/0?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/ltm/policy-strategy/~Common~foo~bar~testItem/operands/0?ver=13.1.1',
                         countryCode: true,
                         geoip: true,
                         request: true
@@ -207,7 +207,7 @@ describe('map_mcp', () => {
                         password: 'Same as my luggage "123"',
                         recv: 'Something received',
                         send: 'Something sent',
-                        username: 'player1',
+                        username: 'user',
                         database: 'baseOfData',
                         count: '42',
                         recvColumn: '1',
@@ -219,7 +219,7 @@ describe('map_mcp', () => {
                         password: '"Same as my luggage \\"123\\""',
                         recv: '"Something received"',
                         send: '"Something sent"',
-                        username: 'player1',
+                        username: 'user',
                         database: 'baseOfData',
                         count: 42,
                         'recv-column': 1,
@@ -1163,7 +1163,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/comment-raise-event/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/comment-raise-event/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description'
                 };
                 const results = translate[obj.kind](defaultContext, obj);
@@ -1187,7 +1187,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/comment-remove/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/comment-remove/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description'
                 };
                 const results = translate[obj.kind](defaultContext, obj);
@@ -1211,7 +1211,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-append-html/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-append-html/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description',
                     action: {
                         text: 'eat'
@@ -1251,7 +1251,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-prepend-html/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-prepend-html/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description',
                     action: {
                         text: 'eat'
@@ -1291,7 +1291,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-raise-event/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-raise-event/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description',
                     match: {
                         attributeName: 'fruit',
@@ -1325,7 +1325,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-remove/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-remove/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description',
                     match: {
                         attributeName: 'fruit',
@@ -1359,7 +1359,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 10072,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-remove-attribute/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/html-rule/tag-remove-attribute/~Tenant~Application~sample?ver=14.1.2',
                     description: 'my_description',
                     action: {
                         attributeName: 'eat'
@@ -1399,7 +1399,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/sample',
                     generation: 16586,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/html/~Tenant~Application~sample?ver=14.1.2.8',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/html/~Tenant~Application~sample?ver=14.1.2',
                     appService: 'none',
                     contentDetection: 'enabled',
                     contentSelection: [
@@ -1408,7 +1408,7 @@ describe('map_mcp', () => {
                     ],
                     defaultsFrom: '/Common/html',
                     defaultsFromReference: {
-                        link: 'https://localhost/mgmt/tm/ltm/profile/html/~Common~html?ver=14.1.2.8'
+                        link: 'https://localhost/mgmt/tm/ltm/profile/html/~Common~html?ver=14.1.2'
                     },
                     description: 'sample',
                     rules: [
@@ -1419,16 +1419,16 @@ describe('map_mcp', () => {
                     ],
                     rulesReference: [
                         {
-                            link: 'https://localhost/mgmt/tm/ltm/html-rule/comment-raise-event/~Tenant~Application~sample1?ver=14.1.2.8'
+                            link: 'https://localhost/mgmt/tm/ltm/html-rule/comment-raise-event/~Tenant~Application~sample1?ver=14.1.2'
                         },
                         {
-                            link: 'https://localhost/mgmt/tm/ltm/html-rule/comment-remove/~Tenant~Application~sample2?ver=14.1.2.8'
+                            link: 'https://localhost/mgmt/tm/ltm/html-rule/comment-remove/~Tenant~Application~sample2?ver=14.1.2'
                         },
                         {
-                            link: 'https://localhost/mgmt/tm/ltm/html-rule/tag-append-html/~Tenant~Application~sample3?ver=14.1.2.8'
+                            link: 'https://localhost/mgmt/tm/ltm/html-rule/tag-append-html/~Tenant~Application~sample3?ver=14.1.2'
                         },
                         {
-                            link: 'https://localhost/mgmt/tm/ltm/html-rule/tag-prepend-html/~Tenant~Application~sample4?ver=14.1.2.8'
+                            link: 'https://localhost/mgmt/tm/ltm/html-rule/tag-prepend-html/~Tenant~Application~sample4?ver=14.1.2'
                         }
                     ]
                 };
@@ -1464,7 +1464,7 @@ describe('map_mcp', () => {
                     subPath: 'Application',
                     fullPath: '/TEST_Firewall_Rule_List/Application/testItem',
                     rulesReference: {
-                        link: 'https://localhost/mgmt/tm/security/firewall/rule-list/~TEST_Firewall_Rule_List~Application~testItem/rules?ver=13.1.1.3'
+                        link: 'https://localhost/mgmt/tm/security/firewall/rule-list/~TEST_Firewall_Rule_List~Application~testItem/rules?ver=13.1.1'
                     }
                 };
                 const referenceConfig = [
@@ -1472,7 +1472,7 @@ describe('map_mcp', () => {
                         kind: 'tm:security:firewall:rule-list:rules:rulesstate',
                         name: 'theRule',
                         fullPath: 'theRule',
-                        selfLink: 'https://localhost/mgmt/tm/security/firewall/rule-list/~TEST_Firewall_Rule_List~Application~testItem/rules/theRule?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/security/firewall/rule-list/~TEST_Firewall_Rule_List~Application~testItem/rules/theRule?ver=13.1.1',
                         action: 'accept-decisively',
                         irule: '/TEST_Firewall_Rule_List/Application/irule',
                         iruleSampleRate: 100,
@@ -1669,7 +1669,7 @@ describe('map_mcp', () => {
                     partition: 'tenant',
                     fullPath: '/tenant/app/clientSslProfile',
                     generation: 1232,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/client-ssl/foo2?ver=14.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/client-ssl/foo2?ver=14.1.2',
                     certKeyChain: []
                 };
 
@@ -2047,14 +2047,14 @@ describe('map_mcp', () => {
                     subPath: 'SampleApp',
                     fullPath: '/SampleTenant/SampleApp/myCipherGroup',
                     generation: 802,
-                    selfLink: 'https://localhost/mgmt/tm/ltm/cipher/group/~SampleTenant~SampleApp~myCipherGroup?ver=14.1.0.6',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/cipher/group/~SampleTenant~SampleApp~myCipherGroup?ver=14.1.0',
                     ordering: 'default',
                     allow: [
                         {
                             name: 'f5-aes',
                             partition: 'Common',
                             nameReference:
-                                { link: 'https://localhost/mgmt/tm/ltm/cipher/rule/~Common~f5-aes?ver=14.1.0.6' }
+                                { link: 'https://localhost/mgmt/tm/ltm/cipher/rule/~Common~f5-aes?ver=14.1.0' }
                         }
                     ]
                 };
@@ -2091,7 +2091,7 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     monitor: '/Common/http and /Common/https '
                 };
@@ -2099,7 +2099,7 @@ describe('map_mcp', () => {
                 const referenceConfig = [
                     {
                         kind: 'tm:gtm:pool:a:members:memberscollectionstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0',
                         addresses: []
                     }
                 ];
@@ -2128,10 +2128,10 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     membersReference: {
-                        link: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0.3',
+                        link: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0',
                         isSubcollection: true
                     },
                     monitor: '/Common/http and /Common/https '
@@ -2140,7 +2140,7 @@ describe('map_mcp', () => {
                 const referenceConfig = [
                     {
                         kind: 'tm:gtm:pool:a:members:membersstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0',
                         name: 'testServer:0',
                         partition: 'tenant',
                         fullPath: '/Common/testServer:0',
@@ -2190,7 +2190,7 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     monitor: '/Common/http and /Common/https '
                 };
@@ -2198,7 +2198,7 @@ describe('map_mcp', () => {
                 const referenceConfig = [
                     {
                         kind: 'tm:gtm:pool:aaaa:members:memberscollectionstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0',
                         addresses: []
                     }
                 ];
@@ -2227,11 +2227,11 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     monitor: '/Common/http and /Common/https ',
                     membersReference: {
-                        link: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0.3',
+                        link: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0',
                         isSubcollection: true
                     }
                 };
@@ -2240,7 +2240,7 @@ describe('map_mcp', () => {
                     {
                         name: 'testServer:0',
                         kind: 'tm:gtm:pool:aaaa:members:membersstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0',
                         enabled: true,
                         partition: 'tenant',
                         fullPath: '/Common/testServer:0',
@@ -2282,7 +2282,7 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     monitor: '/Common/http and /Common/https '
                 };
@@ -2290,7 +2290,7 @@ describe('map_mcp', () => {
                 const referenceConfig = [
                     {
                         kind: 'tm:gtm:pool:cname:members:memberscollectionstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0',
                         addresses: []
                     }
                 ];
@@ -2319,11 +2319,11 @@ describe('map_mcp', () => {
                     subPath: 'application',
                     fullPath: '/tenant/application/testPool',
                     generation: 2258,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool?ver=14.1.0',
                     maxAnswersReturned: 10,
                     monitor: '/Common/http and /Common/https ',
                     membersReference: {
-                        link: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0.3',
+                        link: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0',
                         isSubcollection: true
                     }
                 };
@@ -2332,7 +2332,7 @@ describe('map_mcp', () => {
                     {
                         name: 'testServer:0',
                         kind: 'tm:gtm:pool:cname:members:membersstate',
-                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0',
                         enabled: true,
                         partition: 'tenant',
                         fullPath: '/Common/testServer:0',
@@ -2372,20 +2372,20 @@ describe('map_mcp', () => {
                     partition: 'Common',
                     fullPath: '/Common/testServer',
                     generation: 6284,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer?ver=14.1.0',
                     datacenter: '/Common/testDataCenter',
                     datacenterReference:
-                        { link: 'https://localhost/mgmt/tm/gtm/datacenter/~Common~testDataCenter?ver=14.1.0.3' },
+                        { link: 'https://localhost/mgmt/tm/gtm/datacenter/~Common~testDataCenter?ver=14.1.0' },
                     enabled: true,
                     monitor: '/Common/bigip ',
-                    addresses: [{ name: '1.2.3.7', deviceName: '0', translation: 'none' }],
+                    addresses: [{ name: '192.0.2.7', deviceName: '0', translation: 'none' }],
                     metadata: [
                         { name: 'as3', persist: 'true' },
-                        { name: 'as3-virtuals', persist: true, value: '1.2.3.8:5050' }
+                        { name: 'as3-virtuals', persist: true, value: '192.0.2.8:5050' }
                     ],
                     virtualServersReference:
                     {
-                        link: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers?ver=14.1.0.3',
+                        link: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers?ver=14.1.0',
                         isSubcollection: true
                     }
                 };
@@ -2396,16 +2396,16 @@ describe('map_mcp', () => {
                         name: '0',
                         fullPath: '0',
                         generation: 6284,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/devices/0?ver=14.1.0.3',
-                        addresses: [{ name: '1.2.3.7', translation: 'none' }]
+                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/devices/0?ver=14.1.0',
+                        addresses: [{ name: '192.0.2.7', translation: 'none' }]
                     },
                     {
                         kind: 'tm:gtm:server:virtual-servers:virtual-serversstate',
                         name: '0',
                         fullPath: '0',
                         generation: 6283,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0.3',
-                        destination: '1.2.3.8:5050',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0',
+                        destination: '192.0.2.8:5050',
                         enabled: true,
                         monitor: '/Common/http '
                     }
@@ -2422,7 +2422,7 @@ describe('map_mcp', () => {
                             devices: {
                                 0: {
                                     addresses: {
-                                        '1.2.3.7': {
+                                        '192.0.2.7': {
                                             translation: 'none'
                                         }
                                     }
@@ -2434,14 +2434,14 @@ describe('map_mcp', () => {
                                 },
                                 'as3-virtuals': {
                                     persist: true,
-                                    value: '1.2.3.8:5050'
+                                    value: '192.0.2.8:5050'
                                 }
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
                             'virtual-servers': {
                                 0: {
-                                    destination: '1.2.3.8:5050',
+                                    destination: '192.0.2.8:5050',
                                     enabled: true,
                                     monitor: '/Common/http'
                                 }
@@ -2462,20 +2462,20 @@ describe('map_mcp', () => {
                     partition: 'Common',
                     fullPath: '/Common/testServer',
                     generation: 6284,
-                    selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer?ver=14.1.0.3',
+                    selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer?ver=14.1.0',
                     datacenter: '/Common/testDataCenter',
                     datacenterReference:
-                        { link: 'https://localhost/mgmt/tm/gtm/datacenter/~Common~testDataCenter?ver=14.1.0.3' },
+                        { link: 'https://localhost/mgmt/tm/gtm/datacenter/~Common~testDataCenter?ver=14.1.0' },
                     enabled: true,
                     monitor: '/Common/bigip ',
                     addresses: [],
                     metadata: [
                         { name: 'as3', persist: 'true' },
-                        { name: 'as3-virtuals', persist: true, value: '1.2.3.8:5050' }
+                        { name: 'as3-virtuals', persist: true, value: '192.0.2.8:5050' }
                     ],
                     virtualServersReference:
                     {
-                        link: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers?ver=14.1.0.3',
+                        link: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers?ver=14.1.0',
                         isSubcollection: true
                     }
                 };
@@ -2486,8 +2486,8 @@ describe('map_mcp', () => {
                         name: '0',
                         fullPath: '0',
                         generation: 6283,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0.3',
-                        destination: '1.2.3.8:5050',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0',
+                        destination: '192.0.2.8:5050',
                         enabled: true,
                         monitor: '/Common/http '
                     },
@@ -2496,8 +2496,8 @@ describe('map_mcp', () => {
                         name: '0',
                         fullPath: '0',
                         generation: 6283,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0.3',
-                        destination: '1.4.5.9:80',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/server/~Common~testServer/virtual-servers/0?ver=14.1.0',
+                        destination: '192.0.2.9:80',
                         enabled: true,
                         monitor: '/Common/http '
                     }
@@ -2518,7 +2518,7 @@ describe('map_mcp', () => {
                                 },
                                 'as3-virtuals': {
                                     persist: true,
-                                    value: '1.2.3.8:5050'
+                                    value: '192.0.2.8:5050'
                                 }
                             },
                             monitor: '/Common/bigip',
@@ -2526,7 +2526,7 @@ describe('map_mcp', () => {
                             addresses: {},
                             'virtual-servers': {
                                 0: {
-                                    destination: '1.2.3.8:5050',
+                                    destination: '192.0.2.8:5050',
                                     enabled: true,
                                     monitor: '/Common/http'
                                 }

@@ -375,7 +375,7 @@ describe('cloudLibUtils', () => {
                 }, 1);
             })));
 
-            nock('https://192.0.1.2:8443')
+            nock('https://192.0.2.2:8443')
                 .post('/mgmt/shared/iapp/package-management-tasks')
                 .times(24)
                 .replyWithError('Bad Request');
@@ -389,7 +389,7 @@ describe('cloudLibUtils', () => {
                     tokens: { 'X-F5-Auth-Token': '12345' }
                 },
                 control: {},
-                tasks: [{ urlPrefix: 'https://192.0.1.2:8443' }],
+                tasks: [{ urlPrefix: 'https://192.0.2.2:8443' }],
                 currentIndex: 0
             };
 

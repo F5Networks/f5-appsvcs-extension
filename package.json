@@ -59,7 +59,6 @@
       "docs/**",
       "test/**",
       "scripts/**",
-      "test/integration/services/**",
       "**/node_modules/**",
       "**/dist/**",
       "**/src/support/**"

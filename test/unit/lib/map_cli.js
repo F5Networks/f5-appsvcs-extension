@@ -1048,7 +1048,7 @@ describe('map_cli', () => {
                 }
             };
 
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
 
             const result = mapCli.tmshCreate(context, diff, config, {});
             assert.deepStrictEqual(
@@ -1262,7 +1262,7 @@ describe('map_cli', () => {
                         command: 'ltm virtual',
                         properties: {
                             enabled: false,
-                            destination: '/tenant/1.2.3.4:80'
+                            destination: '/tenant/192.0.2.4:80'
                         }
                     },
                     command: 'ltm virtual',
@@ -1271,11 +1271,11 @@ describe('map_cli', () => {
                 };
                 const targetConfig = {
                     enabled: false,
-                    destination: '/tenant/1.2.3.4:80'
+                    destination: '/tenant/192.0.2.4:80'
                 };
                 const currentConfig = {};
                 const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
-                assert.deepStrictEqual(result.commands, ['tmsh::create ltm virtual /tenant/app/service destination /tenant/1.2.3.4:80 disabled ']);
+                assert.deepStrictEqual(result.commands, ['tmsh::create ltm virtual /tenant/app/service destination /tenant/192.0.2.4:80 disabled ']);
             });
         });
 

@@ -8,7 +8,6 @@ docs/refguide/schema-reference.rst
 docs/refguide/schemaref
 src/lib/versions.json
 node_modules
-test/integration/services/node_modules
 src/schema/latest/adc-schema.json
 src/schema/latest/as3-schema.json
 src/schema/latest/def-pointers-schema.json
