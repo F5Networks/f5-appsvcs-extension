@@ -45,7 +45,7 @@
     "@stryker-mutator/mocha-runner": "^6.3.1",
     "error": "7.2.1",
     "jaeger-client": "^3.19.0",
-    "redoc-cli": "0.13.20"
+    "redoc-cli": "0.13.21"
   },
   "nyc": {
     "reporter": [
