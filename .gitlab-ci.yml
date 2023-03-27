@@ -17,11 +17,44 @@ stages:
   - docs
 
 variables:
+  BIGIP_IMAGE:
+    description: The name of the BIG-IP image to use for integration testing. Names are specific to the deploy environment.
+  DO_DOWNLOAD_DIR: do_rpm
+  DOCS_BUILD_DIR: "docs/_build/html"
+  F5_PERF_TRACING_ENABLED:
+    description: Send performance traces to Jaeger
+    value: "false"
+    options:
+      - "true"
+      - "false"
+  FORCE_INTEGRATION_TEST:
+    description: Force a run of integration testing. Otherwise, decision is based on pipeline type.
+    value: "false"
+    options:
+      - "true"
+      - "false"
   GIT_DEPTH: "10"
   IMAGE_NAME: f5-as3-container
-  DOCS_BUILD_DIR: "docs/_build/html"
+  RPM_PACKAGE_URL:
+    description: URL from which to download the RPM to test. By default use the RPM from the build_rpm job.
+  TEST_CODE_VERSION:
+    description: AS3 branch/tag from which to get integration tests.
+    value: "$CI_COMMIT_REF_NAME"
+  REGRESSION_SCHEDULE:
+    description: Type of schedule to run for integration tests.
+    value: nightly
+    options:
+      - nightly
+      - performance
+      - remote
+      - smoke
+  PARALLEL:
+    description: Run integration tests in parallel. Deploy 3 BIGIP instances.
+    value: "false"
+    options:
+      - "true"
+      - "false"
   TF_DIRECTORY: test/common/env/terraform
-  DO_DOWNLOAD_DIR: do_rpm
   TF_HTTP_LOCK_METHOD: POST
   TF_HTTP_UNLOCK_METHOD: DELETE
   TF_HTTP_USERNAME: ${CI_REGISTRY_USER}
@@ -33,6 +66,7 @@ variables:
   TF_HTTP_RETRY_MAX: 4
   TF_HTTP_RETRY_WAIT_MIN: 3
   TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
+  CURL_CONTENT: "Content-Type: application/json"
 
 # This inherits all the jobs defined in the parent template
 # Override variables in this project as needed
@@ -227,9 +261,7 @@ build_api_docs:
   timeout: 2 hours
   script:
     - apk update
-    # Need to add bash, because included sh doen't support arrays
-    # used in build_harness_file.sh script to get IP addresses.
-    - apk add bash npm gettext
+    - apk add npm gettext
     - cd "$TF_ROOT"
     - terraform init
     - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
@@ -237,51 +269,63 @@ build_api_docs:
     -   terraform destroy
     -   terraform apply
     - fi
-    - export AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
-    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   export TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   BIGIPS_ADDRESSES=($(terraform output --json admin_ip | jq -rc .[]))
+    - else
+    -   AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
+    -   if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -     TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
+    -   fi
     - fi
-    - export AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
-    - export AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
-    - CREDS=$AS3_USERNAME:$AS3_PASSWORD
+    - AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
+    - AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
     - cd -
-    - if [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
+    - if [[ -n "$RPM_PACKAGE_URL" ]]; then
+    -   echo using RPM "$RPM_PACKAGE_URL" from RPM_PACKAGE_URL env var
+    -   export RPM_PACKAGE=$(basename "$RPM_PACKAGE_URL")
+    -   curl -o "$RPM_PACKAGE" "$RPM_PACKAGE_URL"
+    - elif [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
     -   echo using RPM from cross-project pipeline
-    -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+    -   RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
     - else
     -   echo using RPM from our pipeline
-    -   export RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
-    - fi
-    - echo "Configuring $AS3_HOST"
-    - echo "export AS3_HOST=$AS3_HOST" >> deploy.env
-    - echo "export AS3_USERNAME=$AS3_USERNAME" >> deploy.env
-    - echo "export AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
-    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   echo "Configuring target host $TARGET_HOST"
-    -   echo "export TARGET_HOST=$TARGET_HOST" >> deploy.env
+    -   RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
     - fi
     - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
-        # If we do NOT skip deployment DO does need installed
     -   mkdir -p "$DO_DOWNLOAD_DIR"
     -   DO_RPM_FILE=$(scripts/dev/download-latest-do.sh "$DO_DOWNLOAD_DIR" "${DO_INTEGRATION_VERSION}")
     -   npm install --no-optional
-    -   scripts/dev/install-rpm.sh "$AS3_HOST" "$CREDS" "$DO_RPM_FILE"
-    -   scripts/dev/run-do.sh "$AS3_HOST" "$CREDS" $TF_ROOT/onboard.json
-    -   scripts/dev/wait-for-do.sh "$AS3_HOST" "$CREDS"
-    -   scripts/dev/install-rpm.sh "$AS3_HOST" "$CREDS" "$RPM_PACKAGE"
-    -   if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -     scripts/dev/install-rpm.sh "$TARGET_HOST" "$CREDS" "$DO_RPM_FILE"
-    -     scripts/dev/run-do.sh "$TARGET_HOST" "$CREDS" $TF_ROOT/onboard.json
-    -     scripts/dev/wait-for-do.sh "$TARGET_HOST" "$CREDS"
-    -     scripts/dev/install-rpm.sh "$TARGET_HOST" "$CREDS" "$RPM_PACKAGE"
+    -   if [[ "$PARALLEL" = "true" ]]; then
+    -     for IP in "${BIGIPS_ADDRESSES[@]}"; do
+    -       echo "Configuring $IP"
+    -       source scripts/dev/instance-config.sh "$IP:8443" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     done
+    -     wait
+    -     SERVER_SET_JSON=$(source scripts/dev/build-server-set.sh)
+    -     echo "Posting server set to reservation server $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+    -     SERVER_SET=$(curl -s --retry 5 --retry-max-time 300 -H "$CURL_CONTENT" -d "$SERVER_SET_JSON" -X POST http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets | jq .id | tr -d '"')
+    -     echo "Server set id is $SERVER_SET"
+    -     echo "SERVER_SET=$SERVER_SET" >> deploy.env
+    -   else
+    -     echo "Configuring host $AS3_HOST"
+    -     echo "AS3_HOST=$AS3_HOST" >> deploy.env
+    -     echo "AS3_USERNAME=$AS3_USERNAME" >> deploy.env
+    -     echo "AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
+    -     source scripts/dev/instance-config.sh "$AS3_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -       echo "Configuring target host $TARGET_HOST"
+    -       echo "TARGET_HOST=$TARGET_HOST" >> deploy.env
+    -       source scripts/dev/instance-config.sh "$TARGET_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     fi
+    -     wait
     -   fi
     - else
     -   echo "skipping DO install due to SKIP_DEPLOYMENT"
     - fi
   artifacts:
     when: always
-    paths:
-      - deploy.env
+    reports:
+      dotenv: deploy.env
     expire_in: 1 day
   retry:
     max: 1
@@ -304,7 +348,12 @@ deploy_to_azure:
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_VAR_bigip_count=3
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - fi
     - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
     - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
   <<: *deploy_common
@@ -318,6 +367,7 @@ deploy_for_this_project:
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   needs:
     - job: build_rpm
       artifacts: true
@@ -330,7 +380,10 @@ deploy_for_this_project:
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_VAR_bigip_count=3
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
     -   export TF_VAR_bigip_count=2
     -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
     - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
@@ -362,7 +415,7 @@ deploy_for_other_project:
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
     - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
     - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
   <<: *deploy_common
@@ -376,27 +429,51 @@ deploy_for_other_project:
     - apt-get update && apt-get install -y jq --no-install-recommends
     - npm ci --no-optional
     - npm install --no-optional
-    - source deploy.env
+    - REPO=f5-appsvcs-extension
+    - if [[ "$TEST_CODE_VERSION" != $"CI_COMMIT_REF_NAME" ]]; then
+    -   echo running test code from "$TEST_CODE_VERSION"
+    -   if [[ "$TEST_CODE_VERSION" =~ ^v ]]; then
+    -     if [[ "$TEST_CODE_VERSION" < v3.42.0 ]]; then
+    -       REPO=f5-appsvcs
+    -     fi
+    -   fi
+    -   TOP_DIR=$(pwd)
+    -   TEST_CODE_DIR=test_code_repo/f5-appsvcs-extension
+    -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/${REPO}.git "$TEST_CODE_DIR"
+    -   cd "$TEST_CODE_DIR"
+    -   node scripts/build/schema-build.js
+    -   cd "$TOP_DIR"
+    - else
+    -   echo running test code from current branch
+    -   TEST_CODE_DIR=.
+    - fi
+    - MOCHA_OPTS=$TEST_REPORTER_OPTIONS
+    - if [[ -f ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js ]]; then
+    -   MOCHA_OPTS="${MOCHA_OPTS} --require ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js"
+    - fi
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   MOCHA_OPTS="${MOCHA_OPTS} --parallel"
+    - fi
     - echo "TESTING WITH IMAGE ${BIGIP_IMAGE}"
     - if [ "$SMOKE_TEST" = "true" ]; then
     -   export REGRESSION_SCHEDULE="smoke"
     - fi
     - export FILE_VERBOSITY=verbose
     - if [ "$REGRESSION_SCHEDULE" = "nightly" ]; then
-    -   npx mocha test/integration/bigip/property test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property ${TEST_CODE_DIR}/test/integration/bigip/misc $MOCHA_OPTS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    -   npm run property -- $MOCHA_OPTS --exit
     - elif [ "$REGRESSION_SCHEDULE" = "smoke" ]; then
-    -   npm run smoke -- $TEST_REPORTER_OPTIONS
+    -   npm run smoke -- $MOCHA_OPTS
     - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
     -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
-    -   npx mocha test/integration/bigip/property $TEST_REPORTER_OPTIONS --exit
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property $MOCHA_OPTS --exit
     - else
-    -   npx mocha test/integration/bigip/misc $TEST_REPORTER_OPTIONS --exit
+    -   npm run misc -- $MOCHA_OPTS --exit
     - fi
 
 test_rpms_in_azure:
-  timeout: 8 hours
+  timeout: 12 hours
   rules:
     - if: '$SKIP_TEST_IN_AZURE =~ /true/i'
       when: never
@@ -420,13 +497,14 @@ test_rpms_in_azure:
       artifacts: true
 
 test_rpms_for_this_project:
-  timeout: 8 hours
+  timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   <<: *test_rpms_common
   artifacts:
     name: f5-appsvcs-extension-$CI_BUILD_REF
@@ -444,7 +522,7 @@ test_rpms_for_this_project:
       artifacts: true
 
 test_rpms_for_other_project:
-  timeout: 7 hours
+  timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
       when: never
@@ -467,24 +545,6 @@ test_rpms_for_other_project:
       ref: "$UPSTREAM_REF"
       artifacts: true
 
-test-bigiq-ui:
-  image: $DOCKER_URL/node:10
-  stage: integration test
-  allow_failure: true
-  needs:
-    - build_rpm
-  parallel:
-    matrix:
-      - BIGIQ_BRANCH: [master/owen, master/palisade, master/quark, master/rainier]
-  script:
-    - git clone --branch $BIGIQ_BRANCH --depth 1 https://gitlab-ci-token:${CI_JOB_TOKEN}@$CI_SERVER_HOST:$CI_SERVER_PORT/bigiq-mgmt/bigiq-mgmt-test
-    - cd bigiq-mgmt-test/tools/schemaTransfomerValidator
-    - npm ci --no-optional
-    - cp ../../../src/schema/latest/adc-schema.json .
-    - node validateUiSchemaTest.js &> output
-    - cat output
-    - if grep -q "New Failures per class" output; then exit 1; fi
-
 .teardown_common: &teardown_common
   image: $INTEGRATION_DEPLOY_IMAGE
   tags:
@@ -494,6 +554,10 @@ test-bigiq-ui:
       - cd "$TF_ROOT"
       - terraform init
       - terraform destroy --var bigip_version="${BIGIP_IMAGE}"
+      - if [[ "$PARALLEL" = "true" ]]; then
+      -   echo "Delete server-set $SERVER_SET from $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+      -   curl -s --retry 5 --retry-max-time 300 -X DELETE http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets/id/$SERVER_SET
+      - fi
   retry:
     max: 1
     when: script_failure
@@ -503,7 +567,7 @@ teardown_azure:
     - if: '$SKIP_TEARDOWN =~ /true/i'
       when: never
     - if: '$TEST_IN_AZURE =~ /true/i'
-      when: on_success
+      when: always
   variables:
     F5_DISABLE_CERT_VERIFY: 'true'
     TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
@@ -511,7 +575,11 @@ teardown_azure:
   before_script:
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - fi
   <<: *teardown_common
 
 teardown_openstack:
@@ -523,17 +591,28 @@ teardown_openstack:
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: on_success
+      when: always
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
-      when: on_success
+      when: always
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
+      when: always
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
   before_script:
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
     -   export TF_VAR_bigip_count=2
     -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   export TF_VAR_performance_test=true
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+    - elif [ "$TRIGGER_INTEGRATION_TEST" = "true" ]; then
+    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    -   export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
     - else
     -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
     - fi
@@ -554,7 +633,7 @@ create_docs:
     - if [ "$CI_COMMIT_REF_NAME" = "docs-staging" ] || [ "$CI_COMMIT_REF_NAME" = "docs-0.0" ] || [ "$CI_COMMIT_REF_NAME" = "docs-latest" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.13.1" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.5.1" ]; then
     -   rm -rf docs/_templates
     - fi
-    - npm install mocha@7.2.0
+    - npm install mocha@10.2
     - make html
     - API_DOCS_INDEX=${DOCS_BUILD_DIR}/refguide/apidocs.html
     - cp apidocs/index.html ${API_DOCS_INDEX}

@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.44.0",
             "3.43.0",
             "3.42.0",
             "3.41.0",
@@ -487,7 +488,7 @@
         },
         "targetTokens": {
           "title": "Target tokens",
-          "description": "One or more HTTP headers (each a property, like 'X-F5-Auth-Token': 'MF6APSRUYKTMSDBEOOEWLCNSO2') you want to send with queries to the targetHost management service as authentication/authorization tokens",
+          "description": "One or more HTTP headers (each a property, like 'X-F5-Auth-Token': 'ABC123') you want to send with queries to the targetHost management service as authentication/authorization tokens",
           "type": "object",
           "patternProperties": {
             "^[^\\x00-\\x20:\\x7f-\\xff]{1,254}$": {
@@ -756,8 +757,6 @@
               "HTML_Profile",
               "WebSocket_Profile",
               "HTTP_Profile",
-              "HTTP_Compress",
-              "HTTP2_Profile",
               "Multiplex_Profile",
               "SOCKS_Profile",
               "TCP_Profile",
@@ -766,7 +765,6 @@
               "Radius_Profile",
               "IP_Other_Profile",
               "Rewrite_Profile",
-              "HTTP_Acceleration_Profile",
               "Stream_Profile",
               "Access_Profile",
               "Per_Request_Access_Policy",
@@ -825,6 +823,9 @@
               "Certificate",
               "Certificate_Validator_OCSP",
               "DNS_Logging_Profile",
+              "HTTP_Acceleration_Profile",
+              "HTTP_Compress",
+              "HTTP2_Profile",
               "Log_Publisher",
               "UDP_Profile"
             ]
@@ -1183,30 +1184,6 @@
             "if": {
               "properties": {
                 "class": {
-                  "const": "HTTP_Compress"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/HTTP_Compress"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "HTTP2_Profile"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/HTTP2_Profile"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
                   "const": "Multiplex_Profile"
                 }
               }
@@ -1297,18 +1274,6 @@
             },
             "then": {
               "$ref": "#/definitions/Rewrite_Profile"
-            }
-          },
-          {
-            "if": {
-              "properties": {
-                "class": {
-                  "const": "HTTP_Acceleration_Profile"
-                }
-              }
-            },
-            "then": {
-              "$ref": "#/definitions/HTTP_Acceleration_Profile"
             }
           },
           {
@@ -2005,6 +1970,42 @@
             },
             "then": {
               "$ref": "#/definitions/DNS_Logging_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "HTTP_Acceleration_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTTP_Acceleration_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "HTTP_Compress"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTTP_Compress"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "HTTP2_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/HTTP2_Profile"
             }
           },
           {
@@ -8311,6 +8312,12 @@
                 "description": "If value is FQDN (wildcard okay), ignore all names in certificate and select this cert when SNI matches value (or by default)",
                 "type": "string"
               },
+              "sniDefault": {
+                "title": "Default SNI",
+                "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false",
+                "type": "boolean",
+                "default": false
+              },
               "enabled": {
                 "title": "Enabled",
                 "description": "Enables SSL processing",
@@ -8875,6 +8882,18 @@
           "type": "string",
           "format": "hostname",
           "default": "none"
+        },
+        "sniDefault": {
+          "title": "Default SNI",
+          "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false",
+          "type": "boolean",
+          "default": false
+        },
+        "requireSNI": {
+          "title": "Require SNI",
+          "description": "When a client sends no or unknown SNI and Require SNI is false (default), the system uses the primary certificate, otherwise the system rejects the client",
+          "type": "boolean",
+          "default": false
         },
         "alertTimeout": {
           "title": "Alert Timeout",
@@ -11048,275 +11067,6 @@
         }
       }
     },
-    "HTTP_Compress": {
-      "title": "HTTP_Compress",
-      "type": "object",
-      "description": "HTTP Compression profile with configurable options",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "HTTP_Compress"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "allowHTTP10": {
-          "title": "Allow HTTP/1.0",
-          "description": "If true, BIG-IP AS3 may compress HTTP/1.0 responses (default false)",
-          "type": "boolean",
-          "default": false
-        },
-        "bufferSize": {
-          "title": "Buffer size",
-          "description": "Maximum number of response octets to buffer before deciding whether to apply compression (default 4096)",
-          "type": "integer",
-          "minimum": 256,
-          "maximum": 4294967295,
-          "default": 4096
-        },
-        "contentTypeExcludes": {
-          "title": "Content-Type exclude list",
-          "description": "List of response Content-Type values which BIG-IP AS3 should not compress.  Values are regular expressions that match Content-Type strings",
-          "type": "array",
-          "items": {
-            "title": "Content-Type regex",
-            "type": "string",
-            "pattern": "^[^\\x00-\\x1f\\x22\\x7f-\\xff]+$"
-          },
-          "uniqueItems": true
-        },
-        "contentTypeIncludes": {
-          "title": "Content-Type include list",
-          "description": "List of response Content-Type values which BIG-IP AS3 should compress.  Values are regular expressions that match Content-Type strings",
-          "type": "array",
-          "items": {
-            "title": "Content-Type regex",
-            "type": "string",
-            "pattern": "^[^\\x00-\\x1f\\x22\\x7f-\\xff]+$"
-          },
-          "uniqueItems": true,
-          "default": [
-            "text/",
-            "application/(xml|x-javascript)"
-          ]
-        },
-        "uriExcludes": {
-          "title": "URI exclude list",
-          "description": "List of request URI's for which BIG-IP AS3 should not compress responses.  Values are regular expressions that match request URI strings",
-          "type": "array",
-          "items": {
-            "title": "URI regex",
-            "type": "string",
-            "pattern": "^[^\\x00-\\x1f\\x7f-\\xff]+$"
-          },
-          "uniqueItems": true
-        },
-        "uriIncludes": {
-          "title": "URI include list",
-          "description": "List of request URI's for which BIG-IP AS3 should compress responses.  Values are regular expressions that match URI strings",
-          "type": "array",
-          "items": {
-            "title": "URI regex",
-            "type": "string",
-            "pattern": "^[^\\x00-\\x1f\\x7f-\\xff]+$"
-          },
-          "uniqueItems": true
-        },
-        "cpuSaver": {
-          "title": "CPU saver",
-          "description": "If true (default), system will reduce compression rate when CPU utilization exceeds cpuSaverHigh threshold and increase it when CPU utilization falls below cpuSaverLow threshold",
-          "type": "boolean",
-          "default": true
-        },
-        "cpuSaverHigh": {
-          "title": "CPU-saver %high",
-          "description": "CPU utilization percentage (default 90) above which BIG-IP AS3 should moderate compression",
-          "type": "integer",
-          "minimum": 15,
-          "maximum": 99,
-          "default": 90
-        },
-        "cpuSaverLow": {
-          "title": "CPU-saver %low",
-          "description": "CPU utilization percentage (default 75) below which the system returns compression to normal",
-          "type": "integer",
-          "minimum": 10,
-          "maximum": 95,
-          "default": 75
-        },
-        "minimumSize": {
-          "title": "Minimum size to compress",
-          "description": "BIG-IP AS3 will not compress responses of fewer octets than this (default 1024)",
-          "type": "integer",
-          "minimum": 128,
-          "maximum": 131072,
-          "default": 1024
-        },
-        "preferMethod": {
-          "title": "Prefer method",
-          "description": "Select preferred compression method (default gzip, strongly recommended)",
-          "type": "string",
-          "enum": [
-            "gzip",
-            "deflate"
-          ],
-          "default": "gzip"
-        },
-        "gzipLevel": {
-          "title": "GZIP level",
-          "description": "Compression level (default 1); higher values produce greater compression but use more CPU cycles",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 9,
-          "default": 1
-        },
-        "gzipMemory": {
-          "title": "GZIP memory level",
-          "description": "Compression memory allocation in kilobytes (default 8), should be a power of two",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 256,
-          "default": 8
-        },
-        "gzipWindowSize": {
-          "title": "GZIP window size",
-          "description": "Compression window size in kilobytes (default 16), should be a power of two",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 128,
-          "default": 16
-        },
-        "keepAcceptEncoding": {
-          "title": "Keep Accept-Encoding header",
-          "description": "If true, pool member may compress responses; if false (default) ADC will compress responses.  Set to true when pool member stores/caches pre-compressed responses",
-          "type": "boolean",
-          "default": false
-        },
-        "selective": {
-          "title": "Selective mode",
-          "description": "If true, BIG-IP AS3 will only compress a response when an iRule attached to the virtual server requests it (default is false, meaning BIG-IP AS3 will compress responses which meet the criteria in this profile)",
-          "type": "boolean",
-          "default": false
-        },
-        "varyHeader": {
-          "title": "Vary header",
-          "description": "If true (default), a Vary header will appear in compressed responses",
-          "type": "boolean",
-          "default": true
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "class"
-      ]
-    },
-    "HTTP2_Profile": {
-      "title": "HTTP2_Profile",
-      "type": "object",
-      "description": "HTTP2 profile with configurable options",
-      "properties": {
-        "class": {
-          "title": "Class",
-          "type": "string",
-          "const": "HTTP2_Profile"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "remark": {
-          "$ref": "#/definitions/Remark"
-        },
-        "activationMode": {
-          "title": "Activation Mode",
-          "description": "This setting specifies the condition that will cause the BIG-IP system to handle an incoming connection as an HTTP/2 connection.",
-          "type": "string",
-          "enum": [
-            "alpn",
-            "always"
-          ],
-          "default": "alpn"
-        },
-        "concurrentStreamsPerConnection": {
-          "title": "Concurrent streams per connection",
-          "description": "The number of concurrent connections to allow on a single HTTP/2 connection.",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 256,
-          "default": 10
-        },
-        "connectionIdleTimeout": {
-          "title": "Connection idle timeout",
-          "description": "The number of seconds that a HTTP/2 connection is left open idly before it is closed.",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 4294967295,
-          "default": 300
-        },
-        "enforceTlsRequirements": {
-          "title": "Enforce TLS requirements",
-          "description": "Enable or disable enforcement of TLS requirements.",
-          "type": "boolean",
-          "default": true
-        },
-        "frameSize": {
-          "title": "Frame size",
-          "description": "The size of the data frames, in bytes, that the HTTP/2 protocol sends to the client.",
-          "type": "integer",
-          "minimum": 1024,
-          "maximum": 16384,
-          "default": 2048
-        },
-        "headerTableSize": {
-          "title": "Header table size",
-          "description": "The size of the header table, in KB, for the HTTP headers that the HTTP/2 protocol compresses to save bandwidth.",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65535,
-          "default": 4096
-        },
-        "includeContentLength": {
-          "title": "Include content length",
-          "description": "Enable to include content-length in HTTP/2 headers.",
-          "type": "boolean",
-          "default": false
-        },
-        "insertHeader": {
-          "title": "Insert header",
-          "description": "This setting specifies whether the BIG-IP system should add an HTTP header to the HTTP request to show that the request was received over HTTP/2.",
-          "type": "boolean",
-          "default": false
-        },
-        "insertHeaderName": {
-          "title": "Insert header name",
-          "description": "This setting specifies the name of the header that the BIG-IP system will add to the HTTP request when the Insert Header is enabled.",
-          "type": "string",
-          "default": "X-HTTP2"
-        },
-        "receiveWindow": {
-          "title": "Receive window",
-          "description": "The flow-control size for upload streams, in KB.",
-          "type": "integer",
-          "minimum": 16,
-          "maximum": 128,
-          "default": 32
-        },
-        "writeSize": {
-          "title": "Write size",
-          "description": "The total size of combined data frames, in bytes, that the HTTP/2 protocol sends in a single write function.",
-          "type": "integer",
-          "minimum": 2048,
-          "maximum": 32768,
-          "default": 16384
-        }
-      },
-      "required": [
-        "class"
-      ]
-    },
     "Multiplex_Profile": {
       "title": "Multiplex_Profile",
       "type": "object",
@@ -13001,131 +12751,6 @@
           "default": true
         }
       },
-      "additionalProperties": false
-    },
-    "HTTP_Acceleration_Profile": {
-      "title": "HTTP_Acceleration_Profile",
-      "type": "object",
-      "description": "Configures a web-acceleration profile",
-      "properties": {
-        "class": {
-          "type": "string",
-          "const": "HTTP_Acceleration_Profile"
-        },
-        "label": {
-          "$ref": "#/definitions/Label"
-        },
-        "parentProfile": {
-          "description": "The profile that this profile inherits values from",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile"
-            }
-          ],
-          "default": {
-            "bigip": "/Common/webacceleration"
-          }
-        },
-        "agingRate": {
-          "description": "Rate at which a cache entry ages",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 10,
-          "default": 9
-        },
-        "ignoreHeaders": {
-          "description": "Which cache disabling headers will be ignored by the system",
-          "type": "string",
-          "enum": [
-            "all",
-            "max-age",
-            "none"
-          ],
-          "default": "all"
-        },
-        "insertAgeHeaderEnabled": {
-          "description": "Age and date headers are inserted into the response when enabled",
-          "type": "boolean",
-          "default": true
-        },
-        "maximumAge": {
-          "description": "How long the system will consider the cached content will be valid",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 3600
-        },
-        "maximumEntries": {
-          "description": "The maximum number of entries that can reside in the cache",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 10000
-        },
-        "maximumObjectSize": {
-          "description": "The largest object that the system will cache",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 50000
-        },
-        "minimumObjectSize": {
-          "description": "The smallest object that the system will cache",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 500
-        },
-        "cacheSize": {
-          "description": "The maximum size (in megabytes) for the cache",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 100
-        },
-        "uriExcludeList": {
-          "description": "A list of URIs that will be excluded from the cache",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "uriIncludeList": {
-          "description": "A list of URIs that will be cacheable",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "uriIncludeOverrideList": {
-          "description": "A list of URIs that should be cached even though they may normally not be due to existing constraints",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "uriPinnedList": {
-          "description": "A list of URIs that are kept in the cache regardless of maxAge or expiry settings",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "metadataMaxSize": {
-          "description": "The maximum size of the metadata cache",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 4294967295,
-          "default": 25
-        }
-      },
-      "required": [
-        "class"
-      ],
       "additionalProperties": false
     },
     "Stream_Profile": {
@@ -18898,6 +18523,16 @@
           "minimum": 0,
           "maximum": 4294967295,
           "default": 3600
+        },
+        "clientSubnetPreferred": {
+          "title": "Client Subnet Preferred",
+          "description": "Specifies that this domain should use the edns0 client subnet option when using topology load balancing. If the query does not contain a client subnet option, the system will fall back to the default option of using the source address.",
+          "type": "boolean",
+          "default": false,
+          "f5PostProcess": {
+            "tag": "minVersion",
+            "data": "14.1"
+          }
         }
       },
       "if": {
@@ -19824,7 +19459,14 @@
         },
         "virtualServer": {
           "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/Pointer_Service"
+            }
+          ]
         },
         "ratio": {
           "title": "Ratio",
@@ -19883,7 +19525,14 @@
         },
         "virtualServer": {
           "description": "Specifies that the Global Traffic Manager assigns connection requests to virtual servers based on a user-defined ranking system.",
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/Pointer_Service"
+            }
+          ]
         },
         "ratio": {
           "title": "Ratio",
@@ -30375,50 +30024,6 @@
         }
       ]
     },
-    "Pointer_HTTP_Acceleration_Profile": {
-      "description": "Reference to a HTTP Acceleration Profile",
-      "type": "object",
-      "properties": {
-        "use": {
-          "description": "AS3 pointer to HTTP Acceleration Profile declaration",
-          "type": "string",
-          "minLength": 1,
-          "f5PostProcess": {
-            "tag": "pointer",
-            "data": {
-              "properties": {
-                "class": {
-                  "enum": [
-                    "HTTP_Acceleration_Profile"
-                  ]
-                }
-              },
-              "required": [
-                "class"
-              ]
-            }
-          }
-        },
-        "bigip": {
-          "description": "Pathname of existing BIG-IP HTTP Acceleration Profile",
-          "type": "string",
-          "format": "f5bigip"
-        }
-      },
-      "additionalProperties": false,
-      "minProperties": 1,
-      "maxProperties": 1,
-      "allOf": [
-        {
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query ltm profile web-acceleration"
-            ]
-          }
-        }
-      ]
-    },
     "Pointer_ILX_Profile": {
       "description": "Reference to a iRules LX Profile",
       "type": "object",
@@ -30870,54 +30475,6 @@
             "tag": "bigComponent",
             "data": [
               "query ltm profile fastl4"
-            ]
-          }
-        }
-      ]
-    },
-    "Pointer_Log_Destination": {
-      "title": "Pointer Log Destination",
-      "description": "Reference to a log destination",
-      "allOf": [
-        {
-          "$ref": "#/definitions/Pointer_BIGIP_Or_Use"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "use": {
-              "f5PostProcess": {
-                "tag": "pointer",
-                "data": {
-                  "properties": {
-                    "class": {
-                      "enum": [
-                        "Log_Destination"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "class"
-                  ]
-                }
-              }
-            },
-            "bigip": {
-              "format": "f5bigip"
-            }
-          },
-          "f5PostProcess": {
-            "tag": "bigComponent",
-            "data": [
-              "query sys log-config destination alertd",
-              "query sys log-config destination arcsight",
-              "query sys log-config destination ipfix",
-              "query sys log-config destination local-database",
-              "query sys log-config destination local-syslog",
-              "query sys log-config destination management-port",
-              "query sys log-config destination remote-high-speed-log",
-              "query sys log-config destination remote-syslog",
-              "query sys log-config destination splunk"
             ]
           }
         }
@@ -33864,6 +33421,401 @@
         }
       ]
     },
+    "HTTP_Acceleration_Profile": {
+      "title": "HTTP acceleration profile",
+      "type": "object",
+      "description": "HTTP acceleration profile with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTTP_Acceleration_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "agingRate": {
+          "description": "Rate at which a cache entry ages",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 9
+        },
+        "cacheSize": {
+          "description": "The maximum size (in megabytes) for the cache.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 100
+        },
+        "ignoreHeaders": {
+          "description": "Which cache disabling headers will be ignored by the system",
+          "type": "string",
+          "enum": [
+            "none",
+            "max-age",
+            "all"
+          ],
+          "default": "all"
+        },
+        "insertAgeHeaderEnabled": {
+          "description": "Age and date headers are inserted into the response when enabled",
+          "type": "boolean",
+          "default": true
+        },
+        "maximumAge": {
+          "description": "How long the system will consider the cached content will be valid",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 3600
+        },
+        "maximumEntries": {
+          "description": "The maximum number of entries that can reside in the cache",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 10000
+        },
+        "maximumObjectSize": {
+          "description": "The largest object that the system will cache",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 50000
+        },
+        "metadataMaxSize": {
+          "default": 25,
+          "description": "The maximum size of the metadata cache",
+          "maximum": 4294967295,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minimumObjectSize": {
+          "description": "The smallest object that the system will cache",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 500
+        },
+        "parentProfile": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile"
+            }
+          ],
+          "default": {
+            "bigip": "/Common/webacceleration"
+          },
+          "description": "The profile that this profile inherits values from"
+        },
+        "uriExcludeList": {
+          "description": "A list of URIs that will be excluded from the cache",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "uriIncludeList": {
+          "description": "A list of URIs that will be cacheable",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "uriIncludeOverrideList": {
+          "description": "A list of URIs that should be cached even though they may normally not be due to existing constraints",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "uriPinnedList": {
+          "description": "A list of URIs that are kept in the cache regardless of maxAge or expiry settings",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
+    "HTTP_Compress": {
+      "title": "HTTP Compression profile",
+      "type": "object",
+      "description": "HTTP Compression profile with configurable options",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTTP_Compress"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "allowHTTP10": {
+          "description": "Specifies whether to forward HTTP 1.0 requests/responses (default false)",
+          "type": "boolean",
+          "default": false
+        },
+        "bufferSize": {
+          "title": "Buffer size",
+          "description": "Maximum number of response octets to buffer before deciding whether to apply compression (default 4096)",
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 4294967295,
+          "default": 4096
+        },
+        "contentTypeExcludes": {
+          "title": "Content-Type exclude list",
+          "description": "List of response Content-Type values which BIG-IP AS3 should not compress.  Values are regular expressions that match Content-Type strings",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\x00-\\x1f\\x22\\x7f-\\xff]+$"
+          },
+          "uniqueItems": true
+        },
+        "contentTypeIncludes": {
+          "title": "Content-Type include list",
+          "description": "List of response Content-Type values which BIG-IP AS3 should compress.  Values are regular expressions that match Content-Type strings",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\x00-\\x1f\\x22\\x7f-\\xff]+$"
+          },
+          "uniqueItems": true,
+          "default": [
+            "text/",
+            "application/(xml|x-javascript)"
+          ]
+        },
+        "cpuSaver": {
+          "default": true,
+          "description": "If true (default), system will reduce compression rate when CPU utilization exceeds cpuSaverHigh threshold and increase it when CPU utilization falls below cpuSaverLow threshold",
+          "title": "CPU saver",
+          "type": "boolean"
+        },
+        "cpuSaverHigh": {
+          "default": 90,
+          "description": "CPU utilization percentage (default 90) above which BIG-IP AS3 should moderate compression",
+          "maximum": 99,
+          "minimum": 15,
+          "title": "CPU-saver %high",
+          "type": "integer"
+        },
+        "cpuSaverLow": {
+          "default": 75,
+          "description": "CPU utilization percentage (default 75) below which the system returns compression to normal",
+          "maximum": 95,
+          "minimum": 10,
+          "title": "CPU-saver %low",
+          "type": "integer"
+        },
+        "gzipLevel": {
+          "title": "GZIP level",
+          "description": "Compression level (default 1); higher values produce greater compression but use more CPU cycles",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "default": 1
+        },
+        "gzipMemory": {
+          "title": "GZIP memory level",
+          "description": "Compression memory allocation in kilobytes (default 8), should be a power of two",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256,
+          "default": 8
+        },
+        "gzipWindowSize": {
+          "title": "GZIP window size",
+          "description": "Compression window size in kilobytes (default 16), should be a power of two",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128,
+          "default": 16
+        },
+        "keepAcceptEncoding": {
+          "title": "Keep Accept-Encoding header",
+          "description": "Specifies that the system does not remove the Accept-Encoding header from an HTTP request (default false)",
+          "type": "boolean",
+          "default": false
+        },
+        "minimumSize": {
+          "default": 1024,
+          "description": "BIG-IP AS3 will not compress responses of fewer octets than this (default 1024)",
+          "maximum": 131072,
+          "minimum": 128,
+          "title": "Minimum size to compress",
+          "type": "integer"
+        },
+        "preferMethod": {
+          "default": "gzip",
+          "description": "Select preferred compression method (default gzip, strongly recommended)",
+          "enum": [
+            "gzip",
+            "deflate"
+          ],
+          "title": "Prefer method",
+          "type": "string"
+        },
+        "selective": {
+          "default": false,
+          "description": "If true, BIG-IP AS3 will only compress a response when an iRule attached to the virtual server requests it (default is false, meaning BIG-IP AS3 will compress responses which meet the criteria in this profile)",
+          "title": "Selective mode",
+          "type": "boolean"
+        },
+        "uriExcludes": {
+          "title": "URI exclude list",
+          "description": "List of request URI's for which BIG-IP AS3 should not compress responses.  Values are regular expressions that match request URI strings",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\xff]+$"
+          },
+          "uniqueItems": true
+        },
+        "uriIncludes": {
+          "title": "URI include list",
+          "description": "List of request URI's for which BIG-IP AS3 should compress responses.  Values are regular expressions that match URI strings",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^\\x00-\\x1f\\x7f-\\xff]+$"
+          },
+          "uniqueItems": true
+        },
+        "varyHeader": {
+          "default": true,
+          "description": "If true (default), a Vary header will appear in compressed responses",
+          "title": "Vary header",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
+    "HTTP2_Profile": {
+      "title": "HTTP2 profile",
+      "type": "object",
+      "description": "Profile to enable HTTP2",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "HTTP2_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "activationMode": {
+          "title": "Activation Mode",
+          "description": "This setting specifies the condition that will cause the BIG-IP system to handle an incoming connection as an HTTP/2 connection.",
+          "type": "string",
+          "enum": [
+            "alpn",
+            "always"
+          ],
+          "default": "alpn"
+        },
+        "concurrentStreamsPerConnection": {
+          "title": "Concurrent streams per connection",
+          "description": "The number of concurrent connections to allow on a single HTTP/2 connection.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256,
+          "default": 10
+        },
+        "connectionIdleTimeout": {
+          "title": "Connection idle timeout",
+          "description": "The number of seconds that a HTTP/2 connection is left open idly before it is closed.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295,
+          "default": 300
+        },
+        "enforceTlsRequirements": {
+          "title": "Enforce TLS requirements",
+          "description": "Enable or disable enforcement of TLS requirements.",
+          "type": "boolean",
+          "default": true
+        },
+        "frameSize": {
+          "title": "Frame size",
+          "type": "integer",
+          "default": 2048,
+          "description": "The size of the data frames, in bytes, that the HTTP/2 protocol sends to the client.",
+          "maximum": 16384,
+          "minimum": 1024
+        },
+        "headerTableSize": {
+          "title": "Header table size",
+          "type": "integer",
+          "default": 4096,
+          "description": "The size of the header table, in KB, for the HTTP headers that the HTTP/2 protocol compresses to save bandwidth.",
+          "maximum": 65535,
+          "minimum": 0
+        },
+        "includeContentLength": {
+          "title": "Include content length",
+          "type": "boolean",
+          "default": false,
+          "description": "Enable to include content-length in HTTP/2 headers."
+        },
+        "insertHeader": {
+          "title": "Insert header",
+          "description": "This setting specifies whether the BIG-IP system should add an HTTP header to the HTTP request to show that the request was received over HTTP/2.",
+          "type": "boolean",
+          "default": false
+        },
+        "insertHeaderName": {
+          "title": "Insert header name",
+          "description": "This setting specifies the name of the header that the BIG-IP system will add to the HTTP request when the Insert Header is enabled.",
+          "type": "string",
+          "default": "X-HTTP2"
+        },
+        "receiveWindow": {
+          "title": "Receive window",
+          "type": "integer",
+          "default": 32,
+          "description": "The flow-control size for upload streams, in KB.",
+          "maximum": 128,
+          "minimum": 16
+        },
+        "writeSize": {
+          "title": "Write size",
+          "type": "integer",
+          "default": 16384,
+          "description": "The total size of combined data frames, in bytes, that the HTTP/2 protocol sends in a single write function.",
+          "maximum": 32768,
+          "minimum": 2048
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
     "JWE": {
       "title": "JWE cryptogram",
       "description": "A value in a cryptogram which is a Flattened JWE JSON Serialization object.  If 'miniJWE' is true then enc=(none|f5sv) only (in JOSE header)",
@@ -34120,6 +34072,99 @@
           }
         ]
       }
+    },
+    "Pointer_HTTP_Acceleration_Profile": {
+      "title": "Pointer HTTP Acceleration Profile",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "data": [
+              "query ltm profile web-acceleration"
+            ],
+            "tag": "bigComponent"
+          }
+        }
+      ],
+      "description": "Reference to a HTTP Acceleration Profile",
+      "maxProperties": 1,
+      "minProperties": 1,
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP HTTP Acceleration Profile",
+          "format": "f5bigip",
+          "type": "string"
+        },
+        "use": {
+          "description": "AS3 pointer to HTTP Acceleration Profile declaration",
+          "f5PostProcess": {
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "HTTP_Acceleration_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            },
+            "tag": "pointer"
+          },
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Pointer_Log_Destination": {
+      "title": "Pointer Log Destination",
+      "description": "Reference to a log destination",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pointer_BIGIP_Or_Use"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "use": {
+              "f5PostProcess": {
+                "tag": "pointer",
+                "data": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "Log_Destination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                }
+              }
+            },
+            "bigip": {
+              "format": "f5bigip"
+            }
+          },
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query sys log-config destination alertd",
+              "query sys log-config destination arcsight",
+              "query sys log-config destination ipfix",
+              "query sys log-config destination local-database",
+              "query sys log-config destination local-syslog",
+              "query sys log-config destination management-port",
+              "query sys log-config destination remote-high-speed-log",
+              "query sys log-config destination remote-syslog",
+              "query sys log-config destination splunk"
+            ]
+          }
+        }
+      ]
     },
     "Pointer_Log_Publisher": {
       "title": "Pointer Log Publisher",

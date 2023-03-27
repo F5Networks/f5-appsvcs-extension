@@ -25,6 +25,8 @@ const assert = chai.assert;
 const {
     postDeclaration,
     deleteDeclaration,
+    postBigipItems,
+    deleteBigipItems,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
@@ -63,5 +65,50 @@ describe('serviceAddress', function () {
                 assert.strictEqual(response.results[0].message, 'declaration failed');
                 assert.strictEqual(response.results[0].response, 'The Service Address virtualAddress property cannot be modified. Please delete /tenant/vaddr and recreate it.');
             });
+    });
+
+    it('should POST twice with mask and route domain', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1000,
+                app: {
+                    class: 'Application',
+                    address: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.11.0.0/16'
+                    },
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            '10.10.0.0/16'
+                        ]
+                    }
+                }
+            }
+        };
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '1000' }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
     });
 });

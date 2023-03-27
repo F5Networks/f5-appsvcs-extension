@@ -1301,6 +1301,26 @@ describe('core-schema.json', () => {
             };
             assert.ok(validate(data), getErrorString(validate));
         });
+
+        it('should validate when sniDefault is provided', () => {
+            const data = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declarationId',
+                theTenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        tlsserver: {
+                            class: 'TLS_Server',
+                            certificates: [{ certificate: 'webcert', sniDefault: true }]
+                        }
+                    }
+                }
+            };
+            assert.ok(validate(data), getErrorString(validate));
+        });
     });
 
     describe('TLS_Client', () => {
@@ -1618,6 +1638,46 @@ describe('core-schema.json', () => {
                             tlsserver: {
                                 class: 'TLS_Client',
                                 uncleanShutdownEnabled: false
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when sniDefault is provided', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                sniDefault: true
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when requireSNI is provided', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                requireSNI: true
                             }
                         }
                     }

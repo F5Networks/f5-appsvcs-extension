@@ -5250,21 +5250,24 @@ describe('fetch', () => {
             const desiredConfig = fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig);
             assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
             assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
-                '/Tenant/Application/2001:db8::1': {},
-                '/Tenant/Application/2001:db8::2': {}
+                '/Tenant/2001:db8::1': {},
+                '/Tenant/2001:db8::2': {}
             });
 
             // auto generated snat-translation
-            let snatTranslation = desiredConfig['/Tenant/Application/2001:db8::1'];
+            let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
             assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
             assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
             assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
 
             // specified snat-translation
-            snatTranslation = desiredConfig['/Tenant/Application/2001:db8::2'];
+            snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
             assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
             assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
             assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+
+            // snat-related items should no longer remain in context.request.postProcessing array
+            assert.isEmpty(context.request.postProcessing);
         });
 
         describe('.updateDesiredForCommonNodes', () => {

@@ -30,6 +30,11 @@ variable "nic_count" {
   default     = 1
 }
 
+variable "bigip_count" {
+  description = "Number of BIGIPs to deploy"
+  default = 1
+}
+
 variable "admin_username" {
   description = "The admin username for the virtual machine"
   default     = "azureuser"

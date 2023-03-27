@@ -1,5 +1,5 @@
 output "admin_ip" {
-  value = [azurerm_public_ip.pip0.ip_address]
+  value = azurerm_public_ip.pip[*].ip_address
 }
 
 output "admin_username" {

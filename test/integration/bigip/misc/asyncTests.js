@@ -97,7 +97,13 @@ describe('Test Async', function () {
             })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
-                return patch('/mgmt/shared/appsvcs/declare?async=true', patchDecl);
+                return patch(
+                    '/mgmt/shared/appsvcs/declare?async=true',
+                    patchDecl,
+                    {
+                        logInfo: { patchIndex: 0 }
+                    }
+                );
             })
             .then((response) => {
                 assert.strictEqual(response.body.results[0].code, 0);

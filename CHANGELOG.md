@@ -1,6 +1,24 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.44.0
+
+### Added
+- AUTOTOOL-3572: Support "use" reference for virtualServer under GSLB_Pool
+- AUTOTOOL-3655: ([GitHub Issue 688](https://github.com/F5Networks/f5-appsvcs-extension/issues/688)): Option to prefer client subnet in GSLB_Domain
+
+### Fixed
+- AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice
+- AUTOTOOL-3521: ([GitHub Issue 660](https://github.com/F5Networks/f5-appsvcs-extension/issues/660)): Address_Discovery static node type does not work
+- AUTOTOOL-3606: ([GitHub Issue 274](https://github.com/F5Networks/f5-appsvcs-extension/issues/274)): expose TLS_Server option to enable/disable "default profile for SNI"
+- AUTOTOOL-3325: Improve error handling in SettingsHandler
+- AUTOTOOL-3657: Invalid SNAT_Translation error when multiple Tenants with SNAT_Pools are declared
+- AUTOTOOL-3666: ([GitHub Issue 691](https://github.com/F5Networks/f5-appsvcs-extension/issues/691)): HTTP_Acceleration_Profile does not handle backslashes in uriExcludeList, uriIncludeList, uriIncludeOverrideList, and uriPinnedList properties.
+
+### Changed
+
+### Removed
+
 ## 3.43.0
 
 ### Added

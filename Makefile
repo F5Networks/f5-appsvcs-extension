@@ -19,7 +19,7 @@ help:
 %: Makefile
 	node scripts/build/schema-build-doc.js
 	node scripts/build/schema-to-rst.js
-	node scripts/build/generate-all-properties-declaration.js
+	node scripts/build/generate-all-properties-declaration.js -- --skip-require
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 # Custom commands for building and testing project documentation
@@ -67,4 +67,3 @@ rpm:
 .PHONY: docker-rpm
 docker-rpm:
 	./scripts/build/docker-rpmbuild.sh
-

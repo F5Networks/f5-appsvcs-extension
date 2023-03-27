@@ -85,7 +85,7 @@ describe('REST Response Multi (__smoke)', function () {
 
         const testCases = [
             {
-                name: 'With wrapper, deploy with retrieveAge/redeployAge',
+                name: 'With wrapper, deploy with retrieveAge-redeployAge',
                 items: [
                     'retrieveAge value is not allowed for action',
                     'redeployAge is valid only with action \\\\"redeploy\\\\"'

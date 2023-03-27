@@ -79,6 +79,16 @@ describe('TLS_Client', function () {
                 extractFunction: (o) => o.serverName || 'none'
             },
             {
+                name: 'requireSNI',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['false', 'true', 'false']
+            },
+            {
+                name: 'sniDefault',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['false', 'true', 'false']
+            },
+            {
                 name: 'alertTimeout',
                 inputValue: [undefined, 86400, undefined],
                 expectedValue: ['indefinite', '86400', 'indefinite']

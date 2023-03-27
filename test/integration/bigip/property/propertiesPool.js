@@ -207,7 +207,7 @@ describe('Pool', function () {
         return assertPoolClass(properties, { bigipItems });
     });
 
-    it('Mix /Common and AS3 nodes', () => {
+    it('Mix Common and AS3 nodes', () => {
         const properties = [
             {
                 name: 'members',

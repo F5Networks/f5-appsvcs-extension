@@ -1879,7 +1879,7 @@ describe('map_mcp', () => {
                         selfLink: 'https://localhost/mgmt/tm/gtm/pool/a/~tenant~application~testPool/members?ver=14.1.0.3',
                         name: 'testServer:0',
                         partition: 'tenant',
-                        fullPath: '/tenant/application/testServer:0',
+                        fullPath: '/Common/testServer:0',
                         enabled: false,
                         ratio: 2,
                         memberOrder: 2,
@@ -1979,7 +1979,7 @@ describe('map_mcp', () => {
                         selfLink: 'https://localhost/mgmt/tm/gtm/pool/aaaa/~tenant~application~testPool/members?ver=14.1.0.3',
                         enabled: true,
                         partition: 'tenant',
-                        fullPath: '/tenant/application/testPool',
+                        fullPath: '/Common/testServer:0',
                         'member-order': 0,
                         ratio: 1
                     }
@@ -2071,7 +2071,7 @@ describe('map_mcp', () => {
                         selfLink: 'https://localhost/mgmt/tm/gtm/pool/cname/~tenant~application~testPool/members?ver=14.1.0.3',
                         enabled: true,
                         partition: 'tenant',
-                        fullPath: '/tenant/application/testPool',
+                        fullPath: '/Common/testServer:0',
                         'member-order': 0,
                         ratio: 1
                     }
@@ -2086,7 +2086,7 @@ describe('map_mcp', () => {
                             enabled: true,
                             'max-answers-returned': 10,
                             members: {
-                                'testServer:0': {
+                                '/Common/testServer:0': {
                                     enabled: true,
                                     'member-order': 0,
                                     ratio: 1

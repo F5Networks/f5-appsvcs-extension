@@ -25,6 +25,8 @@ describe('SNAT_Translation', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     function assertSnatTranslationClass(properties, options) {
+        // SNAT_Translation is created at the Tenant level
+        options.mcpPath = '/TEST_SNAT_Translation/';
         return assertClass('SNAT_Translation', properties, options);
     }
 
