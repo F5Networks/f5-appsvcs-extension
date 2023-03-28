@@ -10,6 +10,8 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3724: Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
 
 ### Changed
+- Updated to Service Discovery 1.13.0-1
+  - AUTOTOOL-3598: ([GitHub Issue 669](https://github.com/F5Networks/f5-appsvcs-extension/issues/669)): When modifying/moving an existing AS3 application from one Route Domain to another, the Service Discovery nodes are not updated to the new Route domain
 
 ### Removed
 
