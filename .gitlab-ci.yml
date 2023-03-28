@@ -18,11 +18,11 @@ stages:
 
 # This inherits all the jobs defined in the parent template
 # Override variables in this project as needed
-include:
+# include:
 # adds atg-shared-checks stage and jobs
 # adds atg_shared_checks_result job to test stage
-  - project: automation-toolchain/atg-shared-templates
-    file: security/base.gitlab-ci.yml
+#  - project: automation-toolchain/atg-shared-templates
+#    file: security/base.gitlab-ci.yml
 
 variables:
   BIGIP_IMAGE:
