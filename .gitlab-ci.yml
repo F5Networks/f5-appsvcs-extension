@@ -67,6 +67,7 @@ variables:
   TF_HTTP_RETRY_WAIT_MIN: 3
   TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
   CURL_CONTENT: "Content-Type: application/json"
+  SECRET_DETECTION_EXCLUDED_PATHS: "docs/**/*.rst,test/*,*examples/*/*.json,properties.json,assets/css/*.css,schema/**/*.json,src/schema/**/*.json"
 
 # This inherits all the jobs defined in the parent template
 # Override variables in this project as needed
