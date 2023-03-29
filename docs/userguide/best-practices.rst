@@ -110,7 +110,29 @@ The provision.extramb db key changes the maximum Java heap memory to (192 + <val
 
 ``tmsh restart sys service restjavad``
 
-See `K26427018: Overview of Management provisioning <https://support.f5.com/csp/article/K26427018>`_ for more on the memory allocation: 
+See `K26427018: Overview of Management provisioning <https://support.f5.com/csp/article/K26427018>`_ for more on the memory allocation.
+
+
+
+Request failed errors
+^^^^^^^^^^^^^^^^^^^^^
+If you receive an error code when submitting a declaration, then REST responses are limited to 2k bytes. This issue has been resolved in TMOS 16.1 and later.
+
+If you are using TMOS 16.0 or earlier and are encountering a response similar to:
+
+.. code-block:: json
+
+    {
+        "code": 422,
+        "message": "request failed with null exception",
+        "referer": "192.168.100.100",
+        "restOperationId": "130704167,
+        "kind": ":resterrorresponse"
+    }
+
+
+You can either upgrade to TMOS 16.1 or later, or if you have a **controls** section in your declaration with **traceResponse** set to **true**, set it to **false**.
+
 
 
 Decrease the verbosity levels of restjavad and icrd_child
