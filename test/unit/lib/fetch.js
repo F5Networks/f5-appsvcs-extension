@@ -5205,11 +5205,13 @@ describe('fetch', () => {
                 updateMode: 'selective'
             };
 
-            const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-            assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+            return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                });
         });
 
         it('should process snat translations with snat pools', () => {
@@ -5247,27 +5249,29 @@ describe('fetch', () => {
                 updateMode: 'selective'
             };
 
-            const desiredConfig = fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig);
-            assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
-            assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
-                '/Tenant/2001:db8::1': {},
-                '/Tenant/2001:db8::2': {}
-            });
+            return fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
+                    assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
+                        '/Tenant/2001:db8::1': {},
+                        '/Tenant/2001:db8::2': {}
+                    });
 
-            // auto generated snat-translation
-            let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
-            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-            assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
-            assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
+                    // auto generated snat-translation
+                    let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
+                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
+                    assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
 
-            // specified snat-translation
-            snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
-            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-            assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
-            assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+                    // specified snat-translation
+                    snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
+                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
+                    assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
 
-            // snat-related items should no longer remain in context.request.postProcessing array
-            assert.isEmpty(context.request.postProcessing);
+                    // snat-related items should no longer remain in context.request.postProcessing array
+                    assert.isEmpty(context.request.postProcessing);
+                });
         });
 
         describe('.updateDesiredForCommonNodes', () => {
@@ -5338,11 +5342,13 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getPoolDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
-                    { references: { value: 1 } }
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
+                            { references: { value: 1 } }
+                        );
+                    });
             });
 
             it('should add new Common node to nodelist', () => {
@@ -5356,33 +5362,35 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getPoolDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
-                    { references: { value: 0 } }
-                );
-                assert.deepStrictEqual(
-                    commonConfig.nodeList,
-                    [
-                        {
-                            fullPath: '/Common/10.10.0.10',
-                            partition: 'Common'
-                        },
-                        {
-                            fullPath: '/Common/192.0.2.10%100',
-                            partition: 'Common',
-                            ephemeral: false,
-                            metadata: [{
-                                name: 'references',
-                                persist: true,
-                                value: 0
-                            }],
-                            domain: '',
-                            key: '192.0.2.10%100',
-                            commonNode: true
-                        }
-                    ]
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
+                            { references: { value: 0 } }
+                        );
+                        assert.deepStrictEqual(
+                            commonConfig.nodeList,
+                            [
+                                {
+                                    fullPath: '/Common/10.10.0.10',
+                                    partition: 'Common'
+                                },
+                                {
+                                    fullPath: '/Common/192.0.2.10%100',
+                                    partition: 'Common',
+                                    ephemeral: false,
+                                    metadata: [{
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }],
+                                    domain: '',
+                                    key: '192.0.2.10%100',
+                                    commonNode: true
+                                }
+                            ]
+                        );
+                    });
             });
 
             it('should handle fqdn nodes', () => {
@@ -5419,45 +5427,47 @@ describe('fetch', () => {
                         enable: true
                     }
                 };
-                const desiredConfig = fetch.getDesiredConfig(context, 'My_tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/node-www.f5.com'].properties.fqdn,
-                    {
-                        autopopulate: 'enabled',
-                        tmName: 'www.f5.com',
-                        interval: 'ttl'
-                    }
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/node-www.f5.com'].properties.metadata,
-                    {
-                        references: {
-                            value: 0
-                        },
-                        fqdnPrefix: {
-                            value: 'node-'
-                        }
-                    }
-                );
-                assert.strictEqual(commonConfig.nodeList.length, 1);
-                assert.deepStrictEqual(
-                    commonConfig.nodeList[0],
-                    {
-                        fullPath: '/Common/node-www.f5.com',
-                        partition: 'Common',
-                        ephemeral: false,
-                        metadata: [
+                return fetch.getDesiredConfig(context, 'My_tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/node-www.f5.com'].properties.fqdn,
                             {
-                                name: 'references',
-                                persist: true,
-                                value: 0
+                                autopopulate: 'enabled',
+                                tmName: 'www.f5.com',
+                                interval: 'ttl'
                             }
-                        ],
-                        domain: '',
-                        key: 'node-www.f5.com',
-                        commonNode: true
-                    }
-                );
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/node-www.f5.com'].properties.metadata,
+                            {
+                                references: {
+                                    value: 0
+                                },
+                                fqdnPrefix: {
+                                    value: 'node-'
+                                }
+                            }
+                        );
+                        assert.strictEqual(commonConfig.nodeList.length, 1);
+                        assert.deepStrictEqual(
+                            commonConfig.nodeList[0],
+                            {
+                                fullPath: '/Common/node-www.f5.com',
+                                partition: 'Common',
+                                ephemeral: false,
+                                metadata: [
+                                    {
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }
+                                ],
+                                domain: '',
+                                key: 'node-www.f5.com',
+                                commonNode: true
+                            }
+                        );
+                    });
             });
         });
 
@@ -5531,11 +5541,13 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getServiceDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
-                    { references: { value: 1 } }
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
+                            { references: { value: 1 } }
+                        );
+                    });
             });
 
             it('should add new Common virtual address to virtualAddressList', () => {
@@ -5550,32 +5562,34 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getServiceDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
-                    { references: { value: 0 } }
-                );
-                assert.deepStrictEqual(
-                    commonConfig.virtualAddressList,
-                    [
-                        {
-                            fullPath: '/Common/10.10.0.10',
-                            address: '10.10.0.10',
-                            partition: 'Common'
-                        },
-                        {
-                            fullPath: '/Common/192.0.2.10',
-                            address: '192.0.2.10',
-                            partition: 'Common',
-                            metadata: [{
-                                name: 'references',
-                                persist: true,
-                                value: 0
-                            }],
-                            commonAddress: true
-                        }
-                    ]
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
+                            { references: { value: 0 } }
+                        );
+                        assert.deepStrictEqual(
+                            commonConfig.virtualAddressList,
+                            [
+                                {
+                                    fullPath: '/Common/10.10.0.10',
+                                    address: '10.10.0.10',
+                                    partition: 'Common'
+                                },
+                                {
+                                    fullPath: '/Common/192.0.2.10',
+                                    address: '192.0.2.10',
+                                    partition: 'Common',
+                                    metadata: [{
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }],
+                                    commonAddress: true
+                                }
+                            ]
+                        );
+                    });
             });
         });
 
@@ -5648,37 +5662,40 @@ describe('fetch', () => {
                 ];
             });
 
-            it('should add updates to context.request.postProcessing', () => {
-                const desiredConfig = fetch.getDesiredConfig(context, 'Common', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    context.request.postProcessing,
-                    updates
-                );
-                assert.deepStrictEqual(
-                    desiredConfig,
-                    {
-                        '/Common/Shared/': {
-                            command: 'sys folder',
-                            properties: {},
-                            ignore: []
+            it('should add updates to context.request.postProcessing', () => fetch
+                .getDesiredConfig(context, 'Common', declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.deepStrictEqual(
+                        context.request.postProcessing,
+                        updates
+                    );
+                    assert.deepStrictEqual(
+                        desiredConfig,
+                        {
+                            '/Common/Shared/': {
+                                command: 'sys folder',
+                                properties: {},
+                                ignore: []
+                            }
                         }
-                    }
-                );
-            });
+                    );
+                }));
 
             it('should update certificate paths', () => {
                 context.request.postProcessing = updates;
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
-                    {
-                        set0: {
-                            cert: '/Common/default.crt',
-                            key: '/Common/default.key',
-                            chain: 'none'
-                        }
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
+                            {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: 'none'
+                                }
+                            }
+                        );
+                    });
             });
 
             it('should add a key based on cert name if none is specified', () => {
@@ -5690,17 +5707,19 @@ describe('fetch', () => {
                     }
                 ];
                 context.request.postProcessing = updates;
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
-                    {
-                        set0: {
-                            cert: '/Common/newCert.crt',
-                            key: '/Common/newCert.key',
-                            chain: 'none'
-                        }
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
+                            {
+                                set0: {
+                                    cert: '/Common/newCert.crt',
+                                    key: '/Common/newCert.key',
+                                    chain: 'none'
+                                }
+                            }
+                        );
+                    });
             });
 
             it('should update aliases of GSLB_Domain objects that share domainName', () => {
@@ -5720,25 +5739,27 @@ describe('fetch', () => {
                         domainName: '/tenant/app/domain'
                     }
                 ];
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    context.request.postProcessing,
-                    updates
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/domain a'].properties.aliases,
-                    {
-                        'alias1.com': {},
-                        'alias2.com': {}
-                    }
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/domain aaaa'].properties.aliases,
-                    {
-                        'alias1.com': {},
-                        'alias2.com': {}
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            context.request.postProcessing,
+                            updates
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/domain a'].properties.aliases,
+                            {
+                                'alias1.com': {},
+                                'alias2.com': {}
+                            }
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/domain aaaa'].properties.aliases,
+                            {
+                                'alias1.com': {},
+                                'alias2.com': {}
+                            }
+                        );
+                    });
             });
         });
     });
