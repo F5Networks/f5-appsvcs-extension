@@ -16,14 +16,6 @@ stages:
   - post build
   - docs
 
-# This inherits all the jobs defined in the parent template
-# Override variables in this project as needed
-# include:
-# adds atg-shared-checks stage and jobs
-# adds atg_shared_checks_result job to test stage
-#  - project: automation-toolchain/atg-shared-templates
-#    file: security/base.gitlab-ci.yml
-
 variables:
   BIGIP_IMAGE:
     description: The name of the BIG-IP image to use for integration testing. Names are specific to the deploy environment.
@@ -75,7 +67,14 @@ variables:
   TF_HTTP_RETRY_WAIT_MIN: 3
   TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
   CURL_CONTENT: "Content-Type: application/json"
-  SECRET_DETECTION_EXCLUDED_PATHS: "docs/**/*.rst,test/*,*examples/*/*.json,properties.json,assets/css/*.css,schema/**/*.json,src/schema/**/*.json"
+
+# This inherits all the jobs defined in the parent template
+# Override variables in this project as needed
+include:
+# adds atg-shared-checks stage and jobs
+# adds atg_shared_checks_result job to test stage
+  - project: automation-toolchain/atg-shared-templates
+    file: security/base.gitlab-ci.yml
 
 update_autotool_deps:
   stage: update
