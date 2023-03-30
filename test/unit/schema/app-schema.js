@@ -52,7 +52,7 @@ describe('per-app schema testing', () => {
                     service: {
                         class: 'Service_HTTP',
                         virtualAddresses: [
-                            '192.0.1.1'
+                            '192.0.2.1'
                         ],
                         pool: 'pool'
                     },
@@ -62,8 +62,8 @@ describe('per-app schema testing', () => {
                             {
                                 servicePort: 80,
                                 serverAddresses: [
-                                    '192.0.10.1',
-                                    '192.0.10.2'
+                                    '192.0.2.10',
+                                    '192.0.2.20'
                                 ]
                             }
                         ]
@@ -81,7 +81,7 @@ describe('per-app schema testing', () => {
                         service: {
                             class: 'Service_HTTP',
                             virtualAddresses: [
-                                '192.0.1.1'
+                                '192.0.2.1'
                             ],
                             pool: 'pool'
                         },
@@ -91,8 +91,8 @@ describe('per-app schema testing', () => {
                                 {
                                     servicePort: 80,
                                     serverAddresses: [
-                                        '192.0.10.1',
-                                        '192.0.10.2'
+                                        '192.0.2.10',
+                                        '192.0.2.20'
                                     ]
                                 }
                             ]
@@ -115,8 +115,8 @@ describe('per-app schema testing', () => {
                                 {
                                     servicePort: 80,
                                     serverAddresses: [
-                                        '192.0.20.1',
-                                        '192.0.20.2'
+                                        '192.0.2.20',
+                                        '192.0.2.21'
                                     ]
                                 }
                             ]
@@ -143,7 +143,7 @@ describe('per-app schema testing', () => {
                     service: {
                         class: 'Service_HTTP',
                         virtualAddresses: [
-                            '192.0.1.1'
+                            '192.0.2.1'
                         ],
                         pool: 'pool'
                     },
@@ -153,8 +153,8 @@ describe('per-app schema testing', () => {
                             {
                                 servicePort: 80,
                                 serverAddresses: [
-                                    '192.0.10.1',
-                                    '192.0.10.2'
+                                    '192.0.2.10',
+                                    '192.0.2.20'
                                 ]
                             }
                         ]
@@ -165,7 +165,7 @@ describe('per-app schema testing', () => {
                     service: {
                         class: 'Service_HTTP',
                         virtualAddresses: [
-                            '192.0.1.2'
+                            '192.0.2.2'
                         ],
                         pool: 'pool'
                     },
@@ -175,8 +175,8 @@ describe('per-app schema testing', () => {
                             {
                                 servicePort: 80,
                                 serverAddresses: [
-                                    '192.0.10.3',
-                                    '192.0.10.4'
+                                    '192.0.2.30',
+                                    '192.0.2.40'
                                 ]
                             }
                         ]
@@ -195,7 +195,7 @@ describe('per-app schema testing', () => {
                         service: {
                             class: 'Service_HTTP',
                             virtualAddresses: [
-                                '192.0.1.1'
+                                '192.0.2.1'
                             ],
                             pool: 'pool'
                         },
@@ -205,8 +205,8 @@ describe('per-app schema testing', () => {
                                 {
                                     servicePort: 80,
                                     serverAddresses: [
-                                        '192.0.10.1',
-                                        '192.0.10.2'
+                                        '192.0.2.10',
+                                        '192.0.2.20'
                                     ]
                                 }
                             ]
@@ -217,7 +217,7 @@ describe('per-app schema testing', () => {
                         service: {
                             class: 'Service_HTTP',
                             virtualAddresses: [
-                                '192.0.1.2'
+                                '192.0.2.2'
                             ],
                             pool: 'pool'
                         },
@@ -227,8 +227,8 @@ describe('per-app schema testing', () => {
                                 {
                                     servicePort: 80,
                                     serverAddresses: [
-                                        '192.0.10.3',
-                                        '192.0.10.4'
+                                        '192.0.2.30',
+                                        '192.0.2.40'
                                     ]
                                 }
                             ]
