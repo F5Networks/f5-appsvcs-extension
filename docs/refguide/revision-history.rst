@@ -9,7 +9,11 @@ Document Revision History
 
       * - Release
         - Description
-        - Date
+        - Date 
+
+      * - 3.45
+        - Updated the documentation for AS3 v3.45.0. This release contains the following changes: |br| *  |br| |br| Issues Resolved: |br| * Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
+        - 5-2-23
 
       * - 3.44
         - Updated the documentation for AS3 v3.44.0. This release contains the following changes: |br| * Added support for referencing a virtual server in a GSLB pool with a use pointer (see :ref:`GSLB Pool with use pointer<gslbpooluse>`)  |br| * Added support for Prefer Client Subnet for GSLB Domains (see |gslbd| in the Schema Reference), `GitHub Issue 688 <https://github.com/F5Networks/f5-appsvcs-extension/issues/688>`_ |br| * Added a troubleshooting entry when iRules result in 422 errors (see :ref:`Troubleshooting<irulechars>`) |br| |br| Issues Resolved: |br| * Service with partial mask and custom route domain fails to POST twice |br| * Address_Discovery static node type does not work, `GitHub Issue 660 <https://github.com/F5Networks/f5-appsvcs-extension/issues/660>`_ |br| * Expose TLS_Server option to enable/disable "default profile for SNI", `GitHub Issue 274 <https://github.com/F5Networks/f5-appsvcs-extension/issues/274>`_ (see the note in :ref:`Multiple Certificate example<certs>` and **sniDefault** in the |tlsc| class in the Schema Reference) |br| * Improve error handling in SettingsHandler |br| * Invalid SNAT_Translation error when multiple Tenants with SNAT_Pools are declared |br| * HTTP_Acceleration_Profile does not handle backslashes in uriExcludeList, uriIncludeList, uriIncludeOverrideList, and uriPinnedList properties, `GitHub Issue 691 <https://github.com/F5Networks/f5-appsvcs-extension/issues/691>`_
