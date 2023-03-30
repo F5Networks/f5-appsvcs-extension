@@ -350,7 +350,7 @@ describe('def-afm-schema.json', () => {
                     natSourceTranslation: {
                         class: 'NAT_Source_Translation',
                         addresses: [
-                            '198.19.223.236'
+                            '192.0.2.236'
                         ],
                         type: 'dynamic-pat'
                     }
@@ -422,7 +422,7 @@ describe('def-afm-schema.json', () => {
 
             it('validate NAT_Source_Translation with valid excludeAddresses as an array with valid string value', () => {
                 const testData = simpleCopy(baseDeclaration);
-                testData.theTenant.A1.natSourceTranslation.excludeAddresses = ['1.2.3.4'];
+                testData.theTenant.A1.natSourceTranslation.excludeAddresses = ['192.0.2.4'];
                 assert.ok(validate(testData), getErrorString(validate));
             });
 

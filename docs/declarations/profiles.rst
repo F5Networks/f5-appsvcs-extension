@@ -157,7 +157,10 @@ This declaration creates the following objects on the BIG-IP:
 
 Using a WebSocket profile in a declaration
 ``````````````````````````````````````````
-This example shows how you can use a WebSocket profile in a declaration.  When you assign a WebSocket profile to a virtual server, the virtual server informs clients that a WebSocket virtual server is available to respond to WebSocket requests. WebSocket frames that contain payload data are masked with a 32-bit key. You can determine what the BIG-IP system does with this key by specifying one of the following values: preserve, remask, selective, unmask.  For detailed information on the WebSocket profile, see |socket| and |ws| in the Schema Reference for usage and options.
+This example shows how you can use a WebSocket profile in a declaration.  When you assign a WebSocket profile to a virtual server, the virtual server informs clients that a WebSocket virtual server is available to respond to WebSocket requests. WebSocket frames that contain payload data are masked with a 32-bit key. You can determine what the BIG-IP system does with this key by specifying one of the following values: preserve, remask, selective, unmask.  
+For detailed information on the WebSocket profile, see |socket| and |ws| in the Schema Reference for usage and options.
+
+.. IMPORTANT:: The following properties require TMOS 16.1 or later: **compressMode**, **compression**, **maximumWindowSize**, and **noDelay**. The example was updated in AS3 3.40 to include the Websocket profile.
 
 This declaration creates the following objects on the BIG-IP:
 

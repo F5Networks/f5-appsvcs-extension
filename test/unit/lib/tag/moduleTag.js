@@ -39,7 +39,7 @@ describe('moduleTag', () => {
             port: 8100,
             tokens: {},
             provisionedModules: ['afm', 'ltm', 'pem'],
-            tmosVersion: '16.1.2.2.0.0.28',
+            tmosVersion: '16.1.2',
             deviceType: 'BIG-IP'
         };
         declaration = {

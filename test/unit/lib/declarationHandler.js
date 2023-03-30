@@ -95,7 +95,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4',
+                tmosVersion: '14.1.2',
                 tokens: {}
             };
             context.control = {
@@ -161,7 +161,7 @@ describe('DeclarationHandler', () => {
                         partition: 'Common',
                         fullPath: '/Common/____appsvcs_declaration-1554498345530',
                         generation: 14113,
-                        selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530?ver=13.1.1',
                         description: 'f5 AS3 declaration (see info in record 0)',
                         type: 'integer',
                         records: [
@@ -293,7 +293,7 @@ describe('DeclarationHandler', () => {
                 context.tasks[0].tenantsInPath = ['bigiqTenant1'];
                 context.target.deviceType = DEVICE_TYPES.BIG_IQ;
                 context.target.provisionedModules = ['biq'];
-                context.target.tmosVersion = '7.0.0.0.0.1854';
+                context.target.tmosVersion = '7.0.0';
                 sinon.stub(context.host.parser, 'digest').resolves();
             });
 
@@ -484,7 +484,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4'
+                tmosVersion: '14.1.2'
             };
             context.control = {
                 port: 8100,
@@ -759,7 +759,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].installServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(installSpy.called, 'cloubLibUtils.install should have been called');
+                    assert.ok(installSpy.called, 'cloudLibUtils.install should have been called');
                 });
         });
 
@@ -780,7 +780,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].uninstallServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(uninstallSpy.called, 'cloubLibUtils.ensureUninstall should have been called');
+                    assert.ok(uninstallSpy.called, 'cloudLibUtils.ensureUninstall should have been called');
                 });
         });
 
@@ -1400,7 +1400,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4',
+                tmosVersion: '14.1.2',
                 tokens: {}
             };
 

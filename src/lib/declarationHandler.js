@@ -33,7 +33,7 @@ const mutex = require('./mutex');
 const hash = require('./util/hashUtil');
 const constants = require('./constants');
 
-const STATUS_CODES = require('./util/restUtil').STATUS_CODES;
+const STATUS_CODES = require('./constants').STATUS_CODES;
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 const BUILD_TYPES = require('./constants').BUILD_TYPES;
 

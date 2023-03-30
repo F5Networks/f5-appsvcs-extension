@@ -27,30 +27,30 @@
  * eventEmitter - enables and holds events in AS3 such as APM_PROFILE_UPDATED
  * body - The JSON request body with modifications from tryConvertToPost()
  * fullPath - Full URL used in the request
- * pathName - A subsect of the fullPath
+ * pathName - A subsection of the fullPath
  * subPath - A formatted subPath of the fullPath, reconfigured in declareHandler
  * queryParams - The query parameters supplied as part of the URL
  * basicAuth - Is the basic authorization in the restOperation
  * token - Is the token from the request headers. Note it is different than
  *   target context tokens, which can be set per declaration.
- * isMultiDecl - Only set to true if the request is a multideclaration.
+ * isMultiDecl - Only set to true if the request is a multi-declaration.
  *   Otherwise it is undefined.
  * isPerApp - Detects if the request used the per-app interface and sets the
  *   boolean appropriately.
- * declarations - An array of wrapped and normalized subdeclarations
+ * declarations - An array of wrapped and normalized sub-declarations
  * dryRun - A boolean to indicate if the task is to run as a dry-run
  *
  * TODO: These are elsewhere, should be set here instead, in a different
- *   subobject, or outside the context object if possible.
+ *   sub-object, or outside the context object if possible.
  * restOp - Set in declareHandler.process(). Mostly used in declareHandler.
  *   TODO: We could move this to restWorker and have the results bubble up
  * controls - Set in declareHandler.process(), after gathering the values.
- *   The controls are an array, each value derived from the subdeclarations.
+ *   The controls are an array, each value derived from the sub-declarations.
  * async - Seems to be a boolean set in declarationHandler.process().
  * timedOut - A boolean set in declarationHandler.process().
  * timeoutId - The ID returned by declareHandler.setTimeout().
  * action - This is set in as3request.
- *   TODO: Determine if the action is per subdeclaration.
+ *   TODO: Determine if the action is per sub-declaration.
  *   TODO: Update the code to use request.action or the sub-declaration's
  *   action exclusively.
  */
@@ -64,7 +64,7 @@ const As3Request = require('../as3request');
 const Tracer = require('../tracer').Tracer;
 const tracerUtil = require('../tracer').Util;
 const tracerTags = require('../tracer').Tags;
-const STATUS_CODES = require('../util/restUtil').STATUS_CODES;
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 class RequestContext {
     static get(restOperation, hostContext) {
@@ -255,7 +255,7 @@ function getComponentsAfterPathName(fullPath, pathName) {
     if (uriComponents[0].charAt(0) === '/') {
         uriComponents[0] = uriComponents[0].slice(1);
     }
-    // returns [ '{subpPath1/subpath2/..}', '{queryParams}' ];
+    // returns [ '{subPath1/subPath2/..}', '{queryParams}' ];
     return uriComponents;
 }
 

@@ -19,7 +19,7 @@
 const EventEmitter = require('events').EventEmitter;
 const uuid = require('uuid');
 
-const STATUSES = require('./util/restUtil').STATUS_CODES;
+const STATUSES = require('./constants').STATUS_CODES;
 
 class Queue extends EventEmitter {
     /**

@@ -455,7 +455,7 @@ describe('core-schema.json', () => {
                             serviceMain: {
                                 class: 'Service_HTTP',
                                 virtualAddresses: [
-                                    '1.2.3.4'
+                                    '192.0.2.3'
                                 ]
                             }
                         }
@@ -480,7 +480,7 @@ describe('core-schema.json', () => {
                             serviceHTTP: {
                                 class: 'Service_HTTP',
                                 virtualAddresses: [
-                                    '1.2.3.4'
+                                    '192.0.2.3'
                                 ]
                             }
                         }
@@ -1720,7 +1720,7 @@ describe('core-schema.json', () => {
                             template: 'generic',
                             coreService: {
                                 class: 'Service_HTTP',
-                                sourceAddress: '1.2.3.4'
+                                sourceAddress: '192.0.2.3'
                             }
                         }
                     }
@@ -1810,7 +1810,7 @@ describe('core-schema.json', () => {
                             coreService: {
                                 class: 'Service_HTTP',
                                 virtualAddresses: [
-                                    ['1.2.3.4', '4.3.2.1', '2.3.4.5']
+                                    ['192.0.2.3', '192.0.2.4', '192.0.2.5']
                                 ]
                             }
                         }
@@ -1855,7 +1855,7 @@ describe('core-schema.json', () => {
                             template: 'generic',
                             coreService: {
                                 class: 'Service_HTTP',
-                                virtualAddresses: ['1.2.3.4']
+                                virtualAddresses: ['192.0.2.3']
                             }
                         }
                     }
@@ -1877,7 +1877,7 @@ describe('core-schema.json', () => {
                                 class: 'Service_HTTP',
                                 label: 'A label',
                                 remark: 'description',
-                                virtualAddresses: ['1.2.3.4'],
+                                virtualAddresses: ['192.0.2.3'],
                                 enable: false,
                                 maxConnections: 100,
                                 rateLimit: 10,
@@ -2111,7 +2111,7 @@ describe('core-schema.json', () => {
                         serviceGeneric: {
                             class: 'Service_UDP',
                             virtualPort: 8080,
-                            virtualAddresses: ['192.0.0.121']
+                            virtualAddresses: ['192.0.2.121']
                         }
                     }
                 }
@@ -2257,7 +2257,7 @@ describe('core-schema.json', () => {
             it('should allow minimal properties', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
-                    virtualAddresses: ['1.2.3.4'],
+                    virtualAddresses: ['192.0.2.3'],
                     serverTLS: {
                         bigip: '/Common/tlsServer'
                     }
@@ -2268,7 +2268,7 @@ describe('core-schema.json', () => {
             it('should validate all properties at the Service_HTTPS level being specified', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
-                    virtualAddresses: ['1.2.3.4'],
+                    virtualAddresses: ['192.0.2.3'],
                     serverTLS: {
                         bigip: '/Common/tlsServer'
                     },
@@ -2284,7 +2284,7 @@ describe('core-schema.json', () => {
             it('should invalidate serverTLS with a length of 0', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
-                    virtualAddresses: ['1.2.3.4'],
+                    virtualAddresses: ['192.0.2.3'],
                     serverTLS: ''
                 };
                 assert.strictEqual(validate(data), false, 'serverTLS has a minLength of 1');
@@ -2293,7 +2293,7 @@ describe('core-schema.json', () => {
             it('should invalidate ingress and egress profileHTTP2 specified at the same time', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
-                    virtualAddresses: ['1.2.3.4'],
+                    virtualAddresses: ['192.0.2.3'],
                     serverTLS: {
                         bigip: '/Common/tlsServer'
                     },
@@ -2312,7 +2312,7 @@ describe('core-schema.json', () => {
             it('should invalidate when required property serverTLS is not specified', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
-                    virtualAddresses: ['1.2.3.4']
+                    virtualAddresses: ['192.0.2.3']
                 };
                 assert.strictEqual(validate(data), false, 'serverTLS is required');
             });
@@ -2345,7 +2345,7 @@ describe('core-schema.json', () => {
                         template: 'generic',
                         service: {
                             class: 'Service_HTTP',
-                            virtualAddresses: ['1.2.3.4']
+                            virtualAddresses: ['192.0.2.3']
                         }
                     }
                 }
@@ -3105,7 +3105,7 @@ describe('core-schema.json', () => {
                                     label: 'A label',
                                     remark: 'This is an external monitor',
                                     monitorType: 'external',
-                                    targetAddress: '1.2.3.4',
+                                    targetAddress: '192.0.2.3',
                                     interval: 25,
                                     upInterval: 100,
                                     timeUntilUp: 1000,
@@ -3177,7 +3177,7 @@ describe('core-schema.json', () => {
                                         enable: true,
                                         adminState: 'enable',
                                         shareNodes: true,
-                                        serverAddresses: ['1.1.1.1'],
+                                        serverAddresses: ['192.0.2.1'],
                                         servicePort: 1234
                                     }
                                 ],
@@ -3912,7 +3912,7 @@ describe('Access_Profile and Per_Request_Access_Policy', () => {
                         class: 'Service_HTTP',
                         virtualPort: 80,
                         virtualAddresses: [
-                            '1.2.3.4'
+                            '192.0.2.3'
                         ],
                         policyPerRequestAccess: {
                             bigip: '/Common/pollicyPerRequestAccess'

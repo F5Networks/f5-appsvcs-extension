@@ -469,7 +469,7 @@ describe('fetch', () => {
                     name: 'Tenant',
                     fullPath: 'Tenant',
                     generation: 102260,
-                    selfLink: 'https://localhost/mgmt/tm/auth/partition/Tenant?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition/Tenant?ver=16.1.2',
                     defaultRouteDomain: 0,
                     description: 'Updated by AS3 at Wed, 24 Aug 2022 16:07:11 GMT'
                 },
@@ -479,7 +479,7 @@ describe('fetch', () => {
                     partition: 'Tenant',
                     fullPath: '/Tenant/Application',
                     generation: 102259,
-                    selfLink: 'https://localhost/mgmt/tm/sys/folder/~Tenant~Application?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/sys/folder/~Tenant~Application?ver=16.1.2',
                     deviceGroup: 'none',
                     hidden: 'false',
                     inheritedDevicegroup: true,
@@ -487,7 +487,7 @@ describe('fetch', () => {
                     noRefCheck: false,
                     trafficGroup: '/Common/traffic-group-1',
                     trafficGroupReference: {
-                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=16.1.2.2'
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=16.1.2'
                     }
                 },
                 {
@@ -497,7 +497,7 @@ describe('fetch', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/asm_logging_profile_for_splunk',
                     generation: 102260,
-                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk?ver=16.1.2',
                     builtIn: 'disabled',
                     hidden: 'false',
                     ipIntelligence: {
@@ -507,19 +507,19 @@ describe('fetch', () => {
                         logTranslationFields: 'disabled'
                     },
                     applicationReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?ver=16.1.2',
                         isSubcollection: true
                     },
                     networkReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?ver=16.1.2',
                         isSubcollection: true
                     },
                     protocolDnsReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?ver=16.1.2',
                         isSubcollection: true
                     },
                     protocolSipReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?ver=16.1.2',
                         isSubcollection: true
                     }
                 }
@@ -573,7 +573,7 @@ describe('fetch', () => {
                         name: 'ldns: state AF/Badakhshan server: country AF',
                         fullPath: 'ldns: state AF/Badakhshan server: country AF',
                         generation: 1812,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1',
                         order: 1,
                         score: 1
                     },
@@ -595,7 +595,7 @@ describe('fetch', () => {
                         name: 'ldns: state AF/Badakhshan server: country AF',
                         fullPath: 'ldns: state AF/Badakhshan server: country AF',
                         generation: 1812,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1',
                         order: 1,
                         score: 1
                     },
@@ -1118,7 +1118,7 @@ describe('fetch', () => {
                             'connection-limit': 0,
                             'rate-limit': 'disabled',
                             description: '\\"Shared\\"',
-                            destination: '/Common/1.1.1.11:8080',
+                            destination: '/Common/192.0.2.11:8080',
                             'ip-protocol': 'tcp',
                             'last-hop-pool': 'none',
                             mask: '255.255.255.255',
@@ -1161,10 +1161,10 @@ describe('fetch', () => {
                         properties: {},
                         ignore: []
                     },
-                    '/Common/Shared/Service_Address-1.1.1.10': {
+                    '/Common/Shared/Service_Address-192.0.2.10': {
                         command: 'ltm virtual-address',
                         properties: {
-                            address: '1.1.1.10',
+                            address: '192.0.2.10',
                             arp: 'enabled',
                             'icmp-echo': 'enabled',
                             mask: '255.255.255.255',
@@ -1182,7 +1182,7 @@ describe('fetch', () => {
                             'connection-limit': 0,
                             'rate-limit': 'disabled',
                             description: '\\"Shared\\"',
-                            destination: '/Common/Shared/1.1.1.10:8080',
+                            destination: '/Common/Shared/192.0.2.10:8080',
                             'ip-protocol': 'tcp',
                             'last-hop-pool': 'none',
                             mask: '255.255.255.255',
@@ -1287,9 +1287,9 @@ describe('fetch', () => {
                     ],
                     virtualAddressList: [
                         {
-                            fullPath: '/Common/1.1.1.11',
+                            fullPath: '/Common/192.0.2.11',
                             partition: 'Common',
-                            address: '1.1.1.11',
+                            address: '192.0.2.11',
                             metadata: [
                                 {
                                     name: 'references',
@@ -1337,10 +1337,10 @@ describe('fetch', () => {
                                     },
                                     ignore: []
                                 },
-                                '/Common/Shared/Service_Address-1.1.1.10': {
+                                '/Common/Shared/Service_Address-192.0.2.10': {
                                     command: 'ltm virtual-address',
                                     properties: {
-                                        address: '1.1.1.10',
+                                        address: '192.0.2.10',
                                         arp: 'enabled',
                                         'icmp-echo': 'enabled',
                                         mask: '255.255.255.255',
@@ -1485,15 +1485,15 @@ describe('fetch', () => {
                 commonConfig = {
                     nodeList: [
                         {
-                            fullPath: '/Common/_auto_99.84.238.109',
+                            fullPath: '/Common/_auto_192.0.2.109',
                             partition: 'Common',
                             ephemeral: true,
                             commonNode: true,
                             kind: 'tm:ltm:node:nodestate',
-                            name: '_auto_99.84.238.109',
+                            name: '_auto_192.0.2.109',
                             generation: 104345,
-                            selfLink: 'https://localhost/mgmt/tm/ltm/node/~Common~_auto_99.84.238.109?ver=14.1.4.5',
-                            address: '99.84.238.109',
+                            selfLink: 'https://localhost/mgmt/tm/ltm/node/~Common~_auto_192.0.2.109?ver=14.1.4',
+                            address: '192.0.2.109',
                             connectionLimit: 0,
                             dynamicRatio: 1,
                             fqdn: {
@@ -1510,7 +1510,7 @@ describe('fetch', () => {
                             session: 'user-enabled',
                             state: 'unchecked',
                             domain: 'www.f5.com',
-                            key: '99.84.238.109'
+                            key: '192.0.2.109'
                         }
                     ],
                     virtualAddressList: []
@@ -1747,7 +1747,7 @@ describe('fetch', () => {
                         command: 'security firewall address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             'address-lists': {},
                             fqdns: {},
@@ -1782,7 +1782,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -1817,7 +1817,7 @@ describe('fetch', () => {
                         command: 'security firewall address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             fqdns: {},
                             geo: { 'TR:Istanbul': {} },
@@ -1850,7 +1850,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -1875,7 +1875,7 @@ describe('fetch', () => {
                         command: 'net address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             'address-lists': {}
                         },
@@ -1908,7 +1908,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -3694,7 +3694,7 @@ describe('fetch', () => {
                 tags: ['tmsh'],
                 command: 'auth partition'
             }];
-            context.target.tmosVersion = '13.1.1.5.0.0.4';
+            context.target.tmosVersion = '13.1.1';
 
             const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
             assert.strictEqual(
@@ -4661,7 +4661,7 @@ describe('fetch', () => {
                 context.host.parser.nodelist = [
                     {
                         fullPath: '/tenant/node',
-                        key: '1.2.3.4'
+                        key: '192.0.2.4'
                     }
                 ];
                 const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
@@ -4970,7 +4970,7 @@ describe('fetch', () => {
                         name: 'testapp_pool',
                         partition: 'test',
                         membersReference: {
-                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0.6',
+                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0',
                             isSubcollection: true,
                             items: [
                                 {
@@ -4993,7 +4993,7 @@ describe('fetch', () => {
                         name: 'testapp_pool',
                         partition: 'test',
                         membersReference: {
-                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0.6',
+                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0',
                             isSubcollection: true,
                             items: [
                                 {
@@ -5013,7 +5013,7 @@ describe('fetch', () => {
                         kind: 'tm:auth:partition:partitionstate',
                         name: 'test',
                         fullPath: 'test',
-                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1.2'
+                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1'
                     },
                     {
                         kind: 'tm:sys:folder:folderstate',
@@ -5021,7 +5021,7 @@ describe('fetch', () => {
                         partition: 'test',
                         fullPath: '/test/test_w11',
                         generation: 26456,
-                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1.2',
+                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1',
                         deviceGroup: 'none',
                         hidden: 'false',
                         inheritedDevicegroup: 'true',
@@ -5029,7 +5029,7 @@ describe('fetch', () => {
                         noRefCheck: 'false',
                         trafficGroup: '/Common/traffic-group-1',
                         trafficGroupReference: {
-                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1.2'
+                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1'
                         }
                     }
                 ],
@@ -5038,7 +5038,7 @@ describe('fetch', () => {
                         kind: 'tm:auth:partition:partitionstate',
                         name: 'test',
                         fullPath: 'test',
-                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1.2'
+                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1'
                     },
                     {
                         kind: 'tm:sys:folder:folderstate',
@@ -5046,7 +5046,7 @@ describe('fetch', () => {
                         partition: 'test',
                         fullPath: '/test/test_w11',
                         generation: 26456,
-                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1.2',
+                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1',
                         deviceGroup: 'none',
                         hidden: 'false',
                         inheritedDevicegroup: 'true',
@@ -5054,7 +5054,7 @@ describe('fetch', () => {
                         noRefCheck: 'false',
                         trafficGroup: '/Common/traffic-group-1',
                         trafficGroupReference: {
-                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1.2'
+                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1'
                         }
                     }
                 ]
@@ -5172,7 +5172,7 @@ describe('fetch', () => {
 
         it('should return a configuration object with tenant, app and pool', () => {
             const tenantId = 'My_tenant';
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
             context.control = {
                 host: 'localhost'
             };
@@ -5213,7 +5213,7 @@ describe('fetch', () => {
         });
 
         it('should process snat translations with snat pools', () => {
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
             context.control = {
                 host: 'localhost'
             };
@@ -5298,7 +5298,7 @@ describe('fetch', () => {
             });
 
             it('should delete node config if pre-existing node exists in Common with no matching metadata', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5324,7 +5324,7 @@ describe('fetch', () => {
             });
 
             it('should add ref metadata to node config if node exists in Common', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5346,7 +5346,7 @@ describe('fetch', () => {
             });
 
             it('should add new Common node to nodelist', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5386,7 +5386,7 @@ describe('fetch', () => {
             });
 
             it('should handle fqdn nodes', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5485,7 +5485,7 @@ describe('fetch', () => {
             });
 
             it('should delete virtual address config if pre-existing virtual address exists in Common with no matching metadata', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5515,7 +5515,7 @@ describe('fetch', () => {
             });
 
             it('should add ref metadata to virtual address config if virtual address exists in Common', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5539,7 +5539,7 @@ describe('fetch', () => {
             });
 
             it('should add new Common virtual address to virtualAddressList', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };

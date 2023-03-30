@@ -76,10 +76,10 @@ Merge the release branch into develop and master following the steps below for e
 * In the f5-appsvcs-schema repository add a new version to the beginning of the schemaVersion enum in `schemas/core-schema.js` using the preexisting format. Also, be sure to run `npm run compile-schema` after adding the new version.
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
 
-Tag master with the release version, for example: 3.10.0 (Note: if you are tagging/re-tagging older releases that may trigger the publish, make sure to cancel the job as it will try to reupload the artifacts).
+Tag master with the release version, for example: `v3.27.0` (Note: if you are tagging/re-tagging older releases that may trigger the publish, make sure to cancel the job as it will try to reupload the artifacts).
 * Navigate to the `Repository -> Tags` page.
 * Click on `New Tag`.
-* Name the tag with the release version but without the build number.  For example `3.27.0`.
+* Name the version tag with the release version but without the build number.  For example `v3.27.0`.
 * Choose the `master` branch from the `Create from` list.
 * Click on `Create Tag`.
 

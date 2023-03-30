@@ -77,7 +77,7 @@ describe('def-dos-schema.json', () => {
                     class: 'Firewall_Address_List',
                     addresses: [
                         '192.0.2.0/24',
-                        '198.51.100.0/24'
+                        '233.252.0.0/24'
                     ],
                     geo: [
                         'US:Idaho'
@@ -141,7 +141,7 @@ describe('def-dos-schema.json', () => {
                     class: 'Net_Address_List',
                     addresses: [
                         '192.0.2.0/24',
-                        '198.51.100.0/24'
+                        '233.252.0.0/24'
                     ]
                 };
 

@@ -127,7 +127,7 @@ describe('as3request', function () {
             {
                 class: 'AS3',
                 action: 'redeploy',
-                targetHost: '1.1.1.1',
+                targetHost: '192.0.2.1',
                 targetUsername: 'user',
                 targetPassphrase: 'password'
             }
@@ -138,14 +138,14 @@ describe('as3request', function () {
                 {
                     class: 'AS3',
                     action: 'retrieve',
-                    targetHost: '1.1.1.1',
+                    targetHost: '192.0.2.1',
                     targetUsername: 'user',
                     targetPassphrase: 'password'
                 },
                 {
                     class: 'AS3',
                     action: 'redeploy',
-                    targetHost: '2.2.2.2',
+                    targetHost: '192.0.2.2',
                     targetUsername: 'user',
                     targetPassphrase: 'password'
                 }
@@ -318,7 +318,7 @@ describe('as3request', function () {
             )));
 
         it('should parse the targetUsername from the basicAuth value', () => {
-            const basicAuth = 'Basic\x20d293VGhpc1dvcmtz';
+            const basicAuth = 'Basic\x20dXNlcgo=';
 
             return Promise.resolve()
                 .then(() => As3Request.setTargetDefaults({}, basicAuth))
@@ -331,7 +331,7 @@ describe('as3request', function () {
                         targetPassphrase: '',
                         targetPort: 8100,
                         targetTokens: {},
-                        targetUsername: 'wowThisWork',
+                        targetUsername: 'user',
                         urlPrefix: 'http://admin:@localhost:8100'
                     }
                 ));
@@ -361,7 +361,7 @@ describe('as3request', function () {
         });
 
         it('should set the X-F5-Auth-Token', () => {
-            const token = 'funkyMonkeyChunky';
+            const token = 'validtoken';
 
             return Promise.resolve()
                 .then(() => As3Request.setTargetDefaults({}, undefined, token))
@@ -374,7 +374,7 @@ describe('as3request', function () {
                         targetPassphrase: '',
                         targetPort: 8100,
                         targetTokens: {
-                            'X-F5-Auth-Token': 'funkyMonkeyChunky'
+                            'X-F5-Auth-Token': 'validtoken'
                         },
                         targetUsername: '',
                         urlPrefix: 'http://admin:@localhost:8100'

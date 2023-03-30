@@ -17,6 +17,7 @@
 'use strict';
 
 const sinon = require('sinon');
+const nock = require('nock');
 const proxyquire = require('proxyquire');
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
@@ -38,11 +39,11 @@ const log = require('../../../src/lib/log');
 const Queue = require('../../../src/lib/queue');
 const config = require('../../../src/lib/config');
 const Tracer = require('../../../src/lib/tracer').Tracer;
+const STATUS_CODES = require('../../../src/lib/constants').STATUS_CODES;
 
 describe('DeclareHandler', () => {
-    const STATUS_CODES = restUtil.STATUS_CODES;
     const mockSuccess = DeclarationHandler.buildResult(
-        restUtil.STATUS_CODES.OK,
+        STATUS_CODES.OK,
         undefined,
         { results: [], declaration: {} }
     );
@@ -121,6 +122,7 @@ describe('DeclareHandler', () => {
 
     afterEach(() => {
         sinon.restore();
+        nock.cleanAll();
     });
 
     describe('single declaration request', () => {
@@ -680,7 +682,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -695,7 +697,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -720,7 +722,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1091,7 +1093,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1115,7 +1117,7 @@ describe('DeclareHandler', () => {
                                     remark: 'description',
                                     virtualPort: 123,
                                     virtualAddresses: [
-                                        '1.1.1.10'
+                                        '192.0.2.110'
                                     ]
                                 }
                             }
@@ -1173,7 +1175,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1197,7 +1199,7 @@ describe('DeclareHandler', () => {
                                     remark: 'description',
                                     virtualPort: 123,
                                     virtualAddresses: [
-                                        '1.1.1.10'
+                                        '192.0.2.110'
                                     ]
                                 }
                             }
@@ -1480,6 +1482,65 @@ describe('DeclareHandler', () => {
                                 }
                             ]
                         );
+                    });
+            });
+
+            it('should call webhook if there is one', () => {
+                config.getAllSettings.restore();
+                sinon.stub(config, 'getAllSettings').resolves({
+                    webhook: 'http://www.example.com/webhook'
+                });
+
+                nock('http://www.example.com')
+                    .post('/webhook')
+                    .reply(200);
+
+                restOp.method = 'Post';
+
+                context.request = {
+                    // simulate case when we need to uninstall during POST
+                    subPath: 'Tenant',
+                    method: 'Post',
+                    action: 'deploy',
+                    pathName: 'declare',
+                    tracer: new Tracer('test tracer', { enabled: false })
+                };
+                context.tasks = [
+                    {
+                        targetHost: '192.0.2.8',
+                        targetPort: 8100,
+                        protocol: 'http',
+                        urlPrefix: 'http:admin:@localhost:8100',
+                        targetTokens: { 'X-F5-Auth-Token': 'test' },
+                        timeSlip: 0,
+                        action: 'deploy',
+                        declaration: {
+                            class: 'ADC',
+                            schemaVersion: '3.0.0',
+                            id: 'GoAsync',
+                            Tenant: {
+                                class: 'Tenant'
+                            }
+                        }
+                    }
+                ];
+
+                const expResult = {
+                    id: mockNewUuid,
+                    results: [{
+                        code: 0,
+                        host: '',
+                        message: msgServDiscUninstall,
+                        runTime: 0,
+                        tenant: ''
+                    }],
+                    declaration: {},
+                    selfLink: `https://localhost/mgmt/shared/appsvcs/task/${mockNewUuid}`
+                };
+
+                return assertResultAndRestComplete(context, restOp, expResult, code)
+                    .then(() => {
+                        assert.ok(nock.isDone());
                     });
             });
         });
@@ -1860,7 +1921,7 @@ describe('DeclareHandler', () => {
                                 remark: 'description',
                                 virtualPort: 123,
                                 virtualAddresses: [
-                                    '1.1.1.10'
+                                    '192.0.2.110'
                                 ]
                             }
                         }
@@ -1880,7 +1941,7 @@ describe('DeclareHandler', () => {
                                 remark: 'description',
                                 virtualPort: 123,
                                 virtualAddresses: [
-                                    '1.1.1.20'
+                                    '192.0.2.120'
                                 ]
                             }
                         }
@@ -1912,7 +1973,7 @@ describe('DeclareHandler', () => {
                     code: 422,
                     message: 'Error(s): \'Invalid/Duplicate\': another request exists with the same targetHost-declaration tenant, declaration target, and/or declaration tenant-app'
                 };
-                code = restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY;
+                code = STATUS_CODES.UNPROCESSABLE_ENTITY;
                 expResult = {
                     code,
                     items: [
@@ -1949,7 +2010,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -1963,7 +2024,7 @@ describe('DeclareHandler', () => {
                     }
                 ];
 
-                code = restUtil.STATUS_CODES.MULTI_STATUS;
+                code = STATUS_CODES.MULTI_STATUS;
                 expResult = {
                     code,
                     items: [
@@ -1983,7 +2044,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -1991,7 +2052,7 @@ describe('DeclareHandler', () => {
                             }
                         },
                         {
-                            code: restUtil.STATUS_CODES.BAD_REQUEST,
+                            code: STATUS_CODES.BAD_REQUEST,
                             message: 'for action "deploy", a declaration is required.'
                         }
                     ]
@@ -2024,20 +2085,20 @@ describe('DeclareHandler', () => {
                     {
                         class: 'AS3',
                         action: 'retrieve',
-                        targetHost: '198.168.17.1',
+                        targetHost: '192.0.2.1',
                         targetPort: 443,
                         protocol: 'https',
-                        urlPrefix: 'https://198.168.17.1:443',
+                        urlPrefix: 'https://192.0.2.1:443',
                         targetTokens: { 'X-F5-Auth-Token': 'test1' },
                         timeSlip: 0
                     },
                     {
                         class: 'AS3',
                         action: 'retrieve',
-                        targetHost: '198.168.17.2',
+                        targetHost: '192.0.2.2',
                         targetPort: 443,
                         protocol: 'https',
-                        urlPrefix: 'https://198.168.17.2:443',
+                        urlPrefix: 'https://192.0.2.2:443',
                         targetTokens: { 'X-F5-Auth-Token': 'test2' },
                         timeSlip: 0
                     }
@@ -2060,19 +2121,19 @@ describe('DeclareHandler', () => {
                 return assertResultAndRestComplete(context, restOp, expResult, code)
                     .then(() => {
                         assert.deepStrictEqual(controlsUsed[0], {
-                            targetHost: '198.168.17.1',
+                            targetHost: '192.0.2.1',
                             targetPort: 443,
                             protocol: 'https',
-                            urlPrefix: 'https://198.168.17.1:443',
+                            urlPrefix: 'https://192.0.2.1:443',
                             targetTokens: { 'X-F5-Auth-Token': 'test1' },
                             timeSlip: 0
                         });
 
                         assert.deepStrictEqual(controlsUsed[1], {
-                            targetHost: '198.168.17.2',
+                            targetHost: '192.0.2.2',
                             targetPort: 443,
                             protocol: 'https',
-                            urlPrefix: 'https://198.168.17.2:443',
+                            urlPrefix: 'https://192.0.2.2:443',
                             targetTokens: { 'X-F5-Auth-Token': 'test2' },
                             timeSlip: 0
                         });
@@ -2107,7 +2168,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.20'
+                                            '192.0.2.120'
                                         ]
                                     }
                                 }
@@ -2131,7 +2192,7 @@ describe('DeclareHandler', () => {
                                         remark: 'description',
                                         virtualPort: 123,
                                         virtualAddresses: [
-                                            '1.1.1.10'
+                                            '192.0.2.110'
                                         ]
                                     }
                                 }
@@ -2160,7 +2221,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.20'
+                                                '192.0.2.120'
                                             ]
                                         }
                                     }
@@ -2183,7 +2244,7 @@ describe('DeclareHandler', () => {
                                             remark: 'description',
                                             virtualPort: 123,
                                             virtualAddresses: [
-                                                '1.1.1.10'
+                                                '192.0.2.110'
                                             ]
                                         }
                                     }
@@ -2227,10 +2288,10 @@ describe('DeclareHandler', () => {
                 };
                 context.tasks = [
                     {
-                        targetHost: '192.16.17.18',
+                        targetHost: '192.0.2.18',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.18:8100',
+                        urlPrefix: 'https://192.0.2.18:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync1' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2244,10 +2305,10 @@ describe('DeclareHandler', () => {
                         }
                     },
                     {
-                        targetHost: '192.16.17.19',
+                        targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2361,10 +2422,10 @@ describe('DeclareHandler', () => {
                 };
                 context.tasks = [
                     {
-                        targetHost: '192.16.17.19',
+                        targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAutoAsync1' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2378,10 +2439,10 @@ describe('DeclareHandler', () => {
                         }
                     },
                     {
-                        targetHost: '192.16.17.20',
+                        targetHost: '192.0.2.20',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.16.17.20:8100',
+                        urlPrefix: 'https://192.0.2.20:8100',
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAutoAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2478,8 +2539,8 @@ describe('DeclareHandler', () => {
                                 }
                             ]
                         );
-                        assert.strictEqual(context.tasks[0].resolvedHostIp, '192.16.17.19');
-                        assert.strictEqual(context.tasks[1].resolvedHostIp, '192.16.17.20');
+                        assert.strictEqual(context.tasks[0].resolvedHostIp, '192.0.2.19');
+                        assert.strictEqual(context.tasks[1].resolvedHostIp, '192.0.2.20');
                     });
             });
         });

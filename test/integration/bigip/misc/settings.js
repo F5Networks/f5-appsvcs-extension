@@ -49,7 +49,8 @@ describe('settings (__smoke)', function () {
         burstHandlingEnabled: false,
         performanceTracingEnabled: false,
         performanceTracingEndpoint: '',
-        serviceDiscoveryEnabled: true
+        serviceDiscoveryEnabled: true,
+        webhook: ''
     };
     function resetDefaults() {
         return postSettings({});
@@ -62,7 +63,8 @@ describe('settings (__smoke)', function () {
             burstHandlingEnabled: true,
             performanceTracingEnabled: false, // need to leave false because jaeger-client not installed
             performanceTracingEndpoint: 'http://196.168.0.1/api/traces',
-            serviceDiscoveryEnabled: false
+            serviceDiscoveryEnabled: false,
+            webhook: 'https://www.example.com'
         };
 
         function assertResponse(response, values) {

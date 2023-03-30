@@ -146,6 +146,31 @@ describe('settings-schema.json', () => {
             });
         });
     });
+
+    describe('webhook', () => {
+        describe('Valid', () => {
+            it('should not be required', () => {
+                const data = {};
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should accept a URL', () => {
+                const data = {
+                    webhook: 'https://www.example.com'
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('Invalid', () => {
+            it('should error if non-schema values are provided', () => {
+                const data = {
+                    webhook: 'monkey'
+                };
+                assert.strictEqual(validate(data), false);
+            });
+        });
+    });
 });
 
 function getErrorString() {

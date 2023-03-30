@@ -41,7 +41,7 @@ class SettingsHandler {
                     break;
                 default:
                     result = restUtil.buildOpResult(
-                        restUtil.STATUS_CODES.METHOD_NOT_ALLOWED,
+                        constants.STATUS_CODES.METHOD_NOT_ALLOWED,
                         `${restOperation.getUri().href}: Only acceptable methods are Post and Get`
                     );
                     restUtil.completeRequest(restOperation, result);
@@ -51,7 +51,7 @@ class SettingsHandler {
             })
             .catch((err) => {
                 log.error(`Unable to complete AS3 settings request:\n${err}`);
-                const status = err.status || restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR;
+                const status = err.status || constants.STATUS_CODES.INTERNAL_SERVER_ERROR;
                 const result = restUtil.buildOpResult(
                     status,
                     'Settings request failed',
@@ -75,10 +75,10 @@ function onPost(context, restOp, schemaPath) {
     const ajvErrors = validateAgainstSchema(restOp, schemaPath);
     if (ajvErrors) {
         const result = restUtil.buildOpResult(
-            restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY,
+            constants.STATUS_CODES.UNPROCESSABLE_ENTITY,
             'Failed to overwrite settings',
             {
-                code: restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY,
+                code: constants.STATUS_CODES.UNPROCESSABLE_ENTITY,
                 message: 'declaration is invalid',
                 errors: ajvErrors
             }
@@ -92,9 +92,9 @@ function onPost(context, restOp, schemaPath) {
         .then(() => Config.updateSettings(restOp.body))
         .then(() => Config.getAllSettings())
         .then((updatedSettings) => {
-            updatedSettings.code = restUtil.STATUS_CODES.OK;
+            updatedSettings.code = constants.STATUS_CODES.OK;
             const result = restUtil.buildOpResult(
-                restUtil.STATUS_CODES.OK,
+                constants.STATUS_CODES.OK,
                 'overwriting settings',
                 updatedSettings
             );
@@ -102,7 +102,7 @@ function onPost(context, restOp, schemaPath) {
         })
         .catch((err) => {
             log.error(`Unable to update AS3 settings due to:\n${err}`);
-            const status = err.status || restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            const status = err.status || constants.STATUS_CODES.INTERNAL_SERVER_ERROR;
             const result = restUtil.buildOpResult(
                 status,
                 'Failed to overwrite settings',
@@ -147,7 +147,7 @@ function onGet(restOp) {
         .then(() => Config.getAllSettings())
         .then((settings) => {
             const result = restUtil.buildOpResult(
-                restUtil.STATUS_CODES.OK,
+                constants.STATUS_CODES.OK,
                 'retrieving settings',
                 settings
             );
@@ -156,10 +156,10 @@ function onGet(restOp) {
         .catch((err) => {
             log.error(`Unable to retrieve AS3 settings due to error:\n${err}`);
             const result = restUtil.buildOpResult(
-                restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR,
+                constants.STATUS_CODES.INTERNAL_SERVER_ERROR,
                 'Failed to retrieve settings',
                 {
-                    code: restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR,
+                    code: constants.STATUS_CODES.INTERNAL_SERVER_ERROR,
                     message: err.message
                 }
             );
@@ -187,7 +187,7 @@ function canDisableServiceDiscovery(context) {
         .then((result) => {
             if (result.items.length > 0) {
                 const error = new Error('Service Discovery cannot be disabled while there are existing tasks');
-                error.status = restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY;
+                error.status = constants.STATUS_CODES.UNPROCESSABLE_ENTITY;
                 return Promise.reject(error);
             }
             return Promise.resolve();
@@ -213,7 +213,7 @@ function canPerformanceTracingBeEnabled() {
         fs.stat('/var/config/rest/iapps/f5-appsvcs/node_modules/jaeger-client/', (err, stats) => {
             if (err || !stats.isDirectory()) {
                 const error = new Error('Performance tracing cannot be enabled unless the jaeger client is installed');
-                error.status = restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY;
+                error.status = constants.STATUS_CODES.UNPROCESSABLE_ENTITY;
                 reject(error);
             }
             resolve();

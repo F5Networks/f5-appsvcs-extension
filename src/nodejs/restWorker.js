@@ -27,6 +27,7 @@ const HostContext = require('../lib/context/hostContext');
 const RequestContext = require('../lib/context/requestContext');
 const Context = require('../lib/context/context');
 const SettingsHandler = require('../lib/settingsHandler');
+const STATUS_CODES = require('../lib/constants').STATUS_CODES;
 
 class RestWorker {
     constructor() {
@@ -129,8 +130,6 @@ class RestWorker {
     }
 
     continuePost(context, restOperation) {
-        let result = {};
-
         this.asyncHandler.cleanRecords(context);
 
         return Promise.resolve()
@@ -144,12 +143,12 @@ class RestWorker {
                     }
                     break;
                 case 'info':
-                    result = restUtil.buildOpResult(
-                        restUtil.STATUS_CODES.OK,
+                    this.sendResponse(
+                        restOperation,
+                        STATUS_CODES.OK,
                         undefined,
                         this.hostContext.as3VersionInfo
                     );
-                    restUtil.completeRequest(restOperation, result);
                     break;
                 case 'task':
                     this.asyncHandler.getAsyncResponse(restOperation);
@@ -158,11 +157,11 @@ class RestWorker {
                     SettingsHandler.process(context, restOperation);
                     break;
                 default:
-                    result = restUtil.buildOpResult(
-                        restUtil.STATUS_CODES.BAD_REQUEST,
+                    this.sendResponse(
+                        restOperation,
+                        STATUS_CODES.BAD_REQUEST,
                         `${restOperation.getUri().href}: Bad Request`
                     );
-                    restUtil.completeRequest(restOperation, result);
                     break;
                 }
                 return Promise.resolve();

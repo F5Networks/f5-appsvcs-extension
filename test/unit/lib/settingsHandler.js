@@ -53,6 +53,7 @@ describe('settingsHandler', () => {
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
         Config.injectSettings(localStorageDataGroup);
         context = Context.build();
 
@@ -142,7 +143,8 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -159,7 +161,8 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: true,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -176,7 +179,8 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -197,7 +201,26 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: true,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
+            });
+            return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
+                .then(() => restOpPromise);
+        });
+
+        it('should set the webhook value if passed in', () => {
+            restOp.method = 'Post';
+            restOp.body = { webhook: 'https://www.example.com' };
+            const restOpPromise = createRestOpCompletePromise(restOp, 200, {
+                asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
+                burstHandlingEnabled: false,
+                performanceTracingEnabled: false,
+                performanceTracingEndpoint: '',
+                serviceDiscoveryEnabled: true,
+                webhook: 'https://www.example.com'
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -298,7 +321,8 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp))
                 .then(() => restOpPromise);

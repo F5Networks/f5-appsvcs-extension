@@ -31,6 +31,7 @@ const restUtil = require('../../../src/lib/util/restUtil');
 const config = require('../../../src/lib/config');
 const util = require('../../../src/lib/util/util');
 const tmshUtil = require('../../../src/lib/util/tmshUtil');
+const STATUS_CODES = require('../../../src/lib/constants').STATUS_CODES;
 
 describe('restWorker', () => {
     let restWorker = null;
@@ -163,7 +164,7 @@ describe('restWorker', () => {
         it('should return the current config with the desired values if a GET is used on /settings', function (done) {
             sinon.stub(SettingsHandler, 'process').callsFake((context, restOp) => {
                 const result = restUtil.buildOpResult(
-                    restUtil.STATUS_CODES.OK,
+                    STATUS_CODES.OK,
                     'retrieving settings',
                     { burstHandlingEnabled: false }
                 );
@@ -251,7 +252,7 @@ describe('restWorker', () => {
         it('should replace the config with the desired values if a POST is used on /settings', function (done) {
             sinon.stub(SettingsHandler, 'process').callsFake((context, restOp) => {
                 const result = restUtil.buildOpResult(
-                    restUtil.STATUS_CODES.OK,
+                    STATUS_CODES.OK,
                     'retrieving settings',
                     { burstHandlingEnabled: false }
                 );

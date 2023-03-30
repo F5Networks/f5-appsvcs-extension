@@ -33,7 +33,7 @@ const util = require('../util/util');
 const log = require('../log');
 const constants = require('../constants');
 
-const STATUS_CODES = require('../util/restUtil').STATUS_CODES;
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 class TargetContext {
     static get(context) {

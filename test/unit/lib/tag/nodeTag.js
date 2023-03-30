@@ -131,7 +131,7 @@ describe('nodeTag', () => {
 
         it('should add defaultRouteDomain to serverAddress members when routeDomain is not specified', () => {
             declaration.tenant.application.pool1.members[0].addressDiscovery = 'static';
-            declaration.tenant.application.pool1.members[0].serverAddresses = ['1.2.3.4'];
+            declaration.tenant.application.pool1.members[0].serverAddresses = ['192.0.2.4'];
             return NodeTag.process(context, declaration, getNodes())
                 .then(() => {
                     assert.deepStrictEqual(
@@ -140,7 +140,7 @@ describe('nodeTag', () => {
                             {
                                 servicePort: 80,
                                 addressDiscovery: 'static',
-                                serverAddresses: ['1.2.3.4'],
+                                serverAddresses: ['192.0.2.4'],
                                 routeDomain: 20
                             }
                         ]
@@ -152,7 +152,7 @@ describe('nodeTag', () => {
             declaration.tenant.application.pool1.members[0].addressDiscovery = 'static';
             declaration.tenant.application.pool1.members[0].servers = [{
                 name: 'myNode',
-                address: '1.2.3.4'
+                address: '192.0.2.4'
             }];
             return NodeTag.process(context, declaration, getNodes())
                 .then(() => {
@@ -164,7 +164,7 @@ describe('nodeTag', () => {
                                 addressDiscovery: 'static',
                                 servers: [{
                                     name: 'myNode',
-                                    address: '1.2.3.4'
+                                    address: '192.0.2.4'
                                 }],
                                 routeDomain: 20
                             }
@@ -175,7 +175,7 @@ describe('nodeTag', () => {
 
         it('should not add defaultRouteDomain as routeDomain when routeDomain is specified', () => {
             declaration.tenant.application.pool1.members[0].addressDiscovery = 'static';
-            declaration.tenant.application.pool1.members[0].serverAddresses = ['1.2.3.4'];
+            declaration.tenant.application.pool1.members[0].serverAddresses = ['192.0.2.4'];
             declaration.tenant.application.pool1.members[0].routeDomain = 100;
             return NodeTag.process(context, declaration, getNodes())
                 .then(() => {
@@ -185,7 +185,7 @@ describe('nodeTag', () => {
                             {
                                 servicePort: 80,
                                 addressDiscovery: 'static',
-                                serverAddresses: ['1.2.3.4'],
+                                serverAddresses: ['192.0.2.4'],
                                 routeDomain: 100
                             }
                         ]
@@ -199,11 +199,11 @@ describe('nodeTag', () => {
                 addressDiscovery: 'static',
                 shareNodes: false,
                 serverAddresses: [
-                    '1.2.3.4'
+                    '192.0.2.4'
                 ]
             };
             context.host.parser.nodelist.push({
-                key: '1.2.3.4',
+                key: '192.0.2.4',
                 partition: 'Common',
                 metadata: []
             });
@@ -217,7 +217,7 @@ describe('nodeTag', () => {
                         params: {
                             keyword: 'f5PostProcess(node)'
                         },
-                        message: 'The node /tenant/1.2.3.4 conflicts with /Common/1.2.3.4'
+                        message: 'The node /tenant/192.0.2.4 conflicts with /Common/192.0.2.4'
                     }]);
                 })
                 .then(() => {
@@ -233,12 +233,12 @@ describe('nodeTag', () => {
                 servers: [
                     {
                         name: 'myNode',
-                        address: '1.2.3.4'
+                        address: '192.0.2.4'
                     }
                 ]
             };
             context.host.parser.nodelist.push({
-                key: '1.2.3.4',
+                key: '192.0.2.4',
                 partition: 'Common',
                 metadata: []
             });
@@ -252,7 +252,7 @@ describe('nodeTag', () => {
                         params: {
                             keyword: 'f5PostProcess(node)'
                         },
-                        message: 'The node /tenant/1.2.3.4 conflicts with /Common/1.2.3.4'
+                        message: 'The node /tenant/192.0.2.4 conflicts with /Common/192.0.2.4'
                     }]);
                 })
                 .then(() => {
@@ -268,14 +268,14 @@ describe('nodeTag', () => {
                 servers: [
                     {
                         name: 'myNode',
-                        address: '1.2.3.4'
+                        address: '192.0.2.4'
                     }
                 ]
             };
             context.host.parser.nodelist.push({
-                key: '1.2.3.4',
+                key: '192.0.2.4',
                 partition: 'otherTenant',
-                fullPath: '/otherTenant/1.2.3.4',
+                fullPath: '/otherTenant/192.0.2.4',
                 metadata: []
             });
             return NodeTag.process(context, declaration, getNodes())
@@ -288,7 +288,7 @@ describe('nodeTag', () => {
                         params: {
                             keyword: 'f5PostProcess(node)'
                         },
-                        message: 'pool member /tenant/application/pool1/members/0 static address 1.2.3.4 conflicts with bigip node /otherTenant/1.2.3.4'
+                        message: 'pool member /tenant/application/pool1/members/0 static address 192.0.2.4 conflicts with bigip node /otherTenant/192.0.2.4'
                     }]);
                 })
                 .then(() => {
@@ -301,20 +301,20 @@ describe('nodeTag', () => {
                 addressDiscovery: 'static',
                 shareNodes: true,
                 serverAddresses: [
-                    '1.2.3.4'
+                    '192.0.2.4'
                 ],
                 servers: [
                     {
                         name: 'myNode',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     }
                 ]
             };
             context.host.parser.nodelist.push(
                 {
-                    key: '1.2.3.4',
+                    key: '192.0.2.4',
                     partition: 'Common',
-                    fullPath: '/Common/1.2.3.4',
+                    fullPath: '/Common/192.0.2.4',
                     metadata: [
                         {
                             name: 'references'
@@ -322,9 +322,9 @@ describe('nodeTag', () => {
                     ]
                 },
                 {
-                    key: '5.6.7.8',
+                    key: '192.0.2.8',
                     partition: 'Common',
-                    fullPath: '/Common/5.6.7.8',
+                    fullPath: '/Common/192.0.2.8',
                     metadata: [
                         {
                             name: 'references'
@@ -344,30 +344,30 @@ describe('nodeTag', () => {
                 addressDiscovery: 'static',
                 shareNodes: true,
                 serverAddresses: [
-                    '1.2.3.4', '4.3.2.1'
+                    '192.0.2.4', '192.0.2.1'
                 ],
                 servers: [
                     {
                         name: 'myNode',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     }
                 ]
             };
             context.host.parser.nodelist.push(
                 {
-                    key: '1.2.3.4',
+                    key: '192.0.2.1',
                     partition: 'Common',
-                    fullPath: '/Common/1.2.3.4'
+                    fullPath: '/Common/192.0.2.1'
                 },
                 {
-                    key: '4.3.2.1',
+                    key: '192.0.2.4',
                     partition: 'Common',
-                    fullPath: '/Common/4.3.2.1'
+                    fullPath: '/Common/192.0.2.4'
                 },
                 {
-                    key: '5.6.7.8',
+                    key: '192.0.2.8',
                     partition: 'Common',
-                    fullPath: '/Common/5.6.7.8'
+                    fullPath: '/Common/192.0.2.8'
                 }
             );
             return NodeTag.process(context, declaration, getNodes())
@@ -378,8 +378,8 @@ describe('nodeTag', () => {
                         {
                             shareNodes: true,
                             routeDomain: 20,
-                            bigip: '/Common/5.6.7.8',
-                            remark: '(replaces AS3 5.6.7.8)'
+                            bigip: '/Common/192.0.2.8',
+                            remark: '(replaces AS3 192.0.2.8)'
                         }
                     );
                     assert.deepStrictEqual(
@@ -387,8 +387,8 @@ describe('nodeTag', () => {
                         {
                             shareNodes: true,
                             routeDomain: 20,
-                            bigip: '/Common/1.2.3.4',
-                            remark: '(replaces AS3 1.2.3.4)'
+                            bigip: '/Common/192.0.2.4',
+                            remark: '(replaces AS3 192.0.2.4)'
                         }
                     );
                     assert.deepStrictEqual(
@@ -396,8 +396,8 @@ describe('nodeTag', () => {
                         {
                             shareNodes: true,
                             routeDomain: 20,
-                            bigip: '/Common/4.3.2.1',
-                            remark: '(replaces AS3 4.3.2.1)'
+                            bigip: '/Common/192.0.2.1',
+                            remark: '(replaces AS3 192.0.2.1)'
                         }
                     );
                 });
@@ -408,29 +408,29 @@ describe('nodeTag', () => {
                 addressDiscovery: 'static',
                 shareNodes: false,
                 serverAddresses: [
-                    '1.2.3.4', '4.3.2.1'
+                    '192.0.2.4', '192.0.2.1'
                 ],
                 servers: [
                     {
                         name: 'myNode1',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     },
                     {
                         name: 'myNode2',
-                        address: '8.7.6.5'
+                        address: '192.0.2.5'
                     }
                 ]
             };
             context.host.parser.nodelist.push(
                 {
-                    key: '1.2.3.4',
+                    key: '192.0.2.4',
                     partition: 'Common',
-                    fullPath: '/Common/1.2.3.4'
+                    fullPath: '/Common/192.0.2.4'
                 },
                 {
-                    key: '5.6.7.8',
+                    key: '192.0.2.8',
                     partition: 'Common',
-                    fullPath: '/Common/5.6.7.8'
+                    fullPath: '/Common/192.0.2.8'
                 }
             );
             return NodeTag.process(context, declaration, getNodes())
@@ -441,12 +441,12 @@ describe('nodeTag', () => {
                         {
                             addressDiscovery: 'static',
                             serverAddresses: [
-                                '4.3.2.1'
+                                '192.0.2.1'
                             ],
                             servers: [
                                 {
                                     name: 'myNode2',
-                                    address: '8.7.6.5'
+                                    address: '192.0.2.5'
                                 }
                             ],
                             routeDomain: 20,
@@ -458,8 +458,8 @@ describe('nodeTag', () => {
                         {
                             shareNodes: false,
                             routeDomain: 20,
-                            bigip: '/Common/1.2.3.4',
-                            remark: '(replaces AS3 1.2.3.4)'
+                            bigip: '/Common/192.0.2.4',
+                            remark: '(replaces AS3 192.0.2.4)'
                         }
                     );
                     assert.deepStrictEqual(
@@ -467,8 +467,8 @@ describe('nodeTag', () => {
                         {
                             shareNodes: false,
                             routeDomain: 20,
-                            bigip: '/Common/5.6.7.8',
-                            remark: '(replaces AS3 5.6.7.8)'
+                            bigip: '/Common/192.0.2.8',
+                            remark: '(replaces AS3 192.0.2.8)'
                         }
                     );
                 });
@@ -482,11 +482,11 @@ describe('nodeTag', () => {
                 servers: [
                     {
                         name: 'myNode',
-                        address: '1.2.3.4'
+                        address: '192.0.2.4'
                     },
                     {
                         name: 'myNode',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     }
                 ]
             };
@@ -513,23 +513,23 @@ describe('nodeTag', () => {
             declaration.tenant.application.pool1.members[0] = {
                 addressDiscovery: 'static',
                 shareNodes: false,
-                serverAddresses: ['1.2.3.4'],
+                serverAddresses: ['192.0.2.4'],
                 servers: [
                     {
                         name: 'myNode1',
-                        address: '1.2.3.4'
+                        address: '192.0.2.4'
                     },
                     {
                         name: 'myNode2',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     },
                     {
                         name: 'myNode3',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     },
                     {
                         name: 'myNode4',
-                        address: '5.6.7.8%100'
+                        address: '192.0.2.8%100'
                     }
                 ]
             };
@@ -545,7 +545,7 @@ describe('nodeTag', () => {
                             params: {
                                 keyword: 'f5PostProcess(node)'
                             },
-                            message: 'serverAddresses/servers array has duplicate address 1.2.3.4%20'
+                            message: 'serverAddresses/servers array has duplicate address 192.0.2.4%20'
                         },
                         {
                             dataPath: '/tenant/application/pool1/members',
@@ -553,7 +553,7 @@ describe('nodeTag', () => {
                             params: {
                                 keyword: 'f5PostProcess(node)'
                             },
-                            message: 'serverAddresses/servers array has duplicate address 5.6.7.8%20'
+                            message: 'serverAddresses/servers array has duplicate address 192.0.2.8%20'
                         }
                     ]);
                 })

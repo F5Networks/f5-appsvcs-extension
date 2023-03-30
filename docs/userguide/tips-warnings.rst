@@ -62,7 +62,6 @@ Warnings
   declaration results in a ``204`` HTTP Status Code.  You may also see other HTTP
   status codes.
 
-
 .. _notestips:
 
 Notes and Tips

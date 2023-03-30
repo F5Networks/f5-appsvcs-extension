@@ -988,6 +988,72 @@
     { "id": "type" },
     { "id": "records",                  "extend": "array", "quotedString": true }
   ],
+  "ltm dns cache resolver": [
+    { "id": "allowed-query-time" },
+    { "id": "answer-default-zones",             "truth": "yes", "falsehood": "no" },
+    { "id": "description",                      "altId": "remark", "quotedString": true, "minVersion": "14.0" },
+    { "id": "local-zones",                      "extend": "namedObject" },
+    { "id": "max-concurrent-queries" },
+    { "id": "max-concurrent-tcp" },
+    { "id": "max-concurrent-udp" },
+    { "id": "msg-cache-size",                   "altId": "messageCacheSize" },
+    { "id": "nameserver-cache-count" },
+    { "id": "randomize-query-name-case",        "truth": "yes", "falsehood": "no" },
+    { "id": "forward-zones",                    "extend": "namedObject" },
+    { "id": "root-hints",                       "extend": "array" },
+    { "id": "route-domain" },
+    { "id": "rrset-cache-size",                 "altId": "recordCacheSize" },
+    { "id": "rrset-rotate",                     "altId": "recordRotationMethod" },
+    { "id": "unwanted-query-reply-threshold" },
+    { "id": "use-ipv4",                         "truth": "yes", "falsehood": "no" },
+    { "id": "use-ipv6",                         "truth": "yes", "falsehood": "no" },
+    { "id": "use-tcp",                          "truth": "yes", "falsehood": "no" },
+    { "id": "use-udp",                          "truth": "yes", "falsehood": "no" }
+  ],
+    "ltm dns cache resolver local-zones": [
+    { "id": "name" },
+    { "id": "type" },
+    { "id": "records",                  "extend": "array", "quotedString": true }
+  ],
+  "ltm dns cache resolver forward-zones": [
+    { "id": "name" },
+    { "id": "nameservers",              "extend": "array" }
+  ],
+  "ltm dns cache validating-resolver": [
+    { "id": "allowed-query-time" },
+    { "id": "answer-default-zones",             "truth": "yes", "falsehood": "no" },
+    { "id": "description",                      "altId": "remark", "quotedString": true, "minVersion": "14.0" },
+    { "id": "ignore-cd",                        "truth": "yes", "falsehood": "no" },
+    { "id": "key-cache-size" },
+    { "id": "local-zones",                      "extend": "namedObject" },
+    { "id": "max-concurrent-queries" },
+    { "id": "max-concurrent-tcp" },
+    { "id": "max-concurrent-udp" },
+    { "id": "msg-cache-size",                   "altId": "messageCacheSize" },
+    { "id": "nameserver-cache-count" },
+    { "id": "prefetch-key",                     "truth": "yes", "falsehood": "no" },
+    { "id": "randomize-query-name-case",        "truth": "yes", "falsehood": "no" },
+    { "id": "forward-zones",                    "extend": "namedObject" },
+    { "id": "root-hints",                       "extend": "array"},
+    { "id": "route-domain" },
+    { "id": "rrset-cache-size",                 "altId": "recordCacheSize" },
+    { "id": "rrset-rotate",                     "altId": "recordRotationMethod" },
+    { "id": "trust-anchors",                    "extend": "array", "quotedString": true, "altId": "trustAnchors" },
+    { "id": "unwanted-query-reply-threshold" },
+    { "id": "use-ipv4",                         "truth": "yes", "falsehood": "no" },
+    { "id": "use-ipv6",                         "truth": "yes", "falsehood": "no" },
+    { "id": "use-tcp",                          "truth": "yes", "falsehood": "no" },
+    { "id": "use-udp",                          "truth": "yes", "falsehood": "no" }
+  ],
+  "ltm dns cache validating-resolver local-zones": [
+    { "id": "name" },
+    { "id": "type" },
+    { "id": "records",                  "extend": "array", "quotedString": true }
+  ],
+  "ltm dns cache validating-resolver forward-zones": [
+    { "id": "name" },
+    { "id": "nameservers",              "extend": "array" }
+  ],
   "ltm profile dns": [
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"defaults-from",             "altId": "parentProfile" },
