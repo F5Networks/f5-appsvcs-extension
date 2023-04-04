@@ -50,9 +50,6 @@ describe('config', () => {
         // users from supplying information not in the defaults.
         localStorageDataGroup.setItem('funky', 'monkey');
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
-        localStorageDataGroup.setItem('betaOptions', {
-            perAppDeploymentAllowed: false
-        });
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
@@ -63,9 +60,6 @@ describe('config', () => {
             .then(() => Config.injectSettings(localStorageDataGroup))
             .then(() => assert.becomes(Config.getAllSettings(), {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -76,9 +70,6 @@ describe('config', () => {
 
     it('should return the updated values', () => {
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
-        localStorageDataGroup.setItem('betaOptions', {
-            perAppDeploymentAllowed: false
-        });
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
@@ -86,9 +77,6 @@ describe('config', () => {
         localStorageDataGroup.setItem('webhook', '');
         const newSettings = {
             asyncTaskStorage: 'memory',
-            betaOptions: {
-                perAppDeploymentAllowed: false
-            },
             burstHandlingEnabled: true,
             performanceTracingEnabled: true,
             performanceTracingEndpoint: 'http://192.168.0.1:14268/api/traces',
@@ -118,9 +106,6 @@ describe('config', () => {
         return Promise.resolve()
             .then(() => assert.becomes(Config.getAllSettings(), {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -129,9 +114,6 @@ describe('config', () => {
             }))
             .then(() => assert.deepStrictEqual(storageData, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',

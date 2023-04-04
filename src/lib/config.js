@@ -23,9 +23,6 @@ const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 // atgStorage is not set on startup, but when it's used the first time.
 const defaults = {
     asyncTaskStorage: 'data-group',
-    betaOptions: {
-        perAppDeploymentAllowed: false
-    },
     burstHandlingEnabled: false,
     performanceTracingEnabled: false,
     performanceTracingEndpoint: '',
