@@ -119,7 +119,7 @@ const fetchCurrentConfigFromPrev = function (context, tenantId, commonConfig, pr
         }))
         .then(() => reportTime(
             `parsing current ${tenantId} config`,
-            () => Promise.resolve(fetch.getDesiredConfig(context, tenantId, prevDecl, commonConfig))
+            () => fetch.getDesiredConfig(context, tenantId, prevDecl, commonConfig)
         ));
 };
 
@@ -337,7 +337,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
         })
         .then(() => reportTime(
             `parsing desired ${tenantId} config`,
-            () => Promise.resolve(fetch.getDesiredConfig(context, tenantId, declaration, commonConfig))
+            () => fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
         ))
         .then((result) => {
             tenantDesiredConfig = result;

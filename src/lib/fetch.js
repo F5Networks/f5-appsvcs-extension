@@ -614,46 +614,73 @@ const checkDesiredForReferencedProfiles = function (context, desiredConfig) {
  * @param {string} tenantId - specifies Tenant of interest
  * @param {object} declaration
  * @param {object} commonConfig
- * @returns {object}
+ * @returns {Promise}
  */
 const getDesiredConfig = function (context, tenantId, declaration, commonConfig) {
     let desiredConfig = {};
     let appList = [];
-    let item;
-    let mcpObjArr;
     const tenantDecl = declaration[tenantId];
+    const appPromiseFuncs = [];
 
     if ((tenantDecl && tenantDecl.enable) || tenantId === 'Common') {
         appList = validClassList(tenantDecl, 'Application');
     }
 
     appList.forEach((appId) => {
-        if (tenantDecl[appId].enable) {
-            mcpObjArr = mapAs3.translate.Application(context, tenantId, appId).configs;
-            desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
-            validClassList(tenantDecl[appId]).forEach((itemId) => {
-                item = tenantDecl[appId][itemId];
-                if (mapAs3.translate[item.class] !== undefined) {
-                    const mcpUpdates = mapAs3
-                        .translate[item.class](context, tenantId, appId, itemId, item, declaration);
-                    if (mcpUpdates.updatePath === true) {
-                        context.request.postProcessing = context.request.postProcessing.concat(mcpUpdates.pathUpdates);
-                    }
-                    desiredConfig = mergeByPath(desiredConfig, mcpUpdates.configs);
-                }
-            });
+        if (!tenantDecl[appId].enable) {
+            return;
         }
+
+        const appPromiseFunc = () => Promise.resolve()
+            .then(() => mapAs3.translate.Application(context, tenantId, appId))
+            .then((mcpObj) => {
+                const itemPromiseFuncs = [];
+
+                desiredConfig = mergeByPath(desiredConfig, mcpObj.configs);
+                validClassList(tenantDecl[appId]).forEach((itemId) => {
+                    const item = tenantDecl[appId][itemId];
+
+                    if (mapAs3.translate[item.class] === undefined) {
+                        return;
+                    }
+                    const itemPromiseFunc = () => Promise.resolve()
+                        .then(() => mapAs3.translate[item.class](context, tenantId, appId, itemId, item, declaration))
+                        .then((mcpUpdates) => {
+                            if (mcpUpdates.updatePath === true) {
+                                context.request.postProcessing = context.request.postProcessing
+                                    .concat(mcpUpdates.pathUpdates);
+                            }
+                            desiredConfig = mergeByPath(desiredConfig, mcpUpdates.configs);
+                        });
+                    itemPromiseFuncs.push(itemPromiseFunc);
+                });
+                return promiseUtil.series(itemPromiseFuncs);
+            });
+
+        appPromiseFuncs.push(appPromiseFunc);
     });
-    if (Object.keys(desiredConfig).length > 0) {
-        mcpObjArr = mapAs3.translate.Tenant(context, tenantId, tenantDecl).configs;
-        desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
-    }
-    if (context.request.postProcessing.length > 0) {
-        context.request.postProcessing = desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
-    }
-    updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
-    updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);
-    return desiredConfig;
+
+    return promiseUtil.series(appPromiseFuncs)
+        .then(() => {
+            if (Object.keys(desiredConfig).length > 0) {
+                return mapAs3.translate.Tenant(context, tenantId, tenantDecl);
+            }
+            return Promise.resolve();
+        })
+        .then((mcpObj) => {
+            if (mcpObj) {
+                desiredConfig = mergeByPath(desiredConfig, mcpObj.configs);
+            }
+            if (context.request.postProcessing.length > 0) {
+                context.request.postProcessing = desiredConfigPostProcessing(
+                    desiredConfig,
+                    context.request.postProcessing
+                );
+            }
+            updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
+            updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);
+            return desiredConfig;
+        });
 };
 
 function isShared(item) {

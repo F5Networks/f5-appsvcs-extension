@@ -641,7 +641,7 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
  * @param {string} itemId
  * @param {object} item
  * @param {object} declaration
- * @returns {Object}
+ * @returns {(Object|Promise)}
  */
 const translate = {
 
