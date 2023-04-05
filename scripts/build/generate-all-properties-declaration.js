@@ -26,9 +26,7 @@ const rootHooks = require('../../test/integration/bigip/property/mochaHooks').mo
 
 const rimrafPromise = (filepath, options) => {
     if (options === undefined || options === null) options = {};
-    return new Promise((resolve, reject) => {
-        rimraf(filepath, options, (err) => (err ? reject(err) : resolve()));
-    });
+    return rimraf(filepath, options);
 };
 
 function generateTestDeclarations() {

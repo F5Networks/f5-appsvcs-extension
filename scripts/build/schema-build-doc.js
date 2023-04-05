@@ -24,9 +24,7 @@ const schemaBuild = require('./schema-build').build;
 
 const rimrafPromise = (filepath, options) => {
     if (options === undefined || options === null) options = {};
-    return new Promise((resolve, reject) => {
-        rimraf(filepath, options, (err) => (err ? reject(err) : resolve()));
-    });
+    return rimraf(filepath, options);
 };
 
 const ROOT = `${__dirname}/../..`;
