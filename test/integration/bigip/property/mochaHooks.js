@@ -49,13 +49,13 @@ exports.mochaHooks = {
             })
             .then(() => mkdirPromise(`test/logs/${suiteName}`))
             .then(() => {
-                if (process.env.PARALLEL === 'true') {
+                if (process.env.PARALLEL === 'true' && process.env.DRY_RUN !== 'true') {
                     suiteEventStream = fs.createWriteStream(`test/logs/${suiteName}/${eventLogName}.log`);
                 }
                 propertiesCommon.setEventStream(suiteEventStream || globalEventStream);
             })
             .then(() => {
-                if (process.env.PARALLEL === 'true') {
+                if (process.env.PARALLEL === 'true' && process.env.DRY_RUN !== 'true') {
                     const requestOptions = {
                         protocol: 'http:',
                         host: process.env.RESERVATION_SERVER_HOST,
@@ -144,7 +144,7 @@ exports.mochaHooks = {
 
     afterAll() {
         let promise = Promise.resolve();
-        if (process.env.PARALLEL && process.env.RESERVATION_ID) {
+        if (process.env.PARALLEL && process.env.RESERVATION_ID && process.env.DRY_RUN !== 'true') {
             const requestOptions = {
                 protocol: 'http:',
                 host: process.env.RESERVATION_SERVER_HOST,
@@ -159,7 +159,7 @@ exports.mochaHooks = {
         }
         return promise
             .then(() => {
-                if (process.env.PARALLEL && process.env.RESERVATION_ID) {
+                if (process.env.PARALLEL && process.env.RESERVATION_ID && process.env.DRY_RUN !== 'true') {
                     propertiesCommon.logEvent(
                         `Deleted reservation ${process.env.RESERVATION_ID}`,
                         globalEventStream
