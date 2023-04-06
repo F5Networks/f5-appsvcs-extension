@@ -111,7 +111,9 @@ class RestWorker {
     }
 
     onPost(restOperation) {
-        Config.reloadSettings()
+        return Promise.resolve()
+            .then(() => this.validatePath(restOperation))
+            .then(() => Config.reloadSettings())
             .then(() => RequestContext.get(restOperation, this.hostContext))
             .then((reqContext) => {
                 if (reqContext.error) {
@@ -166,6 +168,56 @@ class RestWorker {
                 }
                 return Promise.resolve();
             });
+    }
+
+    validatePath(restOperation) {
+        const validEndpoints = ['declare', 'info', 'task', 'settings'];
+        const path = restOperation.getUri().path;
+        const validPathLengths = [3];
+
+        let valid = false;
+        let endpoint;
+
+        if (path) {
+            const pathParts = path.split('?')[0].split('/');
+
+            if (pathParts[0] === '') {
+                pathParts.shift();
+            }
+            if (pathParts[pathParts.length - 1] === '') {
+                pathParts.pop();
+            }
+
+            // path should be like /shared/appsvcs/declare, so the endpoint is in position 2
+            if (pathParts.length >= 3) {
+                endpoint = pathParts[2];
+            }
+
+            // 'declare' and 'task' endpoints can have 4th parameter
+            // being the tenant and taskId respectively
+            if (endpoint === 'declare' || endpoint === 'task') {
+                validPathLengths.push(4);
+            }
+
+            if (validPathLengths.indexOf(pathParts.length) === -1) {
+                endpoint = undefined;
+            }
+        }
+
+        if (endpoint && validEndpoints.indexOf(endpoint) !== -1) {
+            valid = true;
+        }
+
+        if (!valid) {
+            this.sendResponse(
+                restOperation,
+                STATUS_CODES.BAD_REQUEST,
+                'Bad Request: Invalid path'
+            );
+            return Promise.reject(new Error('Invalid path'));
+        }
+
+        return Promise.resolve();
     }
 }
 

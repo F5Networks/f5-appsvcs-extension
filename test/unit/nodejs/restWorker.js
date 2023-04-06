@@ -26,6 +26,7 @@ const RestWorker = require('../../../src/nodejs/restWorker');
 const constants = require('../../../src/lib/constants');
 const log = require('../../../src/lib/log');
 const HostContext = require('../../../src/lib/context/hostContext');
+const RequestContext = require('../../../src/lib/context/requestContext');
 const SettingsHandler = require('../../../src/lib/settingsHandler');
 const restUtil = require('../../../src/lib/util/restUtil');
 const config = require('../../../src/lib/config');
@@ -61,7 +62,7 @@ describe('restWorker', () => {
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin:');
     });
 
-    function createRestOpMock(statusCode, done, restOpBody) {
+    function createRestOpMock(statusCode, done, restOpBody, path) {
         // we're asserting side effect of calling the restWorker's on${Method}
         // which should eventually call restOperation.complete() method
         // we're passing in mocha done callback to ensure that these asserts happen
@@ -83,6 +84,9 @@ describe('restWorker', () => {
                 done(err);
             }
         });
+        if (path) {
+            restOp.setPath(path);
+        }
         return restOp;
     }
 
@@ -145,6 +149,81 @@ describe('restWorker', () => {
                 );
                 done();
             }, null, '');
+        });
+    });
+
+    describe('path validation', () => {
+        const invalidPaths = [
+            {
+                name: 'too short',
+                path: '/shared/appsvcs'
+            },
+            {
+                name: 'bad endpoint',
+                path: '/shared/appsvcs/foo'
+            },
+            {
+                name: 'info with extra parameter',
+                path: '/shared/appsvcs/info/foo'
+            },
+            {
+                name: 'settings with extra parameter',
+                path: '/shared/appsvcs/settings/foo'
+            }
+        ];
+
+        const validPaths = [
+            {
+                name: 'declare',
+                path: '/shared/appsvcs/declare'
+            },
+            {
+                name: 'task',
+                path: '/shared/appsvcs/task'
+            },
+            {
+                name: 'info',
+                path: '/shared/appsvcs/info'
+            },
+            {
+                name: 'settings',
+                path: '/shared/appsvcs/settings'
+            },
+            {
+                name: 'trailing slash',
+                path: '/shared/appsvcs/declare/'
+            },
+            {
+                name: 'declare with tenant',
+                path: '/shared/appsvcs/declare/foo'
+            },
+            {
+                name: 'task with id',
+                path: '/shared/appsvcs/task/foo'
+            }
+        ];
+
+        invalidPaths.forEach((path) => {
+            it(`Should reject ${path.name} paths`, (done) => {
+                const restOp = createRestOpMock(400, done, null, path.path);
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
+        });
+
+        validPaths.forEach((path) => {
+            it(`Should accept ${path.name} paths`, (done) => {
+                const restOp = createRestOpMock(200, done, null, path.path);
+                sinon.stub(restWorker, 'continuePost').callsFake((context, restOperation) => {
+                    restOperation.statusCode = 200;
+                    restOperation.body = {
+                        code: 200
+                    };
+                    restOperation.complete();
+                });
+                sinon.stub(RequestContext, 'get').resolves({});
+
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
         });
     });
 

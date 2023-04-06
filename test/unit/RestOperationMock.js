@@ -23,9 +23,9 @@ class RestOperationMock {
         this.isComplete = false;
         this.onComplete = onComplete;
         this.uri = {
-            pathname: '/shared/appsvcs/all',
+            pathname: '/shared/appsvcs/declare',
             // this is the full path
-            path: '/shared/appsvcs/all'
+            path: '/shared/appsvcs/declare'
         };
         this.method = '';
         this.headers = {};
@@ -65,7 +65,7 @@ class RestOperationMock {
 
     setPathName(pathName) {
         this.uri.pathname = pathName;
-        if (this.uri.path === '/shared/appsvcs/all') {
+        if (this.uri.path === '/shared/appsvcs/declare') {
             this.uri.path = pathName;
         }
     }
