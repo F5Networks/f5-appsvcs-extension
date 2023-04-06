@@ -1,0 +1,38 @@
+{
+    "$id": "urn:uuid:f23d7326-d355-4168-8772-c1ca4978acea",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Application Schema",
+    "description": "A per-app declarative configuration for an ADC such as F5 BIG-IP",
+    "oneOf": [
+        {
+            "$ref": "#/definitions/App"
+        },
+        {
+            "$ref": "#/definitions/App_Array"
+        }
+    ],
+    "definitions": {
+        "App": {
+            "title": "App",
+            "description": "A declarative configuration for an ADC such as F5 BIG-IP, via AS3 per-app interface",
+            "type": "object",
+            "maxProperties": 1,
+            "additionalProperties": {
+                "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Application"
+            },
+            "propertyNames": {
+                "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+                "maxLength": 190
+            }
+        },
+        "App_Array": {
+            "title": "Declaration Array",
+            "description": "An array of declarations (per-app) to process",
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/App"
+            },
+            "minItems": 1
+        }
+    }
+}
