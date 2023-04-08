@@ -7970,6 +7970,32 @@ describe('map_as3', () => {
                     }
                 );
             });
+
+            it('should update indefinite to 4294967295', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.1'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: '',
+                    namingScheme: 'certificate',
+                    certificates: [
+                        {
+                            certificate: '/tenantId/appId/webcert1'
+                        }
+                    ],
+                    renegotiatePeriod: 'indefinite',
+                    renegotiateSize: 'indefinite',
+                    renegotiateMaxRecordDelay: 'indefinite'
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+                const profile = results.configs[0].properties;
+                assert.strictEqual(profile['renegotiate-period'], 4294967295);
+                assert.strictEqual(profile['renegotiate-size'], 4294967295);
+                assert.strictEqual(profile['renegotiate-max-record-delay'], 4294967295);
+            });
         });
 
         describe('TLS Client', () => {
@@ -8231,6 +8257,41 @@ describe('map_as3', () => {
                 assert.strictEqual(profile.key, 'webcert.key');
                 assert.strictEqual(profile.chain, 'webcert-bundle.crt');
             });
+        });
+
+        it('should update indefinite to 4294967295', () => {
+            const context = {
+                target: {
+                    tmosVersion: '14.1'
+                }
+            };
+            const item = {
+                class: 'TLS_Client',
+                authenticationFrequency: '',
+                renegotiatePeriod: 'indefinite',
+                renegotiateSize: 'indefinite'
+            };
+            const decl = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'TLS_Client',
+                tenantId: {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application',
+                        tlsClient: {
+                            class: 'TLS_Client',
+                            authenticationFrequency: '',
+                            renegotiatePeriod: 'indefinite',
+                            renegotiateSize: 'indefinite'
+                        }
+                    }
+                }
+            };
+            const results = translate.TLS_Client(context, 'tenantId', 'appId', 'tlsClient', item, decl);
+            const profile = results.configs[0].properties;
+            assert.strictEqual(profile['renegotiate-period'], 4294967295);
+            assert.strictEqual(profile['renegotiate-size'], 4294967295);
         });
     });
 

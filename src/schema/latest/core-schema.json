@@ -5786,26 +5786,50 @@
                 "renegotiateMaxRecordDelay": {
                     "title": "Renegotiate Max Record Delay",
                     "description": "Specifies the maximum number of SSL records that the traffic management system can receive before it renegotiates an SSL session. After the system receives this number of SSL records, it closes the connection. This setting applies to client profiles only.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 4294967295
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
                 },
                 "renegotiatePeriod": {
                     "title": "Renegotiate Period",
                     "description": "Specifies the number of seconds required to renegotiate an SSL session.",
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4294967295,
-                    "default": 4294967295
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
                 },
                 "renegotiateSize": {
                     "title": "Renegotiate Size",
                     "description": "Specifies the size of the application data, in megabytes, that is transmitted over the secure channel. If the size of the data is higher than this value, the traffic management system must renegotiate the SSL session.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 4294967295
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
                 }
             },
             "additionalProperties": false,
@@ -6217,18 +6241,34 @@
                 "renegotiatePeriod": {
                     "title": "Renegotiate Period",
                     "description": "Specifies the number of seconds from the initial connect time after which the system renegotiates an SSL session. The default value is indefinite, which means that you do not want the system to renegotiate SSL sessions.",
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 4294967295,
-                    "default": 4294967295
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
                 },
                 "renegotiateSize": {
                     "title": "Renegotiate Size",
                     "description": "Specifies a throughput size, in megabytes, of SSL renegotiation. This option forces the traffic management system to renegotiate an SSL session based on the size, in megabytes, of application data that is transmitted over the secure channel. The default value is indefinite, which specifies that you do not want a throughput size.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 4294967295
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": "indefinite"
                 }
             },
             "allOf": [

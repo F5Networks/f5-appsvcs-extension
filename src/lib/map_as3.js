@@ -1223,6 +1223,9 @@ const translate = {
 
         updateTlsOptions(item, context);
 
+        item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
+        item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+
         configs.push(normalize.actionableMcp(context, item, 'ltm profile server-ssl', util.mcpPath(tenantId, appId, itemId)));
 
         if (item.ldapStartTLS) {
@@ -1333,6 +1336,10 @@ const translate = {
         item.cipherGroup = item.cipherGroup || 'none';
 
         updateTlsOptions(item, context);
+
+        item.renegotiateMaxRecordDelay = (item.renegotiateMaxRecordDelay === 'indefinite') ? 4294967295 : item.renegotiateMaxRecordDelay;
+        item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
+        item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
 
         item.certificates.forEach((obj, index) => {
             const tlsItem = Object.create(item);
