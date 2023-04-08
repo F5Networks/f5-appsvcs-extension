@@ -14,6 +14,7 @@ Changes to this project are documented in this file. More detail (including info
 - Updated to Service Discovery 1.13.0-3
   - AUTOTOOL-3581: Upgrade atg-storage to resolve issue with reading data groups when cli preference list-all-properties is enabled
   - AUTOTOOL-3598: ([GitHub Issue 669](https://github.com/F5Networks/f5-appsvcs-extension/issues/669)): When modifying/moving an existing AS3 application from one Route Domain to another, the Service Discovery nodes are not updated to the new Route domain
+- AUTOTOOL-3809: Update TLS_Client and TLS_Server properties to include indefinite option. The indefinite option behaves the same as a value of 4294967295
 
 ### Removed
 
