@@ -12,6 +12,8 @@ Warnings
 
 - You must use the **admin** user (and not just a user with administrator privileges) to install BIG-IP AS3.
 
+- AS3 does not function properly when the BIG-IP has |appliance| enabled.  We strongly recommend disabling Appliance mode when using AS3.
+
 - BIG-IP AS3 saves the BIG-IP configuration (**tmsh save sys config**) even when the operation result is **no change**, unless **persist** is set to **false** (persist is set to true by default). This could affect performance for BIG-IP devices with a large number of configuration objects.  |br| |br|
 
 - BIG-IP AS3 3.24 added the ability to update APM policies.  Updating Access Policy Management objects can be a slow process and may cause BIG-IP AS3 declarations to take longer to apply. |br| |br|
@@ -123,6 +125,10 @@ Notes and Tips
 
 - From any client external to the BIG-IP, the BIG-IP AS3 RESTful API is only accessible using HTTPS (HTTP over TLS). |br| |br|
 
+
+.. |appliance| raw:: html
+
+   <a href="https://my.f5.com/manage/s/article/K12815" target="_blank">Appliance mode</a>
 
 .. |nonhttp| raw:: html
 
