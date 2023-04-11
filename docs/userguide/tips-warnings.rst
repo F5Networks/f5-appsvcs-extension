@@ -12,7 +12,7 @@ Warnings
 
 - You must use the **admin** user (and not just a user with administrator privileges) to install BIG-IP AS3.
 
-- AS3 does not function properly when the BIG-IP has |appliance| enabled.  We strongly recommend disabling Appliance mode when using AS3.
+- BIG-IP AS3 does not function properly when the BIG-IP has |appliance| enabled.  We strongly recommend disabling Appliance mode when using BIG-IP AS3.
 
 - BIG-IP AS3 saves the BIG-IP configuration (**tmsh save sys config**) even when the operation result is **no change**, unless **persist** is set to **false** (persist is set to true by default). This could affect performance for BIG-IP devices with a large number of configuration objects.  |br| |br|
 
