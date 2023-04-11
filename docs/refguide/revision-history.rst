@@ -12,7 +12,7 @@ Document Revision History
         - Date 
 
       * - 3.45
-        - Updated the documentation for AS3 v3.45.0. This release contains the following changes: |br| *  |br| |br| Issues Resolved: |br| * Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
+        - Updated the documentation for AS3 v3.45.0. This release contains the following changes: |br| * Added a note to the :ref:`Warnings<warnings>` page about AS3 not functioning properly when the BIG-IP is in Appliance mode |br| |br| Issues Resolved: |br| * Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
         - 5-2-23
 
       * - 3.44
