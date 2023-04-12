@@ -770,11 +770,13 @@
                 "policyIAM": {
                     "title": "IAM policy",
                     "description": "BIG-IP AS3 pointer to IAM (APM) policy declaration",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_Access_Profile"
                         }
@@ -782,11 +784,13 @@
                 },
                 "profileFPS": {
                     "description": "FPS Profile to attach to service",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["fps"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["fps"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_FPS_Profile"
                         }
@@ -800,53 +804,63 @@
                 },
                 "profileAccess": {
                     "title": "Access profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Access_Profile" }
                     ]
                 },
                 "profileConnectivity": {
                     "title": "Connectivity profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Connectivity_Profile" }
                     ]
                 },
                 "policyPerRequestAccess": {
                     "title": "Per Request Access Policy",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Per_Request_Access_Policy" }
                     ]
                 },
                 "profileVdi": {
                     "title": "VDI profile",
                     "description": "VDI profile to attach to service.",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_VDI_Profile" }
                     ]
                 },
                 "profileApiProtection": {
                     "title": "API Protection Profile",
                     "description": "API protection profile to attach to service. This property is available on BIGIP 14.1 and above.",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["apm", "asm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm", "asm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_API_Protection_Profile" }
                     ]
                 },
@@ -1898,21 +1912,25 @@
                 },
                 "policyFirewallEnforced": {
                     "title": "Firewall policy (enforced)",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Firewall_Policy" }
                     ]
                 },
                 "policyFirewallStaged": {
                     "title": "Firewall policy (staged)",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Firewall_Policy" }
                     ]
                 },
@@ -2156,11 +2174,13 @@
                 },
                 "profileProtocolInspection": {
                     "description": "BIG-IP AS3 pointer to Protocol Inspection Profile declaration",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_Protocol_Inspection_Profile"
                         }
@@ -2197,11 +2217,13 @@
                     ]
                 },
                 "ipIntelligencePolicy": {
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm", "asm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm", "asm"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_IP_Intelligence_Policy"
                         }
@@ -3721,10 +3743,6 @@
                     "maximum": 65534
                 }
             },
-            "f5PostProcess": {
-                "tag": "bigComponent",
-                "data": ["query ltm node"]
-            },
             "required": [
                 "servicePort"
             ],
@@ -3751,6 +3769,12 @@
                                 }
                             }
                         }
+                    }
+                },
+                {
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": ["query ltm node"]
                     }
                 }
             ]
@@ -6562,11 +6586,13 @@
                 },
                 "algLogProfile": {
                     "description": "ALG log profile pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_ALG_Log_Profile"
                         }
@@ -6574,11 +6600,13 @@
                 },
                 "logPublisher": {
                     "description": "Log publisher pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_Log_Publisher"
                         }
@@ -6671,11 +6699,13 @@
                 },
                 "algLogProfile": {
                     "description": "ALG log profile pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_ALG_Log_Profile"
                         }
@@ -6683,11 +6713,13 @@
                 },
                 "logPublisher": {
                     "description": "Log publisher pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_Log_Publisher"
                         }
@@ -6767,11 +6799,13 @@
                 },
                 "algLogProfile": {
                     "description": "ALG log profile pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_ALG_Log_Profile"
                         }
@@ -6779,11 +6813,13 @@
                 },
                 "logPublisher": {
                     "description": "Log publisher pointer",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["cgnat"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["cgnat"]
+                            }
+                        },
                         {
                             "$ref": "#/definitions/Pointer_Log_Publisher"
                         }
@@ -8764,12 +8800,14 @@
                 "protocolProfile": {
                     "description": "Specifies PEM protocol profile that defines mapping of RADIUS AVPs to subscriber ID and other PEM subscriber session attributes",
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": [ "pem", "afm" ]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Enforcement_Protocol_Profile_Radius" }
                     ],
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": [ "pem", "afm" ]
-                    },
                     "default": {
                         "bigip": "/Common/_sys_radius_proto_imsi"
                     }
@@ -9595,13 +9633,15 @@
                 "remark": { "$ref": "#/definitions/Remark" },
                 "iFile": {
                     "description": "Reference to an iFile",
-                    "f5PostProcess": {
-                        "tag": "fetch",
-                        "data": "string"
-                    },
                     "allOf": [
                         {
                             "$ref": "#/definitions/F5string"
+                        },
+                        {
+                            "f5PostProcess": {
+                                "tag": "fetch",
+                                "data": "string"
+                            }
                         }
                     ]
                 }

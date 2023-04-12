@@ -3,11 +3,6 @@
         "GSLB_Monitor": {
             "title": "GSLB_Monitor",
             "description": "Declares a monitor that verifies the availability and/or performance status of a particular protocol, service, or application",
-            "f5PostProcess": {
-                "tag": "modules",
-                "data": ["gtm"]
-            },
-
             "type": "object",
             "properties": {
                 "class": {
@@ -61,6 +56,12 @@
                 }
             },
             "allOf": [
+                {
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["gtm"]
+                    }
+                },
                 {
                     "if": { "properties": { "monitorType": { "const": "http" } } },
                     "then": { "$ref": "#/definitions/GSLB_Monitor_HTTP" }

@@ -19,41 +19,49 @@
                 "remark": { "$ref": "#/definitions/Remark" },
                 "application": {
                     "description": "Application security sub-profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["asm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["asm"]
+                            }
+                        },
                         { "$ref": "#/definitions/DOS_Profile_Application" }
                     ]
                 },
                 "network": {
                     "description": "Network security sub-profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         { "$ref": "#/definitions/DOS_Profile_Network" }
                     ]
                 },
                 "protocolDNS": {
                     "description": "DNS protocol security sub-profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         { "$ref": "#/definitions/DOS_Profile_Protocol_DNS" }
                     ]
                 },
                 "protocolSIP": {
                     "description": "SIP protocol security sub-profile",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["afm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["afm"]
+                            }
+                        },
                         { "$ref": "#/definitions/DOS_Profile_Protocol_SIP" }
                     ]
                 },
@@ -71,21 +79,25 @@
                 },
                 "applicationAllowlist": {
                     "description": "Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["asm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["asm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Address_List" }
                     ]
                 },
                 "applicationWhitelist": {
                     "description": "Deprecated. Replaced with functionally equivalent applicationAllowlist. Specifies the IP addresses and subnets allowlist configuration for Application Security (Overrides the global allowlist)",
-                    "f5PostProcess": {
-                        "tag": "modules",
-                        "data": ["asm"]
-                    },
                     "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["asm"]
+                            }
+                        },
                         { "$ref": "#/definitions/Pointer_Address_List" }
                     ]
                 }
