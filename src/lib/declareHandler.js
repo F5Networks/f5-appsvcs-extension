@@ -125,42 +125,6 @@ function buildParseResult(errorMessage, statusCode) {
 }
 
 /**
- * Parse through the subPath to handle multiple tenants in the path
- *
- * @param {object} requestContextCopy
- * @param {object} task
- */
-function parsePerTenantPath(requestContextCopy, task) {
-    if (requestContextCopy.subPath.length && requestContextCopy.subPath !== '*') {
-        requestContextCopy.subPath.replace(/%2[Cc]/g, ',')
-            .replace(/^,+(.*),+$/, '$1')
-            .replace(/,[, ]+/g, ',')
-            .split(',')
-            .forEach((e) => {
-                if (requestContextCopy.tenantsInPath.indexOf(e) === -1) {
-                    if (requestContextCopy.method === 'Post') {
-                        if (task.declaration && task.declaration[e]) {
-                            requestContextCopy.tenantsInPath.push(e);
-                        }
-                    } else {
-                        requestContextCopy.tenantsInPath.push(e);
-                    }
-                }
-            });
-    }
-
-    if (requestContextCopy.method === 'Post' && task.declaration) {
-        // Remove Tenants from the declaration that are not in the URI
-        Object.keys(task.declaration).forEach((decl) => {
-            if (task.declaration[decl].class === 'Tenant'
-                && requestContextCopy.tenantsInPath.indexOf(decl) < 0) {
-                delete task.declaration[decl];
-            }
-        });
-    }
-}
-
-/**
  * parses a client http request and checks URI for path additions
  *
  * @private
@@ -173,9 +137,34 @@ function parseSubPath(requestContextCopy, task) {
         if (requestContextCopy.subPath.charAt(requestContextCopy.subPath.length - 1) === '/') {
             requestContextCopy.subPath = requestContextCopy.subPath.slice(0, -1);
         }
+        requestContextCopy.subPathTenant = requestContextCopy.subPath;
 
-        if (!requestContextCopy.isPerApp) {
-            parsePerTenantPath(requestContextCopy, task);
+        if (requestContextCopy.subPath.length && requestContextCopy.subPath !== '*') {
+            requestContextCopy.subPath.replace(/%2[Cc]/g, ',')
+                .replace(/^,+(.*),+$/, '$1')
+                .replace(/,[, ]+/g, ',')
+                .split(',')
+                .forEach((e) => {
+                    if (requestContextCopy.tenantsInPath.indexOf(e) === -1) {
+                        if (requestContextCopy.method === 'Post') {
+                            if (task.declaration && task.declaration[e]) {
+                                requestContextCopy.tenantsInPath.push(e);
+                            }
+                        } else {
+                            requestContextCopy.tenantsInPath.push(e);
+                        }
+                    }
+                });
+        }
+
+        if (requestContextCopy.method === 'Post' && task.declaration) {
+            // Remove Tenants from the declaration that are not in the URI
+            Object.keys(task.declaration).forEach((decl) => {
+                if (task.declaration[decl].class === 'Tenant'
+                    && requestContextCopy.tenantsInPath.indexOf(decl) < 0) {
+                    delete task.declaration[decl];
+                }
+            });
         }
     }
 

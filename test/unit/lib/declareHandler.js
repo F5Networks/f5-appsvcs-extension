@@ -598,13 +598,11 @@ describe('DeclareHandler', () => {
                     return assertResultAndRestComplete(context, restOp, expResult, code);
                 });
 
-                it('should not allow unrecognized subpath after tenant', () => {
-                    // application should fail, because per-app uses applications
+                it('should not allow another subpath after tenant', () => {
                     context.request = {
                         subPath: 'validTenant/application',
                         method: 'Delete',
                         action: 'remove',
-                        isPerApp: false,
                         tracer: new Tracer('test tracer', { enabled: false })
                     };
                     context.tasks = [
@@ -656,48 +654,6 @@ describe('DeclareHandler', () => {
                     expResult = {
                         code,
                         message
-                    };
-                    return assertResultAndRestComplete(context, restOp, expResult, code);
-                });
-
-                it('should support GET request to per-app endpoint', () => {
-                    context.request = {
-                        subPath: 'Tenant1/applications',
-                        method: 'Get',
-                        action: 'retrieve',
-                        isPerApp: true,
-                        tracer: new Tracer('test tracer', { enabled: false })
-                    };
-                    context.tasks = [
-                        {
-                            class: 'AS3',
-                            action: 'retrieve',
-                            dryRun: false,
-                            redeployAge: 0,
-                            redeployUpdateMode: 'original',
-                            persist: true,
-                            syncToGroup: '',
-                            historyLimit: 4,
-                            logLevel: 'warning',
-                            trace: false,
-                            retrieveAge: 0,
-                            targetHost: 'localhost',
-                            targetPort: 8100,
-                            targetUsername: '',
-                            targetPassphrase: '',
-                            targetTokens: {},
-                            targetTimeout: 150,
-                            resourceTimeout: 5,
-                            protocol: 'http',
-                            urlPrefix: 'http://admin:@localhost:8100',
-                            localBigip: true
-                        }
-                    ];
-
-                    code = STATUS_CODES.OK;
-                    expResult = {
-                        declaration: {},
-                        results: mockSuccess.body.results
                     };
                     return assertResultAndRestComplete(context, restOp, expResult, code);
                 });

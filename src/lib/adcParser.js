@@ -33,16 +33,12 @@ const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 class As3Parser {
     constructor(deviceType, schemaPaths) {
         this.deviceType = deviceType;
-        this.defaultSchemaSources = schemaPaths
-            || [
-                'file:///var/config/rest/iapps/f5-appsvcs/schema/latest/adc-schema.json',
-                'file:///var/config/rest/iapps/f5-appsvcs/schema/latest/app-schema.json'
-            ];
+        this.defaultSchemaSources = schemaPaths || ['file:///var/config/rest/iapps/f5-appsvcs/schema/latest/adc-schema.json'];
         this.schemas = [];
         this.nodelist = [];
         this.virtualAddressList = [];
         this.accessProfileList = [];
-        this.validators = {};
+        this.validator = undefined;
         this.options = {};
         this.postProcess = [];
     }
@@ -71,20 +67,13 @@ class As3Parser {
             return Promise.reject(new Error('loadSchemas argument must be an Array'));
         }
 
-        const promiseFuncs = sources.map((source) => () => {
+        const promiseFuncs = sources.map((source, idx, array) => () => {
             let promise;
-            let currentSchema;
             // did caller supply actual schema or a URL to schema?
             if ((typeof source === 'object') && (source !== null)
                 && Object.prototype.hasOwnProperty.call(source, '$id')) {
                 // caller provided a schema
                 schemas.push(source);
-                currentSchema = source.$id;
-                if (currentSchema === 'urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a') {
-                    currentSchema = 'adc';
-                } else if (currentSchema === 'urn:uuid:f23d7326-d355-4168-8772-c1ca4978acea') {
-                    currentSchema = 'app';
-                }
                 promise = Promise.resolve(source);
             } else if ((typeof source === 'string')
                     && (source.match(/^(https?|file):/)
@@ -94,7 +83,6 @@ class As3Parser {
                     why: 'for schema',
                     timeout: this.targetTimeout
                 };
-                currentSchema = source.split('/').pop().split('.')[0].split('-')[0];
 
                 promise = util.loadJSON(source, loadOpts)
                     .then((s) => {
@@ -116,11 +104,15 @@ class As3Parser {
             return promise.then((schema) => {
                 // compile schema to AJV validation function
                 try {
-                    this.validators[currentSchema] = ajv.compile(schema);
+                    if (idx < array.length - 1) {
+                        ajv.addSchema(schema);
+                    } else {
+                        this.validator = ajv.compile(schema);
+                    }
                 } catch (e) {
                     e.message = `compiling schema ${schema.$id} failed, error: ${e.message}`;
                     log.error(e);
-                    this.validators = {};
+                    this.validator = undefined;
                     throw e;
                 }
 
@@ -192,7 +184,7 @@ class As3Parser {
         this.options = Object.assign(this.options, defaultOpts, options);
         this.fetches = [];
 
-        if (Object.keys(this.validators).length === 0) {
+        if (typeof this.validator === 'undefined') {
             // someone didn't call loadSchema() or didn't notice it failed
             return Promise.reject(new Error('loadSchema() required before digest()'));
         }
@@ -280,11 +272,10 @@ function prepareParserAjv() {
 function validate(declaration) {
     const parserTime = new Date();
     let id = declaration.id;
-    const validator = this.context.request.isPerApp ? 'app' : 'adc';
 
     // what is the ID of this declaration?
-    if (validator !== 'app' && (!Object.prototype.hasOwnProperty.call(declaration, 'id')
-        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/)))) {
+    if (!Object.prototype.hasOwnProperty.call(declaration, 'id')
+        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/))) {
         const error = new Error('declaration lacks valid \'id\' property');
         error.status = 422;
         return Promise.reject(error);
@@ -297,14 +288,14 @@ function validate(declaration) {
     }
     log.debug(`validating declaration having ${id}`);
 
-    if (Object.keys(this.validators).length === 0) {
+    if (this.validator === undefined) {
         return Promise.reject(new Error('validation requires loaded schema'));
     }
 
     return Promise.resolve()
-        .then(() => this.validators[validator](declaration))
+        .then(() => this.validator(declaration))
         .then((valid) => {
-            if (!valid) throw new AJV.ValidationError(this.validators[validator].errors);
+            if (!valid) throw new AJV.ValidationError(this.validator.errors);
             const certErrors = certUtil.validateCertificates(declaration, []);
             if (!util.isEmptyOrUndefined(certErrors)) throw new AJV.ValidationError(certErrors);
         })

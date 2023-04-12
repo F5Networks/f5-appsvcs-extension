@@ -193,17 +193,10 @@ class RestWorker {
                 endpoint = pathParts[2];
             }
 
-            if (endpoint === 'task') {
-                validPathLengths.push(4); // taskId
-            }
-
-            if (endpoint === 'declare') {
-                validPathLengths.push(4); // tenant name
-                if ((pathParts.length === 5 || pathParts.length === 6)
-                    && pathParts[4] === 'applications') {
-                    validPathLengths.push(5); // 'applications'
-                    validPathLengths.push(6); // application name
-                }
+            // 'declare' and 'task' endpoints can have 4th parameter
+            // being the tenant and taskId respectively
+            if (endpoint === 'declare' || endpoint === 'task') {
+                validPathLengths.push(4);
             }
 
             if (validPathLengths.indexOf(pathParts.length) === -1) {
