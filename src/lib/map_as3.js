@@ -3756,6 +3756,7 @@ const translate = {
         mapMonitors(item); // Defaults to undefined or '/Common/bigip ' depending on serverType
 
         item.serverType = item.serverType || 'bigip';
+        item.proberPool = item.proberPool || 'none';
 
         const path = util.mcpPath(tenantId, '', itemId);
         const config = [normalize.actionableMcp(context, item, 'gtm server', path)];

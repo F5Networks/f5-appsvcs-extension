@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-3724: Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
+- AUTOTOOL-3800: Modifying a GSLB_Server with virtualServerDiscoveryMode may result in offline pool members
 
 ### Changed
 - AUTOTOOL-3780: Do early path validation

@@ -2439,6 +2439,7 @@ describe('map_mcp', () => {
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
+                            'prober-pool': 'none',
                             'virtual-servers': {
                                 0: {
                                     destination: '192.0.2.8:5050',
@@ -2523,6 +2524,7 @@ describe('map_mcp', () => {
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
+                            'prober-pool': 'none',
                             addresses: {},
                             'virtual-servers': {
                                 0: {

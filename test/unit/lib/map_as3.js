@@ -9400,6 +9400,7 @@ describe('map_as3', () => {
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
+                            'prober-pool': 'none',
                             devices: {
                                 0: {
                                     addresses: {
@@ -9469,6 +9470,7 @@ describe('map_as3', () => {
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
+                            'prober-pool': 'none',
                             devices: {
                                 0: {
                                     addresses: {
@@ -9552,6 +9554,7 @@ describe('map_as3', () => {
                             },
                             monitor: '/Common/bigip',
                             product: 'bigip',
+                            'prober-pool': 'none',
                             'virtual-servers': {
                                 foobar: {
                                     destination: '192.0.2.4:1000',

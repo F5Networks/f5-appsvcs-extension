@@ -4594,6 +4594,233 @@ describe('fetch', () => {
                     );
                 });
             });
+
+            describe('gtm server', () => {
+                beforeEach(() => {
+                    context.currentIndex = 0;
+                    context.tasks = [{ firstPassNoDelete: false }];
+                });
+
+                it('should use modify for gtm server updates', () => {
+                    desiredConfig = {
+                        '/Common/server1': {
+                            command: 'gtm server',
+                            properties: {
+                                'prober-preference': 'inherit',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': 'none',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.164': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            }
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'E',
+                            path: [
+                                '/Common/server1',
+                                'properties',
+                                'prober-preference'
+                            ],
+                            lhs: 'pool',
+                            rhs: 'inherit',
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: 'gtm server',
+                            rhsCommand: 'gtm server'
+                        },
+                        {
+                            kind: 'E',
+                            path: [
+                                '/Common/server1',
+                                'properties',
+                                'prober-pool'
+                            ],
+                            lhs: '/Common/prober1',
+                            rhs: 'none',
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server'
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(
+                        result.script.indexOf(
+                            'tmsh::modify gtm server /Common/server1 prober-preference inherit prober-fallback inherit prober-pool none'
+                        ),
+                        -1
+                    );
+                });
+
+                it('should use create for gtm server create', () => {
+                    desiredConfig = {
+                        '/Common/server1': {
+                            command: 'gtm server',
+                            properties: {
+                                metadata: {
+                                    as3: {
+                                        persist: 'true'
+                                    }
+                                },
+                                description: 'none',
+                                enabled: '',
+                                product: 'bigip',
+                                'prober-preference': 'inherit',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': 'none',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.164': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            },
+                            ignore: []
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'N',
+                            path: [
+                                '/Common/server1'
+                            ],
+                            rhs: {
+                                command: 'gtm server',
+                                properties: {
+                                    description: 'none',
+                                    enabled: '',
+                                    product: 'bigip',
+                                    'prober-preference': 'inherit',
+                                    'prober-fallback': 'inherit',
+                                    'prober-pool': 'none',
+                                    datacenter: '/Common/dc1',
+                                    devices: {
+                                        0: {
+                                            addresses: {
+                                                '10.20.164.164': {
+                                                    translation: 'none'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'virtual-servers': {},
+                                    'virtual-server-discovery': 'enabled-no-delete'
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: '',
+                            rhsCommand: 'gtm server'
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(result.script.indexOf('tmsh::create gtm server /Common/server1'), -1);
+                    assert.strictEqual(result.script.indexOf('tmsh::delete gtm server'), -1);
+                });
+
+                it('should use delete for creating one server and deleting another', () => {
+                    desiredConfig = {
+                        '/Common/server2': {
+                            command: 'gtm server',
+                            properties: {
+                                metadata: {
+                                    as3: {
+                                        persist: 'true'
+                                    }
+                                },
+                                description: 'none',
+                                enabled: true,
+                                product: 'bigip',
+                                'prober-preference': 'pool',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': '/Common/prober2',
+                                monitor: '/Common/bigip',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.165': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            },
+                            ignore: []
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/server1'
+                            ],
+                            lhs: {
+                                command: 'gtm server',
+                                properties: {
+                                    description: 'none',
+                                    enabled: true,
+                                    product: 'bigip',
+                                    'prober-preference': 'inherit',
+                                    'prober-fallback': 'inherit',
+                                    'prober-pool': 'none',
+                                    datacenter: '/Common/dc1',
+                                    devices: {
+                                        0: {
+                                            addresses: {
+                                                '10.20.164.164': {
+                                                    translation: 'none'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'virtual-servers': {},
+                                    'virtual-server-discovery': 'enabled-no-delete'
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: 'gtm server',
+                            rhsCommand: ''
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(result.script.indexOf('tmsh::delete gtm server /Common/server1'), -1);
+                });
+            });
         });
 
         describe('cleaning up nodes', () => {

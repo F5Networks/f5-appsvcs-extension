@@ -1799,6 +1799,19 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     + 'sys icall script.*?_pool_[\\s\\S]*?'
     + `ltm data-group internal /Common/${constants.as3CommonFolder}.*?_pool_`, 'gm');
 
+    function isModifyGtmServer(diffUpdates) {
+        // See if we are deleting and creating a gtm server of the same name
+        const serverToDeleteRegex = /tmsh::delete gtm server\s+(.+?)\s+/;
+        const serverToCreateRegEx = /tmsh::create gtm server\s+(.+?)\s+/;
+        const serverToDeleteMatch = diffUpdates.commands.match(serverToDeleteRegex);
+        const serverToCreateMatch = diffUpdates.commands.match(serverToCreateRegEx);
+        if (serverToDeleteMatch && serverToCreateMatch
+            && serverToDeleteMatch[1] === serverToCreateMatch[1]) {
+            return true;
+        }
+        return false;
+    }
+
     configDiff.forEach((diff) => {
         const partition = diff.path[0].split('/')[1];
         // when creating nodes in common we set this during the diff
@@ -1933,6 +1946,17 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             preTrans2.push('after 20000'); // allow time for virtuals to be discovered
                         }
                         trans2.push(diffUpdates.commands);
+                    } else if (isModifyGtmServer(diffUpdates)) {
+                        // This is actually a modify. Normally delete/create would be fine and the transaction
+                        // engine would handle it but with gtm servers, they are actually deleted and re-created
+                        // which we don't want
+                        diffUpdates.commands = diffUpdates.commands
+                            .split('\n')
+                            .pop()
+                            .replace(/tmsh::create/, 'tmsh::modify');
+                        if (trans.indexOf(diffUpdates.commands) === -1) {
+                            trans.push(diffUpdates.commands);
+                        }
                     } else if (diffUpdates.commands.indexOf('create gtm wideip') > -1) {
                         if (gtmModifyAliasPaths.indexOf(diff.path[0]) > -1
                             || (diffUpdates.commands.indexOf('aliases none') === -1 && gtmNeedsModifyAliasCommand(configDiff, diff))) {
@@ -2075,7 +2099,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     });
                 } else if (diffUpdates.commands.indexOf('mgmt shared service-discovery rpc') > -1) {
                     preTrans.push(diffUpdates.commands);
-                } else {
+                } else if (!isModifyGtmServer(diffUpdates)) {
                     // put all other delete commands into the cli transaction
                     trans.push(diffUpdates.commands);
                 }

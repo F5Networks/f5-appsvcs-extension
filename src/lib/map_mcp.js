@@ -1521,6 +1521,7 @@ const translate = {
     'tm:gtm:server:serverstate': function (context, obj, referenceConfig) {
         obj.description = obj.description || 'none';
         obj.product = obj.product || 'bigip';
+        obj.proberPool = obj.proberPool || 'none';
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
         obj = pushReferences(
             context,
