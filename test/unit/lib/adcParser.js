@@ -16,10 +16,14 @@
 
 'use strict';
 
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
 const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
-const assert = require('assert');
 const Ajv = require('ajv');
 const As3Parser = require('../../../src/lib/adcParser');
 
@@ -30,18 +34,20 @@ const DEVICE_TYPES = require('../../../src/lib/constants').DEVICE_TYPES;
 const Context = require('../../../src/lib/context/context');
 const Config = require('../../../src/lib/config');
 
-const schemaPath = `${__dirname}/../../../src/schema/latest/adc-schema.json`;
-const as3AdcSchema = JSON.parse(fs.readFileSync(schemaPath));
+const adcSchemaPath = `${__dirname}/../../../src/schema/latest/adc-schema.json`;
+const appSchemaPath = `${__dirname}/../../../src/schema/latest/app-schema.json`;
+const as3AdcSchema = JSON.parse(fs.readFileSync(adcSchemaPath));
+const as3AppSchema = JSON.parse(fs.readFileSync(appSchemaPath));
 
 describe('adcParser', function () {
     this.timeout(5000);
-    const theParser = new As3Parser(DEVICE_TYPES.BIG_IP, [schemaPath]);
+    const theParser = new As3Parser(DEVICE_TYPES.BIG_IP, [adcSchemaPath, appSchemaPath]);
     let logWarningSpy;
     let logErrorSpy;
     let secretTagSpy;
     let context;
 
-    before(() => theParser.loadSchemas([as3AdcSchema]));
+    before(() => theParser.loadSchemas([as3AdcSchema, as3AppSchema]));
 
     beforeEach(() => {
         context = Context.build();
@@ -233,6 +239,156 @@ describe('adcParser', function () {
                     assert.deepStrictEqual(decl.tenant.app.webpool.members[0].applicationId, '<redacted>');
                 });
         });
+
+        it('should validate using the per app schema', () => {
+            context.request.isPerApp = true;
+            const decl = {
+                app: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 80,
+                        pool: 'pool'
+                    },
+                    pool: {
+                        class: 'Pool'
+                    }
+                }
+            };
+            return parseDeclaration(decl)
+                .then(() => {
+                    assert.deepStrictEqual(
+                        decl,
+                        {
+                            app: {
+                                class: 'Application',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.100'],
+                                    virtualPort: 80,
+                                    pool: '/app/service/pool',
+                                    persistenceMethods: ['cookie'],
+                                    profileHTTP: 'basic',
+                                    virtualType: 'standard',
+                                    layer4: 'tcp',
+                                    profileTCP: 'normal',
+                                    serviceDownImmediateAction: 'none',
+                                    shareAddresses: false,
+                                    enable: true,
+                                    maxConnections: 0,
+                                    snat: 'auto',
+                                    addressStatus: true,
+                                    mirroring: 'none',
+                                    lastHop: 'default',
+                                    translateClientPort: false,
+                                    translateServerAddress: true,
+                                    translateServerPort: true,
+                                    nat64Enabled: false,
+                                    httpMrfRoutingEnabled: false,
+                                    rateLimit: 0,
+                                    adminState: 'enable'
+                                },
+                                pool: {
+                                    class: 'Pool',
+                                    allowNATEnabled: true,
+                                    allowSNATEnabled: true,
+                                    loadBalancingMode: 'round-robin',
+                                    minimumMembersActive: 1,
+                                    reselectTries: 0,
+                                    serviceDownAction: 'none',
+                                    slowRampTime: 10
+                                },
+                                template: 'generic',
+                                enable: true
+                            }
+                        }
+                    );
+                });
+        });
+
+        it('should invalidate when using a per app declaration with the adc schema', () => {
+            context.request.isPerApp = false;
+            const decl = {
+                app: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 80,
+                        pool: 'pool'
+                    },
+                    pool: {
+                        class: 'Pool'
+                    }
+                }
+            };
+            return assert.isRejected(parseDeclaration(decl));
+        });
+
+        it('should invalidate when using the per app schema and an invalid property', () => {
+            context.request.isPerApp = true;
+            const decl = {
+                app: {
+                    class: 'Application',
+                    invalidProperty: '',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 80,
+                        pool: 'pool'
+                    },
+                    pool: {
+                        class: 'Pool'
+                    }
+                }
+            };
+            return assert.isRejected(parseDeclaration(decl));
+        });
+
+        it('should invalidate when using a tenant declaration against the app schema', () => {
+            context.request.isPerApp = true;
+            const decl = {
+                class: 'ADC',
+                id: 'theId',
+                schemaVersion: '3.45.0',
+                tenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.100'],
+                            virtualPort: 80,
+                            pool: 'pool'
+                        },
+                        pool: {
+                            class: 'Pool'
+                        }
+                    }
+                }
+            };
+            return assert.isRejected(parseDeclaration(decl));
+        });
+
+        it('should invalidate when using a per-app declaration against the adc schema', () => {
+            context.request.isPerApp = false;
+            const decl = {
+                app: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 80,
+                        pool: 'pool'
+                    },
+                    pool: {
+                        class: 'Pool'
+                    }
+                }
+            };
+            return assert.isRejected(parseDeclaration(decl));
+        });
     });
 
     describe('platform behavior', function () {
@@ -257,7 +413,7 @@ describe('adcParser', function () {
             const decl = Object.assign({}, origDecl);
             return parseDeclaration(decl)
                 .then(() => {
-                    assert.notDeepStrictEqual(decl, origDecl);
+                    assert.notDeepEqual(decl, origDecl);
                     assert.strictEqual(decl.id, origDecl.id);
                     // test one of the known defaults
                     assert.strictEqual(decl.testTenant.app.enable, true);
@@ -405,25 +561,18 @@ describe('adcParser', function () {
 
     describe('.loadSchemas', () => {
         let compileSpy;
-        let addSchemaSpy;
         let parser;
         beforeEach(() => {
             compileSpy = sinon.stub(Ajv.prototype, 'compile').returns(() => {});
-            addSchemaSpy = sinon.stub(Ajv.prototype, 'addSchema').returns();
             sinon.stub(Ajv.prototype, 'addKeyword').returns();
-            parser = new As3Parser(DEVICE_TYPES.BIG_IP, [schemaPath]);
+            parser = new As3Parser(DEVICE_TYPES.BIG_IP, [adcSchemaPath, appSchemaPath]);
         });
 
         const assertLoadSchema = (schemas, expectedIds) => parser.loadSchemas(schemas)
             .then((ids) => {
                 assert.deepStrictEqual(ids, expectedIds);
-                expectedIds.forEach((id, idx, array) => {
-                    if (idx < array.length - 1) {
-                        // AJV calls addSchema once internally, so skip the first call
-                        assert.strictEqual(addSchemaSpy.args[idx + 1][0].$id, id);
-                    } else {
-                        assert.strictEqual(compileSpy.args[0][0].$id, id);
-                    }
+                expectedIds.forEach((id, idx) => {
+                    assert.strictEqual(compileSpy.args[idx][0].$id, id);
                 });
             });
 
@@ -470,16 +619,20 @@ describe('adcParser', function () {
         });
 
         it('should load default schema if sources is undefined',
-            () => assertLoadSchema(undefined, [as3AdcSchema.$id]));
+            () => assertLoadSchema(undefined, [as3AdcSchema.$id, as3AppSchema.$id]));
 
         it('should load default schema if sources is empty array',
-            () => assertLoadSchema([], [as3AdcSchema.$id]));
+            () => assertLoadSchema([], [as3AdcSchema.$id, as3AppSchema.$id]));
 
         it('should load multiple schemas', () => {
             nock('https://localhost:8100')
                 .get('/schema.json')
                 .reply(200, { $id: 'hello_world' });
-            const schemas = [{ $id: 'foo' }, { $id: 'bar' }, 'https://localhost:8100/schema.json'];
+            const schemas = [
+                { $id: 'foo' },
+                { $id: 'bar' },
+                'https://localhost:8100/schema.json'
+            ];
             return assertLoadSchema(schemas, ['foo', 'bar', 'hello_world']);
         });
     });

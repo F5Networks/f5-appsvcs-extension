@@ -1,0 +1,50 @@
+[
+    {
+        "Application1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "pool": "pool"
+            },
+            "pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.2.10",
+                            "192.0.2.20"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "Application2": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.2"
+                ],
+                "pool": "pool"
+            },
+            "pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.2.30",
+                            "192.0.2.40"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+]

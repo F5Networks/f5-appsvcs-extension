@@ -1,16 +1,17 @@
 openapi: '3.0.0'
 info:
-  version: 3.45.0
+  version: 3.44.0
   title: F5 BIG-IP AS3
-  description: This reference describes the BIG-IP AS3 API and available endpoints. For more details, see https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/as3-api.html
-basePath: /mgmt/shared/appsvcs
+  description: This reference describes the BIG-IP AS3 API and available endpoints.
+externalDocs:
+  description: Full AS3 documentation
+  url: https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/
 servers:
-  - url: https://192.0.2.1:443/mgmt/shared/appsvcs
-
+  - url: /mgmt/shared/appsvcs
 paths:
   /declare:
     post:
-      summary: POST - Apply BIG-IP AS3 configuration
+      summary: Apply BIG-IP AS3 configuration
       tags:
         - Configuration
       description: |
@@ -18,63 +19,14 @@ paths:
         You must supply a request document with each POST.
         The request document may be a proper request or a ADC-only declaration
       parameters:
-        - name: show
-          description: |
-            **show=**: *base* means system returns the declaration as originally deployed (but with secrets like passphrases encrypted), *full* returns the declaration with all default schema properties populated, *expanded* includes all URLs, base64s, and other references expanded to their final static values.  Default is **base**
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: async
-          description: |
-            **async=**: *true* causes BIG-IP AS3 to respond with a 202 status and a request ID which you can later use in a GET request to a new **/task** endpoint to get the results.  Default is **false**.
-          in: query
-          required: false
-          schema:
-            type: boolean
-        - name: showHash
-          in: query
-          description: |
-            If you set **showHash=true**, the results include an optimisticLockKey for each tenant.
-            Attempts to change/update any of the tenants *without* the correct optimisticLockKey will fail.
-            The default is **false**.
-          schema:
-            type: boolean
-        - name: controls.dryRun
-          in: query
-          description: |
-            BIG-IP AS3 3.30+: Using **controls.dryRun=true** sends the declaration through all validation checks but does not attempt to deploy the configuration on the target device.  This can be useful for testing and debugging declarations. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
-            The default is **false**.
-          schema:
-            type: boolean
-        - name: controls.logLevel
-          in: query
-          description: |
-            BIG-IP AS3 3.30+: Determines the level of detail in logs using RFC 5424 severity levels. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
-            The default is **error**.
-          schema:
-            type: string
-        - name: controls.trace
-          in: query
-          description: |
-            BIG-IP AS3 3.30+: If true, BIG-IP AS3 creates a detailed trace of the configuration process for subsequent analysis (default false). Warning: Trace files may contain sensitive configuration data. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
-            The default is **false**.
-          schema:
-            type: boolean
-        - name: controls.traceResponse
-          in: query
-          description: |
-            BIG-IP AS3 3.30+: If true, the response will contain the trace files. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
-            The default is **false**.
-          schema:
-            type: boolean
-        - name: controls.userAgent
-          in: query
-          description: |
-            BIG-IP AS3 3.30+: User Agent information to include in TEEM report. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
-          schema:
-            type: string
-
+        - $ref: '#/components/parameters/async'
+        - $ref: '#/components/parameters/controlsDryRun'
+        - $ref: '#/components/parameters/controlsLogLevel'
+        - $ref: '#/components/parameters/controlsTrace'
+        - $ref: '#/components/parameters/controlsTraceResponse'
+        - $ref: '#/components/parameters/controlsUserAgent'
+        - $ref: '#/components/parameters/show'
+        - $ref: '#/components/parameters/showHash'
       requestBody:
           content:
             application/json:
@@ -83,13 +35,12 @@ paths:
                 properties:
                   body:
                     $ref: '#/components/schemas/declaration'
-              example:
-                $ref: '#/components/examples/declaration'
-
-
+              examples:
+                basicDeclaration:
+                  $ref: '#/components/examples/declarationTenantPayload'
       responses:
         200:
-          description: Successful response
+          description: Successful response to synchronous request
           content:
             application/json:
               schema:
@@ -102,91 +53,17 @@ paths:
                       $ref: '#/components/schemas/result'
                   declaration:
                     $ref: '#/components/schemas/declaration'
-              example:
-                results:
-                  - code: 200
-                    message: 'success'
-                    lineCount: 25
-                    host: 'localhost'
-                    tenant: 'tenant'
-                    runTime: 1263
-                declaration:
-                  class: ADC
-                  schemaVersion: 3.0.0
-                  tenant:
-                    class: Tenant
-                    application:
-                      class: Application
-                      service:
-                        class: Service_HTTP
-                        virtualAddresses:
-                        - 192.0.2.0
-                        pool: pool
-                      pool:
-                        class: Pool
-                        members:
-                        - servicePort: 80
-                          serverAddresses:
-                          - 192.0.2.1
-                          - 192.0.2.2
-
+              examples:
+                successSyncResponse:
+                  $ref: '#/components/examples/declarationTenantSyncResponse'
         202:
-          description: Successful asynchronous response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: A unique identifier for the task
-                  results:
-                    type: array
-                    description: The results of the asynchronous task per-tenant
-                    items:
-                      $ref: '#/components/schemas/result'
-                  declaration:
-                    $ref: '#/components/schemas/declaration'
-                  selfLink:
-                    type: string
-                    description: URL for this task
-              example:
-                id: 'c098f4f1-d2a4-4c53-8728-7d1ce5567a4a'
-                results:
-                  - code: 0
-                    message: 'Declaration successfully submitted'
-                    host: ''
-                    tenant: ''
-                    runTime: 0
-                declaration: {}
-                selfLink: 'https://localhost/mgmt/shared/appsvcs/task/c098f4f1-d2a4-4c53-8728-7d1ce5567a4'
-
+          $ref: '#/components/responses/202standard'
         422:
-          description: An invalid configuration was provided
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-              example:
-                code: 422
-                errors:
-                  - "/tenant/application/service: should have required property 'virtualAddresses'"
-                message: 'declaration is invalid'
+          $ref: '#/components/responses/422'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
         503:
-          description: BIG-IP AS3 is currently processing a configuration, and cannot process another at this time
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-              example:
-                code: 503
-                message: 'Error: Configuration operation in progress on device undefined, please try again in 2 minutes'
+          $ref: '#/components/responses/503'
     get:
       summary: Read current BIG-IP AS3 configuration
       tags:
@@ -210,7 +87,9 @@ paths:
           in: query
           required: false
           schema:
-            type: 'integer|string'
+            oneOf:
+              - type: integer
+              - type: string
         - name: filterClass
           description: |
             You can use filterClass to retrieve results for only a specific BIG-IP AS3 class.
@@ -227,23 +106,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/declaration'
-              example:
-                $ref: '#/components/examples/declaration'
+              examples:
+                basicDeclaration:
+                  $ref: '#/components/examples/declarationTenantResponse'
         204:
           description: No BIG-IP AS3 configured tenants exist on the target device
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
     patch:
       summary: Update current BIG-IP AS3 configuration
       tags:
         - Configuration
       description: |
         You can use the PATCH method to modify the configuration produced by a previously-sent declaration without having to resend the entire declaration
-
       parameters:
         - name: show
           description: |
@@ -264,52 +139,13 @@ paths:
         200:
           description: Successful synchronous response
         202:
-          description: Successful asynchronous response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: A unique identifier for the task
-                  results:
-                    type: array
-                    description: The results of the asynchronous task per-tenant
-                    items:
-                      $ref: '#/components/schemas/result'
-                  declaration:
-                    $ref: '#/components/schemas/declaration'
-                  selfLink:
-                    type: string
-                    description: URL for this task
-              example:
-                id: 'c098f4f1-d2a4-4c53-8728-7d1ce5567a4a'
-                results:
-                  - code: 0
-                    message: 'Declaration successfully submitted'
-                    host: ''
-                    tenant: ''
-                    runTime: 0
-                declaration: {}
-                selfLink: 'https://localhost/mgmt/shared/appsvcs/task/c098f4f1-d2a4-4c53-8728-7d1ce5567a4'
+          $ref: '#/components/responses/202standard'
         422:
-          description: An invalid configuration was provided
+          $ref: '#/components/responses/422'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
         503:
-          description: BIG-IP AS3 is currently processing a configuration, and cannot process another at this time
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-              example:
-                code: 503
-                message: 'Error: Configuration operation in progress on device undefined, please try again in 2 minutes'
+          $ref: '#/components/responses/503'
     delete:
       summary: Remove current BIG-IP AS3 configuration
       tags:
@@ -325,7 +161,6 @@ paths:
           required: false
           schema:
             type: string
-
       responses:
         200:
           description: Successful synchronous response
@@ -350,58 +185,252 @@ paths:
                     tenant: 'tenant'
                     runTime: 1263
                 declaration:
-                  ass: ADC
+                  class: ADC
                   schemaVersion: 3.0.0
                   id: '1590774498956'
                   updateMode: complete
                   controls:
-                      archiveTimestamp: '2020-05-29T17:48:19.699Z'
+                    archiveTimestamp: '2020-05-29T17:48:19.699Z'
         202:
-          description: Successful asynchronous response
+          $ref: '#/components/responses/202standard'
+        500:
+          $ref: '#/components/responses/500'
+        503:
+          $ref: '#/components/responses/503'
+  /declare/{tenant}:
+    post:
+      summary: Apply BIG-IP AS3 configuration for a specific tenant or tenants
+      tags:
+        - Configuration
+      description: |
+        Use POST to deploy a configuration to a target ADC, or for certain other actions, including *retrieve*.
+        You must supply a request document with each POST.
+        The request document may be a proper request or a ADC-only declaration
+      parameters:
+        - $ref: '#/components/parameters/async'
+        - $ref: '#/components/parameters/controlsDryRun'
+        - $ref: '#/components/parameters/controlsLogLevel'
+        - $ref: '#/components/parameters/controlsTrace'
+        - $ref: '#/components/parameters/controlsTraceResponse'
+        - $ref: '#/components/parameters/controlsUserAgent'
+        - $ref: '#/components/parameters/show'
+        - $ref: '#/components/parameters/showHash'
+        - $ref: '#/components/parameters/tenant'
+      requestBody:
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  id:
-                    type: string
-                    description: A unique identifier for the task
+                  body:
+                    $ref: '#/components/schemas/declaration'
+              examples:
+                basicDeclaration:
+                  $ref: '#/components/examples/declarationTenantPayload'
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
                   results:
                     type: array
-                    description: The results of the asynchronous task per-tenant
+                    description: The results of the task per-tenant
                     items:
                       $ref: '#/components/schemas/result'
                   declaration:
                     $ref: '#/components/schemas/declaration'
-                  selfLink:
-                    type: string
-                    description: URL for this task
               example:
-                id: 'c098f4f1-d2a4-4c53-8728-7d1ce5567a4a'
-                results:
-                  - code: 0
-                    message: 'Declaration successfully submitted'
-                    host: ''
-                    tenant: ''
-                    runTime: 0
-                declaration: {}
-                selfLink: 'https://localhost/mgmt/shared/appsvcs/task/c098f4f1-d2a4-4c53-8728-7d1ce5567a4'
+                successResponse:
+                  $ref: '#/components/examples/declarationTenantSyncResponse'
+  /declare/{tenant}/applications:
+    post:
+      summary: Apply BIG-IP AS3 configuration on a per-application basis
+      tags:
+        - Configuration
+      description: |
+        Use POST to deploy a configuration to a target ADC, or for certain other actions, including *retrieve*.
+        You must supply a request document with each POST.
+        The request document may be a proper request or a ADC-only declaration
+      parameters:
+        - $ref: '#/components/parameters/async'
+        - $ref: '#/components/parameters/controlsDryRun'
+        - $ref: '#/components/parameters/controlsLogLevel'
+        - $ref: '#/components/parameters/controlsTrace'
+        - $ref: '#/components/parameters/controlsTraceResponse'
+        - $ref: '#/components/parameters/controlsUserAgent'
+        - $ref: '#/components/parameters/show'
+        - $ref: '#/components/parameters/showHash'
+        - $ref: '#/components/parameters/tenantForApplication'
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  body:
+                    $ref: '#/components/schemas/declaration'
+              examples:
+                singleApplication:
+                  $ref: '#/components/examples/declarationApplicationPayloadSingle'
+                multipleApplications:
+                  $ref: '#/components/examples/declarationApplicationPayloadMulti'
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    description: The results of the task
+                    items:
+                      $ref: '#/components/schemas/result'
+                  declaration:
+                    $ref: '#/components/schemas/declaration'
+              examples:
+                successResponse:
+                  $ref: '#/components/examples/declarationApplicationResponse'
+    get:
+      summary: Read all current BIG-IP AS3 application configurations
+      tags:
+        - Configuration
+      description: |
+        Retrieve a declarations for all per-app declarations
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/declaration'
+              examples:
+                basicDeclaration:
+                  $ref: '#/components/examples/declarationApplicationResponseMulti'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
         503:
-          description: BIG-IP AS3 is currently processing a configuration, and cannot process another at this time
+          $ref: '#/components/responses/503'
+  /declare/{tenant}/applications/{application}:
+    put:
+      summary: Apply BIG-IP AS3 configuration on a per-application basis
+      tags:
+        - Configuration
+      description: |
+        Use POST to deploy a configuration to a target ADC, or for certain other actions, including *retrieve*.
+        You must supply a request document with each POST.
+        The request document may be a proper request or a ADC-only declaration
+      parameters:
+        - $ref: '#/components/parameters/async'
+        - $ref: '#/components/parameters/controlsDryRun'
+        - $ref: '#/components/parameters/controlsLogLevel'
+        - $ref: '#/components/parameters/controlsTrace'
+        - $ref: '#/components/parameters/controlsTraceResponse'
+        - $ref: '#/components/parameters/controlsUserAgent'
+        - $ref: '#/components/parameters/show'
+        - $ref: '#/components/parameters/showHash'
+        - $ref: '#/components/parameters/tenantForApplication'
+        - $ref: '#/components/parameters/application'
+      requestBody:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                type: object
+                properties:
+                  body:
+                    $ref: '#/components/schemas/declaration'
+              examples:
+                singleApplication:
+                  $ref: '#/components/examples/declarationApplicationPayloadSingle'
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    description: The results of the task
+                    items:
+                      $ref: '#/components/schemas/result'
+                  declaration:
+                    $ref: '#/components/schemas/declaration'
+              examples:
+                successResponse:
+                  $ref: '#/components/examples/declarationApplicationResponse'
+    get:
+      summary: Read current BIG-IP AS3 application configuration
+      tags:
+        - Configuration
+      description: |
+        Retrieve a declarations for all per-app declarations
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/declaration'
+              examples:
+                basicDeclaration:
+                  $ref: '#/components/examples/declarationApplicationResponse'
+        500:
+          $ref: '#/components/responses/500'
+        503:
+          $ref: '#/components/responses/503'
+    delete:
+      summary: Delete current BIG-IP AS3 application configuration
+      tags:
+        - Configuration
+      description:
+        Delete the configuration for a single application
+      parameters:
+        - $ref: '#/components/parameters/async'
+        - $ref: '#/components/parameters/controlsDryRun'
+        - $ref: '#/components/parameters/controlsLogLevel'
+        - $ref: '#/components/parameters/controlsTrace'
+        - $ref: '#/components/parameters/controlsTraceResponse'
+        - $ref: '#/components/parameters/controlsUserAgent'
+        - $ref: '#/components/parameters/show'
+        - $ref: '#/components/parameters/showHash'
+        - $ref: '#/components/parameters/tenantForApplication'
+        - $ref: '#/components/parameters/application'
+      responses:
+        200:
+          description: Successful synchronous response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    description: The results of the request
+                    items:
+                      $ref: '#/components/schemas/result'
+                  declaration:
+                    $ref: '#/components/schemas/declaration'
               example:
-                code: 503
-                message: 'Error: Configuration operation in progress on device undefined, please try again in 2 minutes'
-
+                results:
+                  - code: 200
+                    message: 'success'
+                    lineCount: 25
+                    host: 'localhost'
+                    tenant: 'tenant'
+                    runTime: 1263
+                declaration:
+                  class: ADC
+                  schemaVersion: 3.0.0
+                  id: '1590774498956'
+                  updateMode: complete
+                  controls:
+                      archiveTimestamp: '2020-05-29T17:48:19.699Z'
   /info:
     get:
       summary: /mgmt/shared/appsvcs/info
@@ -436,11 +465,7 @@ paths:
                     schemaCurrent: 3.20.0
                     schemaMinimum: 3.0.0
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
   /task:
     get:
       tags:
@@ -448,8 +473,6 @@ paths:
       summary: A collection of asynchronous tasks
       description: If you used the ?async=true query parameter to send a large declaration, you can use a GET request to the /task endpoint with the **recordId** returned by the POST to see the status of the processing (and the results if it is finished).
         Old task records are removed if the record is older than one week or more than 25 records exist.
-
-
       responses:
         200:
           description: Successful response
@@ -476,58 +499,8 @@ paths:
                           enum:
                             - {}
               examples:
-                task results from a POST request:
-                  value:
-                    id: 'd1d2137e-d6e6-4ee6-b20f-e9a738d3ce1c'
-                    results:
-                      - code: 200
-                        message: 'success'
-                        lineCount: 25
-                        host: 'localhost'
-                        tenant: 'tenant'
-                        runTime: 1263
-                    declaration:
-                      class: ADC
-                      schemaVersion: 3.0.0
-                      tenant:
-                        class: Tenant
-                        application:
-                          class: Application
-                          service:
-                            class: Service_HTTP
-                            virtualAddresses:
-                            - 192.0.2.0
-                            pool: pool
-                          pool:
-                            class: Pool
-                            members:
-                            - servicePort: 80
-                              serverAddresses:
-                              - 192.0.2.1
-                              - 192.0.2.2
-                task results from a GET request:
-                  value:
-                    id: 'd1d2137e-d6e6-4ee6-b20f-e9a738d3ce1c'
-                    results:
-                      - class: ADC
-                        schemaVersion: 3.0.0
-                        tenant:
-                          class: Tenant
-                          application:
-                            class: Application
-                            service:
-                              class: Service_HTTP
-                              virtualAddresses:
-                              - 192.0.2.0
-                              pool: pool
-                            pool:
-                              class: Pool
-                              members:
-                              - servicePort: 80
-                                serverAddresses:
-                                - 192.0.2.1
-                                - 192.0.2.2
-                    declaration: {}
+                task results from a successful POST request:
+                  $ref: '#/components/examples/declarationTenantTaskResponse'
                 task results from an invalid POST request:
                   value:
                     id: 'd1d2137e-d6e6-4ee6-b20f-e9a738d3ce1c'
@@ -550,11 +523,7 @@ paths:
               example:
                 message: 'No record found with ID of d1d2137e-d6e6-4ee6-b20f-e9a738d3ce1d'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
   /settings:
     post:
       summary: Update BIG-IP AS3 settings
@@ -563,9 +532,6 @@ paths:
       description: |
         Use POST to deploy simple settings changes in BIG-IP AS3. You must supply a schema appropriate JSON
         object as the body of the request.
-      parameters:
-        - none
-
       requestBody:
           content:
             application/json:
@@ -576,8 +542,6 @@ paths:
                     $ref: '../src/schema/latest/settings-schema.json'
               example:
                 $ref: '#/components/examples/settingsDefault'
-
-
       responses:
         200:
           description: Successful response
@@ -594,31 +558,11 @@ paths:
                 burstHandlingEnabled: true
 
         422:
-          description: An invalid configuration was provided
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-              example:
-                code: 422
-                message: 'declaration is invalid'
-                errors:
-                  - "...should NOT have additional properties..."
+          $ref: '#/components/responses/422'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+          $ref: '#/components/responses/500'
         503:
-          description: BIG-IP AS3 is currently processing a configuration, and cannot process another at this time
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-              example:
-                code: 503
-                message: 'Error: Configuration operation in progress on device undefined, please try again in 2 minutes'
+          $ref: '#/components/responses/503'
     get:
       summary: Get current BIG-IP AS3 settings
       tags:
@@ -635,12 +579,7 @@ paths:
               example:
                 $ref: '#/components/examples/settingsDefault'
         500:
-          description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
-
+          $ref: '#/components/responses/500'
 components:
   schemas:
     result:
@@ -672,7 +611,9 @@ components:
           description: The time (in milliseconds) it took to process the tenant.
     declaration:
       type: object
-      description: See [Composing a Declaration](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/composing-a-declaration.html) and the [API details](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/as3-api.html) page for information on the the BIG-IP AS3 Request body.
+      externalDocs:
+        description: See 'Composing a Declaration' page for information on the the BIG-IP AS3 Request body.
+        url: https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/composing-a-declaration.html
     error:
       type: object
       properties:
@@ -690,13 +631,307 @@ components:
         declarationFullId:
           type: string
           description: The id of the declaration
+  parameters:
+    application:
+      name: application
+      description: Application to read/update.
+      in: path
+      required: true
+      schema:
+        type: string
+    async:
+      name: async
+      description: |
+        **async=**: *true* causes BIG-IP AS3 to respond with a 202 status and a request ID which you can later use in a GET request to a new **/task** endpoint to get the results.  Default is **false**.
+      in: query
+      required: false
+      schema:
+        type: boolean
+    controlsDryRun:
+      name: controls.dryRun
+      in: query
+      description: |
+        BIG-IP AS3 3.30+: Using **controls.dryRun=true** sends the declaration through all validation checks but does not attempt to deploy the configuration on the target device.  This can be useful for testing and debugging declarations. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
+        The default is **false**.
+      schema:
+        type: boolean
+    controlsLogLevel:
+      name: controls.logLevel
+      in: query
+      description: |
+        BIG-IP AS3 3.30+: Determines the level of detail in logs using RFC 5424 severity levels. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
+        The default is **error**.
+      schema:
+        type: string
+    controlsTrace:
+      name: controls.trace
+      in: query
+      description: |
+        BIG-IP AS3 3.30+: If true, BIG-IP AS3 creates a detailed trace of the configuration process for subsequent analysis (default false). Warning: Trace files may contain sensitive configuration data. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
+        The default is **false**.
+      schema:
+        type: boolean
+    controlsTraceResponse:
+      name: controls.traceResponse
+      in: query
+      description: |
+        BIG-IP AS3 3.30+: If true, the response will contain the trace files. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
+        The default is **false**.
+      schema:
+        type: boolean
+    controlsUserAgent:
+      name: controls.userAgent
+      in: query
+      description: |
+        BIG-IP AS3 3.30+: User Agent information to include in TEEM report. Using this query parameter overwrites any Controls in the ADC class you specified in the declaration.
+      schema:
+        type: string
+    show:
+      name: show
+      description: |
+        **show=**: *base* means system returns the declaration as originally deployed (but with secrets like passphrases encrypted), *full* returns the declaration with all default schema properties populated, *expanded* includes all URLs, base64s, and other references expanded to their final static values.  Default is **base**
+      in: query
+      required: false
+      schema:
+        type: string
+    showHash:
+      name: showHash
+      in: query
+      description: |
+        If you set **showHash=true**, the results include an optimisticLockKey for each tenant.
+        Attempts to change/update any of the tenants *without* the correct optimisticLockKey will fail.
+        The default is **false**.
+      schema:
+        type: boolean
+    tenant:
+      name: tenant
+      description: |
+        Only use the specified tenants. Other tenants in the declaration will be ignored. May be a comma
+        separated list.
+      in: path
+      required: true
+      schema:
+        type: string
+    tenantForApplication:
+      name: tenant
+      description: Tenant in which to create the application. Tenant will be created if it doesn't exist.
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    202standard:
+      description: Successful response to asynchronous request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: A unique identifier for the task
+              results:
+                type: array
+                description: The results of the asynchronous task per-tenant
+                items:
+                  $ref: '#/components/schemas/result'
+              declaration:
+                $ref: '#/components/schemas/declaration'
+              selfLink:
+                type: string
+                description: URL for this task
+          examples:
+            successfulAsyncResponse:
+              $ref: '#/components/examples/declarationTenantAsyncResponse'
+    422:
+      description: An invalid configuration was provided
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            code: 422
+            errors:
+              - "/tenant/application/service: should have required property 'virtualAddresses'"
+            message: 'declaration is invalid'
+    500:
+      description: Something went wrong internally, and a bug report should be filed&#58; https://github.com/F5Networks/f5-appsvcs-extension/issues/new/choose
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+    503:
+      description: BIG-IP AS3 is currently processing a configuration, and cannot process another at this time
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+          example:
+            code: 503
+            message: 'Error: Configuration operation in progress on device undefined, please try again in 2 minutes'
   examples:
-    declaration:
-      class: ADC
-      schemaVersion: 3.0.0
-      tenant:
-        class: Tenant
-        application:
+    declarationTenantPayload:
+      value:
+        class: ADC
+        schemaVersion: 3.0.0
+        tenant:
+          class: Tenant
+          application:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.0
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.1
+                - 192.0.2.2
+    declarationTenantResponse:
+      value:
+        class: ADC
+        schemaVersion: 3.0.0
+        tenant:
+          class: Tenant
+          application:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.0
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.1
+                - 192.0.2.2
+        id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
+        updateMode: selective
+    declarationTenantSyncResponse:
+      value:
+        results:
+          - code: 200
+            message: 'success'
+            lineCount: 25
+            host: 'localhost'
+            tenant: 'tenant'
+            runTime: 1263
+        declaration:
+          class: ADC
+          schemaVersion: 3.0.0
+          tenant:
+            class: Tenant
+            application:
+              class: Application
+              service:
+                class: Service_HTTP
+                virtualAddresses:
+                - 192.0.2.0
+                pool: pool
+              pool:
+                class: Pool
+                members:
+                - servicePort: 80
+                  serverAddresses:
+                  - 192.0.2.1
+                  - 192.0.2.2
+          id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
+          updateMode: selective
+    declarationTenantAsyncResponse:
+      value:
+        id: f1f1c942-72b5-42f4-9210-7339a190fc9e
+        results:
+          - message: 'Declaration successfully submitted'
+            tenant: ''
+            runTime: 0
+            code: 0
+            host: ''
+        declaration: {}
+        selfLink: https://localhost/mgmt/shared/appsvcs/task/f1f1c942-72b5-42f4-9210-7339a190fc9e
+    declarationTenantTaskResponse:
+      value:
+        id: c8b8be98-1a55-443e-acd2-ec4b09fb2fc3
+        results:
+          - code: 200
+            message: 'success'
+            lineCount: 25
+            host: 'localhost'
+            tenant: 'tenant'
+            runTime: 1263
+        declaration:
+          class: ADC
+          schemaVersion: 3.0.0
+          tenant:
+            class: Tenant
+            application:
+              class: Application
+              service:
+                class: Service_HTTP
+                virtualAddresses:
+                - 192.0.2.0
+                pool: pool
+              pool:
+                class: Pool
+                members:
+                - servicePort: 80
+                  serverAddresses:
+                  - 192.0.2.1
+                  - 192.0.2.2
+            id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
+    declarationApplicationPayloadSingle:
+      value:
+        application1:
+          class: Application
+          service:
+            class: Service_HTTP
+            virtualAddresses:
+            - 192.0.2.1
+            pool: pool
+          pool:
+            class: Pool
+            members:
+            - servicePort: 80
+              serverAddresses:
+              - 192.0.2.10
+              - 192.0.2.20
+    declarationApplicationPayloadMulti:
+      value:
+        - application1:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.1
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.10
+                - 192.0.2.20
+        - application2:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.2
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.30
+                - 192.0.2.40
+    declarationApplicationResponse:
+      value:
+        application1:
           class: Application
           service:
             class: Service_HTTP
@@ -710,5 +945,36 @@ components:
               serverAddresses:
               - 192.0.2.1
               - 192.0.2.2
+    declarationApplicationResponseMulti:
+      value:
+        - application1:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.1
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.10
+                - 192.0.2.20
+        - application2:
+            class: Application
+            service:
+              class: Service_HTTP
+              virtualAddresses:
+              - 192.0.2.2
+              pool: pool
+            pool:
+              class: Pool
+              members:
+              - servicePort: 80
+                serverAddresses:
+                - 192.0.2.30
+                - 192.0.2.40
     settingsDefault:
-      burstHandlingEnabled: false
+      value:
+        burstHandlingEnabled: false
