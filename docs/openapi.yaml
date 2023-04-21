@@ -945,6 +945,7 @@ components:
               serverAddresses:
               - 192.0.2.1
               - 192.0.2.2
+        id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
     declarationApplicationResponseMulti:
       value:
         - application1:

@@ -73,6 +73,35 @@ describe('per-app schema testing', () => {
             assert.ok(validate(data), getErrorString(validate));
         });
 
+        it('should handle a single per-app declaration with an id', () => {
+            const data = {
+                id: 'id',
+                application1: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            '192.0.2.1'
+                        ],
+                        pool: 'pool'
+                    },
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                servicePort: 80,
+                                serverAddresses: [
+                                    '192.0.2.10',
+                                    '192.0.2.20'
+                                ]
+                            }
+                        ]
+                    }
+                }
+            };
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
         it('should handle a multiple per-app declaration', () => {
             const data = [
                 {

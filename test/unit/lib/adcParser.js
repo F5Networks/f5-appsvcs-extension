@@ -243,6 +243,7 @@ describe('adcParser', function () {
         it('should validate using the per app schema', () => {
             context.request.isPerApp = true;
             const decl = {
+                id: 'id',
                 app: {
                     class: 'Application',
                     service: {
@@ -261,6 +262,7 @@ describe('adcParser', function () {
                     assert.deepStrictEqual(
                         decl,
                         {
+                            id: 'id',
                             app: {
                                 class: 'Application',
                                 service: {

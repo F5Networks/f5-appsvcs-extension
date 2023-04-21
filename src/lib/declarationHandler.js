@@ -419,7 +419,7 @@ class DeclarationHandler {
         let declarationFullId = '';
         const currentTask = context.tasks[context.currentIndex];
         let decl = currentTask.declaration; // may be a stub
-        decl.updateMode = decl.updateMode || 'selective';
+        decl.updateMode = context.request.isPerApp ? 'selective' : decl.updateMode || 'selective';
         let mutexRefresher = null;
         const commonConfig = {};
 
@@ -549,7 +549,7 @@ class DeclarationHandler {
                     decl.target = prevDecl.target;
                 }
 
-                if (decl.updateMode === 'complete') {
+                if (decl.updateMode === 'complete' && !context.request.isPerApp) {
                     // mark unwanted Tenants for deletion
                     info.metadata.tenants.forEach((t) => {
                         // If the last operation was a 'delete' then t will be an empty string, so ignore.

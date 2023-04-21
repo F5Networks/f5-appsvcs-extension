@@ -283,8 +283,8 @@ function validate(declaration) {
     const validator = this.context.request.isPerApp ? 'app' : 'adc';
 
     // what is the ID of this declaration?
-    if (validator !== 'app' && (!Object.prototype.hasOwnProperty.call(declaration, 'id')
-        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/)))) {
+    if (!Object.prototype.hasOwnProperty.call(declaration, 'id')
+        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/))) {
         const error = new Error('declaration lacks valid \'id\' property');
         error.status = 422;
         return Promise.reject(error);

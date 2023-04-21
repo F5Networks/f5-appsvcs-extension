@@ -1488,6 +1488,27 @@ describe('DeclarationHandler', () => {
                     );
                 }));
 
+            it('should not delete tenants that are not in the declaration if request is perApp', () => {
+                bigIpDeclaration.updateMode = 'complete';
+                context.request.isPerApp = true;
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then(() => {
+                        assert.deepStrictEqual(
+                            passedInDecl.tenantToKeep,
+                            {
+                                class: 'Tenant',
+                                myApplication: {
+                                    class: 'Application'
+                                }
+                            }
+                        );
+                        assert.strictEqual(
+                            passedInDecl.tenantToRemove,
+                            undefined
+                        );
+                    });
+            });
+
             it('should handle empty tenant strings with updateMode complete', () => {
                 bigIpDeclaration.updateMode = 'complete';
 
