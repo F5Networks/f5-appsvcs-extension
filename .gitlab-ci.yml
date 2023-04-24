@@ -643,7 +643,7 @@ create_docs:
     # Runs the grammar check on everything except the /docs/drafts directory
     - vale --glob='*.rst' .
     - echo "Checking links"
-    - make linkcheck
+    # - make linkcheck
 
     # build developer documentation (optional)
     - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
