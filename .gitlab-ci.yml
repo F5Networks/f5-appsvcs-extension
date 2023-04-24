@@ -200,7 +200,7 @@ node:8:
       junit: test_report.xml
 
 build_rpm:
-  image: $DOCKER_URL/node:12
+  image: $DOCKER_URL/node:14
   stage: build
   needs:
     - schema
