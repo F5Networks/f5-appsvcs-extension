@@ -901,34 +901,34 @@ components:
               - 192.0.2.20
     declarationApplicationPayloadMulti:
       value:
-        - application1:
-            class: Application
-            service:
-              class: Service_HTTP
-              virtualAddresses:
-              - 192.0.2.1
-              pool: pool
-            pool:
-              class: Pool
-              members:
-              - servicePort: 80
-                serverAddresses:
-                - 192.0.2.10
-                - 192.0.2.20
-        - application2:
-            class: Application
-            service:
-              class: Service_HTTP
-              virtualAddresses:
-              - 192.0.2.2
-              pool: pool
-            pool:
-              class: Pool
-              members:
-              - servicePort: 80
-                serverAddresses:
-                - 192.0.2.30
-                - 192.0.2.40
+        application1:
+          class: Application
+          service:
+            class: Service_HTTP
+            virtualAddresses:
+            - 192.0.2.1
+            pool: pool
+          pool:
+            class: Pool
+            members:
+            - servicePort: 80
+              serverAddresses:
+              - 192.0.2.10
+              - 192.0.2.20
+        application2:
+          class: Application
+          service:
+            class: Service_HTTP
+            virtualAddresses:
+            - 192.0.2.2
+            pool: pool
+          pool:
+            class: Pool
+            members:
+            - servicePort: 80
+              serverAddresses:
+              - 192.0.2.30
+              - 192.0.2.40
     declarationApplicationResponse:
       value:
         application1:
@@ -948,34 +948,34 @@ components:
         id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
     declarationApplicationResponseMulti:
       value:
-        - application1:
-            class: Application
-            service:
-              class: Service_HTTP
-              virtualAddresses:
-              - 192.0.2.1
-              pool: pool
-            pool:
-              class: Pool
-              members:
-              - servicePort: 80
-                serverAddresses:
-                - 192.0.2.10
-                - 192.0.2.20
-        - application2:
-            class: Application
-            service:
-              class: Service_HTTP
-              virtualAddresses:
-              - 192.0.2.2
-              pool: pool
-            pool:
-              class: Pool
-              members:
-              - servicePort: 80
-                serverAddresses:
-                - 192.0.2.30
-                - 192.0.2.40
+        application1:
+          class: Application
+          service:
+            class: Service_HTTP
+            virtualAddresses:
+            - 192.0.2.1
+            pool: pool
+          pool:
+            class: Pool
+            members:
+            - servicePort: 80
+              serverAddresses:
+              - 192.0.2.10
+              - 192.0.2.20
+        application2:
+          class: Application
+          service:
+            class: Service_HTTP
+            virtualAddresses:
+            - 192.0.2.2
+            pool: pool
+          pool:
+            class: Pool
+            members:
+            - servicePort: 80
+              serverAddresses:
+              - 192.0.2.30
+              - 192.0.2.40
     settingsDefault:
       value:
         burstHandlingEnabled: false

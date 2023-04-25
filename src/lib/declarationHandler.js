@@ -194,13 +194,12 @@ class DeclarationHandler {
                 message: (`specified tenant '${tenant}' not found in declaration`)
             };
         }
-        let perAppDecl = {};
+        const perAppDecl = {};
         if (typeof app === 'undefined') {
-            perAppDecl = [];
             // If apps is undefined, we want all apps in tenant
             Object.keys(decl[tenant]).forEach((appName) => {
                 if (decl[tenant][appName].class === 'Application') {
-                    perAppDecl.push({ [appName]: decl[tenant][appName] });
+                    perAppDecl[appName] = decl[tenant][appName];
                 }
             });
             return {
@@ -419,7 +418,9 @@ class DeclarationHandler {
         let declarationFullId = '';
         const currentTask = context.tasks[context.currentIndex];
         let decl = currentTask.declaration; // may be a stub
-        decl.updateMode = context.request.isPerApp ? 'selective' : decl.updateMode || 'selective';
+        if (!context.request.isPerApp) {
+            decl.updateMode = decl.updateMode || 'selective';
+        }
         let mutexRefresher = null;
         const commonConfig = {};
 

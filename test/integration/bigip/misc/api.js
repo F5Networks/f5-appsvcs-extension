@@ -559,29 +559,25 @@ describe('per-app API testing (__smoke)', function () {
                 assert.strictEqual(response.statusCode, 200);
                 assert.deepStrictEqual(
                     response.body,
-                    [
-                        {
-                            testApp1: {
-                                class: 'Application',
-                                template: 'http',
-                                serviceMain: {
-                                    class: 'Service_HTTP',
-                                    virtualAddresses: [
-                                        '198.19.193.201'
-                                    ],
-                                    virtualPort: 2601
-                                }
+                    {
+                        testApp1: {
+                            class: 'Application',
+                            template: 'http',
+                            serviceMain: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '198.19.193.201'
+                                ],
+                                virtualPort: 2601
                             }
                         },
-                        {
-                            testExampleApp2: {
-                                class: 'Application',
-                                accel: {
-                                    class: 'HTTP_Acceleration_Profile'
-                                }
+                        testExampleApp2: {
+                            class: 'Application',
+                            accel: {
+                                class: 'HTTP_Acceleration_Profile'
                             }
                         }
-                    ]
+                    }
                 );
             }));
 

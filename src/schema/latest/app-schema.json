@@ -3,61 +3,37 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Application Schema",
     "description": "A per-app declarative configuration for an ADC such as F5 BIG-IP",
-    "oneOf": [
-        {
-            "$ref": "#/definitions/App"
-        },
-        {
-            "$ref": "#/definitions/App_Array"
+    "type": "object",
+    "properties": {
+        "id": {
+            "title": "Declaration ID",
+            "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
+            "type": "string",
+            "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
+            "minLength": 0,
+            "maxLength": 255
         }
-    ],
-    "definitions": {
-        "App": {
-            "title": "App",
-            "description": "A declarative configuration for an ADC such as F5 BIG-IP, via AS3 per-app interface",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "title": "Declaration ID",
-                    "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
-                    "type": "string",
-                    "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
-                    "minLength": 0,
-                    "maxLength": 255
-                }
+    },
+    "additionalProperties": {
+        "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Application"
+    },
+    "propertyNames": {
+        "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+        "maxLength": 190
+    },
+    "allOf": [
+        {
+            "if": {
+                "required": [
+                  "id"
+                ]
             },
-            "additionalProperties": {
-                "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Application"
+            "then": {
+                "minProperties": 2
             },
-            "propertyNames": {
-                "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
-                "maxLength": 190
-            },
-            "allOf": [
-                {
-                    "if": {
-                        "type": "object",
-                        "required": [
-                          "id"
-                        ]
-                    },
-                    "then": {
-                        "maxProperties": 2
-                    },
-                    "else": {
-                        "maxProperties": 1
-                    }
-                }
-            ]
-        },
-        "App_Array": {
-            "title": "Declaration Array",
-            "description": "An array of declarations (per-app) to process",
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/App"
-            },
-            "minItems": 1
+            "else": {
+                "minProperties": 1
+            }
         }
-    }
+    ]
 }

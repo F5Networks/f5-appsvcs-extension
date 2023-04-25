@@ -103,69 +103,6 @@ describe('per-app schema testing', () => {
         });
 
         it('should handle a multiple per-app declaration', () => {
-            const data = [
-                {
-                    application1: {
-                        class: 'Application',
-                        service: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: [
-                                '192.0.2.1'
-                            ],
-                            pool: 'pool'
-                        },
-                        pool: {
-                            class: 'Pool',
-                            members: [
-                                {
-                                    servicePort: 80,
-                                    serverAddresses: [
-                                        '192.0.2.10',
-                                        '192.0.2.20'
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    application2: {
-                        class: 'Application',
-                        service: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: [
-                                '192.0.2.2'
-                            ],
-                            pool: 'pool'
-                        },
-                        pool: {
-                            class: 'Pool',
-                            members: [
-                                {
-                                    servicePort: 80,
-                                    serverAddresses: [
-                                        '192.0.2.20',
-                                        '192.0.2.21'
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                }
-            ];
-            assert.ok(validate(data), getErrorString(validate));
-        });
-    });
-
-    describe('invalid', () => {
-        it('should be invalid if the per-app array is empty', () => {
-            const data = [];
-
-            assert.strictEqual(validate(data), false, 'The array requires at least 1 value in it');
-            assertErrorString('should NOT have fewer than 1 items');
-        });
-
-        it('should be invalid if multiple per-app declarations are inside the app object', () => {
             const data = {
                 application1: {
                     class: 'Application',
@@ -204,19 +141,29 @@ describe('per-app schema testing', () => {
                             {
                                 servicePort: 80,
                                 serverAddresses: [
-                                    '192.0.2.30',
-                                    '192.0.2.40'
+                                    '192.0.2.20',
+                                    '192.0.2.21'
                                 ]
                             }
                         ]
                     }
                 }
             };
-            assert.strictEqual(validate(data), false, 'Multiple applications in a single object should be invalid');
-            assertErrorString('should be array');
+            assert.ok(validate(data), getErrorString(validate));
+        });
+    });
+
+    describe('invalid', () => {
+        it('should be invalid if there is no application', () => {
+            const data = {
+                id: '1234'
+            };
+
+            assert.strictEqual(validate(data), false, 'The declaration should require at least 1 application in it');
+            assertErrorString('should NOT have fewer than 2 properties');
         });
 
-        it('should be invalid if multiple per-app declarations are inside the app object in an array', () => {
+        it('should be invalid per-app declarations are inside an array', () => {
             const data = [
                 {
                     application1: {
@@ -240,7 +187,9 @@ describe('per-app schema testing', () => {
                                 }
                             ]
                         }
-                    },
+                    }
+                },
+                {
                     application2: {
                         class: 'Application',
                         service: {
@@ -265,8 +214,8 @@ describe('per-app schema testing', () => {
                     }
                 }
             ];
-            assert.strictEqual(validate(data), false, 'Multiple applications in a single object should be invalid');
-            assertErrorString('should NOT have more than 1 properties');
+            assert.strictEqual(validate(data), false, 'Arrays should be invalid');
+            assertErrorString('should be object');
         });
     });
 });

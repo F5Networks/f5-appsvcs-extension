@@ -309,7 +309,7 @@ describe('DeclarationHandler', () => {
                     });
                 });
 
-                it('should return array if the tenant has a single application', () => {
+                it('should handle a single application', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
                     context.request.isPerApp = true;
@@ -323,16 +323,14 @@ describe('DeclarationHandler', () => {
                         .then((response) => {
                             assert.deepEqual(
                                 response,
-                                [
-                                    {
-                                        App2: { class: 'Application' }
-                                    }
-                                ]
+                                {
+                                    App2: { class: 'Application' }
+                                }
                             );
                         });
                 });
 
-                it('should return array if the tenant has multiple applications', () => {
+                it('should handle multiple applications', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
                     context.request.isPerApp = true;
@@ -346,14 +344,10 @@ describe('DeclarationHandler', () => {
                         .then((response) => {
                             assert.deepEqual(
                                 response,
-                                [
-                                    {
-                                        Application: { class: 'Application' }
-                                    },
-                                    {
-                                        App1: { class: 'Application' }
-                                    }
-                                ]
+                                {
+                                    Application: { class: 'Application' },
+                                    App1: { class: 'Application' }
+                                }
                             );
                         });
                 });

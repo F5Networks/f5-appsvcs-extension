@@ -1,4 +1,3 @@
-[
     {
         "Application1": {
             "class": "Application",
@@ -21,9 +20,7 @@
                     }
                 ]
             }
-        }
-    },
-    {
+        },
         "Application2": {
             "class": "Application",
             "service": {
@@ -47,4 +44,3 @@
             }
         }
     }
-]
