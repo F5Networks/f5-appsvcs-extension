@@ -300,7 +300,15 @@ build_api_docs:
     -       echo "Configuring $IP"
     -       source scripts/dev/instance-config.sh "$IP:8443" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
     -     done
-    -     wait
+    -     for job in $(jobs -p); do
+    -       echo "Jobs $(jobs -p)"
+    -       echo "Job we're waiting $job"
+    -       wait $job
+    -       RC=$?
+    -       if [[ $RC != 0 ]]; then
+    -         exit $RC
+    -       fi
+    -     done
     -     SERVER_SET_JSON=$(source scripts/dev/build-server-set.sh)
     -     echo "Posting server set to reservation server $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
     -     SERVER_SET=$(curl -s --retry 5 --retry-max-time 300 -H "$CURL_CONTENT" -d "$SERVER_SET_JSON" -X POST http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets | jq .id | tr -d '"')
@@ -328,8 +336,8 @@ build_api_docs:
       dotenv: deploy.env
     expire_in: 1 day
   retry:
-    max: 1
-    when: script_failure
+    max: 2
+    when: always
 
 deploy_to_azure:
   rules:
