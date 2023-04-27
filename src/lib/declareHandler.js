@@ -162,12 +162,14 @@ function parsePerTenantPath(requestContextCopy, task) {
 
 /**
  * parses a client http request and checks URI for path additions
+ * requestContextCopy.subPath should be similar to one of the following:
+ *   per tenant: "/declare/{commaDelimitedTenantList}"
+ *   per app: "/declare/{nameOfTenant}/applications/{optionalApplicationName}"
  *
  * @private
  * @returns {object} - returns ```{ success: boolean, errorMessage: string }```
  */
 function parseSubPath(requestContextCopy, task) {
-    // Currently only tenants: /declare/{commaDelimitedTenantList}
     if (requestContextCopy.subPath) {
         // remove trailing '/'
         if (requestContextCopy.subPath.charAt(requestContextCopy.subPath.length - 1) === '/') {

@@ -847,6 +847,7 @@ describe('DeclarationHandler', () => {
                     assert.strictEqual(isNotCalled.called, false);
                 });
         });
+
         it('should succeed even if teem report fails', () => {
             context.tasks[0].declaration = [
                 {
@@ -1600,6 +1601,70 @@ describe('DeclarationHandler', () => {
                 .then((result) => {
                     assert.strictEqual(result.body.fortune, 'Whee! Easter-egg hunting is fun!');
                 });
+        });
+
+        describe('per-app', () => {
+            let declarationProvider;
+
+            beforeEach(() => {
+                declarationProvider = new DeclarationProvider();
+                sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'PATCH_Sample',
+                    firstTenant: {
+                        class: 'Tenant',
+                        Application: { class: 'Application' },
+                        App1: { class: 'Application' },
+                        controls: { class: 'Controls' }
+                    },
+                    secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
+                    updateMode: 'selective'
+                });
+            });
+
+            it('should not error if isPerApp && tenant does not already exist in the BIG-IP', () => {
+                context.tasks[0].showAge = 0;
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/otherTenant/applications';
+                context.tasks[0].declaration = {
+                    Application1: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.1'
+                            ],
+                            appPool: 'pool'
+                        },
+                        appPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.2.10',
+                                        '192.0.2.20'
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    app: undefined,
+                    tenant: 'otherTenant'
+                };
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        assert.strictEqual(result.statusCode, 200);
+                        // NOTE: Further POST development will likely change the following responses
+                        assert.strictEqual(result.body.results[0].code, 200);
+                        assert.strictEqual(result.body.results[0].message, 'no change');
+                        assert.strictEqual(result.errorMessage, undefined);
+                    });
+            });
         });
     });
 
