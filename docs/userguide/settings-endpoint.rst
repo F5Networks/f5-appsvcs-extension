@@ -22,7 +22,7 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **asyncTaskStorage** |br| Controls where asynchronous tasks are stored. Existing tasks are not transferred when the storage type is changed. Storing tasks in a data group persists the data between restarts, but puts more pressure on the control plane.  Options are **data-group** (default) and **memory**.
 
-- **burstHandlingEnabled** |br| A boolean that controls if BIG-IP AS3 on this BIG-IP system uses the Burst Handling feature (the default is **false**).
+- **burstHandlingEnabled** |br| A boolean that controls if BIG-IP AS3 on this BIG-IP system uses the Burst Handling feature (the default is **false**). See :ref:`Burst Handling<burst>` for more information.
 
 - **performanceTracingEnabled** |br| A boolean that controls if BIG-IP AS3 records performance information (the default is **false**). Jaeger client must be installed to enable this property. 
 
