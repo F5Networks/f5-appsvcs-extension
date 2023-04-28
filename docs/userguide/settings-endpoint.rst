@@ -4,15 +4,15 @@ With the **/settings** endpoint, certain BIG-IP AS3 system-wide settings are sav
 
 To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.
 
-- Check current settings |br| GET returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like ``{ "logLevel": "info" }``
+- **Check current settings** |br| Using a GET request returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like ``{ "logLevel": "info" }``
 
-- Change current settings |br| POST allows you to change the current settings by sending a declaration with updated settings in the request body. |br| To change a current setting, send a POST request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.  For example, to enable burst handling, POST the following declaration body: 
+- **Change current settings** |br| Using a POST request allows you to change the current settings by sending a declaration with updated settings in the request body. |br| To change a current setting, send a POST request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.  For example, to enable burst handling, POST the following declaration body: 
 
-    .. code-block:: json
+   .. code-block:: json
 
-        {
-            "burstHandlingEnabled": true
-        }
+       {
+           "burstHandlingEnabled": true
+       }
 
 
 BIG-IP AS3 should now be running with the burst handling feature enabled.
