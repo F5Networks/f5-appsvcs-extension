@@ -560,6 +560,39 @@ describe('RequestContext', () => {
                     });
             });
 
+            it('should validate a per-app GET request with trailing /', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Get';
+
+                restOp.setPathName(`${path}/Tenant1/applications/`);
+                restOp.setPath(`${path}/Tenant1/applications/`);
+                restOp.setBody(Object.assign({}, validDecl));
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.request.error);
+                        assert.strictEqual(ctxt.request.method, 'Get');
+                        assert.strictEqual(ctxt.request.pathName, 'declare');
+                        assert.strictEqual(ctxt.request.subPath, 'Tenant1/applications');
+                        assert.deepStrictEqual(ctxt.request.queryParams, []);
+                        assert.strictEqual(ctxt.request.isPerApp, true);
+                        assert.deepStrictEqual(
+                            ctxt.request.perAppInfo,
+                            {
+                                app: undefined, // Note: this is by design
+                                tenant: 'Tenant1'
+                            }
+                        );
+                        assert.deepEqual(
+                            ctxt.request.body,
+                            {
+                                class: 'AS3',
+                                action: 'retrieve'
+                            }
+                        );
+                    });
+            });
+
             it('should validate a per-app DELETE request with specified application', () => {
                 const restOp = new RestOperationMock();
                 restOp.method = 'Delete';

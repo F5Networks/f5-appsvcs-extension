@@ -23,7 +23,8 @@
                     "title": "Per Application Deployment",
                     "description": "Whether or not to allow per-application deployments",
                     "type": "boolean",
-                    "default": false
+                    "default": false,
+                    "const": false
                 }
             },
             "additionalProperties": false

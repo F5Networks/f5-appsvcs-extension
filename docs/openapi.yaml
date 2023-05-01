@@ -247,7 +247,7 @@ paths:
                   $ref: '#/components/examples/declarationTenantSyncResponse'
   /declare/{tenant}/applications:
     post:
-      summary: Apply BIG-IP AS3 configuration on a per-application basis
+      summary: UNDER DEVELOPMENT - Apply BIG-IP AS3 configuration on a per-application basis
       tags:
         - Configuration
       description: |
@@ -296,7 +296,7 @@ paths:
                 successResponse:
                   $ref: '#/components/examples/declarationApplicationResponse'
     get:
-      summary: Read all current BIG-IP AS3 application configurations
+      summary: UNDER DEVELOPMENT - Read all current BIG-IP AS3 application configurations
       tags:
         - Configuration
       description: |
@@ -317,7 +317,7 @@ paths:
           $ref: '#/components/responses/503'
   /declare/{tenant}/applications/{application}:
     put:
-      summary: Apply BIG-IP AS3 configuration on a per-application basis
+      summary: UNDER DEVELOPMENT - Apply BIG-IP AS3 configuration on a per-application basis
       tags:
         - Configuration
       description: |
@@ -365,7 +365,7 @@ paths:
                 successResponse:
                   $ref: '#/components/examples/declarationApplicationResponse'
     get:
-      summary: Read current BIG-IP AS3 application configuration
+      summary: UNDER DEVELOPMENT - Read current BIG-IP AS3 application configuration
       tags:
         - Configuration
       description: |
@@ -385,7 +385,7 @@ paths:
         503:
           $ref: '#/components/responses/503'
     delete:
-      summary: Delete current BIG-IP AS3 application configuration
+      summary: UNDER DEVELOPMENT - Delete current BIG-IP AS3 application configuration
       tags:
         - Configuration
       description:

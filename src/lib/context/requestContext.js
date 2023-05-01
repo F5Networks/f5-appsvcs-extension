@@ -284,7 +284,7 @@ function buildInitialContext(restOperation) {
         error: undefined,
         body: restOperation.getBody()
     };
-    context.fullPath = getFullPath(restOperation);
+    context.fullPath = getFullPath(restOperation).replace(/\/$/, ''); // strip trailing slash
     context.pathName = getPathName(context.fullPath);
     context.subPath = getComponentsAfterPathName(context.fullPath, context.pathName)[0];
     if (context.subPath === '') {
