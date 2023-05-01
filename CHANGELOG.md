@@ -5,6 +5,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Added
 - AUTOTOOL-3698: Add webhook option for responses
+- AUTOTOOL-3753: Add support for referencing websocket profile to vip by Service class
 
 ### Fixed
 - AUTOTOOL-3724: Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference

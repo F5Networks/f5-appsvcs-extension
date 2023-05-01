@@ -4798,6 +4798,84 @@ describe('map_as3', () => {
                         '/Common/f5-tcp-progressive': { context: 'all' }
                     });
             });
+
+            it('should attach when using profileWebSocket on the Service', () => {
+                item.profileHTTP = {
+                    bigip: '/Common/httpProfile'
+                };
+                item.profileWebSocket = {
+                    use: '/tenantId/appId/webSocket'
+                };
+                declaration.tenantId = {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application',
+                        template: 'generic',
+                        itemId: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.4'],
+                            virtualPort: 80,
+                            profileHTTP: {
+                                bigip: '/Common/httpProfile'
+                            },
+                            profileWebSocket: {
+                                use: '/tenantId/appId/webSocket'
+                            }
+                        },
+                        enable: true
+                    }
+                };
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                assert.deepStrictEqual(
+                    results.configs[1].properties.profiles,
+                    {
+                        '/Common/httpProfile': { context: 'all' },
+                        '/Common/f5-tcp-progressive': { context: 'all' },
+                        '/tenantId/appId/webSocket': { context: 'all' }
+                    }
+                );
+            });
+
+            it('should attach when using profileWebSocket on the Service and profileHTTP use pointer', () => {
+                item.profileHTTP = {
+                    use: '/tenantId/appId/httpProfile'
+                };
+                item.profileWebSocket = {
+                    use: '/tenantId/appId/webSocket'
+                };
+                declaration.tenantId = {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application',
+                        template: 'generic',
+                        itemId: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.4'],
+                            virtualPort: 80,
+                            profileHTTP: {
+                                use: '/tenantId/appId/httpProfile'
+                            },
+                            profileWebSocket: {
+                                use: '/tenantId/appId/webSocket'
+                            }
+                        },
+                        httpProfile: {
+                            class: 'HTTP_Profile',
+                            webSocketsEnabled: true
+                        },
+                        enable: true
+                    }
+                };
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                assert.deepStrictEqual(
+                    results.configs[1].properties.profiles,
+                    {
+                        '/tenantId/appId/httpProfile': { context: 'all' },
+                        '/Common/f5-tcp-progressive': { context: 'all' },
+                        '/tenantId/appId/webSocket': { context: 'all' }
+                    }
+                );
+            });
         });
 
         describe('HTTP Proxy Connect Profile', () => {

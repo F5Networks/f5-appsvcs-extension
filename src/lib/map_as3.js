@@ -2739,6 +2739,7 @@ const translate = {
         item = profile(item, 'profileConnectivity', 'clientside');
         item = profile(item, 'profileRequestAdapt', 'clientside');
         item = profile(item, 'profileResponseAdapt', 'serverside');
+        item = profile(item, 'profileWebSocket');
         if (!util.versionLessThan(context.target.tmosVersion, '14.1')) {
             item = profile(item, 'profileApiProtection');
         }
@@ -2756,16 +2757,18 @@ const translate = {
             profilePath = profilePath.split('/');
             const httpProfile = declaration[profilePath[0]][profilePath[1]][profilePath[2]];
             if (httpProfile) {
-                // new method (if) has precedence over deprecated method (else if)
-                if (httpProfile.profileWebSocket) {
-                    item.profileWebSocket = httpProfile.profileWebSocket;
-                    item = profile(item, 'profileWebSocket');
-                } else if (httpProfile.webSocketsEnabled) {
-                    item.profiles.push({
-                        use: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
-                        name: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
-                        context: 'all'
-                    });
+                if (!item.profileWebSocket) {
+                    // deprecated method (if) has precedence over older deprecated method (else if)
+                    if (httpProfile.profileWebSocket) {
+                        item.profileWebSocket = httpProfile.profileWebSocket;
+                        item = profile(item, 'profileWebSocket');
+                    } else if (httpProfile.webSocketsEnabled) {
+                        item.profiles.push({
+                            use: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
+                            name: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
+                            context: 'all'
+                        });
+                    }
                 }
 
                 if (httpProfile.proxyConnectEnabled) {

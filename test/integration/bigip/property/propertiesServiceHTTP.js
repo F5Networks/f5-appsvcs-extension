@@ -115,25 +115,39 @@ describe('Service_HTTP', function () {
                     undefined,
                     [
                         `/${tenantName}/${applicationName}/f5_appsvcs_httpProfile_proxyConnect`,
-                        `/${tenantName}/${applicationName}/webSocketProfile`
+                        `/${tenantName}/${applicationName}/httpProfile`
                     ],
                     undefined
                 ],
                 referenceObjects: {
                     httpProfile: {
                         class: 'HTTP_Profile',
-                        profileWebSocket: {
-                            use: 'webSocketProfile'
-                        },
                         proxyConnectEnabled: true
-                    },
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'httpProfile' || p.name === 'f5_appsvcs_httpProfile_proxyConnect')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            },
+            {
+                name: 'profileWebSocket',
+                inputValue: [undefined, { use: 'webSocketProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [`/${tenantName}/${applicationName}/webSocketProfile`],
+                    undefined
+                ],
+                referenceObjects: {
                     webSocketProfile: {
                         class: 'WebSocket_Profile'
                     }
                 },
                 extractFunction: (o) => {
                     const profiles = o.profiles
-                        .filter((p) => p.name === 'webSocketProfile' || p.name === 'f5_appsvcs_httpProfile_proxyConnect')
+                        .filter((p) => p.name === 'webSocketProfile')
                         .map((profile) => profile.fullPath);
                     return (profiles.length > 0) ? profiles : undefined;
                 }
@@ -1148,6 +1162,62 @@ describe('Service_HTTP', function () {
                 extractFunction: (virtual) => extractProfile(virtual, 'testBd')
             }
         ];
+        return assertServiceHTTPClass(properties, options);
+    });
+
+    it('should attach WebSocket profile with profileHTTP method', () => {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [80],
+                expectedValue: ['80'],
+                extractFunction: (o) => o.destination.split(':')[1]
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileHTTP',
+                inputValue: [undefined, { use: 'httpProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/f5_appsvcs_httpProfile_proxyConnect`,
+                        `/${tenantName}/${applicationName}/webSocketProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    httpProfile: {
+                        class: 'HTTP_Profile',
+                        profileWebSocket: {
+                            use: 'webSocketProfile'
+                        },
+                        proxyConnectEnabled: true
+                    },
+                    webSocketProfile: {
+                        class: 'WebSocket_Profile'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'webSocketProfile' || p.name === 'f5_appsvcs_httpProfile_proxyConnect')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
         return assertServiceHTTPClass(properties, options);
     });
 

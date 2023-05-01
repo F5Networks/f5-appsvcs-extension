@@ -874,6 +874,14 @@
                             "$ref": "#/definitions/Pointer_Bot_Defense_Profile"
                         }
                     ]
+                },
+                "profileWebSocket": {
+                    "description": "Attaches a WebSocket profile to the Service.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_WebSocket_Profile"
+                        }
+                    ]
                 }
             },
 

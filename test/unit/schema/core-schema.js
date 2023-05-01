@@ -1980,7 +1980,10 @@ describe('core-schema.json', () => {
                                 profileIntegratedBotDefense: {
                                     bigip: '/Common/bd'
                                 },
-                                adminState: 'disable'
+                                adminState: 'disable',
+                                profileWebSocket: {
+                                    use: 'webSocket'
+                                }
                             }
                         }
                     }
