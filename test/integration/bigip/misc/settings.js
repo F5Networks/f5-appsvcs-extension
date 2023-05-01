@@ -25,8 +25,10 @@ const assert = chai.assert;
 const {
     postDeclaration,
     getPath,
-    GLOBAL_TIMEOUT
+    GLOBAL_TIMEOUT,
+    getBigIpVersion
 } = require('../property/propertiesCommon');
+const util = require('../../../../src/lib/util/util');
 
 describe('settings (__smoke)', function () {
     this.timeout(GLOBAL_TIMEOUT);
@@ -104,11 +106,22 @@ describe('settings (__smoke)', function () {
                     -1,
                     'Error code 422 not found, and it should have been'
                 );
-                assert.isAbove(
-                    err.message.indexOf('should NOT have additional properties'),
-                    -1,
-                    'Error message should have included, "should NOT have additional properties"'
-                );
+
+                if (util.versionLessThan(getBigIpVersion(), '16.0')
+                && !util.versionLessThan(getBigIpVersion(), '15.0')) {
+                    // This is a temporary fix, if the message reverts to the else, remove this check
+                    assert.isAbove(
+                        err.message.indexOf('"message":"request failed with null exception"'),
+                        -1,
+                        `BIG-IP 15.1 has undesirable unique behaviour, which returns "request failed with null exception" message. Error message may be fixed: ${err.message}`
+                    );
+                } else {
+                    assert.isAbove(
+                        err.message.indexOf('should NOT have additional properties'),
+                        -1,
+                        'Error message should have included, "should NOT have additional properties"'
+                    );
+                }
             });
     });
 });
