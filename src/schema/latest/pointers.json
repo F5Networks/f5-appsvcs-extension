@@ -625,10 +625,5 @@
         "name": "WAF policy",
         "class": "WAF_Policy",
         "tmshPath": "asm policy"
-    },
-    "WebSocket_Profile": {
-        "name": "WebSocket Profile",
-        "class": "WebSocket_Profile",
-        "tmshPath": "ltm profile websocket"
     }
 }

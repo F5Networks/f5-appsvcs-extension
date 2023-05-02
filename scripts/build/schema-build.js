@@ -244,6 +244,10 @@ function buildSharedSchema() {
         'F5_String',
         'HTTP_Compress',
         'HTTP_Acceleration_Profile',
+        'HTTP_Profile',
+        'HTTP_Profile_Explicit',
+        'HTTP_Profile_Reverse',
+        'HTTP_Profile_Transparent',
         'HTTP2_Profile',
         'JWE',
         'Log_Publisher',
@@ -260,6 +264,7 @@ function buildSharedSchema() {
         'Pointer_SSL_Certificate',
         'Pointer_String',
         'Pointer_Use',
+        'Pointer_WebSocket_Profile',
         'Property_Base64',
         'Property_Passphrase',
         'Property_Text',
@@ -268,7 +273,8 @@ function buildSharedSchema() {
         'Resource_URL',
         'Secret',
         'Secret_Resource_URL',
-        'UDP_Profile'
+        'UDP_Profile',
+        'WebSocket_Profile'
     ];
 
     sharedSchema.definitions = Object.keys(sharedSchema.definitions)
