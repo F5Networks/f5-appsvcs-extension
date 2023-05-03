@@ -38,6 +38,7 @@ User Guide Index
    composing-a-declaration
    validate
    big-iq
+   settings-endpoint
    burst-handling
    unchecked-mode
    examples
