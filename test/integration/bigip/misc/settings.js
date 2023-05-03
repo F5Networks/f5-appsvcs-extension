@@ -110,6 +110,7 @@ describe('settings (__smoke)', function () {
                 if (util.versionLessThan(getBigIpVersion(), '16.0')
                 && !util.versionLessThan(getBigIpVersion(), '15.0')) {
                     // This is a temporary fix, if the message reverts to the else, remove this check
+                    // This seems like it could be related to BZ 878481, which is for error bodies over 2k length
                     assert.isAbove(
                         err.message.indexOf('"message":"request failed with null exception"'),
                         -1,
