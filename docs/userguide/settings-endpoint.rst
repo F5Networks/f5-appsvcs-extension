@@ -1,10 +1,20 @@
 Settings Endpoint
 =================
-With the **/settings** endpoint, certain BIG-IP AS3 system-wide settings are saved in persistent storage on the BIG-IP device, meaning these settings persist through BIG-IP AS3 process restarts. The **/settings** endpoint enables the configuration of these system-wide settings, such as setting the log level or enabling or disabling beta features.
+With the /settings endpoint, certain BIG-IP AS3 system-wide settings are saved in persistent storage on the BIG-IP device. This means the settings apply to all future declarations, unless the settings are modified again. The **/settings** endpoint enables the configuration of these system-wide settings, such as enabling or disabling Service Discovery.
 
 To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.
 
-- **Check current settings** |br| Using a GET request returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like ``{ "logLevel": "info" }``
+- **Check current settings** |br| Using a GET request returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like:
+
+   .. code-block:: json
+       {
+          "asyncTaskStorage": "data-group",
+          "burstHandlingEnabled": false,
+          "performanceTracingEnabled": false,
+          "performanceTracingEndpoint": "",
+          "serviceDiscoveryEnabled": true
+       }
+
 
 - **Change current settings** |br| Using a POST request allows you to change the current settings by sending a declaration with updated settings in the request body. |br| To change a current setting, send a POST request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.  For example, to enable burst handling, POST the following declaration body: 
 
