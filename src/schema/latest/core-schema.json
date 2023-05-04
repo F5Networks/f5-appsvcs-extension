@@ -625,7 +625,6 @@
             "required": [ "class", "serverTLS" ]
         },
 
-
         "Service_HTTP_Core": {
             "title": "HTTP VS core",
             "type": "object",
@@ -648,46 +647,15 @@
                 "profileHTTP": {
                     "title": "HTTP profile",
                     "description": "HTTP profile; name of built-in or else BIG-IP AS3 pointer",
-
-                    "if": { "not": { "type": "object" } },
-                    "then": {
-                        "type": "string",
-                        "enum": [ "basic" ]
-                    },
-                    "else": {
-                        "type": "object",
-                        "properties": {
-                            "use": {
-                                "title": "Use",
-                                "description": "BIG-IP AS3 pointer to HTTP profile declaration",
-                                "type": "string",
-                                "minLength": 1,
-                                "f5PostProcess": {
-                                    "tag": "pointer",
-                                    "data": {
-                                        "properties": {
-                                            "class": { "const": "HTTP_Profile" }
-                                        },
-                                        "required": [ "class" ]
-                                    }
-                                }
-                            },
-                            "bigip": {
-                                "title": "BIG-IP HTTP profile",
-                                "description": "Pathname of existing BIG-IP HTTP profile",
-                                "type": "string",
-                                "format": "f5bigip"
-                            }
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": [ "basic" ]
                         },
-                        "additionalProperties": false,
-                        "minProperties": 1,
-                        "maxProperties": 1,
-                        "f5PostProcess": {
-                            "tag": "bigComponent",
-                            "data": ["query ltm profile http"]
+                        {
+                            "$ref": "#/definitions/Pointer_HTTP_Profile"
                         }
-                    },
-
+                    ],
                     "default": "basic"
                 },
                 "profileHTTPCompression": {
