@@ -1091,7 +1091,7 @@
                             "type": {
                                 "description": "The name of the service type",
                                 "type": "string",
-                                "enum": ["dhcp", "dns", "gtp", "imap", "mqtt", "netbios_ns", "nntp", "pop3", "sip", "snmp", "ssl", "telnet", "wins", "diameter", "ftp", "http", "irc", "mysql", "netbios_ssn", "other", "radius", "smtp", "ssh", "sunrpc", "tftp", "coap", "oracle", "pfcp"]
+                                "enum": ["boxp", "coap", "dhcp", "diameter", "dns", "ftp", "gtp", "http", "imap", "ipsec", "irc", "mqtt", "mysql", "netbios_ns", "netbios_ssn", "nntp", "oracle", "other", "pfcp", "pop3", "radius", "rdp", "rmi", "rsh", "sip", "smtp", "snmp", "ssh", "ssl", "sunrpc", "telnet", "tftp", "thrift", "wins"]
                             },
                             "compliance": {
                                 "description": "A list of compliance checks to attach to the Protocol Inspection Profile",
