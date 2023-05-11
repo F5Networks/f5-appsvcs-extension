@@ -142,7 +142,7 @@ Creating Protocol Inspection profiles
 
    You **must** have AFM licensed and provisioned AND an Intrusion Prevention System (IPS) subscription add-on license on your BIG-IP to use these features.
 
-.. IMPORTANT:: Because the Protocol Inspection profile was designed around an experience that is better suited to using the BIG-IP web-based Configuration utility, we strongly recommend you configure, modify, or change Protocol Inspection profiles using the BIG-IP Configuration utility, and reference the policy in the AS3 declaration. Future releases of BIG-IP AS3 will not include further improvements to the Protocol Inspection profiles.
+.. IMPORTANT:: Because the Protocol Inspection profile was designed around an experience that is better suited to using the BIG-IP web-based Configuration utility, we strongly recommend you configure, modify, or change Protocol Inspection profiles using the BIG-IP Configuration utility, and reference the policy in the AS3 declaration. Future releases of BIG-IP AS3 will not include any improvements to  Protocol Inspection profiles.
 
 This example shows how you can create BIG-IP AFM Protocol Inspection profiles in a BIG-IP AS3 declaration.  A protocol inspection profile collects rules for protocol inspection using pre-installed signatures defined by the Snort project, or custom signatures defined using the Snort syntax.
 
