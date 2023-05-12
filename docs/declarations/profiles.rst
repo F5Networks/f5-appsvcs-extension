@@ -162,11 +162,32 @@ For detailed information on the WebSocket profile, see |socket| and |ws| in the 
 
 .. IMPORTANT:: The following properties require TMOS 16.1 or later: **compressMode**, **compression**, **maximumWindowSize**, and **noDelay**. The example was updated in AS3 3.40 to include the Websocket profile.
 
+**New in BIG-IP AS3 3.45 and later** |br|
+In BIG-IP AS3 versions prior to 3.45, the WebSocket profile was referenced from an HTTP profile.  In AS3 3.45 and later, the WebSocket profile can be referenced directly from the virtual service (an HTTP profile is still required). Referencing from an HTTP profile is deprecated, but still allowed for backwards compatibility.  We include examples of both methods in the following examples.
+
+**Example for BIG-IP AS3 3.45 and later**
+
+This declaration creates the following objects on the BIG-IP (you MUST be on AS3 3.45 or later to use this example):
+
+- Partition (tenant) named **Sample_WebSocket_Profile**.
+- An HTTP service (virtual server) named **service** that references the WebSocket profile and the HTTP profile.
+- A default HTTP profile.
+- A WebSocket profile with a number of properties.
+
+
+.. literalinclude:: ../../examples/declarations/example-service-http-websocket-profile.json
+   :language: json
+
+|
+
+**Example for BIG-IP AS3 3.44 and earlier**
+
 This declaration creates the following objects on the BIG-IP:
 
-- Partition (tenant) named **Sample_profile_05**.
-- An HTTP service (virtual server) named **service**.
-- An HTTP profile that includes WebSocket properties.
+- Partition (tenant) named **Sample_WebSocket_Profile**.
+- An HTTP service (virtual server) named **service** that references the HTTP profile.
+- An HTTP profile that references the WebSocket profile.
+- A WebSocket profile with a number of properties.
 
 
 .. literalinclude:: ../../examples/declarations/example-websocket-profile.json
