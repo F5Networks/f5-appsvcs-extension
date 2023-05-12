@@ -175,7 +175,7 @@ This declaration creates the following objects on the BIG-IP (you MUST be on AS3
 - A WebSocket profile with a number of properties.
 
 
-.. literalinclude:: ../../examples/declarations/example-service-http-websocket-profile.json
+.. literalinclude:: ../../examples/declarations/example-service-http-websocket-profile-ref.json
    :language: json
 
 |
