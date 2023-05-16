@@ -4,13 +4,14 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.46.0
 
 ### Added
+- AUTOTOOL-3821: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for port lists
 
 ### Fixed
 - AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
 
-### Removed
-
 ### Changed
+
+### Removed
 
 ## 3.45.0
 

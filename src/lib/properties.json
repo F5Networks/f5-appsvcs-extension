@@ -1171,14 +1171,12 @@
     { "id":"field31",                    "quotedString": true },
     { "id":"field32",                    "quotedString": true }
   ],
-  
   "ltm profile tftp": [
     { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"idle-timeout",              "intToString": true },
     { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } }
   ],
-
   "ltm rule": [
     { "id":"api-anonymous",             "altId": "iRule" }
   ],
@@ -1197,6 +1195,13 @@
     { "id":"tcp-idle-timeout",          "intToString": true },
     { "id":"traffic-group" },
     { "id":"udp-idle-timeout",          "intToString": true }
+  ],
+  "ltm traffic-matching-criteria": [
+    { "id":"destination-address-inline", "minVersion": "14.1" },
+    { "id":"destination-port-list",     "minVersion": "14.1" },
+    { "id":"partition",                 "minVersion": "14.1" },
+    { "id":"protocol",                  "minVersion": "14.1" },
+    { "id":"source-address-inline",     "minVersion": "14.1" }
   ],
   "ltm virtual": [
     { "id":"enabled",                   "altId": "adminState" },
@@ -1234,6 +1239,7 @@
     { "id":"source-port",               "truth": "change", "falsehood": "preserve", "altId": "translateClientPort" },
     { "id":"translate-address",         "truth": "enabled", "falsehood": "disabled", "altId": "translateServerAddress" },
     { "id":"translate-port",            "truth": "enabled", "falsehood": "disabled", "altId": "translateServerPort" },
+    { "id":"traffic-matching-criteria", "minVersion": "14.1" },
     { "id":"nat64",                     "truth": "enabled", "falsehood": "disabled", "altId": "nat64Enabled" },
     { "id":"vlans",                     "extend":"array" },
     { "id":"vlans-enabled" },

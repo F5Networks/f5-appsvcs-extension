@@ -2923,6 +2923,28 @@ describe('map_as3', () => {
             );
         });
 
+        describe('portList', () => {
+            it('should map portList to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.portList = {
+                    use: 'firewallPortList'
+                };
+                declaration.tenantId.appId.itemId.firewallPortList = {
+                    class: 'Firewall_Port_List',
+                    ports: [
+                        '1-999'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual['traffic-matching-criteria'].destination, undefined);
+                assert.strictEqual(virtual['traffic-matching-criteria'].source, undefined);
+            });
+        });
+
         describe('maximumBandwidth', () => {
             function assertProperty(inKey, outKey, inValue, outValue, context) {
                 const fullContext = Object.assign({}, defaultContext, context);

@@ -1052,6 +1052,16 @@ const translate = {
         obj.address = ipUtil.minimizeIP(obj.address);
         return [normalize.actionableMcp(context, obj, 'ltm snat-translation', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
+    'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate': function (context, obj) {
+        delete obj.partition;
+        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotentcy
+        const addr = obj.destinationAddressInline;
+        if (addr) {
+            const parsed = ipUtil.parseIpAddress(addr);
+            obj.destinationAddressInline = `${parsed.ip}/${parsed.netmask}`;
+        }
+        return [normalize.actionableMcp(context, obj, 'ltm traffic-matching-criteria', obj.fullPath)];
+    },
     'tm:ltm:virtual:virtualstate': function (context, obj) {
         obj.enabled = util.isEnabledObject(obj);
         delete obj.disabled;
@@ -1112,6 +1122,11 @@ const translate = {
 
         if (obj.rateLimit !== undefined && obj.rateLimit !== 'disabled') {
             obj.rateLimit = parseInt(obj.rateLimit, 10);
+        }
+
+        if (obj.trafficMatchingCriteria) {
+            delete obj.destination;
+            delete obj.source;
         }
 
         return [normalize.actionableMcp(context, obj, 'ltm virtual', path)];

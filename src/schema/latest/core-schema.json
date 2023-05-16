@@ -936,7 +936,10 @@
                 }
             },
             "then": {
-                "required": [ "virtualPort" ],
+                "oneOf": [
+                    { "required": [ "virtualPort" ] },
+                    { "required": [ "portList" ] }
+                ],
                 "not": {
                     "required": [ "profileICAP" ]
                 }
@@ -1216,7 +1219,10 @@
                 }
             },
             "then": {
-                "required": [ "virtualPort" ]
+                "oneOf": [
+                    { "required": [ "virtualPort" ] },
+                    { "required": [ "portList" ] }
+                ]
             },
 
             "dependencies": {
@@ -1673,6 +1679,9 @@
                     },
                     "minItems": 1,
                     "uniqueItems": true
+                },
+                "portList": {
+                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
                 },
                 "serviceDownImmediateAction": {
                     "title": "Service Down Immediate Action",
