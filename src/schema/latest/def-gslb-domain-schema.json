@@ -273,7 +273,7 @@
                     "default": true
                 },
                 "iRule": {
-                    "$ref": "#/definitions/iRule_Core"
+                    "$ref": "#/definitions/IRule_Core"
                 }
             },
             "additionalProperties": false,

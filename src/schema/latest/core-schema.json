@@ -2511,54 +2511,6 @@
             "required": [ "class", "address" ]
         },
 
-        "iRule": {
-            "title": "iRule",
-            "description": "An iRule",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "iRule"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-
-                "expand": {
-                    "title": "Expand",
-                    "description": "If true (default), expand backquoted variables in iRule",
-                    "type": "boolean",
-                    "default": true
-                },
-                "iRule": {
-                    "$ref": "#/definitions/iRule_Core"
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "class", "iRule" ]
-        },
-
-        "iRule_Core": {
-            "title": "iRule Core definition",
-            "description": "Reference to an iRule or text of an iRule",
-            "allOf": [
-                { "$ref": "#/definitions/F5string" },
-                {
-                    "f5PostProcess": {
-                        "tag": "expand",
-                        "data": { "when": "1/expand" }
-                    }
-                },
-                {
-                    "f5PostProcess": {
-                        "tag": "fetch",
-                        "data": "string"
-                    }
-                }
-            ]
-        },
-
         "WAF_Policy": {
             "title": "WAF_Policy",
             "description": "A Web Application Firewall Policy",
