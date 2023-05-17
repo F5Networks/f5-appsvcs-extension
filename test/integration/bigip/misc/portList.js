@@ -22,11 +22,14 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 
+const util = require('../../../../src/lib/util/util');
+
 const {
     postDeclaration,
     deleteDeclaration,
     getPath,
     assertModuleProvisioned,
+    getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
@@ -34,6 +37,10 @@ describe('port list', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     beforeEach('provision check and clean up', function () {
+        if (util.versionLessThan(getBigIpVersion(), '14.1')) {
+            this.skip();
+        }
+
         assertModuleProvisioned.call(this, 'afm');
         return deleteDeclaration();
     });
