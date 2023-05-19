@@ -1855,6 +1855,17 @@ describe('map_as3', () => {
                 assert.strictEqual(results.configs[0].properties['api-anonymous'], expectedIRule);
             });
 
+            it('should merge line continuations', () => {
+                const item = {
+                    class: ruleClass.name,
+                    iRule: 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock \\\n    seconds].  Request headers were [HTTP::header names]. \\\n    Method was [HTTP::method]"\n\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" \\\n        "/xyz/"} [HTTP::uri]]\n    }\n}'
+                };
+                const results = translate[ruleClass.name](defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(
+                    results.configs[0].properties['api-anonymous'], 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock seconds].  Request headers were [HTTP::header names]. Method was [HTTP::method]"\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" "/xyz/"} [HTTP::uri]]\n    }\n}'
+                );
+            });
+
             it('should add to ignore when ignore changes is set to true', () => {
                 const item = {
                     class: ruleClass.name,

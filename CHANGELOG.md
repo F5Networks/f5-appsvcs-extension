@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
+- AUTOTOOL-3718: ([GitHub Issue 704](https://github.com/F5Networks/f5-appsvcs-extension/issues/704)): Handling of line continuation character in iRule
 
 ### Changed
 
