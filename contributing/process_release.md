@@ -73,7 +73,7 @@ Merge the release branch into develop and master following the steps below for e
   * Make sure that the version numbers in `package.json`, `package-lock.json`, `CHANGELOG.md`, etc... is correct. Rebase can sometimes rebase `develop` into the release branch.
   * Even though the MR was created via the GUI, pushing a local should be reflected in the MR
 * Self approve the merge request and merge. It is not uncommon when attempting to merge into `develop` for there to be no changes in the merge request. If this happens close the merge request (optionally commenting that there were no changes to merge) and move on to the merge into `master` merge request.
-* In the f5-appsvcs-schema repository add a new version to the beginning of the schemaVersion enum in `schemas/core-schema.js` using the preexisting format. Also, be sure to run `npm run compile-schema` after adding the new version.
+* In the f5-appsvcs-schema repository add the current release version to the beginning of the schemaVersion enum in `schemas/core-schema.json` using the preexisting format. Also, be sure to run `npm run compile-schema` after adding the new version. If you don't have the typescript compiler (tsc) installed, you will need to run `npm install -g typescript`. Also be sure to run `npm ci`.
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
 
 Tag master with the release version, for example: `v3.27.0` (Note: if you are tagging/re-tagging older releases that may trigger the publish, make sure to cancel the job as it will try to reupload the artifacts).
