@@ -1094,10 +1094,18 @@
                                 "enum": ["dhcp", "dns", "gtp", "imap", "mqtt", "netbios_ns", "nntp", "pop3", "sip", "snmp", "ssl", "telnet", "wins", "diameter", "ftp", "http", "irc", "mysql", "netbios_ssn", "other", "radius", "smtp", "ssh", "sunrpc", "tftp", "coap", "oracle", "pfcp"]
                             },
                             "compliance": {
-                                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Compliance_Checks"
+                                "description": "A list of compliance checks to attach to the Protocol Inspection Profile",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Compliance_Check"
+                                }
                             },
                             "signature": {
-                                "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Signature_Checks"
+                                "description": "A list of signature checks to attach to the Protocol Inspection Profile",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/Protocol_Inspection_Profile_Service_Signature_Check"
+                                }
                             },
                             "ports": {
                                 "description": "List of ports to attach to the service.",
@@ -1227,68 +1235,66 @@
             "additionalProperties": false
         },
 
-        "Protocol_Inspection_Profile_Service_Compliance_Checks": {
-            "description": "A list of compliance checks to attach to the Protocol Inspection Profile",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "check": {
-                        "type": "string",
-                        "description": "The name of the check"
-                    },
-                    "action": {
-                        "type": "string",
-                        "enum": ["accept", "drop", "reject"],
-                        "description": "Which action to perform on traffic matching the check",
-                        "default": "accept"
-                    },
-                    "log": {
-                        "type": "boolean",
-                        "description": "Specifies whether to log the check",
-                        "default": true
-                    },
-                    "value": {
-                        "type": "string",
-                        "description": "Value to use for the check. If a check accepts enumerable values, these should be delimited by spaces."
-                    }
+        "Protocol_Inspection_Profile_Service_Compliance_Check": {
+            "title": "Protocol Inspection Profile Service Compliance Check",
+            "description": "Defines a compliance check to attach to the Protocol Inspection Profile",
+            "type": "object",
+            "properties": {
+                "check": {
+                    "type": "string",
+                    "description": "The name of the check"
                 },
-                "required": ["check"],
-                "additionalProperties": false
-            }
+                "action": {
+                    "type": "string",
+                    "enum": ["accept", "drop", "reject"],
+                    "description": "Which action to perform on traffic matching the check",
+                    "default": "accept"
+                },
+                "log": {
+                    "type": "boolean",
+                    "description": "Specifies whether to log the check",
+                    "default": true
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Value to use for the check. If a check accepts enumerable values, these should be delimited by spaces."
+                }
+            },
+            "required": [
+                "check"
+            ],
+            "additionalProperties": false
         },
 
-        "Protocol_Inspection_Profile_Service_Signature_Checks": {
-            "description": "A list of signature checks to attach to the Protocol Inspection Profile",
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "check": {
-                        "type": "string",
-                        "description": "The name of the check"
-                    },
-                    "action": {
-                        "type": "string",
-                        "enum": [
-                            "accept",
-                            "drop",
-                            "reject"
-                        ],
-                        "description": "Which action to perform on traffic matching the check",
-                        "default": "accept"
-                    },
-                    "log": {
-                        "type": "boolean",
-                        "description": "Specifies whether to log the check",
-                        "default": true
-                    }
+        "Protocol_Inspection_Profile_Service_Signature_Check": {
+            "type": "object",
+            "title": "Protocol Inspection Profile Service Signature Check",
+            "description": "Defines a signature check to attach to the Protocol Inspection Profile",
+            "properties": {
+                "check": {
+                    "type": "string",
+                    "description": "The name of the check"
                 },
-                "required": [
-                    "check"
-                ],
-                "additionalProperties": false
-            }
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "accept",
+                        "drop",
+                        "reject"
+                    ],
+                    "description": "Which action to perform on traffic matching the check",
+                    "default": "accept"
+                },
+                "log": {
+                    "type": "boolean",
+                    "description": "Specifies whether to log the check",
+                    "default": true
+                }
+            },
+            "required": [
+                "check"
+            ],
+            "additionalProperties": false
         },
 
         "SSH_Proxy_Profile": {

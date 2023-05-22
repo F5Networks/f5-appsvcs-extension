@@ -26,11 +26,13 @@ const RestWorker = require('../../../src/nodejs/restWorker');
 const constants = require('../../../src/lib/constants');
 const log = require('../../../src/lib/log');
 const HostContext = require('../../../src/lib/context/hostContext');
+const RequestContext = require('../../../src/lib/context/requestContext');
 const SettingsHandler = require('../../../src/lib/settingsHandler');
 const restUtil = require('../../../src/lib/util/restUtil');
 const config = require('../../../src/lib/config');
 const util = require('../../../src/lib/util/util');
 const tmshUtil = require('../../../src/lib/util/tmshUtil');
+const STATUS_CODES = require('../../../src/lib/constants').STATUS_CODES;
 
 describe('restWorker', () => {
     let restWorker = null;
@@ -60,7 +62,7 @@ describe('restWorker', () => {
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin:');
     });
 
-    function createRestOpMock(statusCode, done, restOpBody) {
+    function createRestOpMock(statusCode, done, restOpBody, path) {
         // we're asserting side effect of calling the restWorker's on${Method}
         // which should eventually call restOperation.complete() method
         // we're passing in mocha done callback to ensure that these asserts happen
@@ -82,6 +84,9 @@ describe('restWorker', () => {
                 done(err);
             }
         });
+        if (path) {
+            restOp.setPath(path);
+        }
         return restOp;
     }
 
@@ -147,55 +152,306 @@ describe('restWorker', () => {
         });
     });
 
+    describe('path validation', () => {
+        const invalidPaths = [
+            {
+                name: 'too short',
+                path: '/shared/appsvcs'
+            },
+            {
+                name: 'bad endpoint',
+                path: '/shared/appsvcs/foo'
+            },
+            {
+                name: 'info with extra parameter',
+                path: '/shared/appsvcs/info/foo'
+            },
+            {
+                name: 'settings with extra parameter',
+                path: '/shared/appsvcs/settings/foo'
+            },
+            {
+                name: 'application instead of applications',
+                path: '/shared/appsvcs/declare/exampleTenant/application'
+            },
+            {
+                name: 'application instead of applications with app in path',
+                path: '/shared/appsvcs/declare/exampleTenant/application/App1'
+            },
+            {
+                name: 'extra value added to the end of the path after application name',
+                path: '/shared/appsvcs/declare/exampleTenant/applications/App1/somethingElse'
+            }
+        ];
+
+        const validPaths = [
+            {
+                name: 'declare',
+                path: '/shared/appsvcs/declare'
+            },
+            {
+                name: 'task',
+                path: '/shared/appsvcs/task'
+            },
+            {
+                name: 'info',
+                path: '/shared/appsvcs/info'
+            },
+            {
+                name: 'settings',
+                path: '/shared/appsvcs/settings'
+            },
+            {
+                name: 'trailing slash',
+                path: '/shared/appsvcs/declare/'
+            },
+            {
+                name: 'declare with tenant',
+                path: '/shared/appsvcs/declare/foo'
+            },
+            {
+                name: 'task with id',
+                path: '/shared/appsvcs/task/foo'
+            },
+            {
+                name: 'declare with tenant on per-app',
+                path: '/shared/appsvcs/declare/foo/applications'
+            },
+            {
+                name: 'declare with tenant on per-app with application',
+                path: '/shared/appsvcs/declare/foo/applications/bar'
+            }
+        ];
+
+        invalidPaths.forEach((path) => {
+            it(`Should reject ${path.name} paths`, (done) => {
+                const restOp = createRestOpMock(400, done, null, path.path);
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
+        });
+
+        validPaths.forEach((path) => {
+            it(`Should accept ${path.name} paths`, (done) => {
+                const restOp = createRestOpMock(200, done, null, path.path);
+                sinon.stub(restWorker, 'continuePost').callsFake((context, restOperation) => {
+                    restOperation.statusCode = 200;
+                    restOperation.body = {
+                        code: 200
+                    };
+                    restOperation.complete();
+                });
+                sinon.stub(RequestContext, 'get').resolves({});
+
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
+        });
+    });
+
     describe('onGet', () => {
-        it('Container - should fail with 405 and /declare', function (done) {
-            const restOp = createRestOpMock(405, done);
-            restOp.method = 'Get';
-            restOp.setPathName('/shared/appsvcs/declare');
-            restWorker.hostContext = {
-                deviceType: constants.DEVICE_TYPES.CONTAINER,
-                as3VersionInfo: {}
-            };
+        describe('per-tenant', () => {
+            it('Container - should fail with 405 and /declare', function (done) {
+                const restOp = createRestOpMock(405, done);
+                restOp.method = 'Get';
+                restOp.setPathName('/shared/appsvcs/declare');
+                restWorker.hostContext = {
+                    deviceType: constants.DEVICE_TYPES.CONTAINER,
+                    as3VersionInfo: {}
+                };
 
-            assert.doesNotThrow(() => restWorker.onGet(restOp));
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
+
+            it('should return the current config with the desired values if a GET is used on /settings', function (done) {
+                sinon.stub(SettingsHandler, 'process').callsFake((context, restOp) => {
+                    const result = restUtil.buildOpResult(
+                        STATUS_CODES.OK,
+                        'retrieving settings',
+                        { burstHandlingEnabled: false }
+                    );
+                    restUtil.completeRequest(restOp, result);
+                });
+
+                const restOp = createRestOpMock(200, done, {
+                    burstHandlingEnabled: false
+                });
+                restOp.method = 'Get';
+                restOp.setPathName('/shared/appsvcs/settings');
+                restWorker.hostContext = {
+                    deviceType: constants.DEVICE_TYPES.BIG_IP,
+                    as3VersionInfo: {}
+                };
+                restWorker.asyncHandler = { cleanRecords: () => { } };
+
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
+            });
+
+            it('should pass the request to the asyncHandler in the context', function (done) {
+                const restOp = createRestOpMock(200, done, 'here is the body');
+                restOp.method = 'Get';
+                restOp.setPathName('/shared/appsvcs/info');
+                restWorker.hostContext = { as3VersionInfo: 'here is the body' };
+                restWorker.asyncHandler = {
+                    cleanRecords: (context) => {
+                        assert.strictEqual(context.request.method, 'Get');
+                    }
+                };
+
+                restWorker.onGet(restOp);
+            });
         });
 
-        it('should return the current config with the desired values if a GET is used on /settings', function (done) {
-            sinon.stub(SettingsHandler, 'process').callsFake((context, restOp) => {
-                const result = restUtil.buildOpResult(
-                    restUtil.STATUS_CODES.OK,
-                    'retrieving settings',
-                    { burstHandlingEnabled: false }
+        describe('per-app', () => {
+            let requestContextReturnValue = {};
+
+            beforeEach(() => {
+                requestContextReturnValue = {
+                    request: {
+                        method: 'Get',
+                        error: undefined,
+                        body: { class: 'AS3', action: 'retrieve' },
+                        fullPath: '/shared/appsvcs/declare/tenant1/applications',
+                        pathName: 'declare',
+                        subPath: 'tenant1/applications',
+                        isPerApp: true,
+                        queryParams: [],
+                        basicAuth: undefined,
+                        token: undefined,
+                        isMultiDecl: false,
+                        postProcessing: []
+                    },
+                    tasks: [
+                        {
+                            class: 'AS3',
+                            action: 'retrieve',
+                            redeployAge: 0,
+                            redeployUpdateMode: 'original',
+                            persist: true,
+                            syncToGroup: '',
+                            historyLimit: 4,
+                            logLevel: 'warning',
+                            trace: false,
+                            retrieveAge: 0,
+                            targetHost: 'localhost',
+                            targetPort: 8100,
+                            targetTimeout: 150,
+                            resourceTimeout: 5,
+                            dryRun: false,
+                            targetUsername: '',
+                            targetPassphrase: '',
+                            protocol: 'http',
+                            urlPrefix: 'http://admin:@localhost:8100',
+                            localBigip: true,
+                            targetTokens: {}
+                        }
+                    ]
+                };
+            });
+
+            it('should return all applications for tenant1 /declare/tenant1/applications', function (done) {
+                sinon.stub(restWorker.declareHandler, 'process').callsFake((context, restOp) => {
+                    const result = restUtil.buildOpResult(
+                        STATUS_CODES.OK,
+                        'retrieving all tenant1 applications for per-app',
+                        [
+                            {
+                                app1: {
+                                    class: 'Application',
+                                    accelerator: {
+                                        class: 'HTTP_Acceleration_Profile'
+                                    }
+                                }
+                            },
+                            {
+                                app2: {
+                                    class: 'Application',
+                                    accelerator: {
+                                        class: 'HTTP_Acceleration_Profile'
+                                    }
+                                }
+                            }
+                        ]
+                    );
+                    restUtil.completeRequest(restOp, result);
+                });
+
+                sinon.stub(RequestContext, 'get').resolves(requestContextReturnValue);
+
+                const restOp = createRestOpMock(
+                    200,
+                    done,
+                    [
+                        {
+                            app1: {
+                                class: 'Application',
+                                accelerator: {
+                                    class: 'HTTP_Acceleration_Profile'
+                                }
+                            }
+                        },
+                        {
+                            app2: {
+                                class: 'Application',
+                                accelerator: {
+                                    class: 'HTTP_Acceleration_Profile'
+                                }
+                            }
+                        }
+                    ]
                 );
-                restUtil.completeRequest(restOp, result);
+                restOp.method = 'Get';
+                restOp.setPathName('/shared/appsvcs/declare/tenant1/applications');
+                restWorker.hostContext = {
+                    deviceType: constants.DEVICE_TYPES.BIG_IP,
+                    as3VersionInfo: {}
+                };
+                restWorker.asyncHandler = { cleanRecords: () => { } };
+
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
             });
 
-            const restOp = createRestOpMock(200, done, {
-                burstHandlingEnabled: false
+            it('should return specific application if a GET is used on /declare/tenant1/applications/app1', function (done) {
+                sinon.stub(restWorker.declareHandler, 'process').callsFake((context, restOp) => {
+                    const result = restUtil.buildOpResult(
+                        STATUS_CODES.OK,
+                        'retrieving tenant1/app1 values for per-app',
+                        {
+                            app1: {
+                                class: 'Application',
+                                accel: {
+                                    class: 'HTTP_Acceleration_Profile'
+                                }
+                            }
+                        }
+                    );
+                    restUtil.completeRequest(restOp, result);
+                });
+
+                requestContextReturnValue.request.fullPath = '/shared/appsvcs/declare/tenant1/applications/app1';
+                requestContextReturnValue.request.subPath = 'tenant1/applications/app1';
+                sinon.stub(RequestContext, 'get').resolves(requestContextReturnValue);
+
+                const restOp = createRestOpMock(
+                    200,
+                    done,
+                    {
+                        app1: {
+                            class: 'Application',
+                            accel: {
+                                class: 'HTTP_Acceleration_Profile'
+                            }
+                        }
+                    }
+                );
+                restOp.method = 'Get';
+                restOp.setPathName('/shared/appsvcs/declare/tenant1/applications/app1');
+                restWorker.hostContext = {
+                    deviceType: constants.DEVICE_TYPES.BIG_IP,
+                    as3VersionInfo: {}
+                };
+                restWorker.asyncHandler = { cleanRecords: () => { } };
+
+                assert.doesNotThrow(() => restWorker.onGet(restOp));
             });
-            restOp.method = 'Get';
-            restOp.setPathName('/shared/appsvcs/settings');
-            restWorker.hostContext = {
-                deviceType: constants.DEVICE_TYPES.BIG_IP,
-                as3VersionInfo: {}
-            };
-            restWorker.asyncHandler = { cleanRecords: () => {} };
-
-            assert.doesNotThrow(() => restWorker.onGet(restOp));
-        });
-
-        it('should pass the request to the asyncHandler in the context', function (done) {
-            const restOp = createRestOpMock(200, done, 'here is the body');
-            restOp.method = 'Get';
-            restOp.setPathName('/shared/appsvcs/info');
-            restWorker.hostContext = { as3VersionInfo: 'here is the body' };
-            restWorker.asyncHandler = {
-                cleanRecords: (context) => {
-                    assert.strictEqual(context.request.method, 'Get');
-                }
-            };
-
-            restWorker.onGet(restOp);
         });
     });
 
@@ -251,7 +507,7 @@ describe('restWorker', () => {
         it('should replace the config with the desired values if a POST is used on /settings', function (done) {
             sinon.stub(SettingsHandler, 'process').callsFake((context, restOp) => {
                 const result = restUtil.buildOpResult(
-                    restUtil.STATUS_CODES.OK,
+                    STATUS_CODES.OK,
                     'retrieving settings',
                     { burstHandlingEnabled: false }
                 );

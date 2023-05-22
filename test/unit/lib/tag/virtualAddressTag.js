@@ -37,9 +37,9 @@ describe('VirtualAddressTag', () => {
         context.host.parser = {
             virtualAddressList: [
                 {
-                    fullPath: '/Common/1.1.1.11',
+                    fullPath: '/Common/192.0.2.11',
                     partition: 'Common',
-                    address: '1.1.1.11',
+                    address: '192.0.2.11',
                     metadata: [
                         {
                             name: 'references',

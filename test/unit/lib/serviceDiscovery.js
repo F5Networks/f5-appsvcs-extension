@@ -305,20 +305,20 @@ describe('serviceDiscovery', () => {
             const sdItem = {
                 enable: true,
                 servicePort: 80,
-                serverAddresses: ['1.2.3.4', '4.3.2.1'],
+                serverAddresses: ['192.0.2.4', '192.0.2.1'],
                 servers: [
                     {
                         name: 'node1',
-                        address: '5.6.7.8'
+                        address: '192.0.2.8'
                     },
                     {
                         name: 'node2',
-                        address: '9.10.11.12'
+                        address: '192.0.2.12'
                     }
                 ],
                 routeDomain: 99,
                 addressDiscovery: 'static',
-                name: '/tenant/1.2.3.4%99:80'
+                name: '/tenant/192.0.2.4%99:80'
             };
             const result = serviceDiscovery.createTaskProvider(sdItem);
             assert.deepStrictEqual(
@@ -327,8 +327,8 @@ describe('serviceDiscovery', () => {
                     provider: 'static',
                     providerOptions: {
                         nodes: [
-                            { id: '/tenant/1.2.3.4%99' },
-                            { id: '/tenant/4.3.2.1%99' },
+                            { id: '/tenant/192.0.2.4%99' },
+                            { id: '/tenant/192.0.2.1%99' },
                             { id: '/tenant/node1' },
                             { id: '/tenant/node2' }
                         ]

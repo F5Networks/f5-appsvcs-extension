@@ -7,20 +7,194 @@ stages:
   - post build
   - docs
 
-# This inherits all the jobs defined in the parent template
-# Override variables in this project as needed
-# include:
-# adds atg-shared-checks stage and jobs
-# adds atg_shared_checks_result job to test stage
-#  - project: automation-toolchain/atg-shared-templates
-#    file: security/base.gitlab-ci.yml
-
 variables:
   DOCS_BUILD_DIR: "docs/_build/html"
   GIT_DEPTH: "10"
-  SECRET_DETECTION_EXCLUDED_PATHS: "docs/**/*.rst,test/*,*examples/*/*.json,properties.json,assets/css/*.css,schema/**/*.json,src/schema/**/*.json"
+  IMAGE_NAME: f5-as3-container
+  RPM_PACKAGE_URL:
+    description: URL from which to download the RPM to test. By default use the RPM from the build_rpm job.
+  TEST_CODE_VERSION:
+    description: AS3 branch/tag from which to get integration tests.
+    value: "$CI_COMMIT_REF_NAME"
+  REGRESSION_SCHEDULE:
+    description: Type of schedule to run for integration tests.
+    value: nightly
+    options:
+      - nightly
+      - performance
+      - remote
+      - smoke
+  PARALLEL:
+    description: Run integration tests in parallel. Deploy 3 BIGIP instances.
+    value: "false"
+    options:
+      - "true"
+      - "false"
+  TF_DIRECTORY: test/common/env/terraform
+  TF_HTTP_LOCK_METHOD: POST
+  TF_HTTP_UNLOCK_METHOD: DELETE
+  TF_HTTP_USERNAME: ${CI_REGISTRY_USER}
+  TF_HTTP_PASSWORD: ${CI_JOB_TOKEN}
+  TF_CLI_ARGS_apply: "-auto-approve"
+  TF_CLI_ARGS_destroy: "-auto-approve"
+  TF_STATE_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID/terraform/state"
+  # terraform will try to update state 5(4+1) times every 3 minutes.
+  TF_HTTP_RETRY_MAX: 4
+  TF_HTTP_RETRY_WAIT_MIN: 3
+  TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
+  CURL_CONTENT: "Content-Type: application/json"
+
+# This inherits all the jobs defined in the parent template
+# Override variables in this project as needed
+include:
+# adds atg-shared-checks stage and jobs
+# adds atg_shared_checks_result job to test stage
+  - project: automation-toolchain/atg-shared-templates
+    file: security/base.gitlab-ci.yml
 
 
+schema:
+  image: $DOCKER_URL/node:10
+  stage: schema
+  needs: []
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci --no-optional
+    - npm run build-schema
+  artifacts:
+    name: f5-appsvcs-extension-$CI_BUILD_REF
+    paths:
+      - src/schema/latest/adc-schema.json
+      - src/schema/latest/as3-schema.json
+
+lint:
+  image: $DOCKER_URL/node:10
+  stage: lint
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci
+    - npm run lint
+
+coverage:
+  image: $DOCKER_URL/node:16
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm ci
+    - npm run coverage
+  artifacts:
+    paths:
+      - coverage
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+
+audit:
+  image: $DOCKER_URL/node:lts
+  stage: test
+  needs: []
+  variables:
+    NODE_OPTIONS: "--dns-result-order=ipv4first"
+  allow_failure: true
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm audit
+
+node:4.6:
+  image: $DOCKER_URL/node:4.6.2
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm install mocha@5.2.0 --save-dev
+    - npm install --no-optional
+    - npm run test-no-build
+
+node:6:
+  image: $DOCKER_URL/node:6
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - currentDirectory=$(pwd)
+    - mkdir -p /tmp/npm-install-directory
+    - cd /tmp/npm-install-directory
+    - npm install npm@5.10.0
+    - rm -rf /usr/local/lib/node_modules
+    - mv node_modules /usr/local/lib/
+    - ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+    - cd $currentDirectory
+    - npm ci --no-optional
+    - npm install mocha@5.2.0
+    - npm run test-no-build -- $TEST_REPORTER_OPTIONS
+  artifacts:
+    when: always
+    reports:
+      junit: test_report.xml
+
+node:8:
+  image: $DOCKER_URL/node:8.11.1
+  stage: test
+  needs:
+    - schema
+  tags:
+    - cm-official-docker-executor
+  script:
+    - npm install --global npm@5.10.0
+    - npm ci --no-optional
+    - npm install mocha@7
+    - npm run test-no-build -- $TEST_REPORTER_OPTIONS
+  artifacts:
+    when: always
+    reports:
+      junit: test_report.xml
+
+build_rpm:
+  image: $DOCKER_URL/node:14
+  stage: build
+  needs:
+    - schema
+  script:
+    # setup node environment
+    - apt-get update && apt-get install -y rpm --no-install-recommends
+    - npm ci --no-optional
+    # build installation package
+    - scripts/build/buildRpm.sh "cloud"
+    # ensure latest copyrights
+    - node node_modules/@f5devcentral/atg-shared-utilities-dev/scripts/dev/write-copyright.js -c -p scripts/dev/copyright.txt
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    name: f5-appsvcs-extension-$CI_BUILD_REF
+    paths:
+      - dist
+      - src/schema/latest/adc-schema.json
+      - src/schema/latest/as3-schema.json
+
+create_source:
+  image: $DOCKER_URL/node:10
+  stage: post build
+  needs:
+    - build_rpm
+  script:
+    - scripts/build/source-package.sh
+  tags:
+    - cm-official-docker-executor
+  artifacts:
+    name: f5-appsvcs-source
+    paths:
+      - dist/*-source.tar.gz
+      - dist/*-examples.tar.gz
 
 build_api_docs:
   image: $DOCKER_URL/node:12
@@ -39,6 +213,378 @@ build_api_docs:
     paths:
       - apidocs
 
+.deploy_common: &deploy_common
+  image: $INTEGRATION_DEPLOY_IMAGE
+  tags:
+    - as3-test-docker-executor
+  stage: deploy
+  timeout: 2 hours
+  script:
+    - apk update
+    - apk add npm gettext
+    - cd "$TF_ROOT"
+    - terraform init
+    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+        # $SKIP_DEPLOYMENT may be undefined so we check for true
+    -   terraform destroy
+    -   terraform apply
+    - fi
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   BIGIPS_ADDRESSES=($(terraform output --json admin_ip | jq -rc .[]))
+    - else
+    -   AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
+    -   if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -     TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
+    -   fi
+    - fi
+    - AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
+    - AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
+    - cd -
+    - if [[ -n "$RPM_PACKAGE_URL" ]]; then
+    -   echo using RPM "$RPM_PACKAGE_URL" from RPM_PACKAGE_URL env var
+    -   export RPM_PACKAGE=$(basename "$RPM_PACKAGE_URL")
+    -   curl -o "$RPM_PACKAGE" "$RPM_PACKAGE_URL"
+    - elif [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
+    -   echo using RPM from cross-project pipeline
+    -   RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+    - else
+    -   echo using RPM from our pipeline
+    -   RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
+    - fi
+    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+    -   mkdir -p "$DO_DOWNLOAD_DIR"
+    -   DO_RPM_FILE=$(scripts/dev/download-latest-do.sh "$DO_DOWNLOAD_DIR" "${DO_INTEGRATION_VERSION}")
+    -   npm install --no-optional
+    -   if [[ "$PARALLEL" = "true" ]]; then
+    -     for IP in "${BIGIPS_ADDRESSES[@]}"; do
+    -       echo "Configuring $IP"
+    -       source scripts/dev/instance-config.sh "$IP:8443" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     done
+    -     for job in $(jobs -p); do
+    -       echo "Jobs $(jobs -p)"
+    -       echo "Job we're waiting $job"
+    -       wait $job
+    -       RC=$?
+    -       if [[ $RC != 0 ]]; then
+    -         exit $RC
+    -       fi
+    -     done
+    -     SERVER_SET_JSON=$(source scripts/dev/build-server-set.sh)
+    -     echo "Posting server set to reservation server $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+    -     SERVER_SET=$(curl -s --retry 5 --retry-max-time 300 -H "$CURL_CONTENT" -d "$SERVER_SET_JSON" -X POST http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets | jq .id | tr -d '"')
+    -     echo "Server set id is $SERVER_SET"
+    -     echo "SERVER_SET=$SERVER_SET" >> deploy.env
+    -   else
+    -     echo "Configuring host $AS3_HOST"
+    -     echo "AS3_HOST=$AS3_HOST" >> deploy.env
+    -     echo "AS3_USERNAME=$AS3_USERNAME" >> deploy.env
+    -     echo "AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
+    -     source scripts/dev/instance-config.sh "$AS3_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -       echo "Configuring target host $TARGET_HOST"
+    -       echo "TARGET_HOST=$TARGET_HOST" >> deploy.env
+    -       source scripts/dev/instance-config.sh "$TARGET_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+    -     fi
+    -     wait
+    -   fi
+    - else
+    -   echo "skipping DO install due to SKIP_DEPLOYMENT"
+    - fi
+  artifacts:
+    when: always
+    reports:
+      dotenv: deploy.env
+    expire_in: 1 day
+  retry:
+    max: 2
+    when: always
+
+deploy_to_azure:
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+  needs:
+    - job: build_rpm
+      artifacts: true
+    - job: schema
+      artifacts: true
+  variables:
+    F5_DISABLE_CERT_VERIFY: 'true'
+    TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
+    TF_ROOT: "$TF_DIRECTORY/plans/azure"
+    REGKEY: "$BIGIP_LICENSE_AZURE"
+  before_script:
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_VAR_bigip_count=3
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - fi
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+deploy_for_this_project:
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
+  needs:
+    - job: build_rpm
+      artifacts: true
+    - job: schema
+      artifacts: true
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+    REGKEY: "$BIGIP_LICENSE"
+  before_script:
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_VAR_bigip_count=3
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   export TF_VAR_bigip_count=2
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   export TF_VAR_performance_test=true
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - fi
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+deploy_for_other_project:
+  rules:
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+  needs:
+    - project: "$UPSTREAM_PROJECT_PATH"
+      job: "$UPSTREAM_JOB"
+      ref: "$UPSTREAM_REF"
+      artifacts: true
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+    REGKEY: "$BIGIP_LICENSE"
+  before_script:
+    - if [ -n "$UPSTREAM_RPM_PATH" ]; then
+    -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+    - fi
+    - export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
+    - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
+    - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
+  <<: *deploy_common
+
+.test_rpms_common: &test_rpms_common
+  image: $DOCKER_URL/node:12-buster
+  stage: integration test
+  tags:
+    - as3-test-docker-executor
+  script:
+    - apt-get update && apt-get install -y jq --no-install-recommends
+    - npm ci --no-optional
+    - npm install --no-optional
+    - REPO=f5-appsvcs-extension
+    - if [[ "$TEST_CODE_VERSION" != $"CI_COMMIT_REF_NAME" ]]; then
+    -   echo running test code from "$TEST_CODE_VERSION"
+    -   if [[ "$TEST_CODE_VERSION" =~ ^v ]]; then
+    -     if [[ "$TEST_CODE_VERSION" < v3.42.0 ]]; then
+    -       REPO=f5-appsvcs
+    -     fi
+    -   fi
+    -   TOP_DIR=$(pwd)
+    -   TEST_CODE_DIR=test_code_repo/f5-appsvcs-extension
+    -   git clone --branch "$TEST_CODE_VERSION" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/automation-toolchain/${REPO}.git "$TEST_CODE_DIR"
+    -   cd "$TEST_CODE_DIR"
+    -   node scripts/build/schema-build.js
+    -   cd "$TOP_DIR"
+    - else
+    -   echo running test code from current branch
+    -   TEST_CODE_DIR=.
+    - fi
+    - MOCHA_OPTS=$TEST_REPORTER_OPTIONS
+    - if [[ -f ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js ]]; then
+    -   MOCHA_OPTS="${MOCHA_OPTS} --require ${TEST_CODE_DIR}/test/integration/bigip/property/mochaHooks.js"
+    - fi
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   MOCHA_OPTS="${MOCHA_OPTS} --parallel"
+    - fi
+    - echo "TESTING WITH IMAGE ${BIGIP_IMAGE}"
+    - if [ "$SMOKE_TEST" = "true" ]; then
+    -   export REGRESSION_SCHEDULE="smoke"
+    - fi
+    - export FILE_VERBOSITY=verbose
+    - if [ "$REGRESSION_SCHEDULE" = "nightly" ]; then
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property ${TEST_CODE_DIR}/test/integration/bigip/misc $MOCHA_OPTS --exit
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   npm run property -- $MOCHA_OPTS --exit
+    - elif [ "$REGRESSION_SCHEDULE" = "smoke" ]; then
+    -   npm run smoke -- $MOCHA_OPTS
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
+    -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property $MOCHA_OPTS --exit
+    - else
+    -   npm run misc -- $MOCHA_OPTS --exit
+    - fi
+
+test_rpms_in_azure:
+  timeout: 12 hours
+  rules:
+    - if: '$SKIP_TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+  variables:
+    TEST_RESOURCES_URL: "$TEST_RESOURCES_URL_AZURE"
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-extension-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: build_rpm
+      artifacts: true
+    - job: deploy_to_azure
+      artifacts: true
+
+test_rpms_for_this_project:
+  timeout: 12 hours
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-extension-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: deploy_for_this_project
+      artifacts: true
+    - job: build_rpm
+      artifacts: true
+
+test_rpms_for_other_project:
+  timeout: 12 hours
+  rules:
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+  <<: *test_rpms_common
+  artifacts:
+    name: f5-appsvcs-extension-$CI_BUILD_REF
+    when: always
+    paths:
+      - test/logs
+    reports:
+      junit: test_report.xml
+  needs:
+    - job: schema
+      artifacts: true
+    - job: deploy_for_other_project
+      artifacts: true
+    - project: "$UPSTREAM_PROJECT_PATH"
+      job: "$UPSTREAM_JOB"
+      ref: "$UPSTREAM_REF"
+      artifacts: true
+
+.teardown_common: &teardown_common
+  image: $INTEGRATION_DEPLOY_IMAGE
+  tags:
+      - as3-test-docker-executor
+  stage: teardown
+  script:
+      - cd "$TF_ROOT"
+      - terraform init
+      - terraform destroy --var bigip_version="${BIGIP_IMAGE}"
+      - if [[ "$PARALLEL" = "true" ]]; then
+      -   echo "Delete server-set $SERVER_SET from $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+      -   curl -s --retry 5 --retry-max-time 300 -X DELETE http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets/id/$SERVER_SET
+      - fi
+  retry:
+    max: 1
+    when: script_failure
+
+teardown_azure:
+  rules:
+    - if: '$SKIP_TEARDOWN =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: always
+  variables:
+    F5_DISABLE_CERT_VERIFY: 'true'
+    TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
+    TF_ROOT: "$TF_DIRECTORY/plans/azure"
+  before_script:
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+    - fi
+  <<: *teardown_common
+
+teardown_openstack:
+  rules:
+    - if: '$SKIP_TEARDOWN =~ /true/i'
+      when: never
+    - if: '$TEST_IN_AZURE =~ /true/i'
+      when: never
+    - if: '$UPDATE_DEPS =~ /true/i'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+    - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
+      when: always
+    - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
+      when: always
+  variables:
+    TF_ROOT: "$TF_DIRECTORY/plans/openstack"
+  before_script:
+    # terraform doesn't support '.' in backend address.
+    - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    - if [[ "$PARALLEL" = "true" ]]; then
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+    -   export TF_VAR_bigip_count=2
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+    -   export TF_VAR_performance_test=true
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+    - elif [ "$TRIGGER_INTEGRATION_TEST" = "true" ]; then
+    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    -   export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
+    - else
+    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+    - fi
+  <<: *teardown_common
 
 # DOCS
 create_docs:

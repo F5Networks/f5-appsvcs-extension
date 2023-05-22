@@ -19,13 +19,21 @@
                 "type": {
                     "description": "Type of DNS cache",
                     "type": "string",
-                    "enum": ["transparent"]
+                    "enum": ["transparent", "resolver", "validating-resolver"]
                 }
             },
             "allOf": [
                 {
                     "if": { "properties": { "type": { "const": "transparent" } } },
                     "then": { "$ref": "#/definitions/DNS_Cache_Transparent" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "resolver" } } },
+                    "then": { "$ref": "#/definitions/DNS_Cache_Resolver" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "validating-resolver" } } },
+                    "then": { "$ref": "#/definitions/DNS_Cache_Validating_Resolver" }
                 }
             ],
             "required": ["class", "type"]
@@ -378,6 +386,19 @@
                 }
             }
         },
+        "DNS_Zone_Forward": {
+            "description": "Manage the set of Forward Zones used by DNS Cache",
+            "type": "object",
+            "properties": {
+                "nameservers": {
+                    "description": "An array of nameservers and ports",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "DNS_Nameserver": {
             "title": "DNS_Nameserver",
             "description": "Configures a DNS nameserver",
@@ -416,6 +437,280 @@
             },
             "required": ["class"],
             "additionalProperties": false
+        },
+        "DNS_Cache_Resolver": {
+            "description": "DNS Cache with recursive resolver",
+            "type": "object",
+            "properties": {
+                "allowedQueryTime": {
+                    "description": "The time allowed for a query to stay in the queue before replaced by a new query when the number of concurrent distinct queries exceeds the limit. The default value is 200 milliseconds.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 200
+                },
+                "answerDefaultZones": {
+                    "description": "Specifies whether the system answers DNS queries for the default zones localhost, reverse 127.0.0.1 and ::1, and AS112",
+                    "type": "boolean",
+                    "default": false
+                },
+                "localZones": {
+                    "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DNS_Zone_Local"
+                    }
+                },
+                "maxConcurrentQueries": {
+                    "description": "Maximum number of concurrent queries used by the resolver. The default value is 1024",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1024
+                },
+                "maxConcurrentTcp": {
+                    "description": "Maximum number of concurrent TCP flows used by the resolver. The default value is 20",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 20
+                },
+                "maxConcurrentUdp": {
+                    "description": "Maximum number of concurrent UDP flows used by the resolver. The default value is 8192",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 8192
+                },
+                "msgCacheSize": {
+                    "description": "Number of bytes allocated for the message cache. The default value is 1m",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1048576
+                },
+                "nameserverCacheCount": {
+                    "description": "Number of DNS nameservers to cache. The default value is 16k",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 16536
+                },
+                "randomizeQueryNameCase": {
+                    "description": "Enables resolver to randomize the case of query names. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "forwardZones": {
+                    "description": "Manage the set of Forward Zones used by this DNS Cache",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DNS_Zone_Forward"
+                    }
+                },
+                "rootHints": {
+                    "description": "List of IP addresses to use for root name servers. Defaults are known Internet root servers.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "routeDomain": {
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Route_Domain" }
+                    ],
+                    "default": { "bigip":"/Common/0" }
+                },
+                "recordCacheSize": {
+                    "description": "Number of bytes allocated for the resource record set cache. The default value is 10m",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 10485760
+                },
+                "recordRotationMethod": {
+                    "description": "Select which resource record set rotation method should be used on cache responses",
+                    "type": "string",
+                    "enum": [ "none", "query-id" ],
+                    "default": "none"
+                },
+                "unwantedQueryReplyThreshold": {
+                    "description": "The threshold count of unsolicited query replies which triggers an alert (potential DOS attack underway). The default value is 0 (or off)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 0
+                },
+                "useIpv4": {
+                    "description": "Enables resolver to issue IPv4 queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useIpv6": {
+                    "description": "Enables resolver to issue IPv6 queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useTcp": {
+                    "description": "Enables resolver to issue tcp queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useUdp": {
+                    "description": "Enables resolver to issue udp queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "DNS_Cache_Validating_Resolver": {
+            "description": "DNS Cache with recursive resolver and DNSSEC validation",
+            "type": "object",
+            "properties": {
+                "allowedQueryTime": {
+                    "description": "The time allowed for a query to stay in the queue before replaced by a new query when the number of concurrent distinct queries exceeds the limit. The default value is 200 milliseconds.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 200
+                },
+                "answerDefaultZones": {
+                    "description": "Specifies whether the system answers DNS queries for the default zones localhost, reverse 127.0.0.1 and ::1, and AS112",
+                    "type": "boolean",
+                    "default": false
+                },
+                "ignoreCd": {
+                    "description": "Ignore client queries setting of checking-disabled. Perform validation anyway and only return secure answers. The default value is no",
+                    "type": "boolean",
+                    "default": false
+                },
+                "keyCacheSize": {
+                    "description": "Number of bytes allocated for the DNSKEY cache. The default value is 1m",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1048576
+                },
+                "localZones": {
+                    "description": "Configures resource records that a DNS cache uses to resolve matching DNS queries with authoritative DNS responses",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DNS_Zone_Local"
+                    }
+                },
+                "maxConcurrentQueries": {
+                    "description": "Maximum number of concurrent queries used by the resolver. The default value is 1024",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1024
+                },
+                "maxConcurrentTcp": {
+                    "description": "Maximum number of concurrent TCP flows used by the resolver. The default value is 20",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 20
+                },
+                "maxConcurrentUdp": {
+                    "description": "Maximum number of concurrent UDP flows used by the resolver. The default value is 8192",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 8192
+                },
+                "msgCacheSize": {
+                    "description": "Number of bytes allocated for the message cache. The default value is 1m",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 1048576
+                },
+                "nameserverCacheCount": {
+                    "description": "Number of DNS nameservers to cache. The default value is 16k",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 16536
+                },
+                "prefetchKey": {
+                    "description": "Fetch DNSKEY early in validation process. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "randomizeQueryNameCase": {
+                    "description": "Enables resolver to randomize the case of query names. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "forwardZones": {
+                    "description": "Manage the set of Forward Zones used by this DNS Cache",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/DNS_Zone_Forward"
+                    }
+                },
+                "rootHints": {
+                    "description": "List of IP addresses to use for root name servers. Defaults are known Internet root servers.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "routeDomain": {
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_Route_Domain" }
+                    ],
+                    "default": { "bigip":"/Common/0" }
+                },
+                "recordCacheSize": {
+                    "description": "Number of bytes allocated for the resource record set cache. The default value is 10m",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 10485760
+                },
+                "recordRotationMethod": {
+                    "description": "Select which resource record set rotation method should be used on cache responses",
+                    "type": "string",
+                    "enum": [ "none", "query-id" ],
+                    "default": "none"
+                },
+                "trustAnchors": {
+                    "description": "List of DNSKEY or DS resource records used to establish DNSSEC validator trust. Specified in string form (e.g. dig or drill format). The default is none",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "unwantedQueryReplyThreshold": {
+                    "description": "The threshold count of unsolicited query replies which triggers an alert (potential DOS attack underway). The default value is 0 (or off)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 0
+                },
+                "useIpv4": {
+                    "description": "Enables resolver to issue IPv4 queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useIpv6": {
+                    "description": "Enables resolver to issue IPv6 queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useTcp": {
+                    "description": "Enables resolver to issue tcp queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                },
+                "useUdp": {
+                    "description": "Enables resolver to issue udp queries. The default value is yes",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
         }
     }
 }

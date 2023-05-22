@@ -1,0 +1,69 @@
+{
+    "class": "AS3",
+    "persist": false,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.42.0",
+        "id": "DNS_Cache",
+        "TEST_DNS_Cache": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "TestResolver": {
+                    "class": "DNS_Cache",
+                    "remark": "DNS Cache",
+                    "answerDefaultZones": true,
+                    "messageCacheSize": 0,
+                    "recordCacheSize": 1,
+                    "recordRotationMethod": "query-id",
+                    "localZones": {
+                        "norecords.com": {
+                            "type": "type-transparent",
+                            "records": []
+                        },
+                        "_sip._tcp.example.com": {
+                            "type": "transparent",
+                            "records": [
+                                "_sip._tcp.example.com 86400 IN SRV 0 5 5060 sipserver.example.com"
+                            ]
+                        },
+                        "tworecords.com": {
+                            "type": "transparent",
+                            "records": [
+                                "wiki.tworecords.com 300 IN A 10.10.10.125",
+                                "wiki.tworecords.com 300 IN A 10.10.10.126"
+                            ]
+                        }
+                    },
+                    "type": "resolver",
+                    "allowedQueryTime": 201,
+                    "maxConcurrentQueries": 2048,
+                    "maxConcurrentTcp": 24,
+                    "maxConcurrentUdp": 8193,
+                    "msgCacheSize": 0,
+                    "nameserverCacheCount": 16537,
+                    "randomizeQueryNameCase": false,
+                    "rootHints": [
+                        "10.0.0.1"
+                    ],
+                    "unwantedQueryReplyThreshold": 1,
+                    "forwardZones": {
+                        "singleRecord": {
+                            "nameservers": [
+                                "10.0.0.1:53"
+                            ]
+                        },
+                        "twoRecords": {
+                            "nameservers": [
+                                "10.0.0.2:53",
+                                "10.0.0.3:53"
+                            ]
+                        }
+                    },
+                    "useIpv6": false,
+                    "useTcp": false
+                }
+            }
+        }
+    }
+}

@@ -32,6 +32,7 @@ const {
     assertModuleProvisioned,
     postBigipItems,
     deleteBigipItems,
+    getPath,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
@@ -936,6 +937,130 @@ describe('Service Discovery', function () {
                         ]
                     );
                 }) */
+                .finally(() => deleteDeclaration().then(() => deleteBigipItems(bigipItems)));
+        });
+    });
+
+    describe('routeDomain', () => {
+        it('should update routeDomain for task and nodes', () => {
+            const bigipItems = [
+                {
+                    endpoint: '/mgmt/tm/net/route-domain',
+                    data: { name: '100' }
+                },
+                {
+                    endpoint: '/mgmt/tm/net/route-domain',
+                    data: { name: '101' }
+                }
+            ];
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                tenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        pool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'event',
+                                    servicePort: 80,
+                                    routeDomain: 100
+                                }
+                            ]
+                        }
+                    }
+                }
+            };
+
+            return postBigipItems(bigipItems)
+                .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results[0].message, 'success');
+                })
+                .then(() => {
+                    const options = {
+                        body: [
+                            {
+                                id: '192.0.2.1',
+                                ip: '192.0.2.1'
+                            }
+                        ],
+                        path: '/mgmt/shared/service-discovery/task/~tenant~app~pool/nodes',
+                        host: process.env.TARGET_HOST || process.env.AS3_HOST
+                    };
+                    return requestUtil.post(options);
+                })
+                .then((response) => assert.strictEqual(response.body.code, 200))
+                .then(() => promiseUtil.delay(10000))
+                .then(() => getPath('/mgmt/shared/service-discovery/task/~tenant~app~pool'))
+                .then((response) => {
+                    assert.strictEqual(response.result.routeDomain, 100);
+                    assert.deepStrictEqual(
+                        response.result.providerOptions,
+                        {
+                            type: 'event',
+                            nodeList: [
+                                {
+                                    id: '/tenant/192.0.2.1%100',
+                                    ip: '192.0.2.1%100'
+                                }
+                            ]
+                        }
+                    );
+                })
+                .then(() => {
+                    declaration.tenant.app.pool.members[0].routeDomain = 101;
+                    return postDeclaration(declaration, { declarationIndex: 1 });
+                })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results[0].message, 'success');
+                })
+                .then(() => promiseUtil.delay(10000))
+                .then(() => getPath('/mgmt/shared/service-discovery/task/~tenant~app~pool'))
+                .then((response) => {
+                    assert.strictEqual(response.result.routeDomain, 101);
+                    assert.deepStrictEqual(
+                        response.result.providerOptions,
+                        {
+                            type: 'event',
+                            nodeList: [
+                                {
+                                    id: '/tenant/192.0.2.1%101',
+                                    ip: '192.0.2.1%101'
+                                }
+                            ]
+                        }
+                    );
+                })
+                .then(() => {
+                    declaration.tenant.app.pool.members[0].routeDomain = 0;
+                    return postDeclaration(declaration, { declarationIndex: 2 });
+                })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results[0].message, 'success');
+                })
+                .then(() => promiseUtil.delay(10000))
+                .then(() => getPath('/mgmt/shared/service-discovery/task/~tenant~app~pool'))
+                .then((response) => {
+                    assert.strictEqual(response.result.routeDomain, 0);
+                    assert.deepStrictEqual(
+                        response.result.providerOptions,
+                        {
+                            type: 'event',
+                            nodeList: [
+                                {
+                                    id: '/tenant/192.0.2.1',
+                                    ip: '192.0.2.1'
+                                }
+                            ]
+                        }
+                    );
+                })
                 .finally(() => deleteDeclaration().then(() => deleteBigipItems(bigipItems)));
         });
     });

@@ -614,46 +614,73 @@ const checkDesiredForReferencedProfiles = function (context, desiredConfig) {
  * @param {string} tenantId - specifies Tenant of interest
  * @param {object} declaration
  * @param {object} commonConfig
- * @returns {object}
+ * @returns {Promise}
  */
 const getDesiredConfig = function (context, tenantId, declaration, commonConfig) {
     let desiredConfig = {};
     let appList = [];
-    let item;
-    let mcpObjArr;
     const tenantDecl = declaration[tenantId];
+    const appPromiseFuncs = [];
 
     if ((tenantDecl && tenantDecl.enable) || tenantId === 'Common') {
         appList = validClassList(tenantDecl, 'Application');
     }
 
     appList.forEach((appId) => {
-        if (tenantDecl[appId].enable) {
-            mcpObjArr = mapAs3.translate.Application(context, tenantId, appId).configs;
-            desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
-            validClassList(tenantDecl[appId]).forEach((itemId) => {
-                item = tenantDecl[appId][itemId];
-                if (mapAs3.translate[item.class] !== undefined) {
-                    const mcpUpdates = mapAs3
-                        .translate[item.class](context, tenantId, appId, itemId, item, declaration);
-                    if (mcpUpdates.updatePath === true) {
-                        context.request.postProcessing = context.request.postProcessing.concat(mcpUpdates.pathUpdates);
-                    }
-                    desiredConfig = mergeByPath(desiredConfig, mcpUpdates.configs);
-                }
-            });
+        if (!tenantDecl[appId].enable) {
+            return;
         }
+
+        const appPromiseFunc = () => Promise.resolve()
+            .then(() => mapAs3.translate.Application(context, tenantId, appId))
+            .then((mcpObj) => {
+                const itemPromiseFuncs = [];
+
+                desiredConfig = mergeByPath(desiredConfig, mcpObj.configs);
+                validClassList(tenantDecl[appId]).forEach((itemId) => {
+                    const item = tenantDecl[appId][itemId];
+
+                    if (mapAs3.translate[item.class] === undefined) {
+                        return;
+                    }
+                    const itemPromiseFunc = () => Promise.resolve()
+                        .then(() => mapAs3.translate[item.class](context, tenantId, appId, itemId, item, declaration))
+                        .then((mcpUpdates) => {
+                            if (mcpUpdates.updatePath === true) {
+                                context.request.postProcessing = context.request.postProcessing
+                                    .concat(mcpUpdates.pathUpdates);
+                            }
+                            desiredConfig = mergeByPath(desiredConfig, mcpUpdates.configs);
+                        });
+                    itemPromiseFuncs.push(itemPromiseFunc);
+                });
+                return promiseUtil.series(itemPromiseFuncs);
+            });
+
+        appPromiseFuncs.push(appPromiseFunc);
     });
-    if (Object.keys(desiredConfig).length > 0) {
-        mcpObjArr = mapAs3.translate.Tenant(context, tenantId, tenantDecl).configs;
-        desiredConfig = mergeByPath(desiredConfig, mcpObjArr);
-    }
-    if (context.request.postProcessing.length > 0) {
-        context.request.postProcessing = desiredConfigPostProcessing(desiredConfig, context.request.postProcessing);
-    }
-    updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
-    updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);
-    return desiredConfig;
+
+    return promiseUtil.series(appPromiseFuncs)
+        .then(() => {
+            if (Object.keys(desiredConfig).length > 0) {
+                return mapAs3.translate.Tenant(context, tenantId, tenantDecl);
+            }
+            return Promise.resolve();
+        })
+        .then((mcpObj) => {
+            if (mcpObj) {
+                desiredConfig = mergeByPath(desiredConfig, mcpObj.configs);
+            }
+            if (context.request.postProcessing.length > 0) {
+                context.request.postProcessing = desiredConfigPostProcessing(
+                    desiredConfig,
+                    context.request.postProcessing
+                );
+            }
+            updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
+            updateDesiredForCommonVirtualAddresses(desiredConfig, commonConfig.virtualAddressList);
+            return desiredConfig;
+        });
 };
 
 function isShared(item) {
@@ -1772,6 +1799,19 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     + 'sys icall script.*?_pool_[\\s\\S]*?'
     + `ltm data-group internal /Common/${constants.as3CommonFolder}.*?_pool_`, 'gm');
 
+    function isModifyGtmServer(diffUpdates) {
+        // See if we are deleting and creating a gtm server of the same name
+        const serverToDeleteRegex = /tmsh::delete gtm server\s+(.+?)\s+/;
+        const serverToCreateRegEx = /tmsh::create gtm server\s+(.+?)\s+/;
+        const serverToDeleteMatch = diffUpdates.commands.match(serverToDeleteRegex);
+        const serverToCreateMatch = diffUpdates.commands.match(serverToCreateRegEx);
+        if (serverToDeleteMatch && serverToCreateMatch
+            && serverToDeleteMatch[1] === serverToCreateMatch[1]) {
+            return true;
+        }
+        return false;
+    }
+
     configDiff.forEach((diff) => {
         const partition = diff.path[0].split('/')[1];
         // when creating nodes in common we set this during the diff
@@ -1906,6 +1946,17 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             preTrans2.push('after 20000'); // allow time for virtuals to be discovered
                         }
                         trans2.push(diffUpdates.commands);
+                    } else if (isModifyGtmServer(diffUpdates)) {
+                        // This is actually a modify. Normally delete/create would be fine and the transaction
+                        // engine would handle it but with gtm servers, they are actually deleted and re-created
+                        // which we don't want
+                        diffUpdates.commands = diffUpdates.commands
+                            .split('\n')
+                            .pop()
+                            .replace(/tmsh::create/, 'tmsh::modify');
+                        if (trans.indexOf(diffUpdates.commands) === -1) {
+                            trans.push(diffUpdates.commands);
+                        }
                     } else if (diffUpdates.commands.indexOf('create gtm wideip') > -1) {
                         if (gtmModifyAliasPaths.indexOf(diff.path[0]) > -1
                             || (diffUpdates.commands.indexOf('aliases none') === -1 && gtmNeedsModifyAliasCommand(configDiff, diff))) {
@@ -2048,7 +2099,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     });
                 } else if (diffUpdates.commands.indexOf('mgmt shared service-discovery rpc') > -1) {
                     preTrans.push(diffUpdates.commands);
-                } else {
+                } else if (!isModifyGtmServer(diffUpdates)) {
                     // put all other delete commands into the cli transaction
                     trans.push(diffUpdates.commands);
                 }

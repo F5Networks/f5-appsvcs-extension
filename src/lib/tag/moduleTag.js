@@ -52,6 +52,7 @@ function process(context, declaration, modules) {
     modules.forEach((m) => {
         if (typeof m.schemaData === 'object' && !Array.isArray(m.schemaData)) {
             myErrors.push({
+                dataPath: m.instancePath,
                 keyword: 'f5PostProcess(modules)',
                 params: { keyword: 'f5PostProcess(modules)' },
                 message: 'Received unprocessable object as module data instead of a String or Array<String>'
@@ -65,6 +66,7 @@ function process(context, declaration, modules) {
         }
 
         myErrors.push({
+            dataPath: m.instancePath,
             keyword: 'f5PostProcess(modules)',
             params: { keyword: 'f5PostProcess(modules)' },
             message: `One of these F5 modules needs to be provisioned: ${modulesToCheck.join(', ')}`

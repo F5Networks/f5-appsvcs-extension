@@ -39,7 +39,7 @@ describe('moduleTag', () => {
             port: 8100,
             tokens: {},
             provisionedModules: ['afm', 'ltm', 'pem'],
-            tmosVersion: '16.1.2.2.0.0.28',
+            tmosVersion: '16.1.2',
             deviceType: 'BIG-IP'
         };
         declaration = {
@@ -143,6 +143,7 @@ describe('moduleTag', () => {
                     assert.ok(err instanceof AJV.ValidationError);
                     assert.deepStrictEqual(err.errors, [
                         {
+                            dataPath: '/Tenant/Application/fwAddressList',
                             keyword: 'f5PostProcess(modules)',
                             message: 'One of these F5 modules needs to be provisioned: should handle a string',
                             params: {
@@ -162,6 +163,7 @@ describe('moduleTag', () => {
                     assert.ok(err instanceof AJV.ValidationError);
                     assert.deepStrictEqual(err.errors, [
                         {
+                            dataPath: '/Tenant/Application/fwAddressList',
                             keyword: 'f5PostProcess(modules)',
                             message: 'One of these F5 modules needs to be provisioned: afm, asm',
                             params: {
@@ -181,6 +183,7 @@ describe('moduleTag', () => {
                     assert.ok(err instanceof AJV.ValidationError);
                     assert.deepStrictEqual(err.errors, [
                         {
+                            dataPath: '/Tenant/Application/fwAddressList',
                             keyword: 'f5PostProcess(modules)',
                             message: 'Received unprocessable object as module data instead of a String or Array<String>',
                             params: {

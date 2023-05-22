@@ -27,6 +27,7 @@ const HostContext = require('../lib/context/hostContext');
 const RequestContext = require('../lib/context/requestContext');
 const Context = require('../lib/context/context');
 const SettingsHandler = require('../lib/settingsHandler');
+const STATUS_CODES = require('../lib/constants').STATUS_CODES;
 
 class RestWorker {
     constructor() {
@@ -110,7 +111,9 @@ class RestWorker {
     }
 
     onPost(restOperation) {
-        Config.reloadSettings()
+        return Promise.resolve()
+            .then(() => this.validatePath(restOperation))
+            .then(() => Config.reloadSettings())
             .then(() => RequestContext.get(restOperation, this.hostContext))
             .then((reqContext) => {
                 if (reqContext.error) {
@@ -129,8 +132,6 @@ class RestWorker {
     }
 
     continuePost(context, restOperation) {
-        let result = {};
-
         this.asyncHandler.cleanRecords(context);
 
         return Promise.resolve()
@@ -144,12 +145,12 @@ class RestWorker {
                     }
                     break;
                 case 'info':
-                    result = restUtil.buildOpResult(
-                        restUtil.STATUS_CODES.OK,
+                    this.sendResponse(
+                        restOperation,
+                        STATUS_CODES.OK,
                         undefined,
                         this.hostContext.as3VersionInfo
                     );
-                    restUtil.completeRequest(restOperation, result);
                     break;
                 case 'task':
                     this.asyncHandler.getAsyncResponse(restOperation);
@@ -158,15 +159,72 @@ class RestWorker {
                     SettingsHandler.process(context, restOperation);
                     break;
                 default:
-                    result = restUtil.buildOpResult(
-                        restUtil.STATUS_CODES.BAD_REQUEST,
+                    this.sendResponse(
+                        restOperation,
+                        STATUS_CODES.BAD_REQUEST,
                         `${restOperation.getUri().href}: Bad Request`
                     );
-                    restUtil.completeRequest(restOperation, result);
                     break;
                 }
                 return Promise.resolve();
             });
+    }
+
+    validatePath(restOperation) {
+        const validEndpoints = ['declare', 'info', 'task', 'settings'];
+        const path = restOperation.getUri().path;
+        const validPathLengths = [3];
+
+        let valid = false;
+        let endpoint;
+
+        if (path) {
+            const pathParts = path.split('?')[0].split('/');
+
+            if (pathParts[0] === '') {
+                pathParts.shift();
+            }
+            if (pathParts[pathParts.length - 1] === '') {
+                pathParts.pop();
+            }
+
+            // path should be like /shared/appsvcs/declare, so the endpoint is in position 2
+            if (pathParts.length >= 3) {
+                endpoint = pathParts[2];
+            }
+
+            if (endpoint === 'task') {
+                validPathLengths.push(4); // taskId
+            }
+
+            if (endpoint === 'declare') {
+                validPathLengths.push(4); // tenant name
+                if ((pathParts.length === 5 || pathParts.length === 6)
+                    && pathParts[4] === 'applications') {
+                    validPathLengths.push(5); // 'applications'
+                    validPathLengths.push(6); // application name
+                }
+            }
+
+            if (validPathLengths.indexOf(pathParts.length) === -1) {
+                endpoint = undefined;
+            }
+        }
+
+        if (endpoint && validEndpoints.indexOf(endpoint) !== -1) {
+            valid = true;
+        }
+
+        if (!valid) {
+            this.sendResponse(
+                restOperation,
+                STATUS_CODES.BAD_REQUEST,
+                'Bad Request: Invalid path'
+            );
+            return Promise.reject(new Error('Invalid path'));
+        }
+
+        return Promise.resolve();
     }
 }
 

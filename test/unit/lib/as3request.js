@@ -127,7 +127,7 @@ describe('as3request', function () {
             {
                 class: 'AS3',
                 action: 'redeploy',
-                targetHost: '1.1.1.1',
+                targetHost: '192.0.2.1',
                 targetUsername: 'user',
                 targetPassphrase: 'password'
             }
@@ -138,14 +138,14 @@ describe('as3request', function () {
                 {
                     class: 'AS3',
                     action: 'retrieve',
-                    targetHost: '1.1.1.1',
+                    targetHost: '192.0.2.1',
                     targetUsername: 'user',
                     targetPassphrase: 'password'
                 },
                 {
                     class: 'AS3',
                     action: 'redeploy',
-                    targetHost: '2.2.2.2',
+                    targetHost: '192.0.2.2',
                     targetUsername: 'user',
                     targetPassphrase: 'password'
                 }
@@ -318,7 +318,7 @@ describe('as3request', function () {
             )));
 
         it('should parse the targetUsername from the basicAuth value', () => {
-            const basicAuth = 'Basic\x20d293VGhpc1dvcmtz';
+            const basicAuth = 'Basic\x20dXNlcgo=';
 
             return Promise.resolve()
                 .then(() => As3Request.setTargetDefaults({}, basicAuth))
@@ -331,7 +331,7 @@ describe('as3request', function () {
                         targetPassphrase: '',
                         targetPort: 8100,
                         targetTokens: {},
-                        targetUsername: 'wowThisWork',
+                        targetUsername: 'user',
                         urlPrefix: 'http://admin:@localhost:8100'
                     }
                 ));
@@ -361,7 +361,7 @@ describe('as3request', function () {
         });
 
         it('should set the X-F5-Auth-Token', () => {
-            const token = 'funkyMonkeyChunky';
+            const token = 'validtoken';
 
             return Promise.resolve()
                 .then(() => As3Request.setTargetDefaults({}, undefined, token))
@@ -374,7 +374,7 @@ describe('as3request', function () {
                         targetPassphrase: '',
                         targetPort: 8100,
                         targetTokens: {
-                            'X-F5-Auth-Token': 'funkyMonkeyChunky'
+                            'X-F5-Auth-Token': 'validtoken'
                         },
                         targetUsername: '',
                         urlPrefix: 'http://admin:@localhost:8100'
@@ -446,6 +446,25 @@ describe('as3request', function () {
                         foo: 'bar',
                         class: 'ADC',
                         funky: {
+                            monkey: 'chunky'
+                        }
+                    }
+                });
+        });
+
+        it('should wrap per-app requests', () => {
+            const request = {
+                app1: {
+                    monkey: 'chunky'
+                }
+            };
+
+            assert.deepStrictEqual(as3Request.wrapWithAS3Class(request, 'declare'),
+                {
+                    action: 'deploy',
+                    class: 'AS3',
+                    declaration: {
+                        app1: {
                             monkey: 'chunky'
                         }
                     }
@@ -566,6 +585,36 @@ describe('as3request', function () {
     });
 
     describe('.validateAndWrap', () => {
+        it('should validate and wrap per-app requests', () => {
+            const requestContext = {
+                isPerApp: true,
+                pathName: 'declare',
+                body: {
+                    myApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const results = as3Request.validateAndWrap(requestContext, {});
+            assert.strictEqual(results.error, undefined);
+            assert.strictEqual(results.request[0].class, 'AS3');
+            assert.strictEqual(results.request[0].action, 'deploy');
+        });
+
+        it('should error if request is not per-app and is missing AS3 class', () => {
+            const requestContext = {
+                isPerApp: false,
+                pathName: 'declare',
+                body: {
+                    myApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const results = as3Request.validateAndWrap(requestContext, {});
+            assert.notStrictEqual(results.error.indexOf('"missingProperty":"class"'), -1);
+        });
+
         it('should error if requestContext is not provided', () => {
             assert.throws(
                 () => as3Request.validateAndWrap(undefined, {}),

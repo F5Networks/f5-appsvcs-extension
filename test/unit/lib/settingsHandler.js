@@ -46,10 +46,14 @@ describe('settingsHandler', () => {
         // StorageMemory is a localized version of the normal memory
         localStorageDataGroup = new atgStorage.StorageMemory();
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
+        localStorageDataGroup.setItem('betaOptions', {
+            perAppDeploymentAllowed: false
+        });
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
         Config.injectSettings(localStorageDataGroup);
         context = Context.build();
 
@@ -123,15 +127,66 @@ describe('settingsHandler', () => {
             schemaPath = `${__dirname}/../../../src/schema/latest/settings-schema.json`;
         });
 
+        it('should set the perAppDeploymentAllowed value if passed in', () => {
+            restOp.method = 'Post';
+            restOp.body = {
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                }
+            };
+
+            /* Temporarily disabled while per-app is under development
+            const restOpPromise = createRestOpCompletePromise(restOp, 200, {
+                asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                },
+                burstHandlingEnabled: false,
+                performanceTracingEnabled: false,
+                performanceTracingEndpoint: '',
+                serviceDiscoveryEnabled: true,
+                webhook: ''
+            }); */
+
+            const restOpPromise = createRestOpCompletePromise(restOp, 422, {
+                code: 422,
+                errors: [
+                    {
+                        data: true,
+                        dataPath: '.betaOptions.perAppDeploymentAllowed',
+                        keyword: 'const',
+                        message: 'should be equal to constant',
+                        params: { allowedValue: false },
+                        parentSchema: {
+                            const: false,
+                            default: false,
+                            description: 'Whether or not to allow per-application deployments',
+                            title: 'Per Application Deployment',
+                            type: 'boolean'
+                        },
+                        schema: false,
+                        schemaPath: '#/properties/betaOptions/properties/perAppDeploymentAllowed/const'
+                    }
+                ],
+                message: 'declaration is invalid'
+            });
+            return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
+                .then(() => restOpPromise);
+        });
+
         it('should set the burstHandlingEnabled value if passed in', () => {
             restOp.method = 'Post';
             restOp.body = { burstHandlingEnabled: true };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: true,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -142,10 +197,14 @@ describe('settingsHandler', () => {
             restOp.body = { asyncTaskStorage: 'memory' };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'memory',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -160,10 +219,32 @@ describe('settingsHandler', () => {
             restOp.body = { performanceTracingEnabled: true };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: true,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
+            });
+            return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
+                .then(() => restOpPromise);
+        });
+
+        it('should set the webhook value if passed in', () => {
+            restOp.method = 'Post';
+            restOp.body = { webhook: 'https://www.example.com' };
+            const restOpPromise = createRestOpCompletePromise(restOp, 200, {
+                asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
+                burstHandlingEnabled: false,
+                performanceTracingEnabled: false,
+                performanceTracingEndpoint: '',
+                serviceDiscoveryEnabled: true,
+                webhook: 'https://www.example.com'
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -258,10 +339,14 @@ describe('settingsHandler', () => {
             restOp.method = 'Get';
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp))
                 .then(() => restOpPromise);

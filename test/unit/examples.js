@@ -36,7 +36,8 @@ const ignoreList = [
     'example-enable-burst-handling.json'
 ];
 
-describe('Examples', () => {
+describe('Examples', function () {
+    this.timeout(5000);
     const schemaPath = `${__dirname}/../../src/schema/latest/adc-schema.json`;
     const as3Parser = new As3Parser(DEVICE_TYPES.BIG_IP, schemaPath);
     const as3AdcSchema = JSON.parse(fs.readFileSync(schemaPath));

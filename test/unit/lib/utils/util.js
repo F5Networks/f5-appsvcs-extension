@@ -715,7 +715,7 @@ describe('util', () => {
                 port: 8100,
                 basicAuth: 'HeresSomeBasicAuth',
                 tokens: {
-                    'X-F5-Auth-Token': 'someTargetTokens'
+                    'X-F5-Auth-Token': 'validtoken'
                 }
             };
         });
@@ -738,7 +738,7 @@ describe('util', () => {
             });
             context.tasks = [
                 {
-                    targetTokens: { 'X-F5-Auth-Token': 'someTargetTokens' }
+                    targetTokens: { 'X-F5-Auth-Token': 'validtoken' }
                 }
             ];
             context.control = {
@@ -747,7 +747,7 @@ describe('util', () => {
             };
             return util.iControlRequest(context, options)
                 .then(() => {
-                    assert.deepStrictEqual(actualReqOpts.tokens, { 'X-F5-Auth-Token': 'someTargetTokens' });
+                    assert.deepStrictEqual(actualReqOpts.tokens, { 'X-F5-Auth-Token': 'validtoken' });
                 });
         });
 
@@ -758,7 +758,7 @@ describe('util', () => {
             });
             // test to confirm target is used instead of request
             context.target = {
-                tokens: { 'X-F5-Auth-Token': 'someTargetTokens' }
+                tokens: { 'X-F5-Auth-Token': 'validtoken' }
             };
             context.tasks = [
                 {
@@ -772,7 +772,7 @@ describe('util', () => {
             };
             return util.iControlRequest(context, options)
                 .then(() => {
-                    assert.deepStrictEqual(actualReqOpts.tokens, { 'X-F5-Auth-Token': 'someTargetTokens' });
+                    assert.deepStrictEqual(actualReqOpts.tokens, { 'X-F5-Auth-Token': 'validtoken' });
                 });
         });
 
@@ -782,7 +782,7 @@ describe('util', () => {
                 return Promise.resolve(actualReqOpts);
             });
             context.target = {
-                tokens: { 'X-F5-Auth-Token': 'someTargetTokens' }
+                tokens: { 'X-F5-Auth-Token': 'validtoken' }
             };
             context.tasks = [
                 {
@@ -872,7 +872,7 @@ describe('util', () => {
                 basicAuth: 'HeresSomeBasicAuth',
                 targetContext: {
                     tokens: {
-                        'X-F5-Auth-Token': 'someTargetTokens'
+                        'X-F5-Auth-Token': 'validtoken'
                     }
                 }
             };
@@ -923,7 +923,7 @@ describe('util', () => {
                 basicAuth: 'HeresSomeBasicAuth',
                 targetContext: {
                     tokens: {
-                        'X-F5-Auth-Token': 'someTargetTokens'
+                        'X-F5-Auth-Token': 'validtoken'
                     }
                 }
             };
@@ -1009,7 +1009,7 @@ describe('util', () => {
                 basicAuth: 'HeresSomeBasicAuth',
                 targetContext: {
                     tokens: {
-                        'X-F5-Auth-Token': 'someTargetTokens'
+                        'X-F5-Auth-Token': 'validtoken'
                     }
                 }
             };
@@ -1255,7 +1255,7 @@ describe('util', () => {
                     200,
                     {
                         kind: 'tm:sys:license:licensestats',
-                        selfLink: 'https://localhost/mgmt/tm/sys/license?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/sys/license?ver=13.1.1',
                         entries: {
                             'https://localhost/mgmt/tm/sys/license/0': {
                                 nestedStats: {
@@ -1451,7 +1451,7 @@ describe('util', () => {
                 basicAuth: 'HeresSomeBasicAuth',
                 targetContext: {
                     tokens: {
-                        'X-F5-Auth-Token': 'someTargetTokens'
+                        'X-F5-Auth-Token': 'validtoken'
                     }
                 }
             };
@@ -1490,12 +1490,12 @@ describe('util', () => {
                             {
                                 fullPath: '/Common/virtualAddress1',
                                 partition: 'Common',
-                                address: '1.2.3.4'
+                                address: '192.0.2.4'
                             },
                             {
                                 fullPath: '/Common/virtualAddress2',
                                 partition: 'Common',
-                                address: '4.3.2.1',
+                                address: '192.0.2.1',
                                 metadata: [{
                                     name: 'foo',
                                     value: 'bar'
@@ -1511,13 +1511,13 @@ describe('util', () => {
                     {
                         fullPath: '/Common/virtualAddress1',
                         partition: 'Common',
-                        address: '1.2.3.4',
+                        address: '192.0.2.4',
                         metadata: []
                     },
                     {
                         fullPath: '/Common/virtualAddress2',
                         partition: 'Common',
-                        address: '4.3.2.1',
+                        address: '192.0.2.1',
                         metadata: [{
                             name: 'foo',
                             value: 'bar'
@@ -1541,7 +1541,7 @@ describe('util', () => {
                 basicAuth: 'HeresSomeBasicAuth',
                 targetContext: {
                     tokens: {
-                        'X-F5-Auth-Token': 'someTargetTokens'
+                        'X-F5-Auth-Token': 'validtoken'
                     }
                 }
             };

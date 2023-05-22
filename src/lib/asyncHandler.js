@@ -18,8 +18,9 @@
 
 const log = require('./log');
 const util = require('./util/util');
-const restUtil = require('./util/restUtil');
 const JsonDataStore = require('./JsonDataStore');
+
+const STATUS_CODES = require('./constants').STATUS_CODES;
 
 const EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000; // 1 week in ms
 const MAX_RECORDS = 25;
@@ -215,7 +216,7 @@ class AsyncHandler {
 
     asyncReturn(message, asyncUuid, statusCode) {
         if (!statusCode) {
-            statusCode = restUtil.STATUS_CODES.ACCEPTED;
+            statusCode = STATUS_CODES.ACCEPTED;
         }
         const resultBody = this.buildResponseBody(message, asyncUuid);
         return this.buildResult(statusCode, resultBody);

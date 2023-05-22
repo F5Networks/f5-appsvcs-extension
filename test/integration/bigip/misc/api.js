@@ -488,20 +488,154 @@ describe('API Testing (__smoke)', function () {
     });
 
     describe('/declare endpoint', () => {
-        it('should test GET empty tenant response', () => Promise.resolve()
-            .then(() => assert.isFulfilled(deleteDeclaration()))
+        describe('per-tenant', () => {
+            it('should test GET empty tenant response', () => Promise.resolve()
+                .then(() => assert.isFulfilled(deleteDeclaration()))
+                .then((response) => {
+                    assert.deepStrictEqual(response.results[0],
+                        {
+                            message: 'no change',
+                            host: 'localhost',
+                            code: 200
+                        });
+                })
+                .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare'))
+                .then((response) => {
+                    assert.strictEqual(response.body, '');
+                    assert.strictEqual(response.statusCode, 204);
+                }));
+        });
+    });
+});
+
+describe('per-app API testing (__smoke)', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    describe('GET', () => {
+        before('prep', function () {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'myId',
+                API_TEST_Tenant1: {
+                    class: 'Tenant',
+                    testApp1: {
+                        class: 'Application',
+                        template: 'http',
+                        serviceMain: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '198.19.193.201'
+                            ],
+                            virtualPort: 2601
+                        }
+                    },
+                    testExampleApp2: {
+                        class: 'Application',
+                        accel: {
+                            class: 'HTTP_Acceleration_Profile'
+                        }
+                    }
+                },
+                API_TEST_Tenant2: {
+                    class: 'Tenant',
+                    testExampleAppOther: {
+                        class: 'Application',
+                        accel: {
+                            class: 'HTTP_Acceleration_Profile'
+                        }
+                    }
+                }
+            };
+
+            return postDeclaration(declaration);
+        });
+
+        after(() => deleteDeclaration()); // No sense deleting the declaration till after the GETs are done querying it
+
+        it('should handle per-app GETs with accurate tenant against applications', () => Promise.resolve()
+            .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications'))
             .then((response) => {
-                assert.deepStrictEqual(response.results[0],
+                assert.strictEqual(response.statusCode, 200);
+                assert.deepStrictEqual(
+                    response.body,
                     {
-                        message: 'no change',
-                        host: 'localhost',
-                        code: 200
-                    });
-            })
-            .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare'))
-            .then((response) => {
-                assert.strictEqual(response.body, '');
-                assert.strictEqual(response.statusCode, 204);
+                        testApp1: {
+                            class: 'Application',
+                            template: 'http',
+                            serviceMain: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '198.19.193.201'
+                                ],
+                                virtualPort: 2601
+                            }
+                        },
+                        testExampleApp2: {
+                            class: 'Application',
+                            accel: {
+                                class: 'HTTP_Acceleration_Profile'
+                            }
+                        }
+                    }
+                );
             }));
+
+        it('should handle per-app GETs with accurate tenant and application', () => Promise.resolve()
+            .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/testApp1'))
+            .then((response) => {
+                assert.strictEqual(response.statusCode, 200);
+                assert.deepStrictEqual(
+                    response.body,
+                    {
+                        testApp1: {
+                            class: 'Application',
+                            template: 'http',
+                            serviceMain: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '198.19.193.201'
+                                ],
+                                virtualPort: 2601
+                            }
+                        }
+                    }
+                );
+            }));
+
+        it('should error on per-app GET if the tenant provided in the URL does not exist in the declaraiton', () => Promise.resolve()
+            .then(() => assert.isRejected(
+                getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_TEN/applications'),
+                /"code":404.*specified tenant 'API_TEST_TEN' not found in declaration/,
+                'should have failed against applications due to missing tenant'
+            )));
+
+        it('should error on per-app GET if the application provided in the URL does not exist in the declaration', () => Promise.resolve()
+            .then(() => assert.isRejected(
+                getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/randomApp'),
+                /"code":404.*specified Application 'randomApp' not found in 'API_TEST_Tenant1'/,
+                'should have failed against applications due to unknown application'
+            )));
+
+        it('should error on per-app GET with commas in the tenant', () => Promise.resolve()
+            .then(() => assert.isRejected(
+                getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1,API_TEST_Tenant2/applications'),
+                /"code":400.*declare\/API_TEST_Tenant1,API_TEST_Tenant2\/applications is an invalid path. Only 1 tenant and 1 application may be specified in the URL./,
+                'should have failed against applications due to comma tenants'
+            )));
+
+        it('should error on per-app GET with commas in the application', () => Promise.resolve()
+            .then(() => assert.isRejected(
+                getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/testApp1,testExampleApp2'),
+                /"code":400.*declare\/API_TEST_Tenant1\/applications\/testApp1,testExampleApp2 is an invalid path. Only 1 tenant and 1 application may be specified in the URL./,
+                'should have failed against applications due to comma applications'
+            )));
+
+        it('should error on per-app GETs if applications is misspelled to application', () => Promise.resolve()
+            .then(() => assert.isRejected(
+                getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/application/testApp1'),
+                /"code":400.*Bad Request: Invalid path/,
+                'should have failed with an invalid path, as application is an unsupported endpoint'
+            )));
     });
 });

@@ -54,13 +54,13 @@ describe('targetContext', () => {
                     slots: [
                         {
                             product: 'BIG-IP',
-                            version: '14.1.2.1',
+                            version: '14.1.2.1', // gitleaks:allow
                             isActive: true,
                             build: '0.0.4'
                         }
                     ],
                     hostname: 'bigip1',
-                    version: '13.1.1.4'
+                    version: '13.1.1.4' // gitleaks:allow
                 });
             }
             return Promise.reject(new Error('Unknown path was supplied in this unit test'));
@@ -69,7 +69,7 @@ describe('targetContext', () => {
             tokens: {},
             deviceType: 'BIG-IP',
             provisionedModules: [],
-            tmosVersion: '14.1.2.1.0.0.4',
+            tmosVersion: '14.1.2.1.0.0.4', // gitleaks:allow
             host: 'localhost',
             port: 8100
         });
@@ -110,7 +110,7 @@ describe('targetContext', () => {
                 return Promise.resolve({ foo: 'bar' });
             }
             if (opts.path === '/mgmt/shared/identified-devices/config/device-info') {
-                return Promise.resolve('14.1.2.1');
+                return Promise.resolve('14.1.2.1'); // gitleaks:allow
             }
             return Promise.reject(new Error('Unknown path was supplied in this unit test'));
         });
@@ -191,7 +191,7 @@ describe('targetContext', () => {
             tokens: {},
             deviceType: 'BIG-IQ',
             provisionedModules: ['biq'],
-            tmosVersion: '7.0.0.0.0.1854',
+            tmosVersion: '7.0.0.0.0.1854', // gitleaks:allow
             host: 'myBigIp.com',
             port: 1234
         });

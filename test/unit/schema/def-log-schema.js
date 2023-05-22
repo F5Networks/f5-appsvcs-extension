@@ -321,14 +321,14 @@ describe('def-log-schema.json', () => {
             describe('valid', () => {
                 it('should accept minimal properties', () => {
                     const testData = simpleCopy(baseDecl);
-                    testData.theTenant.A1.logDest.address = '1.2.3.4';
+                    testData.theTenant.A1.logDest.address = '192.0.2.4';
                     testData.theTenant.A1.logDest.port = 80;
                     assert.ok(validate(testData), getErrorString(validate));
                 });
 
                 it('should accept all properties', () => {
                     const testData = simpleCopy(baseDecl);
-                    testData.theTenant.A1.logDest.address = '1.2.3.4';
+                    testData.theTenant.A1.logDest.address = '192.0.2.4';
                     testData.theTenant.A1.logDest.port = 80;
                     testData.theTenant.A1.logDest.protocol = 'tcp';
                     assert.ok(validate(testData), getErrorString(validate));
@@ -344,7 +344,7 @@ describe('def-log-schema.json', () => {
 
                 it('should require a port', () => {
                     const testData = simpleCopy(baseDecl);
-                    testData.theTenant.A1.logDest.address = '1.2.3.4';
+                    testData.theTenant.A1.logDest.address = '192.0.2.4';
                     assert.strictEqual(validate(testData), false);
                 });
             });

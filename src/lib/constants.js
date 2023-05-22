@@ -31,10 +31,28 @@ const EVENTS = {
     PROFILE_REFERENCED: 'PROFILE_REFERENCED'
 };
 
+const STATUS_CODES = {
+    OK: 200,
+    CREATED: 201,
+    ACCEPTED: 202,
+    NO_CONTENT: 204,
+    MULTI_STATUS: 207,
+    BAD_REQUEST: 400,
+    NOT_FOUND: 404,
+    METHOD_NOT_ALLOWED: 405,
+    REQUEST_TIMEOUT: 408,
+    CONFLICT: 409,
+    UNPROCESSABLE_ENTITY: 422,
+    INTERNAL_SERVER_ERROR: 500,
+    SERVICE_UNAVAILABLE_ERROR: 503,
+    GATEWAY_TIMEOUT: 504
+};
+
 module.exports = {
     DEVICE_TYPES,
     BUILD_TYPES,
     EVENTS,
+    STATUS_CODES,
     MAX_PATH_LENGTH: 195,
     reqSchemaFile: '/var/config/rest/iapps/f5-appsvcs/schema/latest/as3-request-schema.json',
     settingsSchemaFile: '/var/config/rest/iapps/f5-appsvcs/schema/latest/settings-schema.json',

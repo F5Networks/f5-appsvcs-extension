@@ -25,8 +25,10 @@ const assert = chai.assert;
 const {
     postDeclaration,
     getPath,
-    GLOBAL_TIMEOUT
+    GLOBAL_TIMEOUT,
+    getBigIpVersion
 } = require('../property/propertiesCommon');
+const util = require('../../../../src/lib/util/util');
 
 describe('settings (__smoke)', function () {
     this.timeout(GLOBAL_TIMEOUT);
@@ -46,10 +48,14 @@ describe('settings (__smoke)', function () {
 
     const defaults = {
         asyncTaskStorage: 'data-group',
+        betaOptions: {
+            perAppDeploymentAllowed: false
+        },
         burstHandlingEnabled: false,
         performanceTracingEnabled: false,
         performanceTracingEndpoint: '',
-        serviceDiscoveryEnabled: true
+        serviceDiscoveryEnabled: true,
+        webhook: ''
     };
     function resetDefaults() {
         return postSettings({});
@@ -59,10 +65,14 @@ describe('settings (__smoke)', function () {
     it('should be able to go from defaults to non-defaults and back', () => {
         const declaration = {
             asyncTaskStorage: 'memory',
+            betaOptions: {
+                perAppDeploymentAllowed: false
+            },
             burstHandlingEnabled: true,
             performanceTracingEnabled: false, // need to leave false because jaeger-client not installed
             performanceTracingEndpoint: 'http://196.168.0.1/api/traces',
-            serviceDiscoveryEnabled: false
+            serviceDiscoveryEnabled: false,
+            webhook: 'https://www.example.com'
         };
 
         function assertResponse(response, values) {
@@ -96,11 +106,23 @@ describe('settings (__smoke)', function () {
                     -1,
                     'Error code 422 not found, and it should have been'
                 );
-                assert.isAbove(
-                    err.message.indexOf('should NOT have additional properties'),
-                    -1,
-                    'Error message should have included, "should NOT have additional properties"'
-                );
+
+                if (util.versionLessThan(getBigIpVersion(), '16.0')
+                && !util.versionLessThan(getBigIpVersion(), '15.0')) {
+                    // This is a temporary fix, if the message reverts to the else, remove this check
+                    // This seems like it could be related to BZ 878481, which is for error bodies over 2k length
+                    assert.isAbove(
+                        err.message.indexOf('"message":"request failed with null exception"'),
+                        -1,
+                        `BIG-IP 15.1 has undesirable unique behaviour, which returns "request failed with null exception" message. Error message may be fixed: ${err.message}`
+                    );
+                } else {
+                    assert.isAbove(
+                        err.message.indexOf('should NOT have additional properties'),
+                        -1,
+                        'Error message should have included, "should NOT have additional properties"'
+                    );
+                }
             });
     });
 });

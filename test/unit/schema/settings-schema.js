@@ -32,6 +32,49 @@ const validate = ajv
     .compile(settingSchema);
 
 describe('settings-schema.json', () => {
+    describe('betaOptions', () => {
+        describe('Valid', () => {
+            it('should accept an empty object', () => {
+                const data = {
+                    betaOptions: {}
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should accept perAppDeploymentAllowed', () => {
+                const data = {
+                    betaOptions: {
+                        perAppDeploymentAllowed: true
+                    }
+                };
+
+                // Temporarily disabled while per-app is developed
+                // assert.ok(validate(data), getErrorString(validate));
+                assert.strictEqual(validate(data), false, 'Restricts to false during development');
+            });
+        });
+
+        describe('Invalid', () => {
+            it('should error if non-schema properties are provided', () => {
+                const data = {
+                    betaOptions: {
+                        nonExistentOption: true
+                    }
+                };
+                assert.strictEqual(validate(data), false, 'Additional Properties should not be allowed');
+            });
+
+            it('should error if non-schema values are provided', () => {
+                const data = {
+                    betaOptions: {
+                        perAppDeploymentAllowed: 'enabled'
+                    }
+                };
+                assert.strictEqual(validate(data), false, 'Invalid values should not be allowed');
+            });
+        });
+    });
+
     describe('burstHandlingEnabled', () => {
         describe('Valid', () => {
             it('should use the default value of false', () => {
@@ -101,6 +144,31 @@ describe('settings-schema.json', () => {
             it('should error if not true or false', () => {
                 const data = {
                     serviceDiscoveryEnabled: 'monkey'
+                };
+                assert.strictEqual(validate(data), false);
+            });
+        });
+    });
+
+    describe('webhook', () => {
+        describe('Valid', () => {
+            it('should not be required', () => {
+                const data = {};
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should accept a URL', () => {
+                const data = {
+                    webhook: 'https://www.example.com'
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('Invalid', () => {
+            it('should error if non-schema values are provided', () => {
+                const data = {
+                    webhook: 'monkey'
                 };
                 assert.strictEqual(validate(data), false);
             });

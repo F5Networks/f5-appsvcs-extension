@@ -198,7 +198,7 @@ describe('Container', function () {
                     template: 'http',
                     serviceMain: {
                         class: 'Service_HTTP',
-                        virtualAddresses: ['198.19.192.111']
+                        virtualAddresses: ['192.0.2.111']
                     }
                 }
             }

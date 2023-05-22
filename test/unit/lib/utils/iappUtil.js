@@ -77,7 +77,7 @@ describe('iappUtil', () => {
             });
 
             context = Context.build();
-            context.target.tokens = { 'X-F5-Auth-Token': '123abc' };
+            context.target.tokens = { 'X-F5-Auth-Token': 'validtoken' };
             context.tasks[0] = { protocol: 'https' };
             context.control = { targetHost: 'localhost' };
             deleteHeaders = [];
@@ -166,7 +166,7 @@ describe('iappUtil', () => {
                     assert.fail(err);
                 }
                 deleteHeaders.concat(uploadHeaders).forEach((header) => {
-                    assert.strictEqual(header['x-f5-auth-token'], '123abc');
+                    assert.strictEqual(header['x-f5-auth-token'], 'validtoken');
                     assert.strictEqual(header['x-foo'], 'bar');
                 });
                 done();

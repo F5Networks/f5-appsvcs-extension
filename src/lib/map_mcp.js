@@ -275,6 +275,60 @@ const translate = {
         obj.localZones = obj.localZones || 'none';
         return [normalize.actionableMcp(context, obj, 'ltm dns cache transparent', obj.fullPath)];
     },
+    'tm:ltm:dns:cache:resolver:resolverstate': function (context, obj) {
+        if (obj.localZones) {
+            obj.localZones = obj.localZones.reduce((acc, curVal) => {
+                const name = curVal.tmName;
+                acc[name] = curVal;
+                delete acc[name].tmName;
+                return acc;
+            }, {});
+        }
+        obj.localZones = obj.localZones || 'none';
+        if (obj.forwardZones) {
+            obj.forwardZones = obj.forwardZones.reduce((acc, curVal) => {
+                const nameServersList = [];
+                curVal.nameservers.forEach((server) => {
+                    nameServersList.push(server.name);
+                    delete curVal.nameservers[server];
+                });
+                const name = curVal.name;
+                delete curVal.name;
+                curVal.nameservers = nameServersList;
+                acc[name] = curVal;
+                return acc;
+            }, {});
+        }
+        obj.forwardZones = obj.forwardZones || 'none';
+        return [normalize.actionableMcp(context, obj, 'ltm dns cache resolver', obj.fullPath)];
+    },
+    'tm:ltm:dns:cache:validating-resolver:validating-resolverstate': function (context, obj) {
+        if (obj.localZones) {
+            obj.localZones = obj.localZones.reduce((acc, curVal) => {
+                const name = curVal.tmName;
+                acc[name] = curVal;
+                delete acc[name].tmName;
+                return acc;
+            }, {});
+        }
+        obj.localZones = obj.localZones || 'none';
+        if (obj.forwardZones) {
+            obj.forwardZones = obj.forwardZones.reduce((acc, curVal) => {
+                const nameServersList = [];
+                curVal.nameservers.forEach((server) => {
+                    nameServersList.push(server.name);
+                    delete curVal.nameservers[server];
+                });
+                const name = curVal.name;
+                delete curVal.name;
+                curVal.nameservers = nameServersList;
+                acc[name] = curVal;
+                return acc;
+            }, {});
+        }
+        obj.forwardZones = obj.forwardZones || 'none';
+        return [normalize.actionableMcp(context, obj, 'ltm dns cache validating-resolver', obj.fullPath)];
+    },
     'tm:ltm:dns:nameserver:nameserverstate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'ltm dns nameserver', obj.fullPath)];
     },
@@ -1467,6 +1521,7 @@ const translate = {
     'tm:gtm:server:serverstate': function (context, obj, referenceConfig) {
         obj.description = obj.description || 'none';
         obj.product = obj.product || 'bigip';
+        obj.proberPool = obj.proberPool || 'none';
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
         obj = pushReferences(
             context,

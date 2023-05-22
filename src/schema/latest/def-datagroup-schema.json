@@ -62,11 +62,13 @@
                         "allOf": [
                             {
                                 "$ref": "#/definitions/Resource_URL"
+                            },
+                            {
+                                "f5PostProcess": {
+                                    "tag": "checkResource"
+                                }
                             }
-                        ],
-                        "f5PostProcess": {
-                            "tag": "checkResource"
-                        }
+                        ]
                     },
                     "separator": {
                         "title": "Record Key Value Separator",

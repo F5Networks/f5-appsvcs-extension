@@ -33,7 +33,7 @@ const mutex = require('./mutex');
 const hash = require('./util/hashUtil');
 const constants = require('./constants');
 
-const STATUS_CODES = require('./util/restUtil').STATUS_CODES;
+const STATUS_CODES = require('./constants').STATUS_CODES;
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 const BUILD_TYPES = require('./constants').BUILD_TYPES;
 
@@ -177,6 +177,51 @@ class DeclarationHandler {
         return statusCodeOk; // success
     }
 
+    /**
+     * This function parses and formats the declaration for per-app
+     *
+     * @param {object} decl     The declaration which holds the application and tenant info
+     * @param {string} tenant   The desired tenant name which holds the application
+     * @param {string} [app]      The desired application name, if undefined return array of all applications
+     * @returns {object}        .body: is the GET returned value
+     *                          .statusCode: STATUS_CODE of the result
+     *                          .message: The error message, if there is one
+     */
+    filterAppInDeclaration(decl, tenant, app) {
+        if (typeof decl[tenant] === 'undefined') {
+            return {
+                statusCode: STATUS_CODES.NOT_FOUND,
+                message: (`specified tenant '${tenant}' not found in declaration`)
+            };
+        }
+        const perAppDecl = {};
+        if (typeof app === 'undefined') {
+            // If apps is undefined, we want all apps in tenant
+            Object.keys(decl[tenant]).forEach((appName) => {
+                if (decl[tenant][appName].class === 'Application') {
+                    perAppDecl[appName] = decl[tenant][appName];
+                }
+            });
+            return {
+                body: perAppDecl,
+                statusCode: STATUS_CODES.OK
+            };
+        }
+        if (typeof decl[tenant][app] === 'undefined') {
+            return {
+                statusCode: STATUS_CODES.NOT_FOUND,
+                message: (`specified Application '${app}' not found in '${tenant}'`)
+            };
+        }
+
+        perAppDecl[app] = decl[tenant][app];
+
+        return {
+            body: perAppDecl,
+            statusCode: STATUS_CODES.OK
+        }; // success
+    }
+
     getFilteredDeclaration(context, ignoreMissingTenant) {
         const currentTask = context.tasks[context.currentIndex];
         function extractTenants(decl) {
@@ -220,6 +265,7 @@ class DeclarationHandler {
                     const filterResults = [];
                     const decls = [];
                     const tenantsNotFound = util.simpleCopy(currentTask.tenantsInPath);
+
                     savedDecl.forEach((decl, index) => {
                         filterResults.push(
                             this.filterTenantsInDeclaration(
@@ -262,19 +308,37 @@ class DeclarationHandler {
                 }
 
                 const decl = savedDecl;
-                const filterTenantsResult = this.filterTenantsInDeclaration(
+                const filterResult = this.filterTenantsInDeclaration(
                     decl,
                     currentTask.tenantsInPath,
                     undefined,
                     ignoreMissingTenant
                 );
-                if (filterTenantsResult.statusCode !== STATUS_CODES.OK) {
+                if (filterResult.statusCode !== STATUS_CODES.OK) {
                     return DeclarationHandler.buildResult(
-                        filterTenantsResult.statusCode, filterTenantsResult.message
+                        filterResult.statusCode, filterResult.message
                     );
                 }
 
-                return filterAndDigest(context, decl, currentTask);
+                return Promise.resolve()
+                    .then(() => filterAndDigest(context, decl, currentTask))
+                    .then((digestDeclaration) => {
+                        if (!context.request.isPerApp) {
+                            return digestDeclaration;
+                        }
+
+                        const appFilterResult = this.filterAppInDeclaration(
+                            digestDeclaration,
+                            context.request.perAppInfo.tenant,
+                            context.request.perAppInfo.app
+                        );
+                        if (appFilterResult.statusCode !== STATUS_CODES.OK) {
+                            return DeclarationHandler.buildResult(appFilterResult.statusCode, appFilterResult.message);
+                        }
+
+                        // Note: this can be either an object or array of objects
+                        return appFilterResult.body;
+                    });
             });
     }
 
@@ -354,7 +418,9 @@ class DeclarationHandler {
         let declarationFullId = '';
         const currentTask = context.tasks[context.currentIndex];
         let decl = currentTask.declaration; // may be a stub
-        decl.updateMode = decl.updateMode || 'selective';
+        if (!context.request.isPerApp) {
+            decl.updateMode = decl.updateMode || 'selective';
+        }
         let mutexRefresher = null;
         const commonConfig = {};
 
@@ -484,7 +550,7 @@ class DeclarationHandler {
                     decl.target = prevDecl.target;
                 }
 
-                if (decl.updateMode === 'complete') {
+                if (decl.updateMode === 'complete' && !context.request.isPerApp) {
                     // mark unwanted Tenants for deletion
                     info.metadata.tenants.forEach((t) => {
                         // If the last operation was a 'delete' then t will be an empty string, so ignore.

@@ -16,27 +16,10 @@
 
 'use strict';
 
-const STATUS_CODES = {
-    OK: 200,
-    CREATED: 201,
-    ACCEPTED: 202,
-    NO_CONTENT: 204,
-    MULTI_STATUS: 207,
-    BAD_REQUEST: 400,
-    NOT_FOUND: 404,
-    METHOD_NOT_ALLOWED: 405,
-    REQUEST_TIMEOUT: 408,
-    CONFLICT: 409,
-    UNPROCESSABLE_ENTITY: 422,
-    INTERNAL_SERVER_ERROR: 500,
-    SERVICE_UNAVAILABLE_ERROR: 503,
-    GATEWAY_TIMEOUT: 504
-};
-
-const excludeCodeFromBody = function (code) {
-    const noCodeInBody = [STATUS_CODES.OK, STATUS_CODES.CREATED, STATUS_CODES.ACCEPTED, STATUS_CODES.NO_CONTENT];
-    return noCodeInBody.indexOf(code) > -1;
-};
+const log = require('../log');
+const util = require('./util');
+const Config = require('../config');
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 /**
  * builds an operation result
@@ -99,21 +82,12 @@ const buildOpResultMulti = function (results) {
     return body;
 };
 
-const completeRequestMultiStatus = function (restOperation, results, format) {
-    if (format) {
-        const statusCode = getMultiStatusCode(results);
-        const body = getMultiBody(results, statusCode);
-        restOperation.setStatusCode(statusCode);
-        restOperation.setBody(body);
-    } else {
-        restOperation.setStatusCode(results.code);
-        restOperation.setBody(results.body || results);
-    }
-
-    restOperation.complete();
+const excludeCodeFromBody = function (code) {
+    const noCodeInBody = [STATUS_CODES.OK, STATUS_CODES.CREATED, STATUS_CODES.ACCEPTED, STATUS_CODES.NO_CONTENT];
+    return noCodeInBody.indexOf(code) > -1;
 };
 
-const completeRequest = function (restOperation, result) {
+function formatResult(result) {
     if (!result.body && result.code !== STATUS_CODES.NO_CONTENT) {
         result.body = {
             code: result.code,
@@ -129,17 +103,61 @@ const completeRequest = function (restOperation, result) {
     if (result.body && result.body.code && excludeCodeFromBody(result.body.code)) {
         delete result.body.code;
     }
-    restOperation.setStatusCode(result.code);
-    restOperation.setBody(result.body);
+}
+
+const completeRequestMultiStatus = function (restOperation, results, format) {
+    if (format) {
+        const statusCode = getMultiStatusCode(results);
+        const body = getMultiBody(results, statusCode);
+        restOperation.setStatusCode(statusCode);
+        restOperation.setBody(body);
+    } else {
+        restOperation.setStatusCode(results.code);
+        restOperation.setBody(results.body || results);
+    }
+
     restOperation.complete();
+    checkWebhook(restOperation, results.body || results);
 };
 
+const completeRequest = function (restOperation, result) {
+    formatResult(result);
+
+    restOperation.setStatusCode(result.code);
+    restOperation.setBody(result.body);
+
+    restOperation.complete();
+    checkWebhook(restOperation, result);
+};
+
+function checkWebhook(restOperation, result) {
+    if (restOperation.method.toUpperCase() === 'POST') {
+        Config.getAllSettings()
+            .then((settings) => {
+                if (settings.webhook) {
+                    const options = {
+                        why: 'Sending response to webhook',
+                        method: 'POST',
+                        send: JSON.stringify(result.body || result),
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    util.httpRequest(settings.webhook, options);
+                }
+            })
+            .catch((err) => {
+                // Don't fail the request just because the webhook fails
+                log.error(`Failed sending response to webhook: ${err.message}`);
+            });
+    }
+}
+
 module.exports = {
-    STATUS_CODES,
     getMultiBody,
     getMultiStatusCode,
     buildOpResult,
     buildOpResultMulti,
+    checkWebhook,
     completeRequest,
-    completeRequestMultiStatus
+    completeRequestMultiStatus,
+    formatResult
 };

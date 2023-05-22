@@ -28,6 +28,15 @@ const prefix = {
     'ltm cipher group require': 'replace-all-with',
     'ltm data-group internal records': 'replace-all-with',
     'ltm dns cache transparent records': 'add', // 'add' for this command really means 'replace-all-with'
+    'ltm dns cache resolver records': 'add', // 'add' for this command really means 'replace-all-with'
+    'ltm dns cache resolver forward-zones': 'replace-all-with',
+    'ltm dns cache resolver nameservers': 'replace-all-with',
+    'ltm dns cache resolver root-hints': 'replace-all-with',
+    'ltm dns cache validating-resolver records': 'add', // 'add' for this command really means 'replace-all-with'
+    'ltm dns cache validating-resolver forward-zones': 'replace-all-with',
+    'ltm dns cache validating-resolver nameservers': 'replace-all-with',
+    'ltm dns cache validating-resolver root-hints': 'replace-all-with',
+    'ltm dns cache validating-resolver trust-anchors': 'replace-all-with',
     'ltm dns zone dns-express-allow-notify': 'replace-all-with',
     'ltm dns zone transfer-clients': 'replace-all-with',
     'ltm node metadata': 'replace-all-with',
@@ -658,6 +667,34 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 localZonesString += (`\\{${stringify(diff.rhsCommand, targetConfig['local-zones'][key], false)} \\} `);
             });
             targetConfig['local-zones'] = `\\{ ${localZonesString} \\}`;
+        }
+        break;
+    case 'ltm dns cache resolver':
+        if (typeof targetConfig['local-zones'] !== 'string') {
+            let localZonesString = '';
+            Object.keys(targetConfig['local-zones']).forEach((key) => {
+                localZonesString += (`\\{${stringify(diff.rhsCommand, targetConfig['local-zones'][key], false)} \\} `);
+            });
+            targetConfig['local-zones'] = `\\{ ${localZonesString} \\}`;
+        }
+        if (targetConfig['forward-zones']) {
+            Object.keys(targetConfig['forward-zones']).forEach((key) => {
+                delete targetConfig['forward-zones'][key].name;
+            });
+        }
+        break;
+    case 'ltm dns cache validating-resolver':
+        if (typeof targetConfig['local-zones'] !== 'string') {
+            let localZonesString = '';
+            Object.keys(targetConfig['local-zones']).forEach((key) => {
+                localZonesString += (`\\{${stringify(diff.rhsCommand, targetConfig['local-zones'][key], false)} \\} `);
+            });
+            targetConfig['local-zones'] = `\\{ ${localZonesString} \\}`;
+        }
+        if (targetConfig['forward-zones']) {
+            Object.keys(targetConfig['forward-zones']).forEach((key) => {
+                delete targetConfig['forward-zones'][key].name;
+            });
         }
         break;
     case 'ltm monitor ldap':

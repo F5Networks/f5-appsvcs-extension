@@ -286,10 +286,10 @@ describe('LTM Policy Parsing', () => {
                 type: 'tcp',
                 event: 'request',
                 address: {
-                    values: ['1.2.3.4']
+                    values: ['192.0.2.4']
                 }
             };
-            assertCondition(condition, 'tcp request address matches values { 1.2.3.4 }');
+            assertCondition(condition, 'tcp request address matches values { 192.0.2.4 }');
         });
 
         it('should handle "matches" operand', () => {
@@ -297,11 +297,11 @@ describe('LTM Policy Parsing', () => {
                 type: 'tcp',
                 event: 'request',
                 address: {
-                    values: ['1.2.3.4'],
+                    values: ['192.0.2.4'],
                     operand: 'matches'
                 }
             };
-            assertCondition(condition, 'tcp request address matches values { 1.2.3.4 }');
+            assertCondition(condition, 'tcp request address matches values { 192.0.2.4 }');
         });
 
         it('should quote tcl strings', () => {
@@ -381,11 +381,11 @@ describe('LTM Policy Parsing', () => {
                     type: 'tcp',
                     event: 'request',
                     address: {
-                        values: ['1.2.3.4'],
+                        values: ['192.0.2.4'],
                         operand: 'does-not-match'
                     }
                 };
-                assertCondition(condition, 'tcp request address not matches values { 1.2.3.4 }');
+                assertCondition(condition, 'tcp request address not matches values { 192.0.2.4 }');
             });
 
             it('should handle "does-not-exist" operand', () => {

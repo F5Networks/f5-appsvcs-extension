@@ -56,6 +56,7 @@ describe('DeclarationHandler', () => {
 
         handler = new DeclarationHandler();
         sinon.stub(log, 'warning'); // Remove warning prints from unit testing
+        sinon.stub(log, 'error'); // Remove error prints from unit testing
     });
 
     afterEach('restore', () => {
@@ -95,7 +96,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4',
+                tmosVersion: '14.1.2',
                 tokens: {}
             };
             context.control = {
@@ -104,185 +105,371 @@ describe('DeclarationHandler', () => {
         });
 
         describe('BIG-IP', () => {
-            it('should handle if the declaration was successfully returned', () => {
-                context.tasks[0].showAge = 0;
-                context.tasks[0].fullPath = '/shared/appsvcs/declare';
-                context.tasks[0].tenantsInPath = ['firstTenant'];
+            describe('per-tenant', () => {
+                it('should handle if the declaration was successfully returned', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = '/shared/appsvcs/declare';
+                    context.tasks[0].tenantsInPath = ['firstTenant'];
 
-                const declarationProvider = new DeclarationProvider();
-                sinon.stub(context.host.parser, 'digest').resolves();
-                sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
-                    class: 'ADC',
-                    schemaVersion: '3.0.0',
-                    id: 'PATCH_Sample',
-                    firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
-                    updateMode: 'selective',
-                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
+                    const declarationProvider = new DeclarationProvider();
+                    sinon.stub(context.host.parser, 'digest').resolves();
+                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'PATCH_Sample',
+                        firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
+                        updateMode: 'selective',
+                        controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
+                    });
+                    handler.declarationProvider = declarationProvider;
+
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    class: 'ADC',
+                                    schemaVersion: '3.0.0',
+                                    id: 'PATCH_Sample',
+                                    firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
+                                    updateMode: 'selective',
+                                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
+                                }
+                            );
+                        });
                 });
-                handler.declarationProvider = declarationProvider;
 
-                return handler.getFilteredDeclaration(context)
-                    .then((response) => {
-                        assert.deepEqual(
-                            response,
-                            {
-                                class: 'ADC',
-                                schemaVersion: '3.0.0',
-                                id: 'PATCH_Sample',
-                                firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
-                                updateMode: 'selective',
-                                controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
-                            }
-                        );
-                    });
-            });
+                it('should return 204 status code', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = '/shared/appsvcs/declare';
 
-            it('should return 204 status code', () => {
-                context.tasks[0].showAge = 0;
-                context.tasks[0].fullPath = '/shared/appsvcs/declare';
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(200, {
+                            items: [
+                                {
+                                    name: '____appsvcs_declaration-1554498345530',
+                                    timestamp: 1554498345530,
+                                    date: '2019-04-05T21:16:07.217Z',
+                                    age: 0
+                                }
+                            ]
+                        });
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                        .reply(200, {
+                            kind: 'tm:ltm:data-group:internal:internalstate',
+                            name: '____appsvcs_declaration-1554498345530',
+                            partition: 'Common',
+                            fullPath: '/Common/____appsvcs_declaration-1554498345530',
+                            generation: 14113,
+                            selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530?ver=13.1.1',
+                            description: 'f5 AS3 declaration (see info in record 0)',
+                            type: 'integer',
+                            records: [
+                                {
+                                    name: '0',
+                                    data: 'date^2019-04-05T21:05:45.530Z|id^1554498344324|tenants^|blocks^1'
+                                },
+                                {
+                                    name: '1',
+                                    data: 'eNoNzLEKwzAMBNB/0dwYJZag8VaatVvo0M04ghji2MRul5B/r8Z7d9wJYfO1goPH9IQb1LBK8m85asy7qjVoUD0uGnpmovFuiexAit+y+CavvIiWIaeySRP1kPd25E1fT/BHWONP5pikNp+KLgfsxw6pQ56H3iE7YsMWP3Bdf9+0KfU='
+                                }
+                            ]
+                        });
 
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
-                    .reply(200, {
-                        items: [
-                            {
-                                name: '____appsvcs_declaration-1554498345530',
-                                timestamp: 1554498345530,
-                                date: '2019-04-05T21:16:07.217Z',
-                                age: 0
-                            }
-                        ]
-                    });
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
-                    .reply(200, {
-                        kind: 'tm:ltm:data-group:internal:internalstate',
-                        name: '____appsvcs_declaration-1554498345530',
-                        partition: 'Common',
-                        fullPath: '/Common/____appsvcs_declaration-1554498345530',
-                        generation: 14113,
-                        selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530?ver=13.1.1.3',
-                        description: 'f5 AS3 declaration (see info in record 0)',
-                        type: 'integer',
-                        records: [
-                            {
-                                name: '0',
-                                data: 'date^2019-04-05T21:05:45.530Z|id^1554498344324|tenants^|blocks^1'
-                            },
-                            {
-                                name: '1',
-                                data: 'eNoNzLEKwzAMBNB/0dwYJZag8VaatVvo0M04ghji2MRul5B/r8Z7d9wJYfO1goPH9IQb1LBK8m85asy7qjVoUD0uGnpmovFuiexAit+y+CavvIiWIaeySRP1kPd25E1fT/BHWONP5pikNp+KLgfsxw6pQ56H3iE7YsMWP3Bdf9+0KfU='
-                            }
-                        ]
-                    });
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(response, { body: undefined, errorMessage: 'no declarations found', statusCode: 204 });
+                        });
+                });
 
-                return handler.getFilteredDeclaration(context)
-                    .then((response) => {
-                        assert.deepEqual(response, { body: undefined, errorMessage: 'no declarations found', statusCode: 204 });
-                    });
-            });
+                it('should return 404 status code', () => {
+                    context.tasks[0].showAge = 1;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant';
 
-            it('should return 404 status code', () => {
-                context.tasks[0].showAge = 1;
-                context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant';
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(200, {
+                            items: []
+                        });
 
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
-                    .reply(200, {
-                        items: []
-                    });
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(response, { body: undefined, errorMessage: 'declaration in specified path not found', statusCode: 404 });
+                        });
+                });
 
-                return handler.getFilteredDeclaration(context)
-                    .then((response) => {
-                        assert.deepEqual(response, { body: undefined, errorMessage: 'declaration in specified path not found', statusCode: 404 });
-                    });
-            });
+                it('should error if non 200 response when fetching the list of declarations', () => {
+                    context.tasks[0].showAge = 1;
+                    context.tasks[0].targetHost = 'localhost';
 
-            it('should error if non 200 response when fetching the list of declarations', () => {
-                context.tasks[0].showAge = 1;
-                context.tasks[0].targetHost = 'localhost';
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(404, 'not found');
 
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
-                    .reply(404, 'not found');
+                    return assert.isRejected(
+                        handler.getFilteredDeclaration(context),
+                        /cannot fetch declaration 1 from localhost \(GET http:\/\/admin:XXXXXX@localhost:8100\/mgmt\/tm\/ltm\/data-group\/internal\?\$select=name&\$filter=partition\+eq\+Common get stored-declaration list response=404 body=not found\)/
+                    );
+                });
 
-                return assert.isRejected(
-                    handler.getFilteredDeclaration(context),
-                    /cannot fetch declaration 1 from localhost \(GET http:\/\/admin:XXXXXX@localhost:8100\/mgmt\/tm\/ltm\/data-group\/internal\?\$select=name&\$filter=partition\+eq\+Common get stored-declaration list response=404 body=not found\)/
-                );
-            });
+                it('should error if non 200 response when fetching the specific declaration', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].targetHost = 'localhost';
+                    context.tasks[0].fullPath = '/shared/appsvcs/declare';
 
-            it('should error if non 200 response when fetching the specific declaration', () => {
-                context.tasks[0].showAge = 0;
-                context.tasks[0].targetHost = 'localhost';
-                context.tasks[0].fullPath = '/shared/appsvcs/declare';
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(200, {
+                            items: [
+                                {
+                                    name: '____appsvcs_declaration-1554498345530',
+                                    timestamp: 1554498345530,
+                                    date: '2019-04-05T21:16:07.217Z',
+                                    age: 0
+                                }
+                            ]
+                        });
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                        .reply(404, 'not found');
 
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
-                    .reply(200, {
-                        items: [
-                            {
-                                name: '____appsvcs_declaration-1554498345530',
-                                timestamp: 1554498345530,
-                                date: '2019-04-05T21:16:07.217Z',
-                                age: 0
-                            }
-                        ]
-                    });
-                nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
-                    .reply(404, 'not found');
+                    return assert.isRejected(
+                        handler.getFilteredDeclaration(context),
+                        /cannot fetch declaration 0 from localhost \(GET \/mgmt\/tm\/ltm\/data-group\/internal\/~Common~____appsvcs_declaration-1554498345530 retrieve stored declaration from BIG-IP response=404 body=not found\)/
+                    );
+                });
 
-                return assert.isRejected(
-                    handler.getFilteredDeclaration(context),
-                    /cannot fetch declaration 0 from localhost \(GET \/mgmt\/tm\/ltm\/data-group\/internal\/~Common~____appsvcs_declaration-1554498345530 retrieve stored declaration from BIG-IP response=404 body=not found\)/
-                );
-            });
-
-            it('should return the declaration if the skipMissingTenantCheck is true', () => {
-                context.tasks[0].method = 'Patch';
-                context.tasks[0].patchBody = [
-                    {
-                        op: 'add',
-                        path: '/newtenant',
-                        value: {
-                            class: 'Tenant',
-                            Application: {
-                                class: 'Application'
+                it('should return the declaration if the skipMissingTenantCheck is true', () => {
+                    context.tasks[0].method = 'Patch';
+                    context.tasks[0].patchBody = [
+                        {
+                            op: 'add',
+                            path: '/newtenant',
+                            value: {
+                                class: 'Tenant',
+                                Application: {
+                                    class: 'Application'
+                                }
                             }
                         }
-                    }
-                ];
-                context.tasks[0].action = 'retrieve';
-                context.tasks[0].showAge = 0;
-                context.tasks[0].fullPath = '/shared/appsvcs/declare';
-                context.tasks[0].tenantsInPath = ['newtenant'];
+                    ];
+                    context.tasks[0].action = 'retrieve';
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = '/shared/appsvcs/declare';
+                    context.tasks[0].tenantsInPath = ['newtenant'];
 
-                const declarationProvider = new DeclarationProvider();
-                sinon.stub(context.host.parser, 'digest').resolves();
-                sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
-                    class: 'ADC',
-                    schemaVersion: '3.0.0',
-                    id: 'PATCH_Sample',
-                    firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
-                    updateMode: 'selective',
-                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
-                });
-                handler.declarationProvider = declarationProvider;
-
-                return handler.getFilteredDeclaration(context, true)
-                    .then((response) => {
-                        assert.deepEqual(
-                            response,
-                            {
-                                class: 'ADC',
-                                schemaVersion: '3.0.0',
-                                id: 'PATCH_Sample',
-                                updateMode: 'selective',
-                                controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
-                            }
-                        );
+                    const declarationProvider = new DeclarationProvider();
+                    sinon.stub(context.host.parser, 'digest').resolves();
+                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'PATCH_Sample',
+                        firstTenant: { class: 'Tenant', Application: { class: 'Application' } },
+                        updateMode: 'selective',
+                        controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
                     });
+                    handler.declarationProvider = declarationProvider;
+
+                    return handler.getFilteredDeclaration(context, true)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    class: 'ADC',
+                                    schemaVersion: '3.0.0',
+                                    id: 'PATCH_Sample',
+                                    updateMode: 'selective',
+                                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
+                                }
+                            );
+                        });
+                });
+            });
+
+            describe('per-app', () => {
+                let declarationProvider;
+                beforeEach(() => {
+                    declarationProvider = new DeclarationProvider();
+                    sinon.stub(context.host.parser, 'digest').resolves();
+                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'PATCH_Sample',
+                        firstTenant: {
+                            class: 'Tenant',
+                            Application: { class: 'Application' },
+                            App1: { class: 'Application' },
+                            controls: { class: 'Controls' }
+                        },
+                        secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
+                        updateMode: 'selective',
+                        controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
+                    });
+                });
+
+                it('should handle a single application', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: undefined,
+                        tenant: 'secondTenant'
+                    };
+
+                    handler.declarationProvider = declarationProvider;
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    App2: { class: 'Application' }
+                                }
+                            );
+                        });
+                });
+
+                it('should handle multiple applications', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: undefined,
+                        tenant: 'firstTenant'
+                    };
+
+                    handler.declarationProvider = declarationProvider;
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    Application: { class: 'Application' },
+                                    App1: { class: 'Application' }
+                                }
+                            );
+                        });
+                });
+
+                it('should handle declarations with multiple applications but targetting a specific application', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/Application';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: 'Application',
+                        tenant: 'firstTenant'
+                    };
+
+                    handler.declarationProvider = declarationProvider;
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    Application: { class: 'Application' }
+                                }
+                            );
+                        });
+                });
+
+                it('should return 404 status code for missing tenant', () => {
+                    context.tasks[0].showAge = 1;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant/applications';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: undefined,
+                        tenant: 'someTenant'
+                    };
+
+                    handler.declarationProvider = declarationProvider;
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    body: undefined,
+                                    errorMessage: 'specified tenant \'someTenant\' not found in declaration',
+                                    statusCode: 404
+                                }
+                            );
+                        });
+                });
+
+                it('should return 404 status code for missing application in tenant declaration', () => {
+                    context.tasks[0].showAge = 1;
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/otherApplication';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: 'otherApplication',
+                        tenant: 'firstTenant'
+                    };
+
+                    handler.declarationProvider = declarationProvider;
+                    return handler.getFilteredDeclaration(context)
+                        .then((response) => {
+                            assert.deepEqual(
+                                response,
+                                {
+                                    body: undefined,
+                                    errorMessage: 'specified Application \'otherApplication\' not found in \'firstTenant\'',
+                                    statusCode: 404
+                                }
+                            );
+                        });
+                });
+
+                it('should error if non 200 response when fetching the list of declarations', () => {
+                    context.tasks[0].showAge = 1;
+                    context.tasks[0].targetHost = 'localhost';
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: 'App1',
+                        tenant: 'firstTenant'
+                    };
+
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(404, 'not found');
+
+                    return assert.isRejected(
+                        handler.getFilteredDeclaration(context),
+                        /cannot fetch declaration 1 from localhost \(GET http:\/\/admin:XXXXXX@localhost:8100\/mgmt\/tm\/ltm\/data-group\/internal\?\$select=name&\$filter=partition\+eq\+Common get stored-declaration list response=404 body=not found\)/
+                    );
+                });
+
+                it('should error if non 200 response when fetching the specific declaration', () => {
+                    context.tasks[0].showAge = 0;
+                    context.tasks[0].targetHost = 'localhost';
+                    context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        app: 'App1',
+                        tenant: 'firstTenant'
+                    };
+
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                        .reply(200, {
+                            items: [
+                                {
+                                    name: '____appsvcs_declaration-1554498345530',
+                                    timestamp: 1554498345530,
+                                    date: '2019-04-05T21:16:07.217Z',
+                                    age: 0
+                                }
+                            ]
+                        });
+                    nock('http://localhost:8100')
+                        .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                        .reply(404, 'not found');
+
+                    return assert.isRejected(
+                        handler.getFilteredDeclaration(context),
+                        /cannot fetch declaration 0 from localhost \(GET \/mgmt\/tm\/ltm\/data-group\/internal\/~Common~____appsvcs_declaration-1554498345530 retrieve stored declaration from BIG-IP response=404 body=not found\)/
+                    );
+                });
             });
         });
 
@@ -293,7 +480,7 @@ describe('DeclarationHandler', () => {
                 context.tasks[0].tenantsInPath = ['bigiqTenant1'];
                 context.target.deviceType = DEVICE_TYPES.BIG_IQ;
                 context.target.provisionedModules = ['biq'];
-                context.target.tmosVersion = '7.0.0.0.0.1854';
+                context.target.tmosVersion = '7.0.0';
                 sinon.stub(context.host.parser, 'digest').resolves();
             });
 
@@ -484,7 +671,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4'
+                tmosVersion: '14.1.2'
             };
             context.control = {
                 port: 8100,
@@ -660,6 +847,7 @@ describe('DeclarationHandler', () => {
                     assert.strictEqual(isNotCalled.called, false);
                 });
         });
+
         it('should succeed even if teem report fails', () => {
             context.tasks[0].declaration = [
                 {
@@ -759,7 +947,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].installServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(installSpy.called, 'cloubLibUtils.install should have been called');
+                    assert.ok(installSpy.called, 'cloudLibUtils.install should have been called');
                 });
         });
 
@@ -780,7 +968,7 @@ describe('DeclarationHandler', () => {
             context.tasks[context.currentIndex].uninstallServiceDiscovery = true;
             return handler.handleCreateUpdateOrDelete(context)
                 .then(() => {
-                    assert.ok(uninstallSpy.called, 'cloubLibUtils.ensureUninstall should have been called');
+                    assert.ok(uninstallSpy.called, 'cloudLibUtils.ensureUninstall should have been called');
                 });
         });
 
@@ -1295,6 +1483,27 @@ describe('DeclarationHandler', () => {
                     );
                 }));
 
+            it('should not delete tenants that are not in the declaration if request is perApp', () => {
+                bigIpDeclaration.updateMode = 'complete';
+                context.request.isPerApp = true;
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then(() => {
+                        assert.deepStrictEqual(
+                            passedInDecl.tenantToKeep,
+                            {
+                                class: 'Tenant',
+                                myApplication: {
+                                    class: 'Application'
+                                }
+                            }
+                        );
+                        assert.strictEqual(
+                            passedInDecl.tenantToRemove,
+                            undefined
+                        );
+                    });
+            });
+
             it('should handle empty tenant strings with updateMode complete', () => {
                 bigIpDeclaration.updateMode = 'complete';
 
@@ -1393,6 +1602,70 @@ describe('DeclarationHandler', () => {
                     assert.strictEqual(result.body.fortune, 'Whee! Easter-egg hunting is fun!');
                 });
         });
+
+        describe('per-app', () => {
+            let declarationProvider;
+
+            beforeEach(() => {
+                declarationProvider = new DeclarationProvider();
+                sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'PATCH_Sample',
+                    firstTenant: {
+                        class: 'Tenant',
+                        Application: { class: 'Application' },
+                        App1: { class: 'Application' },
+                        controls: { class: 'Controls' }
+                    },
+                    secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
+                    updateMode: 'selective'
+                });
+            });
+
+            it('should not error if isPerApp && tenant does not already exist in the BIG-IP', () => {
+                context.tasks[0].showAge = 0;
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/otherTenant/applications';
+                context.tasks[0].declaration = {
+                    Application1: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.1'
+                            ],
+                            appPool: 'pool'
+                        },
+                        appPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.2.10',
+                                        '192.0.2.20'
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    app: undefined,
+                    tenant: 'otherTenant'
+                };
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        assert.strictEqual(result.statusCode, 200);
+                        // NOTE: Further POST development will likely change the following responses
+                        assert.strictEqual(result.body.results[0].code, 200);
+                        assert.strictEqual(result.body.results[0].message, 'no change');
+                        assert.strictEqual(result.errorMessage, undefined);
+                    });
+            });
+        });
     });
 
     describe('.handlePatch', () => {
@@ -1400,7 +1673,7 @@ describe('DeclarationHandler', () => {
             context.target = {
                 deviceType: DEVICE_TYPES.BIG_IP,
                 provisionedModules: [],
-                tmosVersion: '14.1.2.1.0.0.4',
+                tmosVersion: '14.1.2',
                 tokens: {}
             };
 

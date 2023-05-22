@@ -27,28 +27,31 @@
  * eventEmitter - enables and holds events in AS3 such as APM_PROFILE_UPDATED
  * body - The JSON request body with modifications from tryConvertToPost()
  * fullPath - Full URL used in the request
- * pathName - A subsect of the fullPath
+ * pathName - A subsection of the fullPath
  * subPath - A formatted subPath of the fullPath, reconfigured in declareHandler
  * queryParams - The query parameters supplied as part of the URL
  * basicAuth - Is the basic authorization in the restOperation
  * token - Is the token from the request headers. Note it is different than
  *   target context tokens, which can be set per declaration.
- * isMultiDecl - Only set to true if the request is a multideclaration.
+ * isMultiDecl - Only set to true if the request is a multi-declaration.
  *   Otherwise it is undefined.
- * declarations - An array of wrapped and normalized subdeclarations
+ * isPerApp - Detects if the request used the per-app interface and sets the
+ *   boolean appropriately.
+ * perAppInfo - logs the tenant and the application name for later reference
+ * declarations - An array of wrapped and normalized sub-declarations
  * dryRun - A boolean to indicate if the task is to run as a dry-run
  *
  * TODO: These are elsewhere, should be set here instead, in a different
- *   subobject, or outside the context object if possible.
+ *   sub-object, or outside the context object if possible.
  * restOp - Set in declareHandler.process(). Mostly used in declareHandler.
  *   TODO: We could move this to restWorker and have the results bubble up
  * controls - Set in declareHandler.process(), after gathering the values.
- *   The controls are an array, each value derived from the subdeclarations.
+ *   The controls are an array, each value derived from the sub-declarations.
  * async - Seems to be a boolean set in declarationHandler.process().
  * timedOut - A boolean set in declarationHandler.process().
  * timeoutId - The ID returned by declareHandler.setTimeout().
  * action - This is set in as3request.
- *   TODO: Determine if the action is per subdeclaration.
+ *   TODO: Determine if the action is per sub-declaration.
  *   TODO: Update the code to use request.action or the sub-declaration's
  *   action exclusively.
  */
@@ -62,7 +65,7 @@ const As3Request = require('../as3request');
 const Tracer = require('../tracer').Tracer;
 const tracerUtil = require('../tracer').Util;
 const tracerTags = require('../tracer').Tags;
-const STATUS_CODES = require('../util/restUtil').STATUS_CODES;
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 class RequestContext {
     static get(restOperation, hostContext) {
@@ -181,15 +184,21 @@ function checkIfAllowed(reqContext, hostContext) {
         break;
     }
 
-    const result = {
-        failed: !allowed
-    };
+    const result = {};
 
     if (!allowed) {
         result.errorCode = STATUS_CODES.METHOD_NOT_ALLOWED;
         result.error = `${method.toUpperCase()} method is not allowed on ${deviceType}. Please use POST method with an action of "${postAction}".`;
+    } else if (reqContext.isPerApp) {
+        // check if using multiple tenants or applications are used
+        if (reqContext.subPath.indexOf(',') !== -1) {
+            result.errorCode = STATUS_CODES.BAD_REQUEST;
+            result.error = `declare/${reqContext.subPath} is an invalid path. Only 1 tenant and 1 application may be specified in the URL.`;
+            allowed = false;
+        }
     }
 
+    result.failed = !allowed;
     return result;
 }
 
@@ -247,7 +256,7 @@ function getComponentsAfterPathName(fullPath, pathName) {
     if (uriComponents[0].charAt(0) === '/') {
         uriComponents[0] = uriComponents[0].slice(1);
     }
-    // returns [ '{subpPath1/subpath2/..}', '{queryParams}' ];
+    // returns [ '{subPath1/subPath2/..}', '{queryParams}' ];
     return uriComponents;
 }
 
@@ -275,13 +284,23 @@ function buildInitialContext(restOperation) {
         error: undefined,
         body: restOperation.getBody()
     };
-    context.fullPath = getFullPath(restOperation);
+    context.fullPath = getFullPath(restOperation).replace(/\/$/, ''); // strip trailing slash
     context.pathName = getPathName(context.fullPath);
     context.subPath = getComponentsAfterPathName(context.fullPath, context.pathName)[0];
-    context.queryParams = getQueryParams(context.fullPath, context.pathName);
     if (context.subPath === '') {
+        context.isPerApp = false;
         delete context.subPath;
+    } else {
+        const splitSubPath = context.subPath.split('/');
+        context.isPerApp = splitSubPath[1] === 'applications';
+        if (context.isPerApp) {
+            context.perAppInfo = {
+                tenant: splitSubPath[0],
+                app: splitSubPath[2]
+            };
+        }
     }
+    context.queryParams = getQueryParams(context.fullPath, context.pathName);
     context.eventEmitter = new EventEmitter();
     return context;
 }

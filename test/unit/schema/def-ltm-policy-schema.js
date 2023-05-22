@@ -85,7 +85,7 @@ describe('def-ltm-policy-schema.json', () => {
                                         address: {
                                             operand: 'matches',
                                             values: [
-                                                '1.2.3.4'
+                                                '192.0.2.4'
                                             ]
                                         }
                                     },
@@ -420,7 +420,7 @@ describe('def-ltm-policy-schema.json', () => {
                     data.Tenant.Application.test1.rules[0].actions[1].event = 'proxy-request';
                     data.Tenant.Application.test1.rules[0].actions[1].write.facility = 'local1';
                     data.Tenant.Application.test1.rules[0].actions[1].write.priority = 'debug';
-                    data.Tenant.Application.test1.rules[0].actions[1].write.ipAddress = '1.2.3.4';
+                    data.Tenant.Application.test1.rules[0].actions[1].write.ipAddress = '192.0.2.4';
                     data.Tenant.Application.test1.rules[0].actions[1].write.port = 123;
                     assert.ok(validate(data), getErrorString(validate));
                 });

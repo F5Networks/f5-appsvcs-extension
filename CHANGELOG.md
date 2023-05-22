@@ -1,11 +1,32 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.45.0
+
+### Added
+- AUTOTOOL-3698: Add webhook option for responses
+- AUTOTOOL-3753: Add support for referencing websocket profile to vip by Service class
+
+### Fixed
+- AUTOTOOL-3724: Protocol_Inspection_Profile_Service_Compliance_Checks and Protocol_Inspection_Profile_Service_Signature_Checks not displaying any properties in schema reference
+- AUTOTOOL-3800: Modifying a GSLB_Server with virtualServerDiscoveryMode may result in offline pool members
+
+### Changed
+- AUTOTOOL-3780: Do early path validation
+- Updated to Service Discovery 1.13.0-3
+  - AUTOTOOL-3581: Upgrade atg-storage to resolve issue with reading data groups when cli preference list-all-properties is enabled
+  - AUTOTOOL-3598: ([GitHub Issue 669](https://github.com/F5Networks/f5-appsvcs-extension/issues/669)): When modifying/moving an existing AS3 application from one Route Domain to another, the Service Discovery nodes are not updated to the new Route domain
+- AUTOTOOL-3809: Update TLS_Client and TLS_Server properties to include indefinite option. The indefinite option behaves the same as a value of 4294967295
+- AUTOTOOL-3811: Module provisioning validation to occur before reference validation to improve error message in failure case
+
+### Removed
+
 ## 3.44.0
 
 ### Added
 - AUTOTOOL-3572: Support "use" reference for virtualServer under GSLB_Pool
 - AUTOTOOL-3655: ([GitHub Issue 688](https://github.com/F5Networks/f5-appsvcs-extension/issues/688)): Option to prefer client subnet in GSLB_Domain
+- AUTOTOOL-3342: ([GitHub Issue 568](https://github.com/F5Networks/f5-appsvcs-extension/issues/568)): Support resolver and validating-resolver DNS caches
 
 ### Fixed
 - AUTOTOOL-3331: Service with partial mask and custom route domain fails to POST twice

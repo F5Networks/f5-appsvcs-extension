@@ -30,6 +30,7 @@ const log = require('./log');
 const Config = require('./config');
 
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
+const STATUS_CODES = require('./constants').STATUS_CODES;
 
 const VALIDATOR_ERR_PREFIX = 'Invalid data property:';
 
@@ -110,7 +111,7 @@ class DeclareHandler {
 
 /**
  * builds the result of parsing a request
- * no errorMessage returns sucess:true
+ * no errorMessage returns success:true
  *
  * @private
  * @returns {object} - returns ```{ success: boolean, errorMessage: string }```
@@ -119,51 +120,64 @@ function buildParseResult(errorMessage, statusCode) {
     return {
         errorMessage,
         success: !errorMessage,
-        statusCode: statusCode || (errorMessage ? restUtil.STATUS_CODES.BAD_REQUEST : restUtil.STATUS_CODES.OK)
+        statusCode: statusCode || (errorMessage ? STATUS_CODES.BAD_REQUEST : STATUS_CODES.OK)
     };
 }
 
 /**
+ * Parse through the subPath to handle multiple tenants in the path
+ *
+ * @param {object} requestContextCopy
+ * @param {object} task
+ */
+function parsePerTenantPath(requestContextCopy, task) {
+    if (requestContextCopy.subPath.length && requestContextCopy.subPath !== '*') {
+        requestContextCopy.subPath.replace(/%2[Cc]/g, ',')
+            .replace(/^,+(.*),+$/, '$1')
+            .replace(/,[, ]+/g, ',')
+            .split(',')
+            .forEach((e) => {
+                if (requestContextCopy.tenantsInPath.indexOf(e) === -1) {
+                    if (requestContextCopy.method === 'Post') {
+                        if (task.declaration && task.declaration[e]) {
+                            requestContextCopy.tenantsInPath.push(e);
+                        }
+                    } else {
+                        requestContextCopy.tenantsInPath.push(e);
+                    }
+                }
+            });
+    }
+
+    if (requestContextCopy.method === 'Post' && task.declaration) {
+        // Remove Tenants from the declaration that are not in the URI
+        Object.keys(task.declaration).forEach((decl) => {
+            if (task.declaration[decl].class === 'Tenant'
+                && requestContextCopy.tenantsInPath.indexOf(decl) < 0) {
+                delete task.declaration[decl];
+            }
+        });
+    }
+}
+
+/**
  * parses a client http request and checks URI for path additions
+ * requestContextCopy.subPath should be similar to one of the following:
+ *   per tenant: "/declare/{commaDelimitedTenantList}"
+ *   per app: "/declare/{nameOfTenant}/applications/{optionalApplicationName}"
  *
  * @private
  * @returns {object} - returns ```{ success: boolean, errorMessage: string }```
  */
 function parseSubPath(requestContextCopy, task) {
-    // Currently only tenants: /declare/{commaDelimitedTenantList}
     if (requestContextCopy.subPath) {
         // remove trailing '/'
         if (requestContextCopy.subPath.charAt(requestContextCopy.subPath.length - 1) === '/') {
             requestContextCopy.subPath = requestContextCopy.subPath.slice(0, -1);
         }
-        requestContextCopy.subPathTenant = requestContextCopy.subPath;
 
-        if (requestContextCopy.subPath.length && requestContextCopy.subPath !== '*') {
-            requestContextCopy.subPath.replace(/%2[Cc]/g, ',')
-                .replace(/^,+(.*),+$/, '$1')
-                .replace(/,[, ]+/g, ',')
-                .split(',')
-                .forEach((e) => {
-                    if (requestContextCopy.tenantsInPath.indexOf(e) === -1) {
-                        if (requestContextCopy.method === 'Post') {
-                            if (task.declaration && task.declaration[e]) {
-                                requestContextCopy.tenantsInPath.push(e);
-                            }
-                        } else {
-                            requestContextCopy.tenantsInPath.push(e);
-                        }
-                    }
-                });
-        }
-
-        if (requestContextCopy.method === 'Post' && task.declaration) {
-            // Remove Tenants from the declaration that are not in the URI
-            Object.keys(task.declaration).forEach((decl) => {
-                if (task.declaration[decl].class === 'Tenant'
-                    && requestContextCopy.tenantsInPath.indexOf(decl) < 0) {
-                    delete task.declaration[decl];
-                }
-            });
+        if (!requestContextCopy.isPerApp) {
+            parsePerTenantPath(requestContextCopy, task);
         }
     }
 
@@ -490,12 +504,12 @@ function processDeclInArray(item, index, context) {
         if (!item.validatorResult.isValid) {
             errorMessage += `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
         }
-        declResult = restUtil.buildOpResult(restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
+        declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
         return Promise.resolve(declResult);
     }
     if (!item.validatorResult.isValid) {
         errorMessage = `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
-        declResult = restUtil.buildOpResult(restUtil.STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
+        declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
         return Promise.resolve(declResult);
     }
 
@@ -553,6 +567,15 @@ function processRequest(context) {
                 } else {
                     restUtil.completeRequest(context.request.restOp, result);
                 }
+            }
+            return result;
+        })
+        .then((result) => {
+            if (context.request.async) {
+                // For async requests, completeRequest (which checks the webhook) was called
+                // previously to send the task id, so we still need to check for the webhook here
+                // to send the actual result
+                restUtil.checkWebhook(context.request.restOp, result);
             }
             return result;
         })
@@ -714,7 +737,7 @@ function reportError(context, error) {
     let message;
     let code;
 
-    if (error.code === restUtil.STATUS_CODES.SERVICE_UNAVAILABLE_ERROR) {
+    if (error.code === STATUS_CODES.SERVICE_UNAVAILABLE_ERROR) {
         message = `Error: ${error.message}`;
         log.error(`ERROR: ${error.message}`);
         code = error.code;
@@ -724,7 +747,7 @@ function reportError(context, error) {
     } else {
         message = `An unexpected error occurred. See logs for details. Error: ${error.message}`;
         log.error(`ERROR: ${error.message} : ${error.stack}`);
-        code = restUtil.STATUS_CODES.INTERNAL_SERVER_ERROR;
+        code = STATUS_CODES.INTERNAL_SERVER_ERROR;
     }
 
     const opResult = restUtil.buildOpResult(code, message);

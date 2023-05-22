@@ -334,7 +334,7 @@ describe('def-net-schema.json', () => {
                         sharedNal: {
                             class: 'Net_Address_List',
                             addresses: [
-                                '198.51.100.0/24'
+                                '233.252.0.0/24'
                             ]
                         }
                     }

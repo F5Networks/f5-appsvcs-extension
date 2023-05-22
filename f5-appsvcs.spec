@@ -20,6 +20,7 @@ rm -rf %{_builddir}/src/schema/latest/*
 cp %{main}/src/schema/latest/adc-schema.json %{_builddir}/src/schema/latest/
 cp %{main}/src/schema/latest/as3-request-schema.json %{_builddir}/src/schema/latest/
 cp %{main}/src/schema/latest/settings-schema.json %{_builddir}/src/schema/latest/
+cp %{main}/src/schema/latest/app-schema.json %{_builddir}/src/schema/latest/
 cp -r %{_topdir}/pkgs/ %{_builddir}/pkgs/
 cp %{main}/package*.json %{_builddir}/src
 %if "%{_perf_tracing_enabled}" == "true"

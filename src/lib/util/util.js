@@ -24,8 +24,8 @@ const net = require('net');
 
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const log = require('../log');
-const constants = require('../constants');
-const STATUS_CODES = require('./restUtil').STATUS_CODES;
+const DEFAULT_PORT = require('../constants').defaultPort;
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 const tracerTags = require('../tracer').Tags;
 
@@ -614,7 +614,7 @@ class Util {
         const controls = this.simpleCopy(context.control);
         const tokens = this.getTargetTokens(context, context.currentIndex);
 
-        let port = controls.targetPort || constants.defaultPort;
+        let port = controls.targetPort || DEFAULT_PORT;
         if (context.target && context.target.port) {
             port = context.target.port;
         }
@@ -1146,7 +1146,7 @@ class Util {
         }
         if (i >= v2Ara.length) {
             if (v1Ara[i] !== 0) {
-                return false; // v1 greater thanv2
+                return false; // v1 greater than v2
             }
             i += 1;
             return this.versionLessThanRecurse(v1Ara, v2Ara, i);
@@ -1161,7 +1161,7 @@ class Util {
             i += 1;
             return this.versionLessThanRecurse(v1Ara, v2Ara, i);
         }
-        log.error('Error occured while comparing bigip versions!');
+        log.error('Error occurred while comparing bigip versions!');
         return null;
     }
 
@@ -1230,7 +1230,7 @@ class Util {
     /**
      * Traverses object and creates path structure along the way.
      * Sets last property in the path to target value.
-     * Assumes that if any property in the path is a stringfied integer,
+     * Assumes that if any property in the path is a stringified integer,
      * it should create an array for that property instead of an object.
      *
      * @public
@@ -1607,7 +1607,7 @@ class Util {
      * @param {Object} targetContext - the context.target object
      * @param {Array} <string> modules - an array of modules to check if any are in the targetContext
      *
-     * @returns {boolean} - if any of the moduels are in targetContext a true is returned
+     * @returns {boolean} - if any of the modules are in targetContext a true is returned
      */
     static isOneOfProvisioned(targetContext, modules) {
         if (!targetContext) {

@@ -1048,7 +1048,7 @@ describe('map_cli', () => {
                 }
             };
 
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
 
             const result = mapCli.tmshCreate(context, diff, config, {});
             assert.deepStrictEqual(
@@ -1262,7 +1262,7 @@ describe('map_cli', () => {
                         command: 'ltm virtual',
                         properties: {
                             enabled: false,
-                            destination: '/tenant/1.2.3.4:80'
+                            destination: '/tenant/192.0.2.4:80'
                         }
                     },
                     command: 'ltm virtual',
@@ -1271,11 +1271,89 @@ describe('map_cli', () => {
                 };
                 const targetConfig = {
                     enabled: false,
-                    destination: '/tenant/1.2.3.4:80'
+                    destination: '/tenant/192.0.2.4:80'
                 };
                 const currentConfig = {};
                 const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
-                assert.deepStrictEqual(result.commands, ['tmsh::create ltm virtual /tenant/app/service destination /tenant/1.2.3.4:80 disabled ']);
+                assert.deepStrictEqual(result.commands, ['tmsh::create ltm virtual /tenant/app/service destination /tenant/192.0.2.4:80 disabled ']);
+            });
+        });
+
+        describe('ltm dns cache', () => {
+            ['resolver', 'validating-resolver'].forEach((type) => {
+                it(`should handle forward-zones property for ${type}`, () => {
+                    const diff = {
+                        kind: 'N',
+                        path: ['/tenant/app/service'],
+                        rhs: {
+                            command: `ltm dns cache ${type}`,
+                            properties: {
+                                'forward-zones': {
+                                    singleRecord: {
+                                        nameservers: {
+                                            '10.0.0.1:53': {}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        command: `ltm dns cache ${type}`,
+                        lhsCommand: '',
+                        rhsCommand: `ltm dns cache ${type}`
+                    };
+                    const targetConfig = {
+                        'allowed-query-time': 201,
+                        'local-zones': 'none',
+                        'max-concurrent-queries': 2048,
+                        'max-concurrent-tcp': 24,
+                        'max-concurrent-udp': 8193,
+                        'msg-cache-size': 0,
+                        'nameserver-cache-count': 16537,
+                        'prefetch-key': 'yes',
+                        'forward-zones': {
+                            singleRecord: {
+                                nameservers: {
+                                    '10.0.0.1:53': {}
+                                }
+                            }
+                        },
+                        'route-domain': '/Common/0',
+                        'rrset-cache-size': 1,
+                        'rrset-rotate': 'query-id',
+                        'unwanted-query-reply-threshold': 1
+                    };
+                    const currentConfig = {};
+                    const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+                    assert.deepStrictEqual(result.commands, [`tmsh::create ltm dns cache ${type} /tenant/app/service allowed-query-time 201 local-zones none max-concurrent-queries 2048 max-concurrent-tcp 24 max-concurrent-udp 8193 msg-cache-size 0 nameserver-cache-count 16537 prefetch-key yes forward-zones replace-all-with \\{ singleRecord \\{ nameservers replace-all-with \\{ 10.0.0.1:53 \\} \\} \\} route-domain /Common/0 rrset-cache-size 1 rrset-rotate query-id unwanted-query-reply-threshold 1`]);
+                });
+
+                it(`should handle local-zones property for ${type}`, () => {
+                    const diff = {
+                        kind: 'N',
+                        path: ['/tenant/app/service'],
+                        rhs: {
+                            command: `ltm dns cache ${type}`,
+                            properties: {
+                                'local-zones': '\\{ \\{ name foo.example.com type type-transparent records none \\}  \\}'
+                            }
+                        },
+                        command: `ltm dns cache ${type}`,
+                        lhsCommand: '',
+                        rhsCommand: `ltm dns cache ${type}`
+                    };
+                    const targetConfig = {
+                        'local-zones': {
+                            'foo.example.com': {
+                                name: 'foo.example.com',
+                                type: 'type-transparent',
+                                records: {}
+                            }
+                        }
+                    };
+                    const currentConfig = {};
+                    const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+                    assert.deepStrictEqual(result.commands, [`tmsh::create ltm dns cache ${type} /tenant/app/service local-zones \\{ \\{ name foo.example.com type type-transparent records none \\}  \\}`]);
+                });
             });
         });
     });

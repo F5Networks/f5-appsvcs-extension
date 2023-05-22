@@ -641,7 +641,7 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
  * @param {string} itemId
  * @param {object} item
  * @param {object} declaration
- * @returns {Object}
+ * @returns {(Object|Promise)}
  */
 const translate = {
 
@@ -1223,6 +1223,9 @@ const translate = {
 
         updateTlsOptions(item, context);
 
+        item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
+        item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+
         configs.push(normalize.actionableMcp(context, item, 'ltm profile server-ssl', util.mcpPath(tenantId, appId, itemId)));
 
         if (item.ldapStartTLS) {
@@ -1333,6 +1336,10 @@ const translate = {
         item.cipherGroup = item.cipherGroup || 'none';
 
         updateTlsOptions(item, context);
+
+        item.renegotiateMaxRecordDelay = (item.renegotiateMaxRecordDelay === 'indefinite') ? 4294967295 : item.renegotiateMaxRecordDelay;
+        item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
+        item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
 
         item.certificates.forEach((obj, index) => {
             const tlsItem = Object.create(item);
@@ -1560,8 +1567,9 @@ const translate = {
         const configs = [];
 
         item.localZones = item.localZones || 'none';
+        item.forwardZones = item.forwardZones || 'none';
 
-        configs.push(normalize.actionableMcp(context, item, 'ltm dns cache transparent', util.mcpPath(tenantId, appId, itemId)));
+        configs.push(normalize.actionableMcp(context, item, `ltm dns cache ${item.type}`, util.mcpPath(tenantId, appId, itemId)));
         return { configs };
     },
 
@@ -2731,6 +2739,7 @@ const translate = {
         item = profile(item, 'profileConnectivity', 'clientside');
         item = profile(item, 'profileRequestAdapt', 'clientside');
         item = profile(item, 'profileResponseAdapt', 'serverside');
+        item = profile(item, 'profileWebSocket');
         if (!util.versionLessThan(context.target.tmosVersion, '14.1')) {
             item = profile(item, 'profileApiProtection');
         }
@@ -2748,16 +2757,18 @@ const translate = {
             profilePath = profilePath.split('/');
             const httpProfile = declaration[profilePath[0]][profilePath[1]][profilePath[2]];
             if (httpProfile) {
-                // new method (if) has precedence over deprecated method (else if)
-                if (httpProfile.profileWebSocket) {
-                    item.profileWebSocket = httpProfile.profileWebSocket;
-                    item = profile(item, 'profileWebSocket');
-                } else if (httpProfile.webSocketsEnabled) {
-                    item.profiles.push({
-                        use: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
-                        name: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
-                        context: 'all'
-                    });
+                if (!item.profileWebSocket) {
+                    // deprecated method (if) has precedence over older deprecated method (else if)
+                    if (httpProfile.profileWebSocket) {
+                        item.profileWebSocket = httpProfile.profileWebSocket;
+                        item = profile(item, 'profileWebSocket');
+                    } else if (httpProfile.webSocketsEnabled) {
+                        item.profiles.push({
+                            use: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
+                            name: `/${profilePath[0]}/${profilePath[1]}/f5_appsvcs_${httpProfile.webSocketMasking}`,
+                            context: 'all'
+                        });
+                    }
                 }
 
                 if (httpProfile.proxyConnectEnabled) {
@@ -3748,6 +3759,7 @@ const translate = {
         mapMonitors(item); // Defaults to undefined or '/Common/bigip ' depending on serverType
 
         item.serverType = item.serverType || 'bigip';
+        item.proberPool = item.proberPool || 'none';
 
         const path = util.mcpPath(tenantId, '', itemId);
         const config = [normalize.actionableMcp(context, item, 'gtm server', path)];

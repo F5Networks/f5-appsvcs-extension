@@ -215,13 +215,13 @@ describe('def-gslb-pools-servers-schema.json', () => {
                             },
                             devices: [
                                 {
-                                    address: '1.2.3.4'
+                                    address: '192.0.2.4'
                                 }
                             ],
                             serverType: desiredServerType,
                             virtualServers: [
                                 {
-                                    address: '1.2.3.5',
+                                    address: '192.0.2.5',
                                     port: 1000,
                                     enabled: true,
                                     addressTranslationPort: 0
@@ -280,10 +280,10 @@ describe('def-gslb-pools-servers-schema.json', () => {
             it('should invalidate number of generic host devices', () => {
                 const devices = [
                     {
-                        address: '1.2.3.3'
+                        address: '192.0.2.3'
                     },
                     {
-                        address: '1.2.3.4'
+                        address: '192.0.2.4'
                     }
                 ];
                 const decl = buildDeclaration('generic-host');

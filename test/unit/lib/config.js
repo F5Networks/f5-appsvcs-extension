@@ -50,34 +50,50 @@ describe('config', () => {
         // users from supplying information not in the defaults.
         localStorageDataGroup.setItem('funky', 'monkey');
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
+        localStorageDataGroup.setItem('betaOptions', {
+            perAppDeploymentAllowed: false
+        });
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
 
         return Promise.resolve()
             .then(() => Config.injectSettings(localStorageDataGroup))
             .then(() => assert.becomes(Config.getAllSettings(), {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }));
     });
 
     it('should return the updated values', () => {
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
+        localStorageDataGroup.setItem('betaOptions', {
+            perAppDeploymentAllowed: false
+        });
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('webhook', '');
         const newSettings = {
             asyncTaskStorage: 'memory',
+            betaOptions: {
+                perAppDeploymentAllowed: false
+            },
             burstHandlingEnabled: true,
             performanceTracingEnabled: true,
             performanceTracingEndpoint: 'http://192.168.0.1:14268/api/traces',
-            serviceDiscoveryEnabled: false
+            serviceDiscoveryEnabled: false,
+            webhook: 'https://www.example.com'
         };
 
         return Promise.resolve()
@@ -102,17 +118,25 @@ describe('config', () => {
         return Promise.resolve()
             .then(() => assert.becomes(Config.getAllSettings(), {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }))
             .then(() => assert.deepStrictEqual(storageData, {
                 asyncTaskStorage: 'data-group',
+                betaOptions: {
+                    perAppDeploymentAllowed: false
+                },
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
-                serviceDiscoveryEnabled: true
+                serviceDiscoveryEnabled: true,
+                webhook: ''
             }));
     });
 

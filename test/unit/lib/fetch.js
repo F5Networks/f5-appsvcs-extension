@@ -469,7 +469,7 @@ describe('fetch', () => {
                     name: 'Tenant',
                     fullPath: 'Tenant',
                     generation: 102260,
-                    selfLink: 'https://localhost/mgmt/tm/auth/partition/Tenant?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition/Tenant?ver=16.1.2',
                     defaultRouteDomain: 0,
                     description: 'Updated by AS3 at Wed, 24 Aug 2022 16:07:11 GMT'
                 },
@@ -479,7 +479,7 @@ describe('fetch', () => {
                     partition: 'Tenant',
                     fullPath: '/Tenant/Application',
                     generation: 102259,
-                    selfLink: 'https://localhost/mgmt/tm/sys/folder/~Tenant~Application?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/sys/folder/~Tenant~Application?ver=16.1.2',
                     deviceGroup: 'none',
                     hidden: 'false',
                     inheritedDevicegroup: true,
@@ -487,7 +487,7 @@ describe('fetch', () => {
                     noRefCheck: false,
                     trafficGroup: '/Common/traffic-group-1',
                     trafficGroupReference: {
-                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=16.1.2.2'
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=16.1.2'
                     }
                 },
                 {
@@ -497,7 +497,7 @@ describe('fetch', () => {
                     subPath: 'Application',
                     fullPath: '/Tenant/Application/asm_logging_profile_for_splunk',
                     generation: 102260,
-                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk?ver=16.1.2.2',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk?ver=16.1.2',
                     builtIn: 'disabled',
                     hidden: 'false',
                     ipIntelligence: {
@@ -507,19 +507,19 @@ describe('fetch', () => {
                         logTranslationFields: 'disabled'
                     },
                     applicationReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?ver=16.1.2',
                         isSubcollection: true
                     },
                     networkReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?ver=16.1.2',
                         isSubcollection: true
                     },
                     protocolDnsReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?ver=16.1.2',
                         isSubcollection: true
                     },
                     protocolSipReference: {
-                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?ver=16.1.2.2',
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?ver=16.1.2',
                         isSubcollection: true
                     }
                 }
@@ -573,7 +573,7 @@ describe('fetch', () => {
                         name: 'ldns: state AF/Badakhshan server: country AF',
                         fullPath: 'ldns: state AF/Badakhshan server: country AF',
                         generation: 1812,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1',
                         order: 1,
                         score: 1
                     },
@@ -595,7 +595,7 @@ describe('fetch', () => {
                         name: 'ldns: state AF/Badakhshan server: country AF',
                         fullPath: 'ldns: state AF/Badakhshan server: country AF',
                         generation: 1812,
-                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1.3',
+                        selfLink: 'https://localhost/mgmt/tm/gtm/topology/ldns:%20state%20AF~Badakhshan%20server:%20country%20AF?ver=13.1.1',
                         order: 1,
                         score: 1
                     },
@@ -1118,7 +1118,7 @@ describe('fetch', () => {
                             'connection-limit': 0,
                             'rate-limit': 'disabled',
                             description: '\\"Shared\\"',
-                            destination: '/Common/1.1.1.11:8080',
+                            destination: '/Common/192.0.2.11:8080',
                             'ip-protocol': 'tcp',
                             'last-hop-pool': 'none',
                             mask: '255.255.255.255',
@@ -1161,10 +1161,10 @@ describe('fetch', () => {
                         properties: {},
                         ignore: []
                     },
-                    '/Common/Shared/Service_Address-1.1.1.10': {
+                    '/Common/Shared/Service_Address-192.0.2.10': {
                         command: 'ltm virtual-address',
                         properties: {
-                            address: '1.1.1.10',
+                            address: '192.0.2.10',
                             arp: 'enabled',
                             'icmp-echo': 'enabled',
                             mask: '255.255.255.255',
@@ -1182,7 +1182,7 @@ describe('fetch', () => {
                             'connection-limit': 0,
                             'rate-limit': 'disabled',
                             description: '\\"Shared\\"',
-                            destination: '/Common/Shared/1.1.1.10:8080',
+                            destination: '/Common/Shared/192.0.2.10:8080',
                             'ip-protocol': 'tcp',
                             'last-hop-pool': 'none',
                             mask: '255.255.255.255',
@@ -1287,9 +1287,9 @@ describe('fetch', () => {
                     ],
                     virtualAddressList: [
                         {
-                            fullPath: '/Common/1.1.1.11',
+                            fullPath: '/Common/192.0.2.11',
                             partition: 'Common',
-                            address: '1.1.1.11',
+                            address: '192.0.2.11',
                             metadata: [
                                 {
                                     name: 'references',
@@ -1337,10 +1337,10 @@ describe('fetch', () => {
                                     },
                                     ignore: []
                                 },
-                                '/Common/Shared/Service_Address-1.1.1.10': {
+                                '/Common/Shared/Service_Address-192.0.2.10': {
                                     command: 'ltm virtual-address',
                                     properties: {
-                                        address: '1.1.1.10',
+                                        address: '192.0.2.10',
                                         arp: 'enabled',
                                         'icmp-echo': 'enabled',
                                         mask: '255.255.255.255',
@@ -1485,15 +1485,15 @@ describe('fetch', () => {
                 commonConfig = {
                     nodeList: [
                         {
-                            fullPath: '/Common/_auto_99.84.238.109',
+                            fullPath: '/Common/_auto_192.0.2.109',
                             partition: 'Common',
                             ephemeral: true,
                             commonNode: true,
                             kind: 'tm:ltm:node:nodestate',
-                            name: '_auto_99.84.238.109',
+                            name: '_auto_192.0.2.109',
                             generation: 104345,
-                            selfLink: 'https://localhost/mgmt/tm/ltm/node/~Common~_auto_99.84.238.109?ver=14.1.4.5',
-                            address: '99.84.238.109',
+                            selfLink: 'https://localhost/mgmt/tm/ltm/node/~Common~_auto_192.0.2.109?ver=14.1.4',
+                            address: '192.0.2.109',
                             connectionLimit: 0,
                             dynamicRatio: 1,
                             fqdn: {
@@ -1510,7 +1510,7 @@ describe('fetch', () => {
                             session: 'user-enabled',
                             state: 'unchecked',
                             domain: 'www.f5.com',
-                            key: '99.84.238.109'
+                            key: '192.0.2.109'
                         }
                     ],
                     virtualAddressList: []
@@ -1747,7 +1747,7 @@ describe('fetch', () => {
                         command: 'security firewall address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             'address-lists': {},
                             fqdns: {},
@@ -1782,7 +1782,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -1817,7 +1817,7 @@ describe('fetch', () => {
                         command: 'security firewall address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             fqdns: {},
                             geo: { 'TR:Istanbul': {} },
@@ -1850,7 +1850,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -1875,7 +1875,7 @@ describe('fetch', () => {
                         command: 'net address-list',
                         properties: {
                             addresses: {
-                                '198.51.100.0/24': {}
+                                '192.0.2.20/30': {}
                             },
                             'address-lists': {}
                         },
@@ -1908,7 +1908,7 @@ describe('fetch', () => {
                                         'testTenant/testApp/testAL',
                                         'properties',
                                         'addresses',
-                                        '198.51.100.0/24'
+                                        '192.0.2.20/30'
                                     ],
                                     lhs: {}
                                 },
@@ -3694,7 +3694,7 @@ describe('fetch', () => {
                 tags: ['tmsh'],
                 command: 'auth partition'
             }];
-            context.target.tmosVersion = '13.1.1.5.0.0.4';
+            context.target.tmosVersion = '13.1.1';
 
             const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
             assert.strictEqual(
@@ -4594,6 +4594,233 @@ describe('fetch', () => {
                     );
                 });
             });
+
+            describe('gtm server', () => {
+                beforeEach(() => {
+                    context.currentIndex = 0;
+                    context.tasks = [{ firstPassNoDelete: false }];
+                });
+
+                it('should use modify for gtm server updates', () => {
+                    desiredConfig = {
+                        '/Common/server1': {
+                            command: 'gtm server',
+                            properties: {
+                                'prober-preference': 'inherit',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': 'none',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.164': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            }
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'E',
+                            path: [
+                                '/Common/server1',
+                                'properties',
+                                'prober-preference'
+                            ],
+                            lhs: 'pool',
+                            rhs: 'inherit',
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: 'gtm server',
+                            rhsCommand: 'gtm server'
+                        },
+                        {
+                            kind: 'E',
+                            path: [
+                                '/Common/server1',
+                                'properties',
+                                'prober-pool'
+                            ],
+                            lhs: '/Common/prober1',
+                            rhs: 'none',
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server'
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(
+                        result.script.indexOf(
+                            'tmsh::modify gtm server /Common/server1 prober-preference inherit prober-fallback inherit prober-pool none'
+                        ),
+                        -1
+                    );
+                });
+
+                it('should use create for gtm server create', () => {
+                    desiredConfig = {
+                        '/Common/server1': {
+                            command: 'gtm server',
+                            properties: {
+                                metadata: {
+                                    as3: {
+                                        persist: 'true'
+                                    }
+                                },
+                                description: 'none',
+                                enabled: '',
+                                product: 'bigip',
+                                'prober-preference': 'inherit',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': 'none',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.164': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            },
+                            ignore: []
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'N',
+                            path: [
+                                '/Common/server1'
+                            ],
+                            rhs: {
+                                command: 'gtm server',
+                                properties: {
+                                    description: 'none',
+                                    enabled: '',
+                                    product: 'bigip',
+                                    'prober-preference': 'inherit',
+                                    'prober-fallback': 'inherit',
+                                    'prober-pool': 'none',
+                                    datacenter: '/Common/dc1',
+                                    devices: {
+                                        0: {
+                                            addresses: {
+                                                '10.20.164.164': {
+                                                    translation: 'none'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'virtual-servers': {},
+                                    'virtual-server-discovery': 'enabled-no-delete'
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: '',
+                            rhsCommand: 'gtm server'
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(result.script.indexOf('tmsh::create gtm server /Common/server1'), -1);
+                    assert.strictEqual(result.script.indexOf('tmsh::delete gtm server'), -1);
+                });
+
+                it('should use delete for creating one server and deleting another', () => {
+                    desiredConfig = {
+                        '/Common/server2': {
+                            command: 'gtm server',
+                            properties: {
+                                metadata: {
+                                    as3: {
+                                        persist: 'true'
+                                    }
+                                },
+                                description: 'none',
+                                enabled: true,
+                                product: 'bigip',
+                                'prober-preference': 'pool',
+                                'prober-fallback': 'inherit',
+                                'prober-pool': '/Common/prober2',
+                                monitor: '/Common/bigip',
+                                datacenter: '/Common/dc1',
+                                devices: {
+                                    0: {
+                                        addresses: {
+                                            '10.20.164.165': {
+                                                translation: 'none'
+                                            }
+                                        }
+                                    }
+                                },
+                                'virtual-servers': {},
+                                'virtual-server-discovery': 'enabled-no-delete'
+                            },
+                            ignore: []
+                        }
+                    };
+
+                    configDiff = [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/server1'
+                            ],
+                            lhs: {
+                                command: 'gtm server',
+                                properties: {
+                                    description: 'none',
+                                    enabled: true,
+                                    product: 'bigip',
+                                    'prober-preference': 'inherit',
+                                    'prober-fallback': 'inherit',
+                                    'prober-pool': 'none',
+                                    datacenter: '/Common/dc1',
+                                    devices: {
+                                        0: {
+                                            addresses: {
+                                                '10.20.164.164': {
+                                                    translation: 'none'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'virtual-servers': {},
+                                    'virtual-server-discovery': 'enabled-no-delete'
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm server',
+                            lhsCommand: 'gtm server',
+                            rhsCommand: ''
+                        }
+                    ];
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.notStrictEqual(result.script.indexOf('tmsh::delete gtm server /Common/server1'), -1);
+                });
+            });
         });
 
         describe('cleaning up nodes', () => {
@@ -4661,7 +4888,7 @@ describe('fetch', () => {
                 context.host.parser.nodelist = [
                     {
                         fullPath: '/tenant/node',
-                        key: '1.2.3.4'
+                        key: '192.0.2.4'
                     }
                 ];
                 const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
@@ -4970,7 +5197,7 @@ describe('fetch', () => {
                         name: 'testapp_pool',
                         partition: 'test',
                         membersReference: {
-                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0.6',
+                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0',
                             isSubcollection: true,
                             items: [
                                 {
@@ -4993,7 +5220,7 @@ describe('fetch', () => {
                         name: 'testapp_pool',
                         partition: 'test',
                         membersReference: {
-                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0.6',
+                            link: 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?ver=14.1.0',
                             isSubcollection: true,
                             items: [
                                 {
@@ -5013,7 +5240,7 @@ describe('fetch', () => {
                         kind: 'tm:auth:partition:partitionstate',
                         name: 'test',
                         fullPath: 'test',
-                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1.2'
+                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1'
                     },
                     {
                         kind: 'tm:sys:folder:folderstate',
@@ -5021,7 +5248,7 @@ describe('fetch', () => {
                         partition: 'test',
                         fullPath: '/test/test_w11',
                         generation: 26456,
-                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1.2',
+                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1',
                         deviceGroup: 'none',
                         hidden: 'false',
                         inheritedDevicegroup: 'true',
@@ -5029,7 +5256,7 @@ describe('fetch', () => {
                         noRefCheck: 'false',
                         trafficGroup: '/Common/traffic-group-1',
                         trafficGroupReference: {
-                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1.2'
+                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1'
                         }
                     }
                 ],
@@ -5038,7 +5265,7 @@ describe('fetch', () => {
                         kind: 'tm:auth:partition:partitionstate',
                         name: 'test',
                         fullPath: 'test',
-                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1.2'
+                        selfLink: 'https://localhost/mgmt/tm/auth/partition/test?ver=13.1.1'
                     },
                     {
                         kind: 'tm:sys:folder:folderstate',
@@ -5046,7 +5273,7 @@ describe('fetch', () => {
                         partition: 'test',
                         fullPath: '/test/test_w11',
                         generation: 26456,
-                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1.2',
+                        selfLink: 'https://localhost/mgmt/tm/sys/folder/~test~test_w11?ver=13.1.1',
                         deviceGroup: 'none',
                         hidden: 'false',
                         inheritedDevicegroup: 'true',
@@ -5054,7 +5281,7 @@ describe('fetch', () => {
                         noRefCheck: 'false',
                         trafficGroup: '/Common/traffic-group-1',
                         trafficGroupReference: {
-                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1.2'
+                            link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=13.1.1'
                         }
                     }
                 ]
@@ -5172,7 +5399,7 @@ describe('fetch', () => {
 
         it('should return a configuration object with tenant, app and pool', () => {
             const tenantId = 'My_tenant';
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
             context.control = {
                 host: 'localhost'
             };
@@ -5205,15 +5432,17 @@ describe('fetch', () => {
                 updateMode: 'selective'
             };
 
-            const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-            assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
-            assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+            return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
+                    assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                });
         });
 
         it('should process snat translations with snat pools', () => {
-            context.target.tmosVersion = '14.1.0.3.0.0.6';
+            context.target.tmosVersion = '14.1.0';
             context.control = {
                 host: 'localhost'
             };
@@ -5247,27 +5476,29 @@ describe('fetch', () => {
                 updateMode: 'selective'
             };
 
-            const desiredConfig = fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig);
-            assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
-            assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
-                '/Tenant/2001:db8::1': {},
-                '/Tenant/2001:db8::2': {}
-            });
+            return fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
+                    assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
+                        '/Tenant/2001:db8::1': {},
+                        '/Tenant/2001:db8::2': {}
+                    });
 
-            // auto generated snat-translation
-            let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
-            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-            assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
-            assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
+                    // auto generated snat-translation
+                    let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
+                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
+                    assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
 
-            // specified snat-translation
-            snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
-            assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-            assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
-            assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+                    // specified snat-translation
+                    snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
+                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
+                    assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
 
-            // snat-related items should no longer remain in context.request.postProcessing array
-            assert.isEmpty(context.request.postProcessing);
+                    // snat-related items should no longer remain in context.request.postProcessing array
+                    assert.isEmpty(context.request.postProcessing);
+                });
         });
 
         describe('.updateDesiredForCommonNodes', () => {
@@ -5298,7 +5529,7 @@ describe('fetch', () => {
             });
 
             it('should delete node config if pre-existing node exists in Common with no matching metadata', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5324,7 +5555,7 @@ describe('fetch', () => {
             });
 
             it('should add ref metadata to node config if node exists in Common', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5338,15 +5569,17 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getPoolDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
-                    { references: { value: 1 } }
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
+                            { references: { value: 1 } }
+                        );
+                    });
             });
 
             it('should add new Common node to nodelist', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5356,37 +5589,39 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getPoolDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
-                    { references: { value: 0 } }
-                );
-                assert.deepStrictEqual(
-                    commonConfig.nodeList,
-                    [
-                        {
-                            fullPath: '/Common/10.10.0.10',
-                            partition: 'Common'
-                        },
-                        {
-                            fullPath: '/Common/192.0.2.10%100',
-                            partition: 'Common',
-                            ephemeral: false,
-                            metadata: [{
-                                name: 'references',
-                                persist: true,
-                                value: 0
-                            }],
-                            domain: '',
-                            key: '192.0.2.10%100',
-                            commonNode: true
-                        }
-                    ]
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/192.0.2.10%100'].properties.metadata,
+                            { references: { value: 0 } }
+                        );
+                        assert.deepStrictEqual(
+                            commonConfig.nodeList,
+                            [
+                                {
+                                    fullPath: '/Common/10.10.0.10',
+                                    partition: 'Common'
+                                },
+                                {
+                                    fullPath: '/Common/192.0.2.10%100',
+                                    partition: 'Common',
+                                    ephemeral: false,
+                                    metadata: [{
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }],
+                                    domain: '',
+                                    key: '192.0.2.10%100',
+                                    commonNode: true
+                                }
+                            ]
+                        );
+                    });
             });
 
             it('should handle fqdn nodes', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5419,45 +5654,47 @@ describe('fetch', () => {
                         enable: true
                     }
                 };
-                const desiredConfig = fetch.getDesiredConfig(context, 'My_tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/node-www.f5.com'].properties.fqdn,
-                    {
-                        autopopulate: 'enabled',
-                        tmName: 'www.f5.com',
-                        interval: 'ttl'
-                    }
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/node-www.f5.com'].properties.metadata,
-                    {
-                        references: {
-                            value: 0
-                        },
-                        fqdnPrefix: {
-                            value: 'node-'
-                        }
-                    }
-                );
-                assert.strictEqual(commonConfig.nodeList.length, 1);
-                assert.deepStrictEqual(
-                    commonConfig.nodeList[0],
-                    {
-                        fullPath: '/Common/node-www.f5.com',
-                        partition: 'Common',
-                        ephemeral: false,
-                        metadata: [
+                return fetch.getDesiredConfig(context, 'My_tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/node-www.f5.com'].properties.fqdn,
                             {
-                                name: 'references',
-                                persist: true,
-                                value: 0
+                                autopopulate: 'enabled',
+                                tmName: 'www.f5.com',
+                                interval: 'ttl'
                             }
-                        ],
-                        domain: '',
-                        key: 'node-www.f5.com',
-                        commonNode: true
-                    }
-                );
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/node-www.f5.com'].properties.metadata,
+                            {
+                                references: {
+                                    value: 0
+                                },
+                                fqdnPrefix: {
+                                    value: 'node-'
+                                }
+                            }
+                        );
+                        assert.strictEqual(commonConfig.nodeList.length, 1);
+                        assert.deepStrictEqual(
+                            commonConfig.nodeList[0],
+                            {
+                                fullPath: '/Common/node-www.f5.com',
+                                partition: 'Common',
+                                ephemeral: false,
+                                metadata: [
+                                    {
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }
+                                ],
+                                domain: '',
+                                key: 'node-www.f5.com',
+                                commonNode: true
+                            }
+                        );
+                    });
             });
         });
 
@@ -5485,7 +5722,7 @@ describe('fetch', () => {
             });
 
             it('should delete virtual address config if pre-existing virtual address exists in Common with no matching metadata', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5515,7 +5752,7 @@ describe('fetch', () => {
             });
 
             it('should add ref metadata to virtual address config if virtual address exists in Common', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5531,15 +5768,17 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getServiceDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
-                    { references: { value: 1 } }
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
+                            { references: { value: 1 } }
+                        );
+                    });
             });
 
             it('should add new Common virtual address to virtualAddressList', () => {
-                context.target.tmosVersion = '14.1.0.3.0.0.6';
+                context.target.tmosVersion = '14.1.0';
                 context.control = {
                     host: 'localhost'
                 };
@@ -5550,32 +5789,34 @@ describe('fetch', () => {
                 }];
                 const tenantId = 'My_tenant';
                 const declaration = getServiceDecl(tenantId, ['192.0.2.10']);
-                const desiredConfig = fetch.getDesiredConfig(context, tenantId, declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
-                    { references: { value: 0 } }
-                );
-                assert.deepStrictEqual(
-                    commonConfig.virtualAddressList,
-                    [
-                        {
-                            fullPath: '/Common/10.10.0.10',
-                            address: '10.10.0.10',
-                            partition: 'Common'
-                        },
-                        {
-                            fullPath: '/Common/192.0.2.10',
-                            address: '192.0.2.10',
-                            partition: 'Common',
-                            metadata: [{
-                                name: 'references',
-                                persist: true,
-                                value: 0
-                            }],
-                            commonAddress: true
-                        }
-                    ]
-                );
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/Common/Service_Address-192.0.2.10'].properties.metadata,
+                            { references: { value: 0 } }
+                        );
+                        assert.deepStrictEqual(
+                            commonConfig.virtualAddressList,
+                            [
+                                {
+                                    fullPath: '/Common/10.10.0.10',
+                                    address: '10.10.0.10',
+                                    partition: 'Common'
+                                },
+                                {
+                                    fullPath: '/Common/192.0.2.10',
+                                    address: '192.0.2.10',
+                                    partition: 'Common',
+                                    metadata: [{
+                                        name: 'references',
+                                        persist: true,
+                                        value: 0
+                                    }],
+                                    commonAddress: true
+                                }
+                            ]
+                        );
+                    });
             });
         });
 
@@ -5648,37 +5889,40 @@ describe('fetch', () => {
                 ];
             });
 
-            it('should add updates to context.request.postProcessing', () => {
-                const desiredConfig = fetch.getDesiredConfig(context, 'Common', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    context.request.postProcessing,
-                    updates
-                );
-                assert.deepStrictEqual(
-                    desiredConfig,
-                    {
-                        '/Common/Shared/': {
-                            command: 'sys folder',
-                            properties: {},
-                            ignore: []
+            it('should add updates to context.request.postProcessing', () => fetch
+                .getDesiredConfig(context, 'Common', declaration, commonConfig)
+                .then((desiredConfig) => {
+                    assert.deepStrictEqual(
+                        context.request.postProcessing,
+                        updates
+                    );
+                    assert.deepStrictEqual(
+                        desiredConfig,
+                        {
+                            '/Common/Shared/': {
+                                command: 'sys folder',
+                                properties: {},
+                                ignore: []
+                            }
                         }
-                    }
-                );
-            });
+                    );
+                }));
 
             it('should update certificate paths', () => {
                 context.request.postProcessing = updates;
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
-                    {
-                        set0: {
-                            cert: '/Common/default.crt',
-                            key: '/Common/default.key',
-                            chain: 'none'
-                        }
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
+                            {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: 'none'
+                                }
+                            }
+                        );
+                    });
             });
 
             it('should add a key based on cert name if none is specified', () => {
@@ -5690,17 +5934,19 @@ describe('fetch', () => {
                     }
                 ];
                 context.request.postProcessing = updates;
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
-                    {
-                        set0: {
-                            cert: '/Common/newCert.crt',
-                            key: '/Common/newCert.key',
-                            chain: 'none'
-                        }
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/tlsServer'].properties['cert-key-chain'],
+                            {
+                                set0: {
+                                    cert: '/Common/newCert.crt',
+                                    key: '/Common/newCert.key',
+                                    chain: 'none'
+                                }
+                            }
+                        );
+                    });
             });
 
             it('should update aliases of GSLB_Domain objects that share domainName', () => {
@@ -5720,25 +5966,27 @@ describe('fetch', () => {
                         domainName: '/tenant/app/domain'
                     }
                 ];
-                const desiredConfig = fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig);
-                assert.deepStrictEqual(
-                    context.request.postProcessing,
-                    updates
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/domain a'].properties.aliases,
-                    {
-                        'alias1.com': {},
-                        'alias2.com': {}
-                    }
-                );
-                assert.deepStrictEqual(
-                    desiredConfig['/tenant/app/domain aaaa'].properties.aliases,
-                    {
-                        'alias1.com': {},
-                        'alias2.com': {}
-                    }
-                );
+                return fetch.getDesiredConfig(context, 'tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.deepStrictEqual(
+                            context.request.postProcessing,
+                            updates
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/domain a'].properties.aliases,
+                            {
+                                'alias1.com': {},
+                                'alias2.com': {}
+                            }
+                        );
+                        assert.deepStrictEqual(
+                            desiredConfig['/tenant/app/domain aaaa'].properties.aliases,
+                            {
+                                'alias1.com': {},
+                                'alias2.com': {}
+                            }
+                        );
+                    });
             });
         });
     });
