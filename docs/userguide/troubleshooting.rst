@@ -269,6 +269,18 @@ If you have an iRule in an AS3 declaration which is returning 422 errors, there 
 - If the error message contains **[braces are required around the expression]** where the expression appears to be the entire iRule, this may be because of a valid UTF-8 or Unicode character in the iRule that iControl REST does not parse correctly.  Try finding and removing or replacing any such characters.  This is documented in |K44543159|.
 
 
+|
+
+.. _bigiq-downgrade:
+
+Why is my iRule failing in an AS3 declaration when I know it is valid?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you have an iRule in an AS3 declaration which is returning 422 errors, there are two things to look for.
+
+- If the error message is **HTML Tag-like Content in the Request URL/Body** look for special characters in iRule comments and remove or replace them.  
+
+- If the error message contains **[braces are required around the expression]** where the expression appears to be the entire iRule, this may be because of a valid UTF-8 or Unicode character in the iRule that iControl REST does not parse correctly.  Try finding and removing or replacing any such characters.  This is documented in |K44543159|.
+
 
 .. |br| raw:: html
 
