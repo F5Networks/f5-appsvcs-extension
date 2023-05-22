@@ -7,6 +7,8 @@ Using BIG-IP AS3 with BIG-IQ
 
    BIG-IP AS3 is available in BIG-IQ v6.1.0 and later
 
+.. WARNING:: AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**. If the AS3 version is 3.42 or later, you must downgrade your AS3 version to 3.41 (or earlier) using the instructions found at: https://my.f5.com/manage/s/article/K54909607#upgrade. You can get AS3 version 3.41 from https://github.com/F5Networks/f5-appsvcs-extension/releases/tag/v3.41.0.  
+
 BIG-IQ v6.1.0 adds BIG-IP AS3 support, which includes BIG-IP AS3 v3.7.0.  When you use BIG-IP AS3 on BIG-IQ, declarations you send through BIG-IQ enable applications to appear in the UI of BIG-IQ (Applications tab > Applications menu), with support for BIG-IQ's analytics and RBAC capabilities.  For information on viewing applications and analytics in the BIG-IQ UI, see the |bigiqui| documentation. You can also see our |bigiqvideo|.
 
 .. IMPORTANT:: If your BIG-IP does not have BIG-IP AS3 installed or if an older version of BIG-IP AS3 is installed, BIG-IQ installs its version of BIG-IP AS3 onto the target BIG-IP system.  This means if you have a BIG-IP running an LTS version of BIG-IP AS3, and use that BIG-IP as a target for BIG-IQ, the LTS version will be overwritten by the BIG-IP AS3 version on BIG-IQ.
