@@ -215,7 +215,7 @@ If you do not use shareNodes or have shareNodes set to **false** (the default), 
 
 .. NOTE:: You must have the **shareNodes** property set to **true** in your original declaration.  If you did not, add it to the original declaration and re-POST before attempting to post a new declaration with the node.
 
-.. WARNING:: If you POST a declaration with **shareNodes** set to **true**, and then later update the same declaration with **shareNodes** set to **false**, the declaration returns Success, however BIG-IP AS3 does not move the nodes, and they remain in /Common. To change this behavior, first DELETE the original declaration, and then re-POST the declaration with shareNodes set to **false**.
+.. WARNING:: If you POST a declaration with **shareNodes** set to **true**, and then later update the same declaration with **shareNodes** set to **false**, the declaration returns Success, however BIG-IP AS3 does not move the nodes, and they remain in /Common. To change this behavior, first DELETE the original declaration, and then re-POST the declaration with shareNodes set to **false**. |br| **Shared FQDN nodes MUST be deleted manually.**
 
 
 There are two declarations in this example, the original declaration and a new declaration.
