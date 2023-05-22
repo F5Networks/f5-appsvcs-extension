@@ -3,12 +3,36 @@
 image: $DOCKER_URL/node:4.8.0
 
 stages:
+  - update
+  - commands
+  - atg-shared-checks
+  - schema
+  - lint
+  - test
   - build
+  - deploy
+  - integration test
+  - teardown
   - post build
   - docs
 
 variables:
+  BIGIP_IMAGE:
+    description: The name of the BIG-IP image to use for integration testing. Names are specific to the deploy environment.
+  DO_DOWNLOAD_DIR: do_rpm
   DOCS_BUILD_DIR: "docs/_build/html"
+  F5_PERF_TRACING_ENABLED:
+    description: Send performance traces to Jaeger
+    value: "false"
+    options:
+      - "true"
+      - "false"
+  FORCE_INTEGRATION_TEST:
+    description: Force a run of integration testing. Otherwise, decision is based on pipeline type.
+    value: "false"
+    options:
+      - "true"
+      - "false"
   GIT_DEPTH: "10"
   IMAGE_NAME: f5-as3-container
   RPM_PACKAGE_URL:
@@ -52,6 +76,22 @@ include:
   - project: automation-toolchain/atg-shared-templates
     file: security/base.gitlab-ci.yml
 
+update_autotool_deps:
+  stage: update
+  rules:
+    - if: '$UPDATE_DEPS =~ /true/i'
+  needs: []
+  image: $DOCKER_URL/node:14
+  variables:
+    UPDATE_BRANCH_NAME: update_autotool_deps
+  script:
+    - . ./scripts/dev/update-as3-deps.sh
+    - >
+      if [ "$AUTOTOOL_DIFF" = "true" ]; then
+        git push -f origin ${UPDATE_BRANCH_NAME}
+        node ./scripts/dev/createMR.js
+      fi
+  tags: [cm-official-docker-executor]
 
 schema:
   image: $DOCKER_URL/node:10
@@ -610,7 +650,7 @@ create_docs:
     # Runs the grammar check on everything except the /docs/drafts directory
     - vale --glob='*.rst' .
     - echo "Checking links"
-    # - make linkcheck
+    - make linkcheck
 
     # build developer documentation (optional)
     - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
@@ -627,6 +667,36 @@ create_docs:
       - contributing
       - examples/as3.examples.collection.json
 
+# Deploy docs to Pages for review
+pages:
+  stage: docs
+  allow_failure: true
+  environment:
+    name: staging
+    url: https://${CI_PROJECT_NAMESPACE}.${PAGES_DOMAIN}/${CI_PROJECT_NAME}/
+  tags:
+    - cm-official-docker-executor
+  needs:
+    - create_docs
+    - coverage
+  script:
+    - PUBLIC_DIR='./public'
+    - PUBLIC_DOCS=${PUBLIC_DIR}/public-docs
+    - COVERAGE_DOCS=${PUBLIC_DIR}/coverage-docs
+    - mkdir -p ${PUBLIC_DIR}
+    - mkdir -p ${PUBLIC_DOCS}
+    - mkdir -p ${COVERAGE_DOCS}
+    - cp docs/index.html ${PUBLIC_DIR}/index.html
+    - cp -R docs/_build/html/* ${PUBLIC_DOCS}
+    - cp -R coverage/* ${COVERAGE_DOCS}
+  artifacts:
+    paths:
+      - public
+  only:
+    - develop
+    - doc-release-branch
+    - joes-as3-wip
+    - /^atgs-.*$/i
 
 # Publish docs to clouddocs.f5.com
 docs_to_production:
