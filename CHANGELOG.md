@@ -1,6 +1,20 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.46.0
+
+### Added
+- AUTOTOOL-3821: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for port lists
+
+### Fixed
+- AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
+- AUTOTOOL-3718: ([GitHub Issue 704](https://github.com/F5Networks/f5-appsvcs-extension/issues/704)): Handling of line continuation character in iRule
+- AUTOTOOL-3831: Fix issue with running a DELETE after a dry-run on BIG-IQ
+
+### Changed
+
+### Removed
+
 ## 3.45.0
 
 ### Added

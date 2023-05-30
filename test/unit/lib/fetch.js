@@ -3906,6 +3906,303 @@ describe('fetch', () => {
                     'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule rules modify \\{ theRule \\{ source \\{ address-lists none port-lists none \\} destination \\{ address-lists none port-lists none \\} \\} \\}\ntmsh::begin_transaction\ntmsh::delete security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule\ntmsh::modify auth partition TEST_Firewall_Rule_List description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ncatch { tmsh::modify security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule rules modify \\{ theRule \\{ source \\{ address-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/addList \\} port-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/portList \\} \\} destination \\{ address-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/addList \\} port-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/portList \\} \\} \\} \\} } e\n}}\n}'
                 );
             });
+
+            it('should delete virtuals with transaction-matching-criteria outside of transaction', () => {
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/portList/': {
+                        command: 'auth partition',
+                        properties: {}
+                    },
+                    '/portList/Application/tcpService_VS_TMC_OBJ': {
+                        command: 'ltm traffic-matching-criteria',
+                        properties: {}
+                    },
+                    '/portList/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            'traffic-matching-criteria': '/portList/Application/tcpService_VS_TMC_OBJ'
+                        }
+                    },
+                    '/portList/Service_Address-192.0.2.1': {
+                        command: 'ltm virtual-address',
+                        properties: {}
+                    },
+                    '/portList/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    },
+                    '/portList/Application/firewallPortList1': {
+                        command: 'security firewall port-list',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/'
+                        ],
+                        lhs: {
+                            command: 'auth partition',
+                            properties: {}
+                        },
+                        command: 'auth partition'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/tcpService_VS_TMC_OBJ'
+                        ],
+                        lhs: {
+                            command: 'ltm traffic-matching-criteria',
+                            properties: {}
+                        },
+                        command: 'ltm traffic-matching-criteria'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/tcpService'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {}
+                        },
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Service_Address-192.0.2.1'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {}
+                        },
+                        command: 'ltm virtual-address'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/'
+                        ],
+                        lhs: {
+                            command: 'sys folder',
+                            properties: {}
+                        },
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/firewallPortList1'
+                        ],
+                        lhs: {
+                            command: 'security firewall port-list',
+                            properties: {}
+                        },
+                        command: 'security firewall port-list'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::delete ltm virtual /portList/Application/tcpService\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm traffic-matching-criteria /portList/Application/tcpService_VS_TMC_OBJ\n\n\ntmsh::delete security firewall port-list /portList/Application/firewallPortList1\ntmsh::commit_transaction\ntmsh::delete ltm virtual-address /portList/192.0.2.1\ntmsh::delete sys folder /portList/Application/\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
+            });
+
+            describe('no traffic-matching-criteria', () => {
+                let desiredConfig;
+                let currentConfig;
+                let configDiff;
+
+                beforeEach(() => {
+                    desiredConfig = {};
+                    currentConfig = {
+                        '/portList/': {
+                            command: 'auth partition',
+                            properties: {}
+                        },
+                        '/portList/Application/': {
+                            command: 'sys folder',
+                            properties: {}
+                        }
+                    };
+                    configDiff = [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/'
+                            ],
+                            lhs: {
+                                command: 'auth partition',
+                                properties: {}
+                            },
+                            command: 'auth partition'
+                        },
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/'
+                            ],
+                            lhs: {
+                                command: 'sys folder',
+                                properties: {}
+                            },
+                            command: 'sys folder'
+                        }
+                    ];
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/192.0.2.1:80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-192.0.2.1'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/192.0.2.1:80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-192.0.2.1'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/192.0.2.1\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction with any', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/any:80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-any'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: 'any'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/any:80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-any'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction with any6', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/any6.80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-any6'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: 'any6'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/any6.80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-any6'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any6\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+            });
         });
 
         describe('pem policy', () => {
@@ -3961,6 +4258,7 @@ describe('fetch', () => {
                 );
             });
         });
+
         describe('sys log-config publisher', () => {
             it('should properly modify the log publisher to empty destinations', () => {
                 const desiredConfig = {
@@ -4903,7 +5201,7 @@ describe('fetch', () => {
                     + 'tmsh::cd /tenant\n'
                     + 'foreach {node} [tmsh::get_config /ltm node] {\n'
                     + '  tmsh::delete ltm node [tmsh::get_name $node]\n}\n'
-                    + 'tmsh::cd /\n'
+                    + 'tmsh::cd /Common\n'
                     + 'tmsh::delete sys folder /tenant/app/\n'
                     + 'tmsh::delete sys folder /tenant/\n'
                     + '} err] } {\ncatch { tmsh::cancel_transaction } e\n'

@@ -216,6 +216,10 @@
             "endpoint": "/mgmt/tm/ltm/snat-translation"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/traffic-matching-criteria",
+            "minimumVersion": "14.1"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/virtual",
             "expand": true
         },

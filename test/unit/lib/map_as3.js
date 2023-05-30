@@ -1855,6 +1855,17 @@ describe('map_as3', () => {
                 assert.strictEqual(results.configs[0].properties['api-anonymous'], expectedIRule);
             });
 
+            it('should merge line continuations', () => {
+                const item = {
+                    class: ruleClass.name,
+                    iRule: 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock \\\n    seconds].  Request headers were [HTTP::header names]. \\\n    Method was [HTTP::method]"\n\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" \\\n        "/xyz/"} [HTTP::uri]]\n    }\n}'
+                };
+                const results = translate[ruleClass.name](defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(
+                    results.configs[0].properties['api-anonymous'], 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock seconds].  Request headers were [HTTP::header names]. Method was [HTTP::method]"\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" "/xyz/"} [HTTP::uri]]\n    }\n}'
+                );
+            });
+
             it('should add to ignore when ignore changes is set to true', () => {
                 const item = {
                     class: ruleClass.name,
@@ -2921,6 +2932,28 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+
+        describe('portList', () => {
+            it('should map portList to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.portList = {
+                    use: 'firewallPortList'
+                };
+                declaration.tenantId.appId.itemId.firewallPortList = {
+                    class: 'Firewall_Port_List',
+                    ports: [
+                        '1-999'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual['traffic-matching-criteria'].destination, undefined);
+                assert.strictEqual(virtual['traffic-matching-criteria'].source, undefined);
+            });
         });
 
         describe('maximumBandwidth', () => {

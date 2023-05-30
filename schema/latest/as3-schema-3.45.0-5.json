@@ -740,7 +740,7 @@
               "Service_Address",
               "SNAT_Pool",
               "SNAT_Translation",
-              "IRule",
+              "iRule",
               "WAF_Policy",
               "Persist",
               "Pool",
@@ -974,7 +974,7 @@
               }
             },
             "then": {
-              "$ref": "#/definitions/IRule"
+              "$ref": "#/definitions/iRule"
             }
           },
           {
@@ -4803,7 +4803,7 @@
         "address"
       ]
     },
-    "IRule": {
+    "iRule": {
       "title": "iRule",
       "description": "An iRule",
       "type": "object",
@@ -4826,7 +4826,7 @@
           "default": true
         },
         "iRule": {
-          "$ref": "#/definitions/IRule_Core"
+          "$ref": "#/definitions/iRule_Core"
         }
       },
       "additionalProperties": false,
@@ -4835,7 +4835,7 @@
         "iRule"
       ]
     },
-    "IRule_Core": {
+    "iRule_Core": {
       "title": "iRule Core definition",
       "description": "Reference to an iRule or text of an iRule",
       "allOf": [
@@ -18211,7 +18211,7 @@
           "default": true
         },
         "iRule": {
-          "$ref": "#/definitions/IRule_Core"
+          "$ref": "#/definitions/iRule_Core"
         }
       },
       "additionalProperties": false,
@@ -26566,7 +26566,7 @@
           "default": true
         },
         "iRule": {
-          "$ref": "#/definitions/IRule_Core"
+          "$ref": "#/definitions/iRule_Core"
         }
       },
       "additionalProperties": false,

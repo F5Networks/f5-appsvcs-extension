@@ -192,7 +192,7 @@ const createIRule = function createIRule(config) {
             .trim()
             .replace(/\r\n/g, '\n') // unix-style line endings
             .replace(/\s+\n/g, '\n') // trim whitespace on every line
-            .replace(/\\\n/g, '\n') // remove continuation characters
+            .replace(/\\\n[ \t]+/g, '') // remove continuation characters
             .replace(/\n\n/g, '\n \n'); // preserve double newlines
     }
     return { configs: [config] };
@@ -2626,6 +2626,31 @@ const translate = {
             item.mask = msk;
 
             item.remark = item.remark || appId;
+
+            if (!util.versionLessThan(context.target.tmosVersion, '14.1') && item.portList) {
+                const source = (arrUtil.ensureArray(addr)[1])
+                    ? util.minimizeIP(arrUtil.ensureArray(addr)[1])
+                    : '0.0.0.0';
+
+                const tmcObj = {
+                    destinationAddressInline: `${destIp}/${msk}`,
+                    destinationPortList: bigipPath(item, 'portList'),
+                    protocol: item.layer4,
+                    sourceAddressInline: source
+                };
+
+                item.trafficMatchingCriteria = util.mcpPath(tenantId, appId, `${alias}_VS_TMC_OBJ`);
+                delete item.destination;
+                delete item.source;
+
+                configs.push(normalize.actionableMcp(
+                    context,
+                    tmcObj,
+                    'ltm traffic-matching-criteria',
+                    util.mcpPath(tenantId, appId, `${alias}_VS_TMC_OBJ`)
+                ));
+            }
+
             configs.push(normalize.actionableMcp(context, item, 'ltm virtual', util.mcpPath(tenantId, appId, alias)));
         });
         return { configs };

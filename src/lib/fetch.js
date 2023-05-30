@@ -1760,6 +1760,75 @@ const updateWildcardMonitorCommands = function (trans) {
     return updatedTrans;
 };
 
+// To handle traffic-matching-criteria, we have to do things outside the transaction
+// However we can't know during that processing if traffic-matching-criteria was involved
+// so we need to move things back into the transaction here if necessary
+const updatePostTransVirtuals = function (trans, postTrans, destinationsDeletedInTrans) {
+    const deleteVirtualAddressPrefix = 'tmsh::delete ltm virtual-address';
+    const createVirtualAddressPrefix = 'tmsh::create ltm virtual-address';
+    postTrans.forEach((commandList) => {
+        if (Array.isArray(commandList)) {
+            for (let i = commandList.length - 1; i >= 0; i -= 1) {
+                const command = commandList[i];
+                if (command.startsWith(deleteVirtualAddressPrefix)) {
+                    const address = command.substring(deleteVirtualAddressPrefix.length + 1);
+                    const addressWithoutTenant = address.split('/')[2];
+                    if (destinationsDeletedInTrans.indexOf(addressWithoutTenant) > -1) {
+                        trans.push(command);
+                        commandList.splice(i, 1);
+                    } else {
+                        // We might be moving the virtual address from one tenant to another so
+                        // we also need to check the transaction commands to see if we are creating
+                        // the same address there
+                        const isRecreate = trans.find((transCommand) => {
+                            if (transCommand.startsWith(createVirtualAddressPrefix)) {
+                                const createAddress = transCommand.substring(createVirtualAddressPrefix.length + 1);
+                                let createAddressWithoutTenant = createAddress.split('/')[2];
+                                // trim off the rest of the create command
+                                createAddressWithoutTenant = createAddressWithoutTenant.split(' ')[0];
+                                return addressWithoutTenant === createAddressWithoutTenant;
+                            }
+                            return false;
+                        });
+                        if (isRecreate) {
+                            trans.push(command);
+                            commandList.splice(i, 1);
+                        }
+                    }
+                }
+            }
+        }
+    });
+};
+
+/**
+ * Determines if a virtual's destination matches a virtualAddress
+ *
+ * @param {String} destination - Full virtual server destination (has tenant and port). Might be an address or name.
+ * @param {String} virtualAddress - virtualAddress address property (does not have port)
+ * @param {String} virtualAddressName - Full name of the virtualAddress (had tenant)
+ */
+const doesDestinationMatchVirtualAddress = function (destination, virtualAddress, virtualAddressName) {
+    const lastDot = destination.lastIndexOf('.');
+    const lastColon = destination.lastIndexOf(':');
+    const portIndex = lastDot > lastColon ? lastDot : lastColon;
+
+    const destinationWithoutPort = destination.substring(0, portIndex);
+    const destinationWithoutTenantOrPort = destinationWithoutPort.split('/')[2];
+    let destinationAddress = destinationWithoutTenantOrPort;
+    if (destinationAddress.startsWith('any6')) {
+        destinationAddress = destinationAddress.replace('any6', '::');
+    } else if (destinationAddress.startsWith('any')) {
+        destinationAddress = destinationAddress.replace('any', '0.0.0.0');
+    }
+
+    if (ipUtil.isIPv4(destinationAddress) || ipUtil.isIPv6(destinationAddress)) {
+        return destinationWithoutTenantOrPort === virtualAddress;
+    }
+
+    return destinationWithoutPort === virtualAddressName;
+};
+
 /**
  * Translate config differences into tmsh actions
  *
@@ -1811,6 +1880,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         }
         return false;
     }
+
+    const destinationsDeletedInTrans = [];
 
     configDiff.forEach((diff) => {
         const partition = diff.path[0].split('/')[1];
@@ -2026,11 +2097,68 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         && diff.path[2] === 'address') {
                         // If editing a virtual-address address, throw error
                         throw new Error(`The Service Address virtualAddress property cannot be modified. Please delete ${diff.path[0]} and recreate it.`);
+                    } else if (diffUpdates.commands.includes('delete ltm virtual ')
+                        && diffUpdates.commands.includes('traffic-matching-criteria')) {
+                        // handle modifying Service when using traffic-matching-criteria
+                        // trailing space excludes 'virtual-address'
+                        const commands = diffUpdates.commands.split('\n');
+                        commands.forEach((command, i) => {
+                            if (command.includes('delete ltm virtual ')) {
+                                preTrans.push(commands.splice(i, 1));
+                            }
+                        });
+                        trans.push(commands.join('\n'));
                     } else {
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);
                     }
                 // handle delete
+                } else if (diffUpdates.commands.includes('delete ltm virtual ')) {
+                    const virtualConfig = currentConfig[diff.path[0]];
+                    const tmc = util.getDeepValue(virtualConfig, 'properties.traffic-matching-criteria');
+                    if (tmc) {
+                        // handle deleting Service (required for traffic-matching-criteria)
+                        const commands = diffUpdates.commands.split('\n');
+                        commands.forEach((command, i) => {
+                            if (command.includes('delete ltm virtual ')) {
+                                preTrans.push(commands.splice(i, 1));
+                            }
+                        });
+                        trans.push(commands.join('\n'));
+                    } else {
+                        trans.push(diffUpdates.commands);
+                        if (virtualConfig) {
+                            // destination is like '/Tenant/address:port'. We need to remove
+                            // the tenant and port
+                            const destination = virtualConfig.properties.destination;
+                            const name = Object.keys(currentConfig).find((key) => {
+                                const item = currentConfig[key];
+                                if (item.command === 'ltm virtual-address') {
+                                    // If destination is an IP, check the address
+                                    // Otherwise, check the name
+                                    return doesDestinationMatchVirtualAddress(
+                                        destination,
+                                        item.properties.address,
+                                        key.replace('Service_Address-', '')
+                                    );
+                                }
+                                return false;
+                            });
+                            if (name) {
+                                const nameWithoutTenant = name.split('/')[2];
+                                destinationsDeletedInTrans.push(nameWithoutTenant.replace('Service_Address-', ''));
+                            }
+                        }
+                    }
+                } else if (diffUpdates.commands.includes('delete ltm virtual-address')) {
+                    const commands = diffUpdates.commands.split('\n');
+                    // handle modifying Service.virtualAddresses (required for traffic-matching-criteria)
+                    commands.forEach((command, i) => {
+                        if (command.includes('delete ltm virtual-address')) {
+                            postTrans.push(commands.splice(i, 1));
+                        }
+                    });
+                    trans.push(commands.join('\n'));
                 } else if (createFirstDeleteLast.indexOf(component) !== -1) {
                     // delete partition last
                     rollback.unshift(diffUpdates.commands);
@@ -2039,7 +2167,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         const removeNodes = `tmsh::cd /${partition}\n`
                         + 'foreach {node} [tmsh::get_config /ltm node] {\n'
                         + '  tmsh::delete ltm node [tmsh::get_name $node]\n}\n'
-                        + 'tmsh::cd /';
+                        + 'tmsh::cd /Common';
                         postTrans.push(removeNodes);
                     }
                 } else if (diffUpdates.commands.indexOf('exec ng_profile') > -1) {
@@ -2147,6 +2275,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     });
 
     trans = updateWildcardMonitorCommands(trans);
+    updatePostTransVirtuals(trans, postTrans, destinationsDeletedInTrans);
+
     updates.script = preamble.concat(preTrans, trans, commit);
     if (preTrans2.length > 0) {
         updates.script = updates.script.concat(preTrans2);

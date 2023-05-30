@@ -162,6 +162,103 @@ describe('DeclarationProvider', () => {
                     );
                 });
         });
+
+        describe('dryRun', () => {
+            it('should convert "controls.internalUse.action=dryRun" to controls.dryRun', () => {
+                const provider = new DeclarationProvider();
+
+                nock('http://localhost:8100')
+                    .get('/mgmt/cm/global/tenants')
+                    .reply(200, {
+                        items: [{
+                            name: 'tenantOne',
+                            body: {
+                                controls: {
+                                    class: 'Controls',
+                                    internalUse: {
+                                        action: 'dry-run'
+                                    }
+                                }
+                            }
+                        }]
+                    });
+
+                return Promise.resolve()
+                    .then(() => provider.getBigiqDeclaration(context))
+                    .then((result) => {
+                        assert.deepStrictEqual(
+                            result,
+                            {
+                                controls: {
+                                    class: 'Controls',
+                                    dryRun: true
+                                }
+                            }
+                        );
+                    });
+            });
+
+            it('should issue a warning if internalUse contains unexpected keys', () => {
+                const provider = new DeclarationProvider();
+                const logWarningSpy = sinon.stub(log, 'warning');
+
+                nock('http://localhost:8100')
+                    .get('/mgmt/cm/global/tenants')
+                    .reply(200, {
+                        items: [{
+                            name: 'tenantOne',
+                            body: {
+                                controls: {
+                                    class: 'Controls',
+                                    internalUse: {
+                                        action: 'dry-run',
+                                        hello: 'world'
+                                    }
+                                }
+                            }
+                        }]
+                    });
+
+                return Promise.resolve()
+                    .then(() => provider.getBigiqDeclaration(context))
+                    .then(() => {
+                        assert.strictEqual(
+                            logWarningSpy.args[0][0],
+                            'Unexpected properties in controls.internalUse: {"action":"dry-run","hello":"world"}'
+                        );
+                    });
+            });
+
+            it('should issue a warning if action is not dry-run', () => {
+                const provider = new DeclarationProvider();
+                const logWarningSpy = sinon.stub(log, 'warning');
+
+                nock('http://localhost:8100')
+                    .get('/mgmt/cm/global/tenants')
+                    .reply(200, {
+                        items: [{
+                            name: 'tenantOne',
+                            body: {
+                                controls: {
+                                    class: 'Controls',
+                                    internalUse: {
+                                        action: 'deploy'
+                                    }
+                                }
+                            }
+                        }]
+                    });
+
+                return Promise.resolve()
+                    .then(() => provider.getBigiqDeclaration(context))
+                    .then(() => {
+                        assert.strictEqual(
+                            logWarningSpy.args[0][0],
+                            'Unexpected action "deploy" in controls'
+                        );
+                    });
+            });
+        });
     });
 
     describe('.getBigipDeclaration', () => {

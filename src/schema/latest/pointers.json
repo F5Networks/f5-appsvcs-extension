@@ -226,6 +226,11 @@
         "tmshPath": "security firewall policy",
         "class": "Firewall_Policy"
     },
+    "Firewall_Port_List": {
+        "name": "firewall port list",
+        "tmsh path": "security firewall port-list",
+        "class": "Firewall_Port_List"
+    },
     "Firewall_Rule_List": {
         "name": "firewall rule list",
         "tmshPath": "security firewall rule-list",

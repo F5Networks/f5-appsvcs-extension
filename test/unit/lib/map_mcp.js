@@ -2712,6 +2712,37 @@ describe('map_mcp', () => {
                 );
             });
         });
+
+        describe('tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate', () => {
+            it('should map CIDR to mask', () => {
+                const obj = {
+                    kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                    fullPath: '/Tenant/Application/myTrafficMatchingCriteria',
+                    command: 'ltm traffic-matching-criteria',
+                    destinationAddressInline: '192.0.2.1/18'
+                };
+                defaultContext.target.tmosVersion = '14.1';
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                // gitleaks is fooled by the mask
+                assert.strictEqual(properties['destination-address-inline'], '192.0.2.1/255.255.192.0'); // gitleaks:allow
+            });
+        });
+
+        describe('tm:ltm:virtual:virtualstate', () => {
+            it('should delete source and destination if traffic-matching-criteria is used', () => {
+                const obj = {
+                    kind: 'tm:ltm:virtual:virtualstate',
+                    trafficMatchingCriteria: '/Tenant/Application/Service_VS_TMC_OBJ',
+                    source: 'mySource',
+                    destination: 'myDestination'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.strictEqual(properties.destination, undefined);
+                assert.strictEqual(properties.source, undefined);
+            });
+        });
     });
 
     describe('tm:ltm:snat-translation:snat-translationstate', () => {
