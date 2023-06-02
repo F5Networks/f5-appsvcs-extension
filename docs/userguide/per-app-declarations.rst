@@ -11,16 +11,56 @@ Similar to the tenant-based model, the per-application deployment model allows y
 Using a per-application declaration
 -----------------------------------
 
-In previous releases of BIG-IP AS3, AS3 supported 
-AS3 currently supports requests to
+Sending a per-application declaration is similar to a traditional declaration, but the per-application declaration uses a different URI path.  For traditional declarations to a specific tenant, AS3 supports requests to ``/appsvcs/declare/[<tenant>[,<tenant>,...]]``. The tenants in the path indicate which tenants in the declaration AS3 should look at. This means you can POST a declaration with several tenants but include one or more comma-separated tenants in the path. In this case AS3 will only create/modify the tenants in the path.
 
-/appsvcs/declare/[<tenant>[,<tenant>,...]]
+The per-application declaration allows all CRUD operations to a specific tenant and application in the URI path without specifying the tenant in the declaration.  
 
-The tenants in the path indicate which tenants in the declaration AS3 should look at. In other words, you can POST a declaration with several tenants but include one or more comma-separated tenants in the path. In this case AS3 will only create/modify the tenants in the path.
+The following is an example per-application declaration (note the lack of the Tenant class):
 
-This proposal is to add support to AS3 to allow all CRUD operations to a specific tenant and application in the URI path without specifying the tenant in the declaration.
+.. code-block:: json
+   
+   {
+        "Application1": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "pool": "pool"
+            },
+            "pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "192.0.2.10",
+                            "192.0.2.20"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
 
-/appsvcs/declare/<tenant>/applications/[<application>]
+
+
+POSTing a per-application
+`````````````````````````
+
+The URI path for POSTing a per-application declaration is ``/appsvcs/declare/<tenant>/applications``.  For example: ``HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` 
+
+
+
+Using GET to view applications
+``````````````````````````````
+
+
+There are two API paths you can use for per-application declarations:
+
+- ``/appsvcs/declare/<tenant>/applications`` <br> 
+- ``/appsvcs/declare/<tenant>/applications/[<application>]
 
 Adding applications to the path before the application name allows for more clarity should we later to decide to allow for further component specification by path. Meanwhile, not adding tenants before the tenant name maintains backwards compatibility with the currently supported URIs. Together, this also allows us to be sure that the user is meaning to do a per-app deployment and not simply wanting to restrict the tenants to those listed. 
 
@@ -74,4 +114,9 @@ Decision:
 
 For items in /Common/Shared we will need to determine how to clean these up - either through reference counting or examine how we do this today and see if it is applicable to per-app deployments. Need to look at both use pointers and bigip pointers. It may be acceptable to allow the user to manage this but we should see if we can do it in AS3 code.
 For items in /Tenant/Shared, it is up to the user to manage this. Shared will be treated no other than any other application.
+
+
+.. |br| raw:: html
+
+   <br />
 
