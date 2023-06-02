@@ -300,7 +300,7 @@ paths:
       tags:
         - Configuration
       description: |
-        Retrieve a declarations for all per-app declarations
+        Retrieve the declarations for all applications under a tenant
       responses:
         200:
           description: Successful response
@@ -369,7 +369,7 @@ paths:
       tags:
         - Configuration
       description: |
-        Retrieve a declarations for all per-app declarations
+        Retrieve the declaration for a specific application under a tenant
       responses:
         200:
           description: Successful response
