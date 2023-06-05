@@ -547,6 +547,12 @@ const updateMember = function updateMember(member) {
             log.error(`Invalid adminState state: ${member.adminState}`);
         }
     }
+
+    if (member.metadata) {
+        Object.keys(member.metadata).forEach((key) => {
+            member.metadata[key].persist = member.metadata[key].persist.toString();
+        });
+    }
 };
 
 const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, item, sdRequired, resources, pool) {
@@ -564,7 +570,7 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
         } else {
             def.fqdn.autopopulate = 'disabled';
         }
-        def.metadata = [{ name: 'source', value: 'declaration' }];
+
         if (!sdRequired) {
             poolItem.members.push(normalize.actionableMcp(context, def, 'ltm pool members', null).properties);
         }
@@ -1970,6 +1976,12 @@ const translate = {
             // Discovery Worker will handle member assignment, so ignore in AS3 diff
             item.ignore.members = '';
             delete item.members;
+        }
+
+        if (item.metadata) {
+            Object.keys(item.metadata).forEach((member) => {
+                item.metadata[member].persist = item.metadata[member].persist.toString();
+            });
         }
 
         configs.push(normalize.actionableMcp(context, item, 'ltm pool', path));

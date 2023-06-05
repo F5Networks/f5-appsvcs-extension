@@ -266,7 +266,13 @@
     { "id": "service-down-action" },
     { "id": "slow-ramp-time" },
     { "id": "allow-nat",                 "altId": "allowNATEnabled", "truth": "yes", "falsehood": "no" },
-    { "id": "allow-snat",                "altId": "allowSNATEnabled", "truth": "yes", "falsehood": "no" }
+    { "id": "allow-snat",                "altId": "allowSNATEnabled", "truth": "yes", "falsehood": "no" },
+    { "id": "metadata",                  "extend": "objArray" }
+  ],
+  "ltm pool metadata": [
+    { "id": "name" },
+    { "id": "value" },
+    { "id": "persist" }
   ],
   "ltm pool members": [
     { "id":"connection-limit" },
@@ -287,8 +293,9 @@
     { "id":"autopopulate",              "truth": "enabled", "falsehood": "disabled" }
   ],
   "ltm pool members metadata": [
-    { "id":"name" },
-    { "id":"value" }
+    { "id": "name" },
+    { "id": "value" },
+    { "id": "persist" }
   ],
   "sys config merge file": [
     { "id":"filePath" },

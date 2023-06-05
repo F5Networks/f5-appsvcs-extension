@@ -749,9 +749,6 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         if ((typeof targetConfig.members === 'object') && (targetConfig.members !== null)) {
             Object.keys(targetConfig.members).forEach((member) => {
                 targetConfig.members[member] = pushMonitors(targetConfig.members[member]);
-                if (typeof targetConfig.members[member].metadata === 'undefined') {
-                    targetConfig.members[member].metadata = { source: { value: 'declaration' } };
-                }
             });
         }
         if (diff.kind === 'D' && diff.path.find((p) => p === 'members')) {
