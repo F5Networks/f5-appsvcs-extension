@@ -11,7 +11,9 @@ Similar to the tenant-based model, the per-application deployment model allows y
 Using a per-application declaration
 -----------------------------------
 
-Sending a per-application declaration is similar to a traditional declaration, but the per-application declaration uses a different URI path.  For traditional declarations to a specific tenant, AS3 supports requests to ``/appsvcs/declare/[<tenant>[,<tenant>,...]]``. The tenants in the path indicate which tenants in the declaration AS3 should look at. This means you can POST a declaration with several tenants but include one or more comma-separated tenants in the path. In this case AS3 will only create/modify the tenants in the path.
+Using a per-application declaration is similar to using a traditional declaration, but there is no tenant class in the declaration and the per-application declaration uses a different URI path.  
+
+For traditional declarations to a specific tenant, AS3 supports requests to ``/appsvcs/declare/[<tenant>[,<tenant>,...]]``. The tenants in the path indicate which tenants in the declaration AS3 . This means you can POST a declaration with several tenants but include one or more comma-separated tenants in the path. In this case AS3 will only create/modify the tenants in the path.
 
 The per-application declaration allows all CRUD operations to a specific tenant and application in the URI path without specifying the tenant in the declaration.  
 

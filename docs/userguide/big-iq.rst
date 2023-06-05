@@ -140,6 +140,28 @@ See **patchBody** in the |as3class| and |pitem| in the schema reference for deta
    :language: json
 
 
+Downgrading BIG-IP AS3 on BIG-IQ
+--------------------------------
+AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  Use the following procedure to downgrade the version of AS3 on your BIG-IQ if you are experiencing issues with application templates on the BIG-IQ. 
+
+.. IMPORTANT:: This should only be necessary if you are running a version of BIG-IQ that uses AS3 3.42 and later. To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.
+
+**To downgrade AS3 on BIG-IQ**
+
+1. Download the RPM package for the version of AS3 you want from |release| to a location accessible from your BIG-IQ. We recommend 3.41.
+
+2. Optional: If your BIG-IQ environment has high availability (HA) setup, you should upgrade the AS3 on the Standby unit before upgrading the active unit. The BIG-IQ HA systems are required use the same AS3 version.
+
+3. Use an SCP client to copy the RPM file to the **/shared/tmp** directory of the BIG-IQ system.  For example, you could run ``scp <path to RPM> root@<BIG-IQ IP>:/shared/tmp/.``
+
+4. Log in to the BIG-IQ command line. 
+
+5. Use the following syntax to downgrade AS3: ``rpm -Uv --oldpackage /shared/tmp/f5-appsvcs-<version>.noarch.rpm``.  For example, ``rpm -Uv --oldpackage /shared/tmp/f5-appsvcs-3.41.0-1.noarch.rpm``  
+
+6. Run the following command to restart the associated services: ``tmsh restart /sys service restjavad restnoded``.
+
+7. Verify the downgraded version is now on BIG-IQ using: ``curl http://localhost:8105/shared/appsvcs/info``
+
 
 
 .. |avr| raw:: html
@@ -188,4 +210,8 @@ See **patchBody** in the |as3class| and |pitem| in the schema reference for deta
 .. |compat| raw:: html
 
    <a href="https://support.f5.com/csp/article/K54909607" target="_blank">K54909607</a>
+
+.. |release| raw:: html
+
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/releases" target="_blank">AS3 releases on GitHub</a>
 
