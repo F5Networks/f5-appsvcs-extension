@@ -1,0 +1,42 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.46.0",
+    "id": "TEST",
+    "TEST": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testVirtual": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.0.0.1"
+                ],
+                "pool": {
+                    "use": "testPool"
+                },
+                "metadata": {
+                    "foo": {
+                        "value": "bar"
+                    }
+                }
+            },
+            "testPool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "10.0.0.1"
+                        ]
+                    }
+                ],
+                "metadata": {
+                    "example": {
+                        "value": "test",
+                        "persist": false
+                    }
+                }
+            }
+        }
+    }
+}

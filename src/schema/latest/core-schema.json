@@ -3228,6 +3228,9 @@
                         "tag": "node"
                     }
                 },
+                "metadata": {
+                    "$ref": "#/definitions/Metadata"
+                },
                 "reselectTries": {
                     "title": "Reselect tries",
                     "description": "Maximum number of attempts to find a responsive member for a connection",
@@ -3633,6 +3636,9 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 63
+                },
+                "metadata": {
+                    "$ref": "#/definitions/Metadata"
                 },
                 "adminState": {
                     "title": "Administration State",

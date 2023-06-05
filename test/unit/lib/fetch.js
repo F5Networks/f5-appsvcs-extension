@@ -6488,7 +6488,7 @@ describe('fetch', () => {
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
-                            'tmsh::create ltm pool /tenant/app/tenant_pool members replace-all-with \\{ /Common/10.70.61.10:9021 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} /Common/10.70.61.11:9021 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} /Common/10.70.61.9:9021 \\{ monitor min 1 of \\{ /Common/gateway_icmp \\} metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} \\} monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool members replace-all-with \\{ /Common/10.70.61.10:9021 /Common/10.70.61.11:9021 /Common/10.70.61.9:9021 \\{ monitor min 1 of \\{ /Common/gateway_icmp \\} \\} \\} monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::commit_transaction',
                             '} err] } {',
                             'catch { tmsh::cancel_transaction } e',

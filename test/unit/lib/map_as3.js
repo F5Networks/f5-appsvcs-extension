@@ -367,7 +367,17 @@ describe('map_as3', () => {
                 reselectTries: 0,
                 serviceDownAction: 'none',
                 slowRampTime: 10,
-                minimumMonitors: 1
+                minimumMonitors: 1,
+                metadata: {
+                    example: {
+                        value: 'test',
+                        persist: true
+                    },
+                    example1: {
+                        value: '123',
+                        persist: false
+                    }
+                }
             };
         });
 
@@ -382,6 +392,16 @@ describe('map_as3', () => {
                     properties: {
                         'load-balancing-mode': 'round-robin',
                         members: {},
+                        metadata: {
+                            example: {
+                                persist: 'true',
+                                value: 'test'
+                            },
+                            example1: {
+                                persist: 'false',
+                                value: '123'
+                            }
+                        },
                         'min-active-members': 1,
                         minimumMonitors: 1,
                         'reselect-tries': 0,
@@ -549,6 +569,16 @@ describe('map_as3', () => {
                         path: '/tenantId/appId/myPool',
                         properties: {
                             'load-balancing-mode': 'round-robin',
+                            metadata: {
+                                example: {
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                example1: {
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            },
                             'min-active-members': 1,
                             minimumMonitors: 1,
                             'reselect-tries': 0,
