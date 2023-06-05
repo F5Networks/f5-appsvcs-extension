@@ -162,6 +162,8 @@ AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  Use the following p
 
 7. Verify the downgraded version is now on BIG-IQ using: ``curl http://localhost:8105/shared/appsvcs/info``
 
+8. Optional: If your BIG-IQ environment has high availability (HA) setup, after you upgrade the AS3 on the standby unit, you can repeat this procedure to upgrade the active unit.
+
 
 
 .. |avr| raw:: html
