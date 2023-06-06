@@ -1054,7 +1054,7 @@ const translate = {
     },
     'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate': function (context, obj) {
         delete obj.partition;
-        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotentcy
+        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotency
         const addr = obj.destinationAddressInline;
         if (addr) {
             const parsed = ipUtil.parseIpAddress(addr);

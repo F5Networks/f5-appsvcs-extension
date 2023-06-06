@@ -102,25 +102,30 @@ const validClassList = function (as3, className) {
  *
  * @public
  * @param {object} declaration - a declaration
+ * @param {object} perAppInfo - holds target tenant and apps array
  * @returns {array} - list of (Tenant-class) property names
  */
-const tenantList = function (declaration) {
+const tenantList = function (declaration, perAppInfo) {
     const list = [];
-    let common = false;
     let firstPassNoDelete = false;
-    validClassList(declaration, 'Tenant').forEach((tenantId) => {
-        if (tenantId === 'Common') {
-            common = true;
-        } else {
-            list.push(tenantId);
+    if (typeof perAppInfo !== 'undefined') {
+        list.push(perAppInfo.tenant); // Tenant is mandatory in perAppInfo, should never be undefined
+    } else {
+        let common = false;
+        validClassList(declaration, 'Tenant').forEach((tenantId) => {
+            if (tenantId === 'Common') {
+                common = true;
+            } else {
+                list.push(tenantId);
+            }
+        });
+        // config in /Common must be created first and deleted last
+        // so it must appear twice in the tenant list
+        if (common) {
+            firstPassNoDelete = true;
+            list.unshift('Common');
+            list.push('Common');
         }
-    });
-    // config in /Common must be created first and deleted last
-    // so it must appear twice in the tenant list
-    if (common) {
-        firstPassNoDelete = true;
-        list.unshift('Common');
-        list.push('Common');
     }
     return {
         list,
@@ -619,10 +624,11 @@ const checkDesiredForReferencedProfiles = function (context, desiredConfig) {
 const getDesiredConfig = function (context, tenantId, declaration, commonConfig) {
     let desiredConfig = {};
     let appList = [];
-    const tenantDecl = declaration[tenantId];
+    const tenantDecl = (context.request.isPerApp) ? declaration : declaration[tenantId];
     const appPromiseFuncs = [];
 
-    if ((tenantDecl && tenantDecl.enable) || tenantId === 'Common') {
+    if (context.request.isPerApp || tenantId === 'Common'
+        || (tenantDecl && tenantDecl.enable)) {
         appList = validClassList(tenantDecl, 'Application');
     }
 
@@ -1193,6 +1199,37 @@ const pathReferenceLinks = function (context, referredList, tenantId, partitionC
 };
 
 /**
+ * Returns a subset of the config array, based on the perAppInfo.apps
+ *
+ * @param {object} perAppInfo - holds target tenant and apps array
+ * @param {array} config - an array of relevant BIG-IP objects
+ */
+const getFilteredPerAppConfig = function (perAppInfo, config) {
+    const filteredConfig = [];
+    config.forEach((c) => {
+        switch (c.kind) {
+        case 'tm:auth:partition:partitionstate':
+            if (c.fullPath === perAppInfo.tenant) {
+                filteredConfig.push(c);
+            }
+            break;
+        case 'tm:sys:folder:folderstate':
+            if (perAppInfo.apps.indexOf(c.name) !== -1) {
+                // applications are sys:folders, so the name should be accurate
+                filteredConfig.push(c);
+            }
+            break;
+        default:
+            if (perAppInfo.apps.indexOf(c.subPath) !== -1) {
+                // Everything in an application should have a subPath of the application name
+                filteredConfig.push(c);
+            }
+        }
+    });
+    return filteredConfig;
+};
+
+/**
  * Pull the current BIG-IP configuration for a given
  * partition (AS3 tenant).  This uses iControl-REST
  * in two stages. The first stage captures the parent
@@ -1237,6 +1274,10 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
             }
             return getBigipConfig(context, paths.root, tenantId)
                 .then((config) => {
+                    if (context.request.isPerApp && context.request.perAppInfo.apps.length > 0) {
+                        // If no apps are specified, tenant filtering is sufficient
+                        config = getFilteredPerAppConfig(context.request.perAppInfo, config);
+                    }
                     partitionConfig = config || [];
                     return pathReferenceLinks(context, paths.referred, tenantId, partitionConfig);
                 })
@@ -1270,6 +1311,7 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
                     });
                     updateAddressesWithRouteDomain(actionableConfig, tenantId);
                     tenantAddCommonNodes(context, actionableConfig, commonConfig.nodeList);
+
                     return actionableConfig;
                 });
         })

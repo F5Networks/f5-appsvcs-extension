@@ -6287,6 +6287,329 @@ describe('fetch', () => {
                     });
             });
         });
+
+        describe('per-app', () => {
+            beforeEach(() => {
+                commonConfig = {
+                    nodeList: [],
+                    virtualAddressList: []
+                };
+                context.request = {
+                    postProcessing: [],
+                    isPerApp: true,
+                    perAppInfo: {
+                        tenant: 'tenant',
+                        app: undefined
+                    }
+                };
+            });
+
+            it('should pull just the application in tenant when application is specified', () => {
+                const tenantId = 'My_tenant';
+                const appId = 'My_app';
+                const poolId = 'My_pool';
+                context.target.tmosVersion = '14.1.0';
+                context.control = {
+                    host: 'localhost'
+                };
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    app: appId
+                };
+                const declaration = {
+                    [appId]: {
+                        class: 'Application',
+                        template: 'generic',
+                        [poolId]: {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 10,
+                            minimumMonitors: 1
+                        },
+                        enable: true
+                    }
+                };
+
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                    });
+            });
+
+            it('should pull the application in tenant when application is NOT specified', () => {
+                const tenantId = 'My_tenant';
+                const appId = 'My_app';
+                const poolId = 'My_pool';
+                context.target.tmosVersion = '14.1.0';
+                context.control = {
+                    host: 'localhost'
+                };
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    app: undefined
+                };
+                const declaration = {
+                    [appId]: {
+                        class: 'Application',
+                        template: 'generic',
+                        [poolId]: {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 10,
+                            minimumMonitors: 1
+                        },
+                        enable: true
+                    }
+                };
+
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                    });
+            });
+        });
+    });
+
+    describe('.getTenantConfig', () => {
+        let tenantId;
+        let commonConfig;
+        let isOneOfProvisionedStub;
+
+        beforeEach(() => {
+            context.target.tmosVersion = '17.1'; // Needed for getBigipConfig filter
+            tenantId = 'tenant1';
+            commonConfig = {
+                nodeList: [],
+                virtualAddressList: []
+            };
+
+            sinon.stub(fullPathList, 'root').value([ // Abbreviated for testing purposes, lines up with nock
+                { endpoint: '/mgmt/tm/auth/partition' },
+                { endpoint: '/mgmt/tm/sys/folder' },
+                { endpoint: '/mgmt/tm/ltm/pool' }
+            ]);
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/auth/partition/')
+                .reply(200, {
+                    kind: 'tm:auth:partition:partitioncollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'Common',
+                            fullPath: 'Common',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/Common',
+                            defaultRouteDomain: 0
+                        },
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'tenant1',
+                            fullPath: 'tenant1',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/tenant1',
+                            defaultRouteDomain: 0
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/auth/partition?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:auth:partition:partitioncollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'tenant1',
+                            fullPath: 'tenant1',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/tenant1',
+                            defaultRouteDomain: 0
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/sys/folder?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:sys:folder:foldercollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/sys/folder?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:sys:folder:folderstate',
+                            name: 'app1',
+                            partition: 'tenant1',
+                            fullPath: '/tenant1/app1',
+                            noRefCheck: 'false',
+                            trafficGroup: '/Common/traffic-group-1'
+                        },
+                        {
+                            kind: 'tm:sys:folder:folderstate',
+                            name: 'app2',
+                            partition: 'tenant1',
+                            fullPath: '/tenant1/app2',
+                            noRefCheck: 'false',
+                            trafficGroup: '/Common/traffic-group-1'
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/ltm/pool?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:ltm:pool:poolcollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/pool?$filter=partition+eq+tenant1&expandSubcollections=true',
+                    items:
+                        [{
+                            kind: 'tm:ltm:pool:poolstate',
+                            name: 'pool1',
+                            partition: 'tenant1',
+                            subPath: 'app1',
+                            fullPath: '/tenant1/app1/pool1',
+                            ipTosToServer: 'pass-through',
+                            linkQosToClient: 'pass-through',
+                            linkQosToServer: 'pass-through',
+                            membersReference: {}
+                        },
+                        {
+                            kind: 'tm:ltm:pool:poolstate',
+                            name: 'pool1',
+                            partition: 'tenant1',
+                            subPath: 'app2',
+                            fullPath: '/tenant1/app2/pool1',
+                            ipTosToServer: 'pass-through',
+                            linkQosToClient: 'pass-through',
+                            linkQosToServer: 'pass-through',
+                            membersReference: {}
+                        }]
+                });
+            isOneOfProvisionedStub = sinon.stub(util, 'isOneOfProvisioned').resolves(true);
+        });
+
+        describe('per-tenant', () => {
+            it('should return early if iControlRequest lacks the tenantId', () => {
+                tenantId = 'tenantOther';
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(results, {});
+                        assert.strictEqual(isOneOfProvisionedStub.called, false, 'isOneOfProvisioned should NOT have been called');
+                    });
+            });
+
+            it('should return actionable items if tenant exists', () => {
+                tenantId = 'tenant1';
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app2/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                },
+                                '/tenant1/app2/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+        });
+
+        describe('per-app', () => {
+            it('should return early if iControlRequest lacks the tenantId', () => {
+                tenantId = 'tenantOther';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    app: undefined
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(results, {});
+                        assert.strictEqual(isOneOfProvisionedStub.called, false, 'isOneOfProvisioned should NOT have been called');
+                    });
+            });
+
+            it('should filter out any applications not in the declaration', () => {
+                tenantId = 'tenant1';
+
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: ['app1']
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+
+            it('should return actionable items if tenant exists and application is undefined', () => {
+                tenantId = 'tenant1';
+
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: []
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app2/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                },
+                                '/tenant1/app2/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+        });
     });
 
     describe('updateWildcardMonitorDiffs', () => {

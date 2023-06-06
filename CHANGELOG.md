@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 - AUTOTOOL-3821: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for port lists
 - AUTOTOOL-3704: Expose metadata property for pools and pool members.
+- AUTOTOOL-3723: Add basic POST functionality for per-app declarations
 
 ### Fixed
 - AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
