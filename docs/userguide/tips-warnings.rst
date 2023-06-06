@@ -12,7 +12,7 @@ Warnings
 
 - You must use the **admin** user (and not just a user with administrator privileges) to install BIG-IP AS3.
 
-- AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.  If you need to downgrade the version of AS3 on your BIG-IQ, see :ref:`Downgrade`.
+- AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.  If you need to downgrade the version of AS3 on your BIG-IQ, see :ref:`Downgrade<down>`.
 
 - BIG-IP AS3 does not function properly when the BIG-IP has |appliance| enabled.  We strongly recommend disabling Appliance mode when using BIG-IP AS3.
 
