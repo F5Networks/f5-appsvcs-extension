@@ -650,6 +650,10 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'auth partition':
         regex = /\//g;
         diff.path[0] = diff.path[0].replace(regex, '');
+        if (context.request.isPerApp && diff.kind !== 'N') {
+            // Per-app should only create a partition if a partition needs to be created
+            return commandObj;
+        }
         if (diff.kind === 'E') {
             commandObj.commands = [`tmsh::modify ${diff.rhsCommand} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
             return commandObj;
@@ -1144,6 +1148,12 @@ const tmshDelete = function (context, diff, currentConfig) {
 
     switch (diff.lhsCommand) {
     case 'auth partition':
+        if (context.request.isPerApp) {
+            // Tenants should ONLY be deleted in per-app mode IF done via a DELETE
+            if (context.request.method === 'Post') {
+                return commandObj;
+            }
+        }
         if (diff.kind === 'E') {
             // Modifies are handled in tmshCreate
             return commandObj;

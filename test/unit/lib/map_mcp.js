@@ -228,6 +228,26 @@ describe('map_mcp', () => {
                 });
             });
         });
+        describe('tm:auth:partition:partitionstate', () => {
+            it('should return a defaultRouteDomain', () => {
+                defaultContext.request.isPerApp = false;
+
+                const obj = {
+                    kind: 'tm:auth:partition:partitionstate',
+                    name: 'tenant1',
+                    fullPath: 'tenant1',
+                    generation: 867,
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition/tenant1',
+                    defaultRouteDomain: 10,
+                    description: 'Updated by AS3 at Tue, 30 May 2023 19:48:41 GMT'
+                };
+
+                const result = translate['tm:auth:partition:partitionstate'](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    'default-route-domain': 10
+                });
+            });
+        });
         describe('tm:sys:file:ssl-cert:ssl-certstate', () => {
             it('should return with cert-validators', () => {
                 defaultContext.target.tmosVersion = '13.1';

@@ -314,7 +314,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'secondTenant'
                     };
 
@@ -335,7 +335,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'firstTenant'
                     };
 
@@ -357,7 +357,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/Application';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'Application',
+                        apps: ['Application'],
                         tenant: 'firstTenant'
                     };
 
@@ -378,7 +378,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'someTenant'
                     };
 
@@ -401,7 +401,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/otherApplication';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'otherApplication',
+                        apps: ['otherApplication'],
                         tenant: 'firstTenant'
                     };
 
@@ -425,7 +425,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'App1',
+                        apps: ['App1'],
                         tenant: 'firstTenant'
                     };
 
@@ -445,7 +445,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'App1',
+                        apps: ['App1'],
                         tenant: 'firstTenant'
                     };
 
@@ -1652,16 +1652,26 @@ describe('DeclarationHandler', () => {
                 };
                 context.request.isPerApp = true;
                 context.request.perAppInfo = {
-                    app: undefined,
+                    apps: [],
                     tenant: 'otherTenant'
                 };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'otherTenant',
+                        runTime: 956
+                    }
+                ]);
 
                 return handler.handleCreateUpdateOrDelete(context)
                     .then((result) => {
                         assert.strictEqual(result.statusCode, 200);
-                        // NOTE: Further POST development will likely change the following responses
                         assert.strictEqual(result.body.results[0].code, 200);
-                        assert.strictEqual(result.body.results[0].message, 'no change');
+                        assert.strictEqual(result.body.results[0].message, 'success');
                         assert.strictEqual(result.errorMessage, undefined);
                     });
             });

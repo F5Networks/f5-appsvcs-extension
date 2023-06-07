@@ -266,8 +266,11 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
 
     const tenantControls = util.simpleCopy(context.control);
 
-    // Update tenantControls object with any tenant controls from the declaration
-    util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
+    if (!context.request.isPerApp) {
+        // Update tenantControls object with any tenant controls from the declaration
+        // PerApp does not support tenant controls, yet
+        util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
+    }
     log.updateGlobalSettings(tenantControls);
 
     if (typeof tenantControls.fortune !== 'undefined') {
@@ -324,7 +327,9 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
 
     return Promise.resolve()
         .then(() => {
-            if (declaration[tenantId].optimisticLockKey && previousDeclaration[tenantId] !== undefined) {
+            // PerApp does not support optimisticLockKey, yet 5/22/2023
+            if (!context.request.isPerApp && declaration[tenantId].optimisticLockKey
+                && previousDeclaration[tenantId] !== undefined) {
                 delete previousDeclaration[tenantId].optimisticLockKey;
                 const localHash = hash.hashTenant(JSON.stringify(previousDeclaration[tenantId]));
                 if (localHash !== declaration[tenantId].optimisticLockKey) {

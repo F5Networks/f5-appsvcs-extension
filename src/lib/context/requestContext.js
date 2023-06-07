@@ -37,7 +37,7 @@
  *   Otherwise it is undefined.
  * isPerApp - Detects if the request used the per-app interface and sets the
  *   boolean appropriately.
- * perAppInfo - logs the tenant and the application name for later reference
+ * perAppInfo - logs the tenant and application names for later reference
  * declarations - An array of wrapped and normalized sub-declarations
  * dryRun - A boolean to indicate if the task is to run as a dry-run
  *
@@ -295,9 +295,26 @@ function buildInitialContext(restOperation) {
         context.isPerApp = splitSubPath[1] === 'applications';
         if (context.isPerApp) {
             context.perAppInfo = {
-                tenant: splitSubPath[0],
-                app: splitSubPath[2]
+                tenant: splitSubPath[0]
             };
+            let apps = [];
+            switch (context.method) {
+            case 'Delete':
+            case 'Get':
+                // DELETE & GET apps come from the URL
+                apps = (typeof splitSubPath[2] === 'undefined') ? [] : [splitSubPath[2]];
+                break;
+            case 'Post':
+                // POST apps comes from the declaration
+                Object.keys(context.body).forEach((key) => {
+                    if (context.body[key].class === 'Application') {
+                        apps.push(key);
+                    }
+                });
+                break;
+            default:
+            }
+            context.perAppInfo.apps = apps;
         }
     }
     context.queryParams = getQueryParams(context.fullPath, context.pathName);

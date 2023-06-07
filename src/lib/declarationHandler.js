@@ -180,14 +180,14 @@ class DeclarationHandler {
     /**
      * This function parses and formats the declaration for per-app
      *
-     * @param {object} decl     The declaration which holds the application and tenant info
-     * @param {string} tenant   The desired tenant name which holds the application
-     * @param {string} [app]      The desired application name, if undefined return array of all applications
+     * @param {object} decl   - The declaration which holds the application and tenant info
+     * @param {string} tenant - The desired tenant name which holds the application
+     * @param {string[]} apps - Array of desired application names, if empty return array of all applications
      * @returns {object}        .body: is the GET returned value
      *                          .statusCode: STATUS_CODE of the result
      *                          .message: The error message, if there is one
      */
-    filterAppInDeclaration(decl, tenant, app) {
+    filterAppsInDeclaration(decl, tenant, apps) {
         if (typeof decl[tenant] === 'undefined') {
             return {
                 statusCode: STATUS_CODES.NOT_FOUND,
@@ -195,8 +195,8 @@ class DeclarationHandler {
             };
         }
         const perAppDecl = {};
-        if (typeof app === 'undefined') {
-            // If apps is undefined, we want all apps in tenant
+        if (apps.length === 0) {
+            // If the apps array is empty, we want all apps in tenant
             Object.keys(decl[tenant]).forEach((appName) => {
                 if (decl[tenant][appName].class === 'Application') {
                     perAppDecl[appName] = decl[tenant][appName];
@@ -207,14 +207,23 @@ class DeclarationHandler {
                 statusCode: STATUS_CODES.OK
             };
         }
-        if (typeof decl[tenant][app] === 'undefined') {
-            return {
-                statusCode: STATUS_CODES.NOT_FOUND,
-                message: (`specified Application '${app}' not found in '${tenant}'`)
-            };
-        }
 
-        perAppDecl[app] = decl[tenant][app];
+        const missingApps = [];
+        apps.forEach((app) => {
+            if (typeof decl[tenant][app] === 'undefined') {
+                missingApps.push({
+                    statusCode: STATUS_CODES.NOT_FOUND,
+                    message: (`specified Application '${app}' not found in '${tenant}'`)
+                });
+            } else {
+                perAppDecl[app] = decl[tenant][app];
+            }
+        });
+
+        if (missingApps.length > 0) {
+            // Only 1 error message can be returned at a time, so return the first
+            return missingApps[0];
+        }
 
         return {
             body: perAppDecl,
@@ -327,10 +336,10 @@ class DeclarationHandler {
                             return digestDeclaration;
                         }
 
-                        const appFilterResult = this.filterAppInDeclaration(
+                        const appFilterResult = this.filterAppsInDeclaration(
                             digestDeclaration,
                             context.request.perAppInfo.tenant,
-                            context.request.perAppInfo.app
+                            context.request.perAppInfo.apps
                         );
                         if (appFilterResult.statusCode !== STATUS_CODES.OK) {
                             return DeclarationHandler.buildResult(appFilterResult.statusCode, appFilterResult.message);
@@ -655,7 +664,7 @@ class DeclarationHandler {
                     declarationFullId += `|${decl.label.replace(regex, '.')}`;
                 }
 
-                const tenantListResult = fetch.tenantList(decl);
+                const tenantListResult = fetch.tenantList(decl, context.request.perAppInfo);
                 context.tasks[context.currentIndex].firstPassNoDelete = tenantListResult.firstPassNoDelete;
                 const tenantList = tenantListResult.list;
 
@@ -1061,7 +1070,7 @@ class DeclarationHandler {
      * just map whatever they get from caller and/or
      * framework to a request object and send it here
      *
-     * @param {object} context
+     * @param {object} context - full AS3 context object
      * @returns {Promise}
      */
     process(context) {

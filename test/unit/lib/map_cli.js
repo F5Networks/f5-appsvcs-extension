@@ -1084,6 +1084,52 @@ describe('map_cli', () => {
             assert.deepStrictEqual(result.commands, ['tmsh::modify auth partition tenant']);
         });
 
+        it('should ignore the auth partition if isPerApp and the kind is not N', () => {
+            const diff = {
+                kind: 'D',
+                path: ['/tenant1/', 'properties', 'default-route-domain'],
+                lhs: 0,
+                tags: ['tmsh'],
+                command: 'auth partition',
+                lhsCommand: 'auth partition',
+                rhsCommand: 'auth partition'
+            };
+            const config = {};
+
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            context.target.tmosVersion = '13.1.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            assert.deepStrictEqual(result.commands, []);
+        });
+
+        it('should create the auth partition if isPerApp and the kind is N', () => {
+            const diff = {
+                kind: 'N',
+                path: ['/tenant1/'],
+                rhs: { command: 'auth partition', properties: {}, ignore: [] },
+                tags: ['tmsh'],
+                command: 'auth partition',
+                lhsCommand: '',
+                rhsCommand: 'auth partition'
+            };
+            const config = {};
+
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            context.target.tmosVersion = '13.1.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            assert.deepStrictEqual(result.commands, ['tmsh::create auth partition tenant1']);
+        });
+
         it('should return a modify for the ltm node if the diff.kind is E', () => {
             const diff = {
                 kind: 'E',
@@ -1425,6 +1471,49 @@ describe('map_cli', () => {
 
         beforeEach(() => {
             context = Context.build(null, null, null, [{ firstPassNoDelete: false }]);
+        });
+
+        it('should skip auth partition delete if diff.kind === "E"', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/tenant1/',
+                    'properties',
+                    'default-route-domain'
+                ],
+                lhs: 0,
+                rhs: 12,
+                tags: [
+                    'tmsh'
+                ],
+                lhsCommand: 'auth partition'
+            };
+            const result = mapCli.tmshDelete(context, diff);
+            assert.deepStrictEqual(result.commands, []);
+        });
+
+        it('should skip auth partition delete if isPerApp && a POST', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/tenant1/',
+                    'properties',
+                    'default-route-domain'
+                ],
+                lhs: 0,
+                tags: [
+                    'tmsh'
+                ],
+                lhsCommand: 'auth partition'
+            };
+            context.request.method = 'Post';
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            const result = mapCli.tmshDelete(context, diff);
+            assert.deepStrictEqual(result.commands, []);
         });
 
         it('should skip ltm node delete if diff.kind === "E"', () => {
