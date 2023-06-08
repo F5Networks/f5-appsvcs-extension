@@ -362,11 +362,12 @@ const isInternal = function (item) {
 
 const updatePropsIfInternal = function (item) {
     if (isInternal(item)) {
+        const sourceType = typeof item.sourceAddress;
         item.internal = {};
         // internal virtuals allow a source address but destination is
         // always 0.0.0.0 with a port of 'any'
         item.destination = '0.0.0.0:any';
-        item.virtualAddresses = typeof item.sourceAddress === 'undefined' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
+        item.virtualAddresses = sourceType === 'undefined' || sourceType === 'object' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
 
         // ICAP should only be on internal virtuals
         item = profile(item, 'profileICAP');
@@ -2432,6 +2433,24 @@ const translate = {
         const addrPath = `${util.mcpPath(tenantId, appId, itemId).substring(1).replace(/\//g, '.')}`
             + '.virtualAddresses';
         const metadata = context.tasks[context.currentIndex].metadata;
+
+        let destinationPortList;
+        let destinationAddressList;
+        let sourceAddressList;
+        if (typeof item.virtualPort === 'object') {
+            destinationPortList = item.virtualPort;
+            item.virtualPort = 0;
+        }
+        // If we're referencing an Address_List, we want the created traffic-matching-criteria to have a
+        // destination-address-inline of 0.0.0.0
+        if (!Array.isArray(item.virtualAddresses)) {
+            destinationAddressList = item.virtualAddresses;
+            item.virtualAddresses = ['0.0.0.0'];
+        }
+        if (typeof item.sourceAddress === 'object') {
+            sourceAddressList = item.sourceAddress;
+        }
+
         item.virtualAddresses.forEach((addr, index) => {
             let dst;
             let src;
@@ -2576,9 +2595,11 @@ const translate = {
                     declaration
                 );
 
-                // internal virtuals can't create virtual-addresses because the addreses are all 0.0.0.0
-                // which causes an error due to duplicates
-                if (!isInternal(item)) {
+                // internal virtuals can't create virtual-addresses because the addresses are all 0.0.0.0
+                // which causes an error due to duplicates. For virtuals with a destinationAddressList,
+                // our only virtual-address would be 'any' which we don't need as it is covered by the
+                // traffic-matching-criteria destination-address-inline
+                if (!isInternal(item) && !destinationAddressList) {
                     configs = configs.concat(translatedServiceAddr.configs);
                 }
                 destIp = translatedServiceAddr.configs[0].properties.address;
@@ -2639,17 +2660,21 @@ const translate = {
 
             item.remark = item.remark || appId;
 
-            if (!util.versionLessThan(context.target.tmosVersion, '14.1') && item.portList) {
-                const source = (arrUtil.ensureArray(addr)[1])
-                    ? util.minimizeIP(arrUtil.ensureArray(addr)[1])
-                    : '0.0.0.0';
+            if (!util.versionLessThan(context.target.tmosVersion, '14.1')
+                && (destinationPortList || destinationAddressList || sourceAddressList)) {
+                const parsed = ipUtil.parseIpAddress(item.source);
+                const source = `${parsed.ip}/${parsed.netmask}`;
 
                 const tmcObj = {
-                    destinationAddressInline: `${destIp}/${msk}`,
-                    destinationPortList: bigipPath(item, 'portList'),
                     protocol: item.layer4,
+                    destinationAddressInline: `${destIp.split('%')[0]}/${msk}`, // strip the route domain
+                    destinationAddressList: bigipPathFromSrc(destinationAddressList),
+                    destinationPortList: bigipPathFromSrc(destinationPortList),
+                    sourceAddressList: bigipPathFromSrc(sourceAddressList),
                     sourceAddressInline: source
                 };
+
+                tmcObj.routeDomain = routeDomain ? `/Common/${routeDomain.split('%')[1]}` : 'any';
 
                 item.trafficMatchingCriteria = util.mcpPath(tenantId, appId, `${alias}_VS_TMC_OBJ`);
                 delete item.destination;

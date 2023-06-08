@@ -1204,11 +1204,14 @@
     { "id":"udp-idle-timeout",          "intToString": true }
   ],
   "ltm traffic-matching-criteria": [
+    { "id":"partition",                  "minVersion": "14.1" },
+    { "id":"protocol",                   "minVersion": "14.1" },
     { "id":"destination-address-inline", "minVersion": "14.1" },
-    { "id":"destination-port-list",     "minVersion": "14.1" },
-    { "id":"partition",                 "minVersion": "14.1" },
-    { "id":"protocol",                  "minVersion": "14.1" },
-    { "id":"source-address-inline",     "minVersion": "14.1" }
+    { "id":"destination-address-list",   "minVersion": "14.1" },
+    { "id":"destination-port-list",      "minVersion": "14.1" },
+    { "id":"source-address-inline",      "minVersion": "14.1" },
+    { "id":"source-address-list",        "minVersion": "14.1" },
+    { "id":"route-domain",               "minVersion": "14.1" }
   ],
   "ltm virtual": [
     { "id":"enabled",                   "altId": "adminState" },

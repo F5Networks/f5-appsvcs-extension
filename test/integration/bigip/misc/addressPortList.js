@@ -33,7 +33,7 @@ const {
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
-describe('port list', function () {
+describe('address and port lists', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     beforeEach('provision check and clean up', function () {
@@ -49,7 +49,7 @@ describe('port list', function () {
         return deleteDeclaration();
     });
 
-    it('should create traffic matching criteria for port lists', () => {
+    it('should create traffic matching criteria for address and port lists', () => {
         const decl = {
             class: 'ADC',
             schemaVersion: '3.45.0',
@@ -63,18 +63,53 @@ describe('port list', function () {
                 class: 'Tenant',
                 Application: {
                     class: 'Application',
+                    sourceAddressList: {
+                        class: 'Firewall_Address_List',
+                        addresses: [
+                            '192.168.100.0/24',
+                            '192.168.200.50-192.168.200.60'
+                        ]
+                    },
+                    destinationAddressList1: {
+                        class: 'Firewall_Address_List',
+                        addresses: [
+                            '192.168.40.0/24',
+                            '192.168.50.1-192.168.50.10'
+                        ]
+                    },
+                    destinationAddressList2: {
+                        class: 'Firewall_Address_List',
+                        addresses: [
+                            '192.168.60.0/24'
+                        ]
+                    },
+                    destinationAddressList3: {
+                        class: 'Firewall_Address_List',
+                        addresses: [
+                            '192.168.10.0/24',
+                            '192.168.20.20-192.168.20.50'
+                        ],
+                        addressLists: [
+                            { use: 'destinationAddressList1' },
+                            { use: 'destinationAddressList2' }
+                        ]
+                    },
                     firewallPortList: {
                         class: 'Firewall_Port_List',
                         ports: [
+                            8080,
                             '1-999'
                         ]
                     },
                     tcpService: {
                         class: 'Service_TCP',
-                        virtualAddresses: [
-                            '192.168.100.0/24'
-                        ],
-                        portList: {
+                        sourceAddress: {
+                            use: 'sourceAddressList'
+                        },
+                        virtualAddresses: {
+                            use: 'destinationAddressList3'
+                        },
+                        virtualPort: {
                             use: 'firewallPortList'
                         }
                     }
@@ -93,8 +128,10 @@ describe('port list', function () {
             .then(() => getPath('/mgmt/tm/ltm/trafficMatchingCriteria'))
             .then((response) => {
                 assert.strictEqual(response.items[0].fullPath, '/TEST_Port_List/Application/tcpService_VS_TMC_OBJ');
+                assert.strictEqual(response.items[0].destinationAddressList, '/TEST_Port_List/Application/destinationAddressList3');
                 assert.strictEqual(response.items[0].destinationPortList, '/TEST_Port_List/Application/firewallPortList');
-                assert.strictEqual(response.items[0].destinationAddressInline, '192.168.100.0/24');
+                assert.strictEqual(response.items[0].destinationAddressInline, '0.0.0.0');
+                assert.strictEqual(response.items[0].destinationPortInline, '0');
             })
             .then(() => getPath('/mgmt/tm/security/firewall/portList'))
             .then((response) => {
@@ -105,6 +142,9 @@ describe('port list', function () {
                     [
                         {
                             name: '1-999'
+                        },
+                        {
+                            name: '8080'
                         }
                     ]
                 );

@@ -1054,12 +1054,22 @@ const translate = {
     },
     'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate': function (context, obj) {
         delete obj.partition;
-        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotency
-        const addr = obj.destinationAddressInline;
+        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotentcy
+        let addr = obj.destinationAddressInline;
         if (addr) {
             const parsed = ipUtil.parseIpAddress(addr);
+            if (parsed.ip === '0.0.0.0') {
+                parsed.ip = 'any';
+            }
             obj.destinationAddressInline = `${parsed.ip}/${parsed.netmask}`;
         }
+
+        addr = obj.sourceAddressInline;
+        if (addr) {
+            const parsed = ipUtil.parseIpAddress(addr);
+            obj.sourceAddressInline = `${parsed.ip}/${parsed.netmask}`;
+        }
+
         return [normalize.actionableMcp(context, obj, 'ltm traffic-matching-criteria', obj.fullPath)];
     },
     'tm:ltm:virtual:virtualstate': function (context, obj) {

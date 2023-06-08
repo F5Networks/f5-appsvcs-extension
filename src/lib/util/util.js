@@ -840,11 +840,13 @@ class Util {
      *
      * @public
      * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
      * @returns {Promise}
      */
-    static getVirtualAddressList(context) {
+    static getVirtualAddressList(context, tenant) {
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
         const opts = {
-            path: '/mgmt/tm/ltm/virtual-address?$select=fullPath,partition,address,metadata',
+            path: `/mgmt/tm/ltm/virtual-address?${filter}$select=fullPath,partition,address,metadata`,
             why: 'query target BIG-IP current ltm virtual-address list'
         };
 
@@ -871,6 +873,53 @@ class Util {
                 return list;
             });
     } // getVirtualAddressList()
+
+    /**
+     * return a promise to discover all the ltm address-list
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing address-lists,
+     * or rejects with error.
+     *
+     * virtualAddressObj:
+     *      address: "address"
+     *      fullPath: "/P/F/N"
+     *      partition: "P"
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getAddressListList(context, tenant) {
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/net/address-list?${filter}$select=fullPath,partition,addresses,addressLists`,
+            why: 'query target BIG-IP current ltm virtual-address list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                const list = [];
+
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                    || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return list;
+                }
+
+                resp.items.forEach((item) => {
+                    const addressList = {
+                        fullPath: item.fullPath,
+                        partition: item.partition,
+                        addresses: item.addresses,
+                        addressLists: item.addressLists || []
+                    };
+
+                    list.push(addressList);
+                });
+
+                return list;
+            });
+    }
 
     /**
      * return a promise to discover all the apm profile access
