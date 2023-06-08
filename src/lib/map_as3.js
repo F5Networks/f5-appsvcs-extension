@@ -1949,7 +1949,7 @@ const translate = {
             }
         });
 
-        if (item.monitors && item.monitors.length === 0) {
+        if (!item.monitors || item.monitors.length === 0) {
             delete item.monitors;
             delete item.minimumMonitors;
         }

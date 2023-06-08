@@ -403,7 +403,6 @@ describe('map_as3', () => {
                             }
                         },
                         'min-active-members': 1,
-                        minimumMonitors: 1,
                         'reselect-tries': 0,
                         'service-down-action': 'none',
                         'slow-ramp-time': 10
@@ -460,6 +459,12 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+
+        it('should remove minimumMonitors if no monitors defined', () => {
+            const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+            assert.isUndefined(config.properties.monitors);
+            assert.isUndefined(config.properties.minimumMonitors);
         });
 
         describe('with Service Discovery', () => {
@@ -580,7 +585,6 @@ describe('map_as3', () => {
                                 }
                             },
                             'min-active-members': 1,
-                            minimumMonitors: 1,
                             'reselect-tries': 0,
                             'service-down-action': 'none',
                             'slow-ramp-time': 10

@@ -60,8 +60,8 @@ describe('Pool', function () {
             },
             {
                 name: 'minimumMonitors',
-                inputValue: [undefined, 2, 'all'],
-                expectedValue: [undefined, '2', 'all'],
+                inputValue: [undefined, 2, 'all', 1],
+                expectedValue: [undefined, '2', 'all', undefined],
                 extractFunction: (o) => {
                     if (!o.monitor) {
                         return undefined;
@@ -74,11 +74,12 @@ describe('Pool', function () {
             },
             {
                 name: 'monitors',
-                inputValue: [undefined, ['https', 'http'], ['https', 'tcp', 'http']],
+                inputValue: [undefined, ['https', 'http'], ['https', 'tcp', 'http'], undefined],
                 expectedValue: [
                     undefined,
                     'min 2 of { /Common/https /Common/http }',
-                    '/Common/https and /Common/tcp and /Common/http'
+                    '/Common/https and /Common/tcp and /Common/http',
+                    undefined
                 ],
                 extractFunction: (o) => ((o.monitor) ? o.monitor.trim() : undefined)
             },
