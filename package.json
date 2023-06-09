@@ -7,7 +7,7 @@
     "buildperf": "F5_PERF_TRACING_ENABLED='true' npm run build",
     "build-schema": "node scripts/build/schema-build.js",
     "lint": "npx eslint .",
-    "make-api-docs": "redoc-cli bundle docs/openapi.yaml",
+    "make-api-docs": "redocly build-docs docs/openapi.yaml",
     "test": "npm run build-schema && mocha test/unit/ --recursive --exit",
     "test-no-build": "mocha test/unit/ --recursive --exit",
     "coverage": "nyc npm test",
@@ -22,6 +22,7 @@
     "@automation-toolchain/f5-appsvcs-schema": "^0.10.7",
     "@f5devcentral/atg-shared-utilities-dev": "^0.2.13",
     "@f5devcentral/eslint-config-f5-atg": "^0.1.8",
+    "@redocly/cli": "^1.0.0-beta.128",
     "aws-sdk": "^2.1346.0",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
@@ -43,8 +44,7 @@
     "@stryker-mutator/core": "^6.4.2",
     "@stryker-mutator/mocha-runner": "^6.4.2",
     "error": "7.2.1",
-    "jaeger-client": "^3.19.0",
-    "redoc-cli": "0.13.21"
+    "jaeger-client": "^3.19.0"
   },
   "nyc": {
     "reporter": [

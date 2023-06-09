@@ -245,11 +245,14 @@ create_source:
       - dist/*-examples.tar.gz
 
 build_api_docs:
-  image: $DOCKER_URL/node:12
+  image: $DOCKER_URL/node:16
   stage: build
   needs: []
   script:
     # install packages
+    # package-lock ends up with OS specific info during npm install, so
+    # make sure it is right for the platform we're on
+    - rm package-lock.json
     - npm install
     # generate docs
     - npm run make-api-docs
