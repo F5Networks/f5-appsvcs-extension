@@ -891,6 +891,10 @@ class Util {
      * @returns {Promise}
      */
     static getAddressListList(context, tenant) {
+        if (this.versionLessThan(this.getDeepValue(context, 'target.tmosVersion'), '14.1')) {
+            return Promise.resolve([]);
+        }
+
         const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
         const opts = {
             path: `/mgmt/tm/net/address-list?${filter}$select=fullPath,partition,addresses,addressLists`,
