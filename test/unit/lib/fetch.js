@@ -90,7 +90,7 @@ describe('fetch', () => {
 
                 assert.isFulfilled(fetch.getBigipConfig(context, testPath, 'Common')
                     .then((config) => {
-                        assert.deepEqual(config, []);
+                        assert.deepStrictEqual(config, []);
                     }));
             });
 
@@ -664,6 +664,14 @@ describe('fetch', () => {
                 assert.strictEqual(result, true, `${item.kind} should return true`);
             });
         });
+
+        it('should return true when item.kind is a snat-translation', () => {
+            const item = {
+                kind: 'tm:ltm:snat-translation:snat-translationstate'
+            };
+            const result = fetch.isAs3Item(context, item, 'thePartition');
+            assert.strictEqual(result, true, `${item.kind} should return true`);
+        });
     });
 
     describe('.getDiff', () => {
@@ -724,7 +732,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Access_Profile/accessProfile'
@@ -805,7 +813,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Per_Request_Access_Policy/accessPolicy'
@@ -842,6 +850,97 @@ describe('fetch', () => {
                 });
         });
 
+        it('should return diff deleting a snat pool in Common Shared but not the matching snat translation', () => {
+        // When a snat pool is deleted BIGIP will check and delete any snat translations that are no longer needed
+            const currentConfig = {
+                '/Common/Shared/CreateSnatPool3': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/Common/192.0.2.12': {},
+                            '/Common/192.0.2.13': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.12': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.12',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.13': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.13',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                }
+            };
+
+            const desiredConfig = {};
+
+            const commonConfig = {
+                nodeList: []
+            };
+
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, 'Common')
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    assert.deepStrictEqual(results, [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/CreateSnatPool3'
+                            ],
+                            lhs: {
+                                command: 'ltm snatpool',
+                                properties: {
+                                    members: {
+                                        '/Common/192.0.2.12': {},
+                                        '/Common/192.0.2.13': {}
+                                    }
+                                },
+                                ignore: []
+                            }
+                        },
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/'
+                            ],
+                            lhs: {
+                                command: 'sys folder',
+                                properties: {},
+                                ignore: []
+                            }
+                        }
+                    ]);
+                });
+        });
+
         it('should return diff but remove default-from from protocol inspection profiles', () => {
             const currentConfig = {
                 '/myApp/Application1/gjd-inspect-profile': {
@@ -871,7 +970,7 @@ describe('fetch', () => {
                 })
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'E',
                         lhs: 'on',
                         path: ['/myApp/Application1/gjd-inspect-profile', 'properties', 'avr-stat-collect'],
@@ -916,7 +1015,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -931,7 +1030,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -1024,7 +1123,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -1039,7 +1138,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -4871,7 +4970,7 @@ describe('fetch', () => {
                     sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
                     return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
                         .then((actualDiffs) => {
-                            assert.deepEqual(actualDiffs, []);
+                            assert.deepStrictEqual(actualDiffs, []);
                         });
                 });
 
@@ -5516,7 +5615,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, partition, config)
                 .then((result) => {
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                     assert.deepStrictEqual(context.tasks, [{}]);
                 });
         });
@@ -5541,7 +5640,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5609,7 +5708,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5701,7 +5800,7 @@ describe('fetch', () => {
                             urlPrefix: 'http://localhost:8100'
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5740,7 +5839,7 @@ describe('fetch', () => {
                             }
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5760,7 +5859,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'Common', config)
                 .then((result) => {
-                    assert.deepEqual(result, ['Profile/Policy']);
+                    assert.deepStrictEqual(result, ['Profile/Policy']);
                 });
         });
     });
@@ -7250,7 +7349,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
                     const actualCmds = fetch.tmshUpdateScript(
@@ -7379,7 +7478,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     const actualScript = fetch.tmshUpdateScript(context, desiredConf, currConf, actualDiffs).script;
                     const actualCmds = actualScript.split('\n');
@@ -7485,7 +7584,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
+                assert.deepStrictEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
             });
 
             it('should handle IPv6', () => {
@@ -7505,7 +7604,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28.8080'
                 );
             });
@@ -7529,7 +7628,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0%100:8080'
                 );
             });
@@ -7551,7 +7650,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28%100.8080'
                 );
             });
@@ -7574,7 +7673,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -7595,7 +7694,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -7616,7 +7715,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });
@@ -7637,7 +7736,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });

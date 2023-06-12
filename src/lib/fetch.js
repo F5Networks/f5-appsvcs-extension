@@ -929,28 +929,34 @@ function isAs3Item(context, item, partition, filter) {
         && item.metadata.find((m) => m.name === 'as3')) {
         return true;
     }
-    if (item.kind === 'tm:gtm:server:devices:devicesstate') {
-        return true;
-    }
-    if (item.kind === 'tm:gtm:server:virtual-servers:virtual-serversstate') {
-        return true;
-    }
-    if (item.kind === 'tm:gtm:prober-pool:members:membersstate') {
-        return true;
-    }
     if (/^tm:gtm:pool:(?:a|aaaa|cname|mx):members:membersstate$/.test(item.kind)) {
         return true;
     }
-    if (item.kind === 'tm:apm:profile:access:accessstate' && context.tasks[context.currentIndex].commonAccessProfiles
-        && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+
+    switch (item.kind) {
+    case 'tm:gtm:server:devices:devicesstate':
+    case 'tm:gtm:server:virtual-servers:virtual-serversstate':
+    case 'tm:gtm:prober-pool:members:membersstate':
+    case 'tm:ltm:snat-translation:snat-translationstate':
         return true;
-    }
-    if (item.kind === 'tm:gtm:topology:topologystate' && item.description !== constants.as3ManagedDescription) {
-        return false;
-    }
-    if (item.kind === 'shared:service-discovery:taskstate'
-        && decodeURIComponent(item.id).split(/\/|~/g)[1] === partition) {
-        return true;
+    case 'tm:apm:profile:access:accessstate':
+        if (context.tasks[context.currentIndex].commonAccessProfiles
+            && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+            return true;
+        }
+        break;
+    case 'tm:gtm:topology:topologystate':
+        if (item.description !== constants.as3ManagedDescription) {
+            return false;
+        }
+        break;
+    case 'shared:service-discovery:taskstate':
+        if (decodeURIComponent(item.id).split(/\/|~/g)[1] === partition) {
+            return true;
+        }
+        break;
+    default:
+        break;
     }
 
     if ((partition !== 'Common' || isShared(item)) && item.kind !== 'tm:auth:partition:partitionstate'
@@ -1643,6 +1649,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     }
 
     const orderedItems = [];
+    const snatPoolAddresses = new Set();
 
     // handle cases where we need to delete an entry in current config so modifications
     // can occur as required.
@@ -1724,6 +1731,13 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         // we should only track this if we have a desired value
         } else if (currentValue && currentValue.command === 'gtm global-settings load-balancing') {
             delete currentConfig[configKey];
+        } else if (currentValue && currentValue.command === 'ltm snatpool' && tenantId === 'Common') {
+            // BIGIP will auto delete snat-translation(s) belonging to a snatpool
+            if (currentValue.properties && currentValue.properties.members) {
+                Object.keys(currentValue.properties.members).forEach((m) => {
+                    snatPoolAddresses.add(m);
+                });
+            }
         }
 
         if (!desiredValue && currentValue && currentValue.command === 'gtm topology' && context.tasks[context.currentIndex].gtmTopologyProcessed) {
@@ -1750,6 +1764,12 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         const isOnlyChange = pathCounts[diff.path[0]] === 1;
         if (isOnlyChange && diff.path[diff.path.length - 1].startsWith('iControl_')) {
             keep = false;
+        }
+        if (tenantId === 'Common' && diff.kind === 'D' && diff.lhs.command === 'ltm snat-translation') {
+            // if the translation address matches a deleting snat pool then let the BIGIP auto delete it
+            if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
+                keep = false;
+            }
         }
         if (keep) {
             finalDiffs.push(diff);

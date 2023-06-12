@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
 - AUTOTOOL-3718: ([GitHub Issue 704](https://github.com/F5Networks/f5-appsvcs-extension/issues/704)): Handling of line continuation character in iRule
 - AUTOTOOL-3831: Fix issue with running a DELETE after a dry-run on BIG-IQ
+- AUTOTOOL-3880: ([GitHub Issue 727](https://github.com/F5Networks/f5-appsvcs-extension/issues/727)): SNAT_Pool handling in /Common/Shared
 - AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
 
 ### Changed

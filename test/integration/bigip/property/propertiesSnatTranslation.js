@@ -25,14 +25,72 @@ describe('SNAT_Translation', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     function assertSnatTranslationClass(properties, options) {
-        // SNAT_Translation is created at the Tenant level
-        options.mcpPath = '/TEST_SNAT_Translation/';
         return assertClass('SNAT_Translation', properties, options);
     }
 
     it('All properties IPv4', () => {
         const options = {
-            mcpObjectName: '192.0.2.1'
+            mcpObjectName: '192.0.2.1',
+            // SNAT_Translation is created at the Tenant level
+            mcpPath: '/TEST_SNAT_Translation/'
+        };
+
+        const properties = [
+            {
+                name: 'remark',
+                inputValue: [undefined, 'A SNAT Translation', undefined],
+                expectedValue: ['none', 'A SNAT Translation', 'none'],
+                extractFunction: (o) => o.description || 'none'
+            },
+            {
+                // snat-translations have a fixed address
+                name: 'address',
+                inputValue: ['192.0.2.1'],
+                expectedValue: ['192.0.2.1']
+            },
+            {
+                name: 'adminState',
+                inputValue: [undefined, 'disable', undefined],
+                expectedValue: [true, false, true],
+                extractFunction: (o) => o.enabled === true
+            },
+            {
+                name: 'ipIdleTimeout',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: ['indefinite', 1000, 'indefinite']
+            },
+            {
+                name: 'maxConnections',
+                inputValue: [undefined, 10000, undefined],
+                expectedValue: [0, 10000, 0]
+            },
+            {
+                name: 'tcpIdleTimeout',
+                inputValue: [undefined, 2000, undefined],
+                expectedValue: ['indefinite', 2000, 'indefinite']
+            },
+            {
+                name: 'trafficGroup',
+                inputValue: [undefined, '/Common/traffic-group-local-only', undefined],
+                expectedValue: ['/Common/traffic-group-1', '/Common/traffic-group-local-only', '/Common/traffic-group-1'],
+                extractFunction: (o) => o.trafficGroup.fullPath
+            },
+            {
+                name: 'udpIdleTimeout',
+                inputValue: [undefined, 3000, undefined],
+                expectedValue: ['indefinite', 3000, 'indefinite']
+            }
+        ];
+        return assertSnatTranslationClass(properties, options);
+    });
+
+    it('All properties IPv4 in Common-Shared', () => {
+        const options = {
+            mcpObjectName: '192.0.2.1',
+            // SNAT_Translation is created at the Tenant level
+            mcpPath: '/Common/',
+            tenantName: 'Common',
+            applicationName: 'Shared'
         };
 
         const properties = [
@@ -86,7 +144,67 @@ describe('SNAT_Translation', function () {
 
     it('All properties IPv6', () => {
         const options = {
-            mcpObjectName: '2001:db8::1'
+            mcpObjectName: '2001:db8::1',
+            // SNAT_Translation is created at the Tenant level
+            mcpPath: '/TEST_SNAT_Translation/'
+        };
+
+        const properties = [
+            {
+                name: 'remark',
+                inputValue: [undefined, 'A SNAT Translation', undefined],
+                expectedValue: ['none', 'A SNAT Translation', 'none'],
+                extractFunction: (o) => o.description || 'none'
+            },
+            {
+                // snat-translations have a fixed address
+                name: 'address',
+                inputValue: ['2001:db8:0000:0000:0000:0000:0000:0001'],
+                expectedValue: ['2001:db8::1']
+            },
+            {
+                name: 'adminState',
+                inputValue: [undefined, 'disable', undefined],
+                expectedValue: [true, false, true],
+                extractFunction: (o) => o.enabled === true
+            },
+            {
+                name: 'ipIdleTimeout',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: ['indefinite', 1000, 'indefinite']
+            },
+            {
+                name: 'maxConnections',
+                inputValue: [undefined, 10000, undefined],
+                expectedValue: [0, 10000, 0]
+            },
+            {
+                name: 'tcpIdleTimeout',
+                inputValue: [undefined, 2000, undefined],
+                expectedValue: ['indefinite', 2000, 'indefinite']
+            },
+            {
+                name: 'trafficGroup',
+                inputValue: [undefined, '/Common/traffic-group-local-only', undefined],
+                expectedValue: ['/Common/traffic-group-1', '/Common/traffic-group-local-only', '/Common/traffic-group-1'],
+                extractFunction: (o) => o.trafficGroup.fullPath
+            },
+            {
+                name: 'udpIdleTimeout',
+                inputValue: [undefined, 3000, undefined],
+                expectedValue: ['indefinite', 3000, 'indefinite']
+            }
+        ];
+        return assertSnatTranslationClass(properties, options);
+    });
+
+    it('All properties IPv6 in Common-Shared', () => {
+        const options = {
+            mcpObjectName: '2001:db8::1',
+            // SNAT_Translation is created at the Tenant level
+            mcpPath: '/Common/',
+            tenantName: 'Common',
+            applicationName: 'Shared'
         };
 
         const properties = [

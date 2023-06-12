@@ -24,8 +24,8 @@ const {
 describe('SNAT_Pool', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    function assertSnatPoolClass(properties) {
-        return assertClass('SNAT_Pool', properties);
+    function assertSnatPoolClass(properties, options) {
+        return assertClass('SNAT_Pool', properties, options);
     }
 
     function getAddresses(responseBody) {
@@ -61,6 +61,15 @@ describe('SNAT_Pool', function () {
         'fdf5:4153:3300::12'
     ];
 
+    let commonSharedOptions;
+
+    this.beforeEach(() => {
+        commonSharedOptions = {
+            tenantName: 'Common',
+            applicationName: 'Shared'
+        };
+    });
+
     it('IPv4', () => {
         const properties = [
             {
@@ -71,6 +80,18 @@ describe('SNAT_Pool', function () {
             }
         ];
         return assertSnatPoolClass(properties);
+    });
+
+    it('IPv4 in Common-Shared', () => {
+        const properties = [
+            {
+                name: 'snatAddresses',
+                inputValue: [ipv4Addrs],
+                expectedValue: [ipv4Addrs],
+                extractFunction: getAddresses
+            }
+        ];
+        return assertSnatPoolClass(properties, commonSharedOptions);
     });
 
     it('IPv6', () => {
@@ -85,6 +106,18 @@ describe('SNAT_Pool', function () {
         return assertSnatPoolClass(properties);
     });
 
+    it('IPv6 in Common-Shared', () => {
+        const properties = [
+            {
+                name: 'snatAddresses',
+                inputValue: [ipv6Addrs],
+                expectedValue: [ipv6Addrs],
+                extractFunction: getAddresses
+            }
+        ];
+        return assertSnatPoolClass(properties, commonSharedOptions);
+    });
+
     it('Mix address types', () => {
         const properties = [
             {
@@ -97,6 +130,18 @@ describe('SNAT_Pool', function () {
         return assertSnatPoolClass(properties);
     });
 
+    it('Mix address types in Common-Shared', () => {
+        const properties = [
+            {
+                name: 'snatAddresses',
+                inputValue: [mixAddrs],
+                expectedValue: [mixAddrs],
+                extractFunction: getAddresses
+            }
+        ];
+        return assertSnatPoolClass(properties, commonSharedOptions);
+    });
+
     it('Update from IPv4 to mix', () => {
         const properties = [
             {
@@ -107,5 +152,17 @@ describe('SNAT_Pool', function () {
             }
         ];
         return assertSnatPoolClass(properties);
+    });
+
+    it('Update from IPv4 to mix in Common-Shared', () => {
+        const properties = [
+            {
+                name: 'snatAddresses',
+                inputValue: [ipv4Addrs, mixAddrs],
+                expectedValue: [ipv4Addrs, mixAddrs],
+                extractFunction: getAddresses
+            }
+        ];
+        return assertSnatPoolClass(properties, commonSharedOptions);
     });
 });
