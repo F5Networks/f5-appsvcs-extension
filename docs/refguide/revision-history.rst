@@ -13,8 +13,8 @@ Document Revision History
 
       * - 3.46
         - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| *  |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fix issue with running a DELETE after a dry-run on BIG-IQ
-        - ??-??-23
-        
+        - 7-24-23
+
       * - Unreleased (documentation updates)
         - This documentation only update contains the following changes: |br| * Added a procedure for downgrading BIG-IP AS3 on a BIG-IQ (see :ref:`Downgrade<down>`) |br| * Added a troubleshooting entry for potential AS3 incompatibility on BIG-IQ (see :ref:`Troubleshooting<bigiqas3>`)
         - 6-6-23
