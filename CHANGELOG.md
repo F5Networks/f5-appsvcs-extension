@@ -18,6 +18,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Changed
 
 ### Removed
+- AUTOTOOL-3871 Remove express package and app.js
 
 ## 3.45.0
 
