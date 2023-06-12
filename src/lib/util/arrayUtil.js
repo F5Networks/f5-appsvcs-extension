@@ -56,8 +56,116 @@ const doesArrayContain = function (array, target) {
     return array.indexOf(target) !== -1;
 };
 
+const getIndex = function (array, target, comparison) {
+    let targetIndex;
+    if (comparison === 'eq') {
+        targetIndex = array.findIndex((element) => element === target);
+    } else {
+        targetIndex = array.findIndex((element) => element.indexOf(target) > -1);
+    }
+    return targetIndex;
+};
+
+const getLastIndex = function (array, target, comparison) {
+    let targetIndex;
+    for (targetIndex = array.length - 1; targetIndex >= 0; targetIndex -= 1) {
+        if (comparison === 'eq') {
+            if (array[targetIndex] === target) {
+                break;
+            }
+        } else if (array[targetIndex].indexOf(target) > -1) {
+            break;
+        }
+    }
+    return targetIndex;
+};
+
+/**
+ * Inserts an item after another item in an array or at the beginning of the array.
+ *
+ * @param {array} array - The array into which to insert
+ * @param {string} target - The string to search for
+ * @param {string} item - The item to insert
+ * @param {string} comparison - The type of comparison to perform.
+ *     'eq' to do an '===' comparison
+ *     'inc' to see if the item is contained in an element of the array
+ */
+const insertAfterOrAtBeginning = function (array, target, item, comparison) {
+    const targetIndex = getLastIndex(array, target, comparison);
+
+    if (targetIndex > -1) {
+        array.splice(targetIndex + 1, 0, item);
+    } else {
+        array.unshift(item);
+    }
+};
+
+/**
+ * Inserts an item before another item in an array or at the beginning of the array.
+ *
+ * @param {array} array - The array into which to insert
+ * @param {string} target - The string to search for
+ * @param {string} item - The item to insert
+ * @param {string} comparison - The type of comparison to perform.
+ *     'eq' to do an '===' comparison
+ *     'inc' to see if the item is contained in an element of the array
+ */
+const insertBeforeOrAtBeginning = function (array, target, item, comparison) {
+    const targetIndex = getIndex(array, target, comparison);
+
+    if (targetIndex > -1) {
+        array.splice(targetIndex, 0, item);
+    } else {
+        array.unshift(item);
+    }
+};
+
+/**
+ * Inserts an item after another item in an array or at the end of the array.
+ *
+ * @param {array} array - The array into which to insert
+ * @param {string} target - The string to search for
+ * @param {string} item - The item to insert
+ * @param {string} comparison - The type of comparison to perform.
+ *     'eq' to do an '===' comparison
+ *     'inc' to see if the item is contained in an element of the array
+ */
+const insertAfterOrAtEnd = function (array, target, item, comparison) {
+    const targetIndex = getLastIndex(array, target, comparison);
+
+    if (targetIndex > -1) {
+        array.splice(targetIndex + 1, 0, item);
+    } else {
+        array.push(item);
+    }
+};
+
+/**
+ * Inserts an item before another item in an array or at the end of the array.
+ *
+ * @param {array} array - The array into which to insert
+ * @param {string} target - The string to search for
+ * @param {string} item - The item to insert
+ * @param {string} comparison - The type of comparison to perform.
+ *     'eq' to do an '===' comparison
+ *     'inc' to see if the item is contained in an element of the array
+ */
+const insertBeforeOrAtEnd = function (array, target, item, comparison) {
+    const targetIndex = getIndex(array, target, comparison);
+
+    if (targetIndex > -1) {
+        array.splice(targetIndex, 0, item);
+    } else {
+        array.push(item);
+    }
+};
+
 module.exports = {
     ensureArray,
     doesArrayContainAnyOf,
-    doesArrayContain
+    doesArrayContain,
+    insertAfterOrAtBeginning,
+    insertAfterOrAtEnd,
+    insertBeforeOrAtBeginning,
+    insertBeforeOrAtEnd
 };

@@ -2734,6 +2734,10 @@ describe('map_mcp', () => {
         });
 
         describe('tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate', () => {
+            beforeEach(() => {
+                defaultContext.target.tmosVersion = '14.1';
+            });
+
             it('should map CIDR to mask', () => {
                 const obj = {
                     kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
@@ -2741,11 +2745,33 @@ describe('map_mcp', () => {
                     command: 'ltm traffic-matching-criteria',
                     destinationAddressInline: '192.0.2.1/18'
                 };
-                defaultContext.target.tmosVersion = '14.1';
                 const results = translate[obj.kind](defaultContext, obj);
                 const properties = results[0].properties;
                 // gitleaks is fooled by the mask
                 assert.strictEqual(properties['destination-address-inline'], '192.0.2.1/255.255.192.0'); // gitleaks:allow
+            });
+
+            it('should map destination-address-inline 0.0.0.0 to any', () => {
+                const obj = {
+                    kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                    fullPath: '/Tenant/Application/myTrafficMatchingCriteria',
+                    destinationAddressInline: '0.0.0.0'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.strictEqual(properties['destination-address-inline'], 'any/any');
+            });
+
+            it('should map source-address-inline CIDR to mask', () => {
+                const obj = {
+                    kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                    fullPath: '/Tenant/Application/myTrafficMatchingCriteria',
+                    sourceAddressInline: '192.0.2.1/18'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                // gitleaks is fooled by the mask
+                assert.strictEqual(properties['source-address-inline'], '192.0.2.1/255.255.192.0'); // gitleaks:allow
             });
         });
 

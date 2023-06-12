@@ -25,11 +25,15 @@ const mapMcp = require('./map_mcp');
 const mapCli = require('./map_cli');
 const paths = require('./paths.json');
 const util = require('./util/util');
+const arrayUtil = require('./util/arrayUtil');
 const log = require('./log');
 const constants = require('./constants');
 
 const BEGIN_TRANS = 'tmsh::begin_transaction';
 const COMMIT_TRANS = 'tmsh::commit_transaction';
+
+const CREATE_LIST_REGEX = /tmsh::create (?:security firewall|net) (?:port|address)-list\s+(.+?)\s+/;
+
 /**
  * Align objects to enable object "diff" comparison.
  *
@@ -815,7 +819,50 @@ function updateCommonAccessProfiles(context, desiredConfig) {
     return promiseUtil.series(promises).then(() => storage.persist());
 }
 
-function filterAs3Items(configs) {
+// Recursively looks through address lists and filters referenced virtual-addresses
+// from the config
+function filterAddressListVirtualAddresses(addressListName, configs, commonConfig) {
+    if (!addressListName) {
+        return configs;
+    }
+
+    let addressList;
+
+    if (addressListName.startsWith('/Common')) {
+        addressList = commonConfig.addressListList.find((item) => item.fullPath === addressListName);
+    } else {
+        addressList = configs.find((item) => item.fullPath === addressListName);
+    }
+
+    const addresses = addressList ? addressList.addresses : undefined;
+    if (addresses) {
+        configs = configs.filter((item) => {
+            if (item.kind === 'tm:ltm:virtual-address:virtual-addressstate') {
+                const match = addresses.find((firewallAddress) => {
+                    if (firewallAddress.name.indexOf('-') === -1) {
+                        return firewallAddress.name.split('/')[0] === item.address;
+                    }
+                    const rangeArray = firewallAddress.name.split('-');
+                    return ipUtil.isIPinRange(item.address, rangeArray[0], rangeArray[1]);
+                });
+                return !match;
+            }
+            return true;
+        });
+    }
+
+    const addressLists = addressList ? addressList.addressLists : undefined;
+    if (addressLists) {
+        addressLists.forEach((subList) => {
+            const fullPath = `/${subList.partition}/${subList.subPath}/${subList.name}`;
+            configs = filterAddressListVirtualAddresses(fullPath, configs, commonConfig);
+        });
+    }
+
+    return configs;
+}
+
+function filterAs3Items(context, configs, commonConfig) {
     configs.forEach((config) => {
         // Filter ephemeral pool members
         if (config.kind === 'tm:ltm:pool:poolstate' && config.membersReference.items) {
@@ -838,6 +885,15 @@ function filterAs3Items(configs) {
     }, []));
 
     configs = configs.filter((item) => !(item.kind === 'tm:apm:policy:access-policy:access-policystate' && hiddenAccessPolicies.indexOf(item.fullPath) !== -1));
+
+    // When using traffic-matching-criteria, TMOS manages virtual-addresses that are in the destination list,
+    // so ignore those when we are updating/creating. For delete, though we still need to handle it
+    // or the partition won't be empty in time and we won't be able to delete that.
+    if (context.request.method !== 'Delete') {
+        const tmc = configs.find((item) => item.kind === 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate');
+        const destinationAddrListName = tmc ? tmc.destinationAddressList : undefined;
+        configs = filterAddressListVirtualAddresses(destinationAddrListName, configs, commonConfig);
+    }
 
     return configs;
 }
@@ -873,28 +929,34 @@ function isAs3Item(context, item, partition, filter) {
         && item.metadata.find((m) => m.name === 'as3')) {
         return true;
     }
-    if (item.kind === 'tm:gtm:server:devices:devicesstate') {
-        return true;
-    }
-    if (item.kind === 'tm:gtm:server:virtual-servers:virtual-serversstate') {
-        return true;
-    }
-    if (item.kind === 'tm:gtm:prober-pool:members:membersstate') {
-        return true;
-    }
     if (/^tm:gtm:pool:(?:a|aaaa|cname|mx):members:membersstate$/.test(item.kind)) {
         return true;
     }
-    if (item.kind === 'tm:apm:profile:access:accessstate' && context.tasks[context.currentIndex].commonAccessProfiles
-        && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+
+    switch (item.kind) {
+    case 'tm:gtm:server:devices:devicesstate':
+    case 'tm:gtm:server:virtual-servers:virtual-serversstate':
+    case 'tm:gtm:prober-pool:members:membersstate':
+    case 'tm:ltm:snat-translation:snat-translationstate':
         return true;
-    }
-    if (item.kind === 'tm:gtm:topology:topologystate' && item.description !== constants.as3ManagedDescription) {
-        return false;
-    }
-    if (item.kind === 'shared:service-discovery:taskstate'
-        && decodeURIComponent(item.id).split(/\/|~/g)[1] === partition) {
-        return true;
+    case 'tm:apm:profile:access:accessstate':
+        if (context.tasks[context.currentIndex].commonAccessProfiles
+            && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+            return true;
+        }
+        break;
+    case 'tm:gtm:topology:topologystate':
+        if (item.description !== constants.as3ManagedDescription) {
+            return false;
+        }
+        break;
+    case 'shared:service-discovery:taskstate':
+        if (decodeURIComponent(item.id).split(/\/|~/g)[1] === partition) {
+            return true;
+        }
+        break;
+    default:
+        break;
     }
 
     if ((partition !== 'Common' || isShared(item)) && item.kind !== 'tm:auth:partition:partitionstate'
@@ -913,9 +975,11 @@ function isAs3Item(context, item, partition, filter) {
  * @param {object} context
  * @param {array} pathList - list of BIG-IP config pathnames
  * @param {string} tenantId - Tenant name indicates BIG-IP partition
+ * @param {object} [commonConfig] - Configuration from Common
+ *
  * @returns {Promise}
  */
-const getBigipConfig = function (context, pathList, tenantId) {
+const getBigipConfig = function (context, pathList, tenantId, commonConfig) {
     const partition = tenantId;
 
     const supportedPaths = pathList
@@ -951,7 +1015,7 @@ const getBigipConfig = function (context, pathList, tenantId) {
         .then((config) => gatherAccessProfileItems(context, partition, config)
             .then((result) => ({ config, filter: result })))
         .then((configs) => extractAs3Items(context, configs.config, partition, configs.filter))
-        .then((configs) => filterAs3Items(configs))
+        .then((configs) => filterAs3Items(context, configs, commonConfig))
         .catch((err) => {
             log.error(err);
             throw err;
@@ -1135,11 +1199,11 @@ const updateAddressesWithRouteDomain = function (configs, tenantId) {
         const cfg = configs[k];
         if (cfg.command === 'ltm virtual-address') {
             let destAddr = cfg.properties.address;
-            if (!util.isEmptyOrUndefined(defaultRd) && !destAddr.includes('%')) {
+            if (!util.isEmptyOrUndefined(defaultRd) && !util.isEmptyOrUndefined(destAddr) && !destAddr.includes('%')) {
                 destAddr = `${destAddr}%${defaultRd}`;
                 cfg.properties.address = destAddr;
             }
-            if (destAddr.includes('%')) {
+            if (!util.isEmptyOrUndefined(destAddr) && destAddr.includes('%')) {
                 // not sure why we're tagging the path with this..
                 // but it's only on the config path, not on the cli script
                 destWithRds[k.replace('Service_Address-', '')] = destAddr;
@@ -1153,7 +1217,7 @@ const updateAddressesWithRouteDomain = function (configs, tenantId) {
         if (cfg.command === 'ltm virtual') {
             let cidr = '';
             const sourceAddr = cfg.properties.source;
-            if (!util.isEmptyOrUndefined(defaultRd) && !sourceAddr.includes('%')) {
+            if (!util.isEmptyOrUndefined(defaultRd) && !util.isEmptyOrUndefined(sourceAddr) && !sourceAddr.includes('%')) {
                 const addrParts = sourceAddr.split('/');
                 const ip = addrParts[0];
                 if (!util.isEmptyOrUndefined(addrParts[1])) {
@@ -1272,7 +1336,7 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
                 log.debug(`tenant ${tenantId} lacks a partition`);
                 return actionableConfig;
             }
-            return getBigipConfig(context, paths.root, tenantId)
+            return getBigipConfig(context, paths.root, tenantId, commonConfig)
                 .then((config) => {
                     if (context.request.isPerApp && context.request.perAppInfo.apps.length > 0) {
                         // If no apps are specified, tenant filtering is sufficient
@@ -1294,7 +1358,7 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
                             });
                         }
                     });
-                    return getBigipConfig(context, subReferenceLinks, tenantId);
+                    return getBigipConfig(context, subReferenceLinks, tenantId, commonConfig);
                 })
                 .then((config) => {
                     referenceConfig = referenceConfig.concat(config);
@@ -1585,6 +1649,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     }
 
     const orderedItems = [];
+    const snatPoolAddresses = new Set();
 
     // handle cases where we need to delete an entry in current config so modifications
     // can occur as required.
@@ -1666,6 +1731,13 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         // we should only track this if we have a desired value
         } else if (currentValue && currentValue.command === 'gtm global-settings load-balancing') {
             delete currentConfig[configKey];
+        } else if (currentValue && currentValue.command === 'ltm snatpool' && tenantId === 'Common') {
+            // BIGIP will auto delete snat-translation(s) belonging to a snatpool
+            if (currentValue.properties && currentValue.properties.members) {
+                Object.keys(currentValue.properties.members).forEach((m) => {
+                    snatPoolAddresses.add(m);
+                });
+            }
         }
 
         if (!desiredValue && currentValue && currentValue.command === 'gtm topology' && context.tasks[context.currentIndex].gtmTopologyProcessed) {
@@ -1692,6 +1764,12 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         const isOnlyChange = pathCounts[diff.path[0]] === 1;
         if (isOnlyChange && diff.path[diff.path.length - 1].startsWith('iControl_')) {
             keep = false;
+        }
+        if (tenantId === 'Common' && diff.kind === 'D' && diff.lhs.command === 'ltm snat-translation') {
+            // if the translation address matches a deleting snat pool then let the BIGIP auto delete it
+            if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
+                keep = false;
+            }
         }
         if (keep) {
             finalDiffs.push(diff);
@@ -1843,6 +1921,102 @@ const updatePostTransVirtuals = function (trans, postTrans, destinationsDeletedI
     });
 };
 
+// Finds lists in pre-trans that reference lists created in trans
+// If found, moves the creation command up to pre-trans
+const checkTransactionReferences = function (trans, preTrans, rollback) {
+    // lists referenced from other lists
+    const listListReferenceRegex = /(?:port|address)-lists\s+replace-all-with\s+\\{\s+(.+?)\s+\\}/;
+
+    // Check to see if anything in pre-trans has a list that refers to a list
+    let listsReferenced = [];
+    preTrans.forEach((command) => {
+        if (typeof command === 'string') {
+            const referencedListMatch = command.match(listListReferenceRegex);
+            if (referencedListMatch && referencedListMatch[1] !== 'none') {
+                // The lists referenced may be a space-separated list
+                listsReferenced = listsReferenced.concat(referencedListMatch[1].split(' '));
+            }
+        }
+    });
+
+    // Now check trans to see if any of the referenced lists are created there
+    if (listsReferenced.length > 0) {
+        let matchFound = false;
+        for (let i = trans.length - 1; i >= 0; i -= 1) {
+            const transCommand = trans[i];
+            const createListMatch = transCommand.match(CREATE_LIST_REGEX);
+            if (createListMatch && listsReferenced.indexOf(createListMatch[1]) > -1) {
+                matchFound = true;
+                arrayUtil.insertAfterOrAtEnd(preTrans, 'tmsh::create sys folder', transCommand, 'inc');
+                trans.splice(i, 1);
+                arrayUtil.insertBeforeOrAtEnd(
+                    rollback,
+                    'delete sys folder',
+                    `catch { tmsh::delete ${
+                        transCommand.split(' ').slice(1, 5).join(' ')} } e`,
+                    'inc'
+                );
+            }
+        }
+
+        // If we found something, repeat
+        if (matchFound) {
+            return checkTransactionReferences(trans, preTrans, rollback);
+        }
+    }
+
+    return undefined;
+};
+
+// In certain cases we need to put creation of port- and address-lists and traffic-matching-criteria outside
+// of the transaction. However, if we do that we also need to have any referenced lists outside
+// of the transaction but we can't know during that processing if there is also a referenced list.
+// So we need to move referenced lists outside of the transaction. Note that lists can reference
+// other lists
+const updatePortAndAddressLists = function (trans, preTrans, rollback) {
+    const createTmcPrefix = 'tmsh::create ltm traffic-matching-criteria';
+
+    // lists referenced from a traffic-matching-criteria
+    const tmcListReferenceRegex = /(?:destination|source)-(?:port|address)-list\s+(.+?)\s+/g;
+
+    // between address/port and source/destination, we can't have more than 4 matches in a traffic-matching-criteria
+    // so add a sanity check to make sure we don't infinite loop
+    const maxMatches = 4;
+    let numMatches = 0;
+
+    // Iterate through the pre-trans to move any directly referenced lists up
+    preTrans.forEach((command) => {
+        if (typeof command === 'string' && command.startsWith(createTmcPrefix)) {
+            let matches = tmcListReferenceRegex.exec(command);
+            while (matches !== null && numMatches <= maxMatches) {
+                numMatches += 1;
+                const listName = matches[1];
+                for (let i = trans.length - 1; i >= 0; i -= 1) {
+                    const transCommand = trans[i];
+                    const createListMatch = transCommand.match(CREATE_LIST_REGEX);
+                    if (createListMatch && createListMatch[1] === listName) {
+                        arrayUtil.insertBeforeOrAtEnd(preTrans, createTmcPrefix, transCommand, 'inc');
+                        trans.splice(i, 1);
+                        arrayUtil.insertAfterOrAtBeginning(
+                            rollback,
+                            'delete ltm traffic-matching-criteria',
+                            `catch { tmsh::delete ${
+                                transCommand.split(' ').slice(1, 5).join(' ')} } e`,
+                            'inc'
+                        );
+                    }
+                }
+
+                matches = tmcListReferenceRegex.exec(command);
+            }
+        }
+    });
+
+    // Now that all traffic-matching-criteria commands have bee moved to pre-trans, look
+    // for references from lists to lists
+    checkTransactionReferences(trans, preTrans, rollback);
+};
+
 /**
  * Determines if a virtual's destination matches a virtualAddress
  *
@@ -1920,6 +2094,60 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             && serverToDeleteMatch[1] === serverToCreateMatch[1]) {
             return true;
         }
+        return false;
+    }
+
+    function isNewAddressListAndTmcWithRouteDomain(diffUpdates, diffs) {
+        function isCreate(itemToCreateMatch, itemToDeleteMatch) {
+            if (!itemToCreateMatch || !itemToDeleteMatch) {
+                return !!itemToCreateMatch;
+            }
+
+            return itemToCreateMatch[1] !== itemToDeleteMatch[1];
+        }
+
+        // See if we are creating, but not deleting, both an address list and a traffic-matching-criteria
+        // which references that address list
+        const addressListToCreateRegex = /tmsh::create .+ address-list\s+(.+?)\s+/;
+        const addressListToDeleteRegex = /tmsh::delete .+ address-list\s+(.+?)\s+/;
+        const tmcToCreateRegex = /tmsh::create ltm traffic-matching-criteria\s+(.+?)\s+/;
+        const tmcToDeleteRegex = /tmsh::delete ltm traffic-matching-criteria\s+(.+?)\s+/;
+
+        const addressListToCreateMatch = diffUpdates.commands.match(addressListToCreateRegex);
+        const addressListToDeleteMatch = diffUpdates.commands.match(addressListToDeleteRegex);
+
+        const tmcToCreateMatch = diffUpdates.commands.match(tmcToCreateRegex);
+        const tmcToDeleteMatch = diffUpdates.commands.match(tmcToDeleteRegex);
+
+        if (isCreate(addressListToCreateMatch, addressListToDeleteMatch)) {
+            // Now we know we are creating an address list - check to see if there is a TMC that refers to it
+            const addressList = addressListToCreateMatch[1];
+            const tmcDiff = diffs.find((diff) => {
+                if (diff.command === 'ltm traffic-matching-criteria'
+                  && diff.rhs && diff.rhs.properties
+                  && diff.rhs.properties['route-domain'] !== 'any') {
+                    return diff.rhs.properties['destination-address-list'] === addressList
+                        || diff.rhs.properties['source-address-list'] === addressList;
+                }
+                return false;
+            });
+
+            return !!tmcDiff;
+        }
+
+        if (isCreate(tmcToCreateMatch, tmcToDeleteMatch)) {
+            // Now we know we are creating a TMC - check to see there is an address list that it refers to
+            const addressListDiff = diffs.find((diff) => {
+                if (diff.command === 'net address-list' || diff.command === 'security firewall address-list') {
+                    // diff.path[0] is the name of the address list. check to see if the tmc create command mentions it
+                    return tmcToCreateMatch.input.indexOf(diff.path[0]) > -1;
+                }
+                return false;
+            });
+
+            return !!addressListDiff;
+        }
+
         return false;
     }
 
@@ -2069,6 +2297,37 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             .replace(/tmsh::create/, 'tmsh::modify');
                         if (trans.indexOf(diffUpdates.commands) === -1) {
                             trans.push(diffUpdates.commands);
+                        }
+                    } else if (isNewAddressListAndTmcWithRouteDomain(diffUpdates, configDiff)) {
+                        // Creating a new TMC and address list in a transaction does not work if there
+                        // is a non-default route domain.
+                        // Make sure we create the address-list before the TMC and vice versa on the delete.
+                        if (diffUpdates.commands.indexOf(' address-list') > -1) {
+                            // This is the address list command
+                            arrayUtil.insertBeforeOrAtEnd(
+                                preTrans,
+                                'traffic-matching-criteria',
+                                diffUpdates.commands,
+                                'inc'
+                            );
+                            arrayUtil.insertBeforeOrAtBeginning(
+                                rollback,
+                                'delete sys folder',
+                                `catch { tmsh::delete ${
+                                    diffUpdates.commands.split(' ').slice(1, 5).join(' ')} } e`,
+                                'inc'
+                            );
+                        } else {
+                            // This is the TMC command
+                            // Note: leading space distinguishes from things like destination-address-list.
+                            arrayUtil.insertAfterOrAtEnd(preTrans, ' address-list', diffUpdates.commands, 'inc');
+                            arrayUtil.insertBeforeOrAtBeginning(
+                                rollback,
+                                'delete security firewall address-list',
+                                `catch { tmsh::delete ${
+                                    diffUpdates.commands.split(' ').slice(1, 5).join(' ')} } e`,
+                                'inc'
+                            );
                         }
                     } else if (diffUpdates.commands.indexOf('create gtm wideip') > -1) {
                         if (gtmModifyAliasPaths.indexOf(diff.path[0]) > -1
@@ -2317,6 +2576,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     });
 
     trans = updateWildcardMonitorCommands(trans);
+    updatePortAndAddressLists(trans, preTrans, rollback);
     updatePostTransVirtuals(trans, postTrans, destinationsDeletedInTrans);
 
     updates.script = preamble.concat(preTrans, trans, commit);

@@ -344,10 +344,12 @@ function as3Digest(declaration) {
     let getNodelist = Promise.resolve([]);
     let getVirtualAddresses = Promise.resolve([]);
     let getAccessProfileList = Promise.resolve([]);
+    let getAddressListList = Promise.resolve([]);
     if (!declaration.scratch) {
         getNodelist = util.getNodelist(this.context);
-        getVirtualAddresses = util.getVirtualAddressList(this.context);
+        getVirtualAddresses = util.getVirtualAddressList(this.context, 'Common');
         getAccessProfileList = util.getAccessProfileList(this.context);
+        getAddressListList = util.getAddressListList(this.context, 'Common');
     }
 
     this.postProcess = [];
@@ -357,9 +359,11 @@ function as3Digest(declaration) {
     return getNodelist
         .then((nodelist) => { this.nodelist = nodelist; })
         .then(() => getVirtualAddresses)
-        .then((virtualAddressList) => { this.virtualAddressList = virtualAddressList.filter((address) => address.partition === 'Common'); })
+        .then((virtualAddressList) => { this.virtualAddressList = virtualAddressList; })
         .then(() => getAccessProfileList)
         .then((accessProfileList) => { this.accessProfileList = accessProfileList; })
+        .then(() => getAddressListList)
+        .then((addressListList) => { this.addressListList = addressListList; })
         .then(() => Config.getAllSettings())
         .then((settings) => { this.settings = settings; })
         .then(() => validate.call(this, declaration))

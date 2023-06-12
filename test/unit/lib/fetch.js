@@ -90,7 +90,7 @@ describe('fetch', () => {
 
                 assert.isFulfilled(fetch.getBigipConfig(context, testPath, 'Common')
                     .then((config) => {
-                        assert.deepEqual(config, []);
+                        assert.deepStrictEqual(config, []);
                     }));
             });
 
@@ -664,6 +664,14 @@ describe('fetch', () => {
                 assert.strictEqual(result, true, `${item.kind} should return true`);
             });
         });
+
+        it('should return true when item.kind is a snat-translation', () => {
+            const item = {
+                kind: 'tm:ltm:snat-translation:snat-translationstate'
+            };
+            const result = fetch.isAs3Item(context, item, 'thePartition');
+            assert.strictEqual(result, true, `${item.kind} should return true`);
+        });
     });
 
     describe('.getDiff', () => {
@@ -724,7 +732,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Access_Profile/accessProfile'
@@ -805,7 +813,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Per_Request_Access_Policy/accessPolicy'
@@ -842,6 +850,97 @@ describe('fetch', () => {
                 });
         });
 
+        it('should return diff deleting a snat pool in Common Shared but not the matching snat translation', () => {
+        // When a snat pool is deleted BIGIP will check and delete any snat translations that are no longer needed
+            const currentConfig = {
+                '/Common/Shared/CreateSnatPool3': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/Common/192.0.2.12': {},
+                            '/Common/192.0.2.13': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.12': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.12',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.13': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.13',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                }
+            };
+
+            const desiredConfig = {};
+
+            const commonConfig = {
+                nodeList: []
+            };
+
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, 'Common')
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    assert.deepStrictEqual(results, [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/CreateSnatPool3'
+                            ],
+                            lhs: {
+                                command: 'ltm snatpool',
+                                properties: {
+                                    members: {
+                                        '/Common/192.0.2.12': {},
+                                        '/Common/192.0.2.13': {}
+                                    }
+                                },
+                                ignore: []
+                            }
+                        },
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/'
+                            ],
+                            lhs: {
+                                command: 'sys folder',
+                                properties: {},
+                                ignore: []
+                            }
+                        }
+                    ]);
+                });
+        });
+
         it('should return diff but remove default-from from protocol inspection profiles', () => {
             const currentConfig = {
                 '/myApp/Application1/gjd-inspect-profile': {
@@ -871,7 +970,7 @@ describe('fetch', () => {
                 })
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'E',
                         lhs: 'on',
                         path: ['/myApp/Application1/gjd-inspect-profile', 'properties', 'avr-stat-collect'],
@@ -916,7 +1015,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -931,7 +1030,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -1024,7 +1123,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -1039,7 +1138,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -4013,6 +4112,286 @@ describe('fetch', () => {
                 );
             });
 
+            it('should find referenced address lists inside the transaction and move them out if necessary', () => {
+                const desiredConfig = {
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Tenant/Application/sourceAddressList': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.100.0/24': {},
+                                '192.168.200.50-192.168.200.60': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList1': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.40.0/24': {},
+                                '192.168.50.1-192.168.50.10': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList2': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.60.0/24': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList3': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.10.0/24': {},
+                                '192.168.20.20-192.168.20.50': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {
+                                '/Tenant/Application/destinationAddressList1': {},
+                                '/Tenant/Application/destinationAddressList2': {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/tcpService_VS_TMC_OBJ': {
+                        command: 'ltm traffic-matching-criteria',
+                        properties: {
+                            protocol: 'tcp',
+                            'destination-address-inline': 'any/any',
+                            'destination-address-list': '/Tenant/Application/destinationAddressList3',
+                            'source-address-inline': '0.0.0.0/any',
+                            'source-address-list': '/Tenant/Application/sourceAddressList',
+                            'route-domain': 'any'
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            description: 'Application',
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'traffic-matching-criteria': '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/sourceAddressList'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.100.0/24': {},
+                                    '192.168.200.50-192.168.200.60': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList1'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.40.0/24': {},
+                                    '192.168.50.1-192.168.50.10': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList2'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.60.0/24': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList3'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.10.0/24': {},
+                                    '192.168.20.20-192.168.20.50': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {
+                                    '/Tenant/Application/destinationAddressList1': {},
+                                    '/Tenant/Application/destinationAddressList2': {}
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                        ],
+                        rhs: {
+                            command: 'ltm traffic-matching-criteria',
+                            properties: {
+                                protocol: 'tcp',
+                                'destination-address-inline': 'any/any',
+                                'destination-address-list': '/Tenant/Application/destinationAddressList3',
+                                'source-address-inline': '0.0.0.0/any',
+                                'source-address-list': '/Tenant/Application/sourceAddressList',
+                                'route-domain': 'any'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm traffic-matching-criteria'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/tcpService'
+                        ],
+                        rhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                description: 'Application',
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    }
+                                },
+                                'traffic-matching-criteria': '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::create auth partition Tenant default-route-domain 0\ntmsh::create sys folder /Tenant/Application/\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList1 addresses replace-all-with \\{ 192.168.40.0/24 192.168.50.1-192.168.50.10 \\} fqdns none geo none address-lists none\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList2 addresses replace-all-with \\{ 192.168.60.0/24 \\} fqdns none geo none address-lists none\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList3 addresses replace-all-with \\{ 192.168.10.0/24 192.168.20.20-192.168.20.50 \\} fqdns none geo none address-lists replace-all-with \\{ /Tenant/Application/destinationAddressList1 /Tenant/Application/destinationAddressList2 \\}\ntmsh::create security firewall address-list /Tenant/Application/sourceAddressList addresses replace-all-with \\{ 192.168.100.0/24 192.168.200.50-192.168.200.60 \\} fqdns none geo none address-lists none\ntmsh::create ltm traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ protocol tcp destination-address-inline any/any destination-address-list /Tenant/Application/destinationAddressList3 source-address-inline 0.0.0.0/any source-address-list /Tenant/Application/sourceAddressList route-domain any\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::create ltm virtual /Tenant/Application/tcpService enabled  description Application profiles replace-all-with \\{ /Common/f5-tcp-progressive \\{ context all \\} \\} traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ\ntmsh::commit_transaction\ncatch { tmsh::delete ltm traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ protocol } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/sourceAddressList } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList3 } e\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList2 } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList1 } e\ncatch { tmsh::delete sys folder /Tenant/Application/ } e\ncatch { tmsh::delete auth partition Tenant } e\n}}\n}'
+                );
+            });
+
             describe('no traffic-matching-criteria', () => {
                 let desiredConfig;
                 let currentConfig;
@@ -4591,7 +4970,7 @@ describe('fetch', () => {
                     sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
                     return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
                         .then((actualDiffs) => {
-                            assert.deepEqual(actualDiffs, []);
+                            assert.deepStrictEqual(actualDiffs, []);
                         });
                 });
 
@@ -5236,7 +5615,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, partition, config)
                 .then((result) => {
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                     assert.deepStrictEqual(context.tasks, [{}]);
                 });
         });
@@ -5261,7 +5640,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5329,7 +5708,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5421,7 +5800,7 @@ describe('fetch', () => {
                             urlPrefix: 'http://localhost:8100'
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5460,7 +5839,7 @@ describe('fetch', () => {
                             }
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5480,7 +5859,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'Common', config)
                 .then((result) => {
-                    assert.deepEqual(result, ['Profile/Policy']);
+                    assert.deepStrictEqual(result, ['Profile/Policy']);
                 });
         });
     });
@@ -5671,12 +6050,200 @@ describe('fetch', () => {
                         ]
                     }
                 ]
+            },
+            {
+                name: 'remove destination address lists addresses in non-Common tenant',
+                config: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address lists addresses in Common tenant',
+                config: [
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Common/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ],
+                commonConfig: {
+                    addressListList: [
+                        {
+                            fullPath: '/Common/myAddressList',
+                            addresses: [
+                                { name: '192.0.2.10/32' }
+                            ]
+                        }
+                    ]
+                },
+                expected: [
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Common/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address lists addresses that match range',
+                config: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10-192.0.2.20' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.15'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.30'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10-192.0.2.20' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.30'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address list addresses in referenced lists',
+                config: [
+                    {
+                        fullPath: '/Tenant/Application/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ],
+                        addressLists: [
+                            {
+                                name: 'myOtherAddressList',
+                                partition: 'Tenant',
+                                subPath: 'Application'
+                            }
+                        ]
+                    },
+                    {
+                        fullPath: '/Tenant/Application/myOtherAddressList',
+                        addresses: [
+                            { name: '192.0.2.200/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/Application/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.200'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/Application/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ],
+                        addressLists: [
+                            {
+                                name: 'myOtherAddressList',
+                                partition: 'Tenant',
+                                subPath: 'Application'
+                            }
+                        ]
+                    },
+                    {
+                        fullPath: '/Tenant/Application/myOtherAddressList',
+                        addresses: [
+                            { name: '192.0.2.200/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/Application/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
             }
         ];
 
         filterTestCases.forEach((testCase) => {
             it(`should ${testCase.name}`, () => {
-                const actualConfig = fetch.filterAs3Items(testCase.config);
+                const actualConfig = fetch.filterAs3Items(context, testCase.config, testCase.commonConfig);
                 assert.deepStrictEqual(actualConfig, testCase.expected);
             });
         });
@@ -6782,7 +7349,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
                     const actualCmds = fetch.tmshUpdateScript(
@@ -6911,7 +7478,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     const actualScript = fetch.tmshUpdateScript(context, desiredConf, currConf, actualDiffs).script;
                     const actualCmds = actualScript.split('\n');
@@ -7017,7 +7584,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
+                assert.deepStrictEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
             });
 
             it('should handle IPv6', () => {
@@ -7037,7 +7604,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28.8080'
                 );
             });
@@ -7061,7 +7628,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0%100:8080'
                 );
             });
@@ -7083,7 +7650,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28%100.8080'
                 );
             });
@@ -7106,7 +7673,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -7127,7 +7694,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -7148,7 +7715,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });
@@ -7169,7 +7736,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });

@@ -403,7 +403,6 @@ describe('map_as3', () => {
                             }
                         },
                         'min-active-members': 1,
-                        minimumMonitors: 1,
                         'reselect-tries': 0,
                         'service-down-action': 'none',
                         'slow-ramp-time': 10
@@ -460,6 +459,12 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+
+        it('should remove minimumMonitors if no monitors defined', () => {
+            const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+            assert.isUndefined(config.properties.monitors);
+            assert.isUndefined(config.properties.minimumMonitors);
         });
 
         describe('with Service Discovery', () => {
@@ -580,7 +585,6 @@ describe('map_as3', () => {
                                 }
                             },
                             'min-active-members': 1,
-                            minimumMonitors: 1,
                             'reselect-tries': 0,
                             'service-down-action': 'none',
                             'slow-ramp-time': 10
@@ -2964,11 +2968,11 @@ describe('map_as3', () => {
             );
         });
 
-        describe('portList', () => {
-            it('should map portList to traffic matching criteria', () => {
+        describe('virtualPort list', () => {
+            it('should map virtualPort list to traffic matching criteria', () => {
                 const fullContext = Object.assign({}, defaultContext, context);
                 fullContext.target.tmosVersion = '14.1';
-                item.portList = {
+                item.virtualPort = {
                     use: 'firewallPortList'
                 };
                 declaration.tenantId.appId.itemId.firewallPortList = {
@@ -2980,9 +2984,74 @@ describe('map_as3', () => {
 
                 const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
                 const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
                 assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
-                assert.strictEqual(virtual['traffic-matching-criteria'].destination, undefined);
-                assert.strictEqual(virtual['traffic-matching-criteria'].source, undefined);
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], 'firewallPortList');
+                assert.strictEqual(tmc['destination-address-list'], undefined);
+                assert.strictEqual(tmc['source-address-list'], undefined);
+            });
+        });
+
+        describe('virtualAddresses list', () => {
+            it('should map virtualAddresses list to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.virtualAddresses = {
+                    use: 'virtualAddressList'
+                };
+                declaration.tenantId.appId.itemId.virtualAddressList = {
+                    class: 'Firewall_Address_List',
+                    addresses: [
+                        '192.0.2.10',
+                        '192.0.2.20'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], 'any/any');
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], undefined);
+                assert.strictEqual(tmc['destination-address-list'], 'virtualAddressList');
+                assert.strictEqual(tmc['source-address-list'], undefined);
+            });
+        });
+
+        describe('sourceAddress list', () => {
+            it('should map sourceAddress list to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.virtualType = 'internal';
+                item.sourceAddress = {
+                    use: 'sourceAddressList'
+                };
+                declaration.tenantId.appId.itemId.sourceAddressList = {
+                    class: 'Firewall_Address_List',
+                    addresses: [
+                        '192.0.2.10',
+                        '192.0.2.20'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], undefined);
+                assert.strictEqual(tmc['destination-address-list'], undefined);
+                assert.strictEqual(tmc['source-address-list'], 'sourceAddressList');
             });
         });
 

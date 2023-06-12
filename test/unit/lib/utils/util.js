@@ -1526,6 +1526,192 @@ describe('util', () => {
                 ]
             );
         });
+
+        it('should return virtual-address objects that exist in a particular partition', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/virtual-address?$filter=partition+eq+Common&$select=fullPath,partition,address,metadata')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                fullPath: '/Common/virtualAddress1',
+                                partition: 'Common',
+                                address: '192.0.2.4'
+                            },
+                            {
+                                fullPath: '/Common/virtualAddress2',
+                                partition: 'Common',
+                                address: '192.0.2.1',
+                                metadata: [{
+                                    name: 'foo',
+                                    value: 'bar'
+                                }]
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getVirtualAddressList(context, 'Common'),
+                [
+                    {
+                        fullPath: '/Common/virtualAddress1',
+                        partition: 'Common',
+                        address: '192.0.2.4',
+                        metadata: []
+                    },
+                    {
+                        fullPath: '/Common/virtualAddress2',
+                        partition: 'Common',
+                        address: '192.0.2.1',
+                        metadata: [{
+                            name: 'foo',
+                            value: 'bar'
+                        }]
+                    }
+                ]
+            );
+        });
+    });
+
+    describe('.getAddressListList', () => {
+        beforeEach(() => {
+            context.tasks = [
+                {
+                    urlPrefix: 'http://admin@localhost:8100'
+                }
+            ];
+            context.control = {
+                targetPort: 8100,
+                port: 8100,
+                basicAuth: 'HeresSomeBasicAuth',
+                targetContext: {
+                    tokens: {
+                        'X-F5-Auth-Token': 'validtoken'
+                    }
+                }
+            };
+        });
+
+        it('should error when no context is provided', () => {
+            assert.isRejected(
+                util.getAddressListList(),
+                'argument context required'
+            );
+        });
+
+        it('should return empty array if no address-list objects exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/net/address-list?$select=fullPath,partition,addresses,addressLists')
+                .reply(
+                    200,
+                    {
+                        items: []
+                    }
+                );
+
+            return assert.becomes(
+                util.getAddressListList(context),
+                []
+            );
+        });
+
+        it('should return address-list objects that exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/net/address-list?$select=fullPath,partition,addresses,addressLists')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                fullPath: '/Common/addressList1',
+                                partition: 'Common',
+                                addresses: ['192.0.2.3', '192.0.2.4'],
+                                addressLists: ['/Common/addressList3']
+                            },
+                            {
+                                fullPath: '/Common/addressList2',
+                                partition: 'Common',
+                                addresses: ['192.0.2.1', '192.0.2.2'],
+                                addressLists: ['/Common/addressList4']
+                            },
+                            {
+                                fullPath: '/Tenant/Application/addressList',
+                                partition: 'Tenant',
+                                addresses: ['192.0.2.4', '192.0.2.5'],
+                                addressLists: ['/Common/addressList4']
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getAddressListList(context),
+                [
+                    {
+                        fullPath: '/Common/addressList1',
+                        partition: 'Common',
+                        addresses: ['192.0.2.3', '192.0.2.4'],
+                        addressLists: ['/Common/addressList3']
+                    },
+                    {
+                        fullPath: '/Common/addressList2',
+                        partition: 'Common',
+                        addresses: ['192.0.2.1', '192.0.2.2'],
+                        addressLists: ['/Common/addressList4']
+                    },
+                    {
+                        fullPath: '/Tenant/Application/addressList',
+                        partition: 'Tenant',
+                        addresses: ['192.0.2.4', '192.0.2.5'],
+                        addressLists: ['/Common/addressList4']
+                    }
+                ]
+            );
+        });
+
+        it('should return address-list objects that exist in a particular partition', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/net/address-list?$filter=partition+eq+Common&$select=fullPath,partition,addresses,addressLists')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                fullPath: '/Common/addressList1',
+                                partition: 'Common',
+                                addresses: ['192.0.2.3', '192.0.2.4'],
+                                addressLists: ['/Common/addressList3']
+                            },
+                            {
+                                fullPath: '/Common/addressList2',
+                                partition: 'Common',
+                                addresses: ['192.0.2.1', '192.0.2.2'],
+                                addressLists: ['/Common/addressList4']
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getAddressListList(context, 'Common'),
+                [
+                    {
+                        fullPath: '/Common/addressList1',
+                        partition: 'Common',
+                        addresses: ['192.0.2.3', '192.0.2.4'],
+                        addressLists: ['/Common/addressList3']
+                    },
+                    {
+                        fullPath: '/Common/addressList2',
+                        partition: 'Common',
+                        addresses: ['192.0.2.1', '192.0.2.2'],
+                        addressLists: ['/Common/addressList4']
+                    }
+                ]
+            );
+        });
     });
 
     describe('.getAccessProfileList', () => {

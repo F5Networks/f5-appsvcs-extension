@@ -57,6 +57,7 @@ describe('adcParser', function () {
         sinon.stub(util, 'getNodelist').resolves([]);
         sinon.stub(util, 'getVirtualAddressList').resolves([]);
         sinon.stub(util, 'getAccessProfileList').resolves([]);
+        sinon.stub(util, 'getAddressListList').resolves([]);
         secretTagSpy = sinon.stub(Tag.SecretTag, 'process').resolves();
         sinon.stub(Tag.LongSecretTag, 'process').resolves();
         sinon.stub(Tag.FetchTag, 'process').resolves();

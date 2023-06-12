@@ -16,7 +16,13 @@
 
 'use strict';
 
-const assert = require('assert');
+const AJV = require('ajv');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+
+chai.use(chaiAsPromised);
+const assert = chai.assert;
+
 const MinVersionTag = require('../../../../src/lib/tag').MinVersionTag;
 
 describe('MinVersionTag', () => {
@@ -95,11 +101,57 @@ describe('MinVersionTag', () => {
                 assert.deepStrictEqual(results.warnings[0].dataPath, '/Tenant/Application/Profile/property1');
             }));
 
+        it('should generate a warning if the bad property is in the original declaration and strict mode is false', () => {
+            minVersions[0].schemaData = {
+                version: '18.0',
+                strict: false
+            };
+
+            return MinVersionTag.process(context, declaration, minVersions, originalDeclaration)
+                .then((results) => {
+                    assert.strictEqual(results.warnings.length, 1);
+                    assert.deepStrictEqual(results.warnings[0].tenant, 'Tenant');
+                    assert.deepStrictEqual(results.warnings[0].dataPath, '/Tenant/Application/Profile/property1');
+                });
+        });
+
+        it('should reject with an AJV Validation Error if the bad property is in the original declaration and strict mode is true', () => {
+            minVersions[0].schemaData = {
+                version: '18.0',
+                strict: true
+            };
+            return assert.isRejected(MinVersionTag.process(context, declaration, minVersions, originalDeclaration),
+                /validation failed/)
+                .then((err) => {
+                    assert.ok(err instanceof AJV.ValidationError);
+                    assert.deepStrictEqual(err.errors, [
+                        {
+                            dataPath: '/Tenant/Application/Profile/property1',
+                            keyword: 'f5PostProcess(minVersion)',
+                            message: 'MyClass.MyProperty is only valid on BIG-IP versions 18.0 and above.',
+                            params: {}
+                        }
+                    ]);
+                });
+        });
+
         it('should not generate a warning if the bad property is not in the original declaration', () => {
             delete originalDeclaration.Tenant.Application.Profile.property1;
             return MinVersionTag.process(context, declaration, minVersions, originalDeclaration)
                 .then((results) => {
                     assert.strictEqual(results.warnings.length, 0);
+                });
+        });
+
+        it('should not reject with an error if the bad property is not in the original declaration and strict mode is true', () => {
+            minVersions[0].schemaData = {
+                version: '18.0',
+                strict: true
+            };
+            delete originalDeclaration.Tenant.Application.Profile.property1;
+            return MinVersionTag.process(context, declaration, minVersions, originalDeclaration)
+                .then((results) => {
+                    assert.strictEqual(results.warnings.length, 0, 'warning should not be generated either');
                 });
         });
     });

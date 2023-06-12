@@ -92,4 +92,132 @@ describe('arrayUtil', () => {
             assert.strictEqual(arrayUtil.doesArrayContainAnyOf(arr1, undefined), false);
         });
     });
+
+    describe('.insertAfterOrAtBeginning', () => {
+        it('should insert after last specified element for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertAfterOrAtBeginning(arr, '1', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', 'insertMe', '2', '3']);
+        });
+
+        it('should insert after last specified element for eq comparison with duplicates', () => {
+            const arr = ['1', '1', '2', '3'];
+            arrayUtil.insertAfterOrAtBeginning(arr, '1', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', '1', 'insertMe', '2', '3']);
+        });
+
+        it('should insert after specified element for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertAfterOrAtBeginning(arr, '1', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'insertMe', 'two 2 two', 'three 3 three']);
+        });
+
+        it('should insert after specified element for inc comparison with duplicates', () => {
+            const arr = ['one 1 one', 'one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertAfterOrAtBeginning(arr, '1', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'one 1 one', 'insertMe', 'two 2 two', 'three 3 three']);
+        });
+
+        it('should insert at beginning of array for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertAfterOrAtBeginning(arr, 'notInList', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['insertMe', '1', '2', '3']);
+        });
+
+        it('should insert at beginning of array for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertAfterOrAtBeginning(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['insertMe', 'one 1 one', 'two 2 two', 'three 3 three']);
+        });
+
+        it('should insert at beginning of array when there are duplicates', () => {
+            const arr = ['one 1 one', 'two 2 two', 'one 1 one', 'three 3 three'];
+            arrayUtil.insertAfterOrAtBeginning(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['insertMe', 'one 1 one', 'two 2 two', 'one 1 one', 'three 3 three']);
+        });
+    });
+
+    describe('.insertBeforeOrAtBeginning', () => {
+        it('should insert before specified element for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertBeforeOrAtBeginning(arr, '3', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', '2', 'insertMe', '3']);
+        });
+
+        it('should insert before specified element for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertBeforeOrAtBeginning(arr, '3', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'two 2 two', 'insertMe', 'three 3 three']);
+        });
+
+        it('should insert at beginning of array for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertBeforeOrAtBeginning(arr, 'notInList', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['insertMe', '1', '2', '3']);
+        });
+
+        it('should insert at beginning of array for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertBeforeOrAtBeginning(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['insertMe', 'one 1 one', 'two 2 two', 'three 3 three']);
+        });
+
+        it('should insert at beginning of array when there are duplicates', () => {
+            const arr = ['one 1 one', 'two 2 two', 'one 1 one', 'three 3 three'];
+            arrayUtil.insertBeforeOrAtBeginning(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['insertMe', 'one 1 one', 'two 2 two', 'one 1 one', 'three 3 three']);
+        });
+    });
+
+    describe('.insertAfterOrAtEnd', () => {
+        it('should insert after specified element for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertAfterOrAtEnd(arr, '1', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', 'insertMe', '2', '3']);
+        });
+
+        it('should insert after specified element for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertAfterOrAtEnd(arr, '1', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'insertMe', 'two 2 two', 'three 3 three']);
+        });
+
+        it('should insert at end of array for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertAfterOrAtEnd(arr, 'notInList', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', '2', '3', 'insertMe']);
+        });
+
+        it('should insert at end of array for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertAfterOrAtEnd(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'two 2 two', 'three 3 three', 'insertMe']);
+        });
+    });
+
+    describe('.insertBeforeOrAtEnd', () => {
+        it('should insert before specified element for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertBeforeOrAtEnd(arr, '3', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', '2', 'insertMe', '3']);
+        });
+
+        it('should insert before specified element for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertBeforeOrAtEnd(arr, '3', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'two 2 two', 'insertMe', 'three 3 three']);
+        });
+
+        it('should insert at end of array for eq comparison', () => {
+            const arr = ['1', '2', '3'];
+            arrayUtil.insertBeforeOrAtEnd(arr, 'notInList', 'insertMe', 'eq');
+            assert.deepStrictEqual(arr, ['1', '2', '3', 'insertMe']);
+        });
+
+        it('should insert at end of array for inc comparison', () => {
+            const arr = ['one 1 one', 'two 2 two', 'three 3 three'];
+            arrayUtil.insertBeforeOrAtEnd(arr, 'notInList', 'insertMe', 'inc');
+            assert.deepStrictEqual(arr, ['one 1 one', 'two 2 two', 'three 3 three', 'insertMe']);
+        });
+    });
 });
