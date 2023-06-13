@@ -50,7 +50,36 @@ function convertXmlToJson(xmlString) {
     });
 }
 
-const maps = {
+const mapsJson = {
+    disabledSignatures: (policy, value) => {
+        const newSigs = [];
+        policy.signatures = policy.signatures || [];
+        value.forEach((sigId) => {
+            const desiredSig = {
+                signatureId: sigId.toString(),
+                enabled: false,
+                performStaging: false
+            };
+            const currentSig = policy.signatures.find((sig) => sig.signatureId === desiredSig.signatureId);
+            if (currentSig) {
+                Object.assign(currentSig, desiredSig);
+            } else {
+                newSigs.push(desiredSig);
+            }
+        });
+        policy.signatures = policy.signatures.concat(newSigs);
+    },
+
+    enforcementMode: (policy, value) => {
+        policy.enforcementMode = value;
+    },
+
+    serverTechnologies: (policy, value) => {
+        policy['server-technologies'] = value.map((t) => ({ serverTechnologyName: t }));
+    }
+};
+
+const mapsXml = {
     // Do not change the order of the key/values in the JSON object
     disabledSignatures: (policy, value) => {
         policy.attack_signatures.forEach((xmlObject) => {
@@ -79,7 +108,7 @@ const maps = {
     }
 };
 
-function mapSettings(jsonObject, settings) {
+function mapSettings(jsonObject, settings, maps) {
     const ignoredKeys = [
         'class',
         'label',
@@ -117,12 +146,16 @@ function applyAs3Settings(xmlString, settings) {
     }
 
     if (isJson(xmlString)) {
-        return Promise.resolve(xmlString);
+        return Promise.resolve()
+            .then(() => {
+                const jsonObject = mapSettings(JSON.parse(xmlString), settings, mapsJson);
+                return JSON.stringify(jsonObject);
+            });
     }
 
     return Promise.resolve()
         .then(() => convertXmlToJson(xmlString))
-        .then((jsonObject) => mapSettings(jsonObject, settings))
+        .then((jsonObject) => mapSettings(jsonObject, settings, mapsXml))
         .then((jsonObject) => convertJsonToXml(jsonObject));
 }
 
