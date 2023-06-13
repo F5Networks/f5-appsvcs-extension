@@ -16,6 +16,8 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
 
 ### Changed
+- Updated to Service Discovery 1.14.0-1
+  - Update packages to latest available versions
 
 ### Removed
 - AUTOTOOL-3871 Remove express package and app.js
