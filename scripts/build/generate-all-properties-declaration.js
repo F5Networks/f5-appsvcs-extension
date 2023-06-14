@@ -17,7 +17,7 @@
 'use strict';
 
 const fs = require('fs');
-const rimraf = require('rimraf');
+const rimraf = require('rimraf').rimraf;
 const Mocha = require('mocha');
 const schema = require('../../src/schema/latest/adc-schema.json');
 const propertiesCommon = require('../../test/integration/bigip/property/propertiesCommon');
