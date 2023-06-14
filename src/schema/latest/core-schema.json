@@ -2662,7 +2662,7 @@
 
         "WAF_Policy": {
             "title": "WAF_Policy",
-            "description": "A Web Application Firewall Policy",
+            "description": "A Web Application Firewall Policy. Supports both traditional and advanced WAF policies. Advanced WAF policies require TMOS version 16.0 or newer.",
             "type": "object",
             "f5PostProcess": {
                 "tag": "modules",
@@ -2729,7 +2729,7 @@
 
                 "enforcementMode": {
                     "title": "Enforcement Mode",
-                    "description": "Overrides the enforcement mode setting of the WAF policy",
+                    "description": "Overrides the enforcement mode setting of the WAF policy. Ignored on Advanced WAF policies",
                     "type": "string",
                     "enum": [
                         "blocking",
@@ -2738,7 +2738,7 @@
                 },
                 "serverTechnologies": {
                     "title": "Server Technologies",
-                    "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts",
+                    "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Ignored on Advanced WAF policies",
                     "type": "array",
                     "items": {
                         "title": "Server Technology",
@@ -2748,7 +2748,7 @@
                 },
                 "disabledSignatures": {
                     "title": "Disabled attack signatures",
-                    "description": "Disable various attack signatures by ID.",
+                    "description": "Disable various attack signatures by ID. Ignored on Advanced WAF policies",
                     "type": "array",
                     "items": {
                         "title": "Attack Signature ID",
