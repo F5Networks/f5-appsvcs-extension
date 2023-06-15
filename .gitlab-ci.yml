@@ -191,15 +191,14 @@ node:6:
       junit: test_report.xml
 
 node:8:
-  image: $DOCKER_URL/node:8.11.1
+  image: $DOCKER_URL/node:8
   stage: test
   needs:
     - schema
   tags:
     - cm-official-docker-executor
   script:
-    - npm install --global npm@5.10.0
-    - npm ci --no-optional
+    - npm ci
     - npm install mocha@7
     - npm run test-no-build -- $TEST_REPORTER_OPTIONS
   artifacts:
