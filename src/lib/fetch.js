@@ -1728,6 +1728,15 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
                     delete currentValue.properties.geo;
                 }
             }
+
+            // Likewise for net port-lists and firewall port-lists
+            if (desiredValue.command === 'net port-list' || desiredValue.command === 'security firewall port-list') {
+                if (desiredValue.command === 'security firewall port-list') {
+                    currentValue.command = 'security firewall port-list';
+                } else {
+                    currentValue.command = 'net port-list';
+                }
+            }
         // we should only track this if we have a desired value
         } else if (currentValue && currentValue.command === 'gtm global-settings load-balancing') {
             delete currentConfig[configKey];
@@ -2323,7 +2332,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             arrayUtil.insertAfterOrAtEnd(preTrans, ' address-list', diffUpdates.commands, 'inc');
                             arrayUtil.insertBeforeOrAtBeginning(
                                 rollback,
-                                'delete security firewall address-list',
+                                'delete net address-list',
                                 `catch { tmsh::delete ${
                                     diffUpdates.commands.split(' ').slice(1, 5).join(' ')} } e`,
                                 'inc'

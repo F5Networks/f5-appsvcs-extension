@@ -511,7 +511,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {
@@ -589,7 +589,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {
@@ -1007,7 +1007,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {
@@ -1317,7 +1317,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {
@@ -1484,7 +1484,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {
@@ -1600,7 +1600,7 @@
                         {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/Pointer_Firewall_Port_List"
+                                    "$ref": "#/definitions/Pointer_Port_List"
                                 },
                                 {
                                     "f5PostProcess": {

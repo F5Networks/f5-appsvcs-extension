@@ -5547,6 +5547,43 @@ describe('map_as3', () => {
         });
     });
 
+    describe('Net_Port_List', () => {
+        it('should succeed with Net Port Lists', () => {
+            const context = {
+                target: {
+                    tmosVersion: '14.0'
+                }
+            };
+            const item = {
+                class: 'Net_Port_List',
+                ports: [80, 443],
+                portLists: [
+                    {
+                        use: 'portList'
+                    }
+                ]
+            };
+            const results = translate.Net_Port_List(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(
+                results.configs[0],
+                {
+                    command: 'net port-list',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'port-lists': {
+                            portList: {}
+                        },
+                        ports: {
+                            80: {},
+                            443: {}
+                        }
+                    }
+                }
+            );
+        });
+    });
+
     describe('Service_TCP', () => {
         it('should check profileFTP Service_TCP properties', () => {
             const item = {

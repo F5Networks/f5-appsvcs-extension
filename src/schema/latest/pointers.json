@@ -388,6 +388,11 @@
         "tmshPath": "net address-list",
         "class": "Net_Address_List"
     },
+    "Net_Port_List": {
+        "name": "net port list",
+        "tmshPath": "net port-list",
+        "class": "Net_Port_List"
+    },
     "Persist_Profile": {
         "name": "Persist Profile",
         "class": "Persist",
@@ -499,6 +504,11 @@
         "name": "TLS Client",
         "class": "TLS_Client",
         "tmshPath": "ltm profile server-ssl"
+    },
+    "Port_List": {
+        "name": "firewall port list or net port list",
+        "tmshPath": ["security firewall port-list", "net port-list"],
+        "class": ["Firewall_Port_List", "Net_Port_List"]
     },
     "Request_Adapt_Profile": {
         "name": "Request Adapt Profile",

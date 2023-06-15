@@ -2158,7 +2158,7 @@ const translate = {
             }
         );
         // set the name to the address
-        // The addres property is read-only and there can be only 1 copy of the address among all the translations.
+        // The address property is read-only and there can be only 1 copy of the address among all the translations.
         // When BIGIP auto generates a translation it picks the address as the name of the object.
         // For the maintenance of translations moving between auto generated and user specified it is easier to always
         // make the translation names the same as the address.
@@ -3484,6 +3484,19 @@ const translate = {
         item.ignore = item.ignore || {};
 
         configs.push(normalize.actionableMcp(context, item, 'net address-list', path));
+
+        return { configs };
+    },
+
+    /**
+     * Defines a Net Port List
+     */
+    Net_Port_List(context, tenantId, appId, itemId, item) {
+        const path = util.mcpPath(tenantId, appId, itemId);
+        const configs = [];
+        item.ignore = item.ignore || {};
+
+        configs.push(normalize.actionableMcp(context, item, 'net port-list', path));
 
         return { configs };
     },

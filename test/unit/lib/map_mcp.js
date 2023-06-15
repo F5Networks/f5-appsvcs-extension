@@ -844,6 +844,45 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:net:port-list:port-liststate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:net:port-list:port-liststate',
+                    name: 'myPortList',
+                    partition: 'myApp',
+                    subPath: 'Application1',
+                    fullPath: '/myApp/Application1/myPortList',
+                    ports: [
+                        { name: '80' },
+                        { name: '443' }
+                    ],
+                    portLists: [
+                        {
+                            name: 'anotherList',
+                            partition: 'myApp',
+                            subPath: 'Application1'
+                        }
+                    ]
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application1/myPortList',
+                    command: 'net port-list',
+                    properties: {
+                        'port-lists': {
+                            '/myApp/Application1/anotherList': {}
+                        },
+                        ports: {
+                            443: {},
+                            80: {}
+                        }
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:security:protocol-inspection:profile:profilestate', () => {
             it('should perform basic transformation', () => {
                 const obj = {

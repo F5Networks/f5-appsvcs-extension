@@ -306,15 +306,16 @@ describe('fetch', () => {
                     });
             });
 
-            it('should return net address-list before firewall address-list', () => {
-                // Since firewall address-list and net address-list share the same path, we benefit
-                // from utilizing the firewall address-list (if it is available). As such, if we order
-                // paths.json with net address-list first and firewall second, the net address-list will
-                // be overwritten, if a firewall address-list is available.
+            it('should return net address- and port-list before firewall address- and port-list', () => {
+                // Since firewall address- and port-list and net address- and port-list share the same path, we benefit
+                // from utilizing the firewall address- and port-list (if it is available). As such, if we order
+                // paths.json with net address- and port-list first and firewall second, the net address- and port-list
+                // will be overwritten, if a firewall address- and/or port-list is available.
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:net:address-list:address-listcollectionstate',
                             items: [
@@ -327,8 +328,20 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:net:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -341,8 +354,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -363,26 +390,42 @@ describe('fetch', () => {
                                     addresses: ['192.0.2.0/24']
                                 },
                                 {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                },
+                                {
                                     kind: 'tm:security:firewall:address-list:address-liststate',
                                     name: 'addressListExample',
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
                                 }
                             ]
                         );
                     });
             });
 
-            it('should return firewall address-list if on BIG-IP version 13.1', () => {
-                // net address-lists are not on 13.1, so we need to confirm that it is not queried
+            it('should return firewall address- and port-list if on BIG-IP version 13.1', () => {
+                // net address- and port-lists are not on 13.1, so we need to confirm that it is not queried
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
-                        throw new Error('Should not have queried this endpoint');
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net address-list endpoint');
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net port-list endpoint');
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -395,8 +438,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -415,6 +472,13 @@ describe('fetch', () => {
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
                                 }
                             ]
                         );
@@ -2028,6 +2092,118 @@ describe('fetch', () => {
                                         'properties',
                                         'geo',
                                         'TR:Istanbul'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
+
+            it('should be able to convert from firewall port-list to net port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
+
+            it('should be able to convert from net port-list to firewall port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
                                     ],
                                     rhs: {}
                                 }

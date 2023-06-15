@@ -93,6 +93,8 @@ const prefix = {
     'net address-list addresses': 'replace-all-with',
     'net address-list address-lists': 'replace-all-with',
     'net bwc policy categories': 'replace-all-with',
+    'net port-list ports': 'replace-all-with',
+    'net port-list port-lists': 'replace-all-with',
     'net service-policy': 'replace-all-with',
     'net timer-policy': 'replace-all-with',
     'net timer-policy rules': 'replace-all-with',

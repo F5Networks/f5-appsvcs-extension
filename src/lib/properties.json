@@ -1355,6 +1355,11 @@
     { "id":"addresses",                 "extend": "array"},
     { "id":"address-lists",             "extend": "array"}
   ],
+  "net port-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"ports",                     "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
+  ],
   "pem reporting format-script": [
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"definition" }
