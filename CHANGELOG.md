@@ -16,6 +16,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3880: ([GitHub Issue 727](https://github.com/F5Networks/f5-appsvcs-extension/issues/727)): SNAT_Pool handling in /Common/Shared
 - AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
 - AUTOTOOL-3894: WAF_Policy overrides are skipped when policy is in JSON format
+- AUTOTOOL-3810:  ([GitHub Issue 715](https://github.com/F5Networks/f5-appsvcs-extension/issues/715)): GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]"
 
 ### Changed
 - Updated to Service Discovery 1.14.0-1

@@ -10342,6 +10342,68 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Prober_Pool', () => {
+        it('should return a correct config', () => {
+            const item = {
+                class: 'GSLB_Prober_Pool',
+                enabled: true,
+                members: [
+                    {
+                        server: {
+                            use: 'bigip1.f5demo.com'
+                        },
+                        memberOrder: 0,
+                        enabled: true
+                    },
+                    {
+                        server: {
+                            use: '/Common/bigip2.f5demo.com'
+                        },
+                        memberOrder: 1,
+                        enabled: false
+                    },
+                    {
+                        server: {
+                            use: '/Common/Shared/bigip3.f5demo.com'
+                        },
+                        memberOrder: 2,
+                        enabled: true
+                    }
+                ]
+            };
+
+            const results = translate.GSLB_Prober_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        path: '/tenantId/itemId',
+                        command: 'gtm prober-pool',
+                        properties: {
+                            description: '"This object is managed by appsvcs, do not modify this description"',
+                            enabled: true,
+                            'load-balancing-mode': 'global-availability',
+                            members: {
+                                '/Common/bigip1.f5demo.com': {
+                                    enabled: true,
+                                    order: 0
+                                },
+                                '/Common/bigip2.f5demo.com': {
+                                    enabled: false,
+                                    order: 1
+                                },
+                                '/Common/bigip3.f5demo.com': {
+                                    enabled: true,
+                                    order: 2
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                ]
+            });
+        });
+    });
+
     describe('Address_Discovery', () => {
         it('should create Address_Discovery config', () => {
             const item = {

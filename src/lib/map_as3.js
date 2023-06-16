@@ -4476,7 +4476,8 @@ const translate = {
         tagDescription(item);
         (item.members || []).forEach((member, index) => {
             member.order = index;
-            member.name = `${bigipPath(member, 'server')}`;
+            member.name = `${bigipPath(member, 'server').replace('/Shared', '')}`;
+            member.name = member.name.includes('/') ? member.name : `/Common/${member.name}`;
         });
         const path = util.mcpPath(tenantId, '', itemId);
         const config = [normalize.actionableMcp(context, item, 'gtm prober-pool', path)];
