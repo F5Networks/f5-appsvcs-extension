@@ -147,7 +147,7 @@ audit:
     - npm audit
 
 node:4.6:
-  image: $DOCKER_URL/node:4.6.2
+  image: $DOCKER_URL/node:12-buster
   stage: test
   needs:
     - schema
@@ -159,6 +159,7 @@ node:4.6:
     - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
     - export NVM_DIR="$HOME/.nvm"
     - source "$NVM_DIR/nvm.sh"
+    - nvm install 4
     - nvm install --latest-npm 12
     - nvm use 12
     - npm install mocha@5.2.0 --save-dev
@@ -167,7 +168,7 @@ node:4.6:
     - npm run test-no-build
 
 node:6:
-  image: $DOCKER_URL/node:6
+  image: $DOCKER_URL/node:12-buster
   stage: test
   needs:
     - schema
@@ -179,6 +180,7 @@ node:6:
     - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
     - export NVM_DIR="$HOME/.nvm"
     - source "$NVM_DIR/nvm.sh"
+    - nvm install 6
     - nvm install --latest-npm 12
     - nvm use 12
     - npm ci --no-optional
