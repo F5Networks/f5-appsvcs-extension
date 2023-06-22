@@ -7,7 +7,7 @@ Using BIG-IP AS3 with BIG-IQ
 
    BIG-IP AS3 is available in BIG-IQ v6.1.0 and later
 
-.. WARNING:: AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.  
+.. WARNING:: AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: ``curl http://localhost:8105/shared/appsvcs/info``. To downgrade your AS3 version on BIG-IQ, see :ref:`Downgrade<down>`.
 
 BIG-IQ v6.1.0 adds BIG-IP AS3 support, which includes BIG-IP AS3 v3.7.0.  When you use BIG-IP AS3 on BIG-IQ, declarations you send through BIG-IQ enable applications to appear in the UI of BIG-IQ (Applications tab > Applications menu), with support for BIG-IQ's analytics and RBAC capabilities.  For information on viewing applications and analytics in the BIG-IQ UI, see the |bigiqui| documentation. You can also see our |bigiqvideo|.
 
@@ -139,6 +139,9 @@ See **patchBody** in the |as3class| and |pitem| in the schema reference for deta
 .. literalinclude:: ../../examples/userguide/example-bigiq-post-patchbody.json
    :language: json
 
+| 
+
+.. _down:
 
 Downgrading BIG-IP AS3 on BIG-IQ
 --------------------------------
@@ -161,6 +164,8 @@ AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  Use the following p
 6. Run the following command to restart the associated services: ``tmsh restart /sys service restjavad restnoded``.
 
 7. Verify the downgraded version is now on BIG-IQ using: ``curl http://localhost:8105/shared/appsvcs/info``
+
+8. Optional: If your BIG-IQ environment has high availability (HA) setup, after you upgrade the AS3 on the standby unit, you can repeat this procedure to upgrade the active unit.
 
 
 
