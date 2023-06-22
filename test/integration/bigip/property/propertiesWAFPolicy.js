@@ -233,7 +233,7 @@ describe('WAF Policy', function () {
         return testFileProperty(properties, assertOptions, fileName);
     });
 
-    it('Override Settings in XML policy', function () {
+    it('Override Settings', function () {
         assertModuleProvisioned.call(this, 'asm');
 
         let policyPath = null;
@@ -349,117 +349,6 @@ describe('WAF Policy', function () {
         }
 
         properties.push(urlObj);
-
-        assertOptions.skipIdempotentCheck = true;
-        return assertClass('WAF_Policy', properties, assertOptions);
-    });
-
-    it('Override Settings in JSON policy', function () {
-        assertModuleProvisioned.call(this, 'asm');
-
-        let policyPath = null;
-        function getPolicyPath() {
-            if (policyPath) return Promise.resolve(policyPath);
-            const requestOptions = {
-                path: '/mgmt/tm/asm/policies',
-                host: process.env.TARGET_HOST || process.env.AS3_HOST
-            };
-            return requestUtil.get(requestOptions)
-                .then((result) => {
-                    const id = result.body.items.find((p) => p.name === getItemName({ tenantName, maxPathLength })).id;
-                    policyPath = `/mgmt/tm/asm/policies/${id}`;
-                    return policyPath;
-                });
-        }
-
-        const properties = [
-            {
-                name: 'ignoreChanges',
-                inputValue: [false],
-                skipAssert: true
-            },
-            // Inline policies are processed the same as external JSON policy files
-            {
-                name: 'policy',
-                inputValue: [{
-                    base64: 'ewogICJwb2xpY3kiOiB7CiAgICAibmFtZSI6ICJBcHBQb2xpY3kwMSIsCiAgICAiZGVzY3JpcHRpb24iOiAiZW1iZWRkZWQgV0FGIFBvbGljeSIsCiAgICAidGVtcGxhdGUiOiB7CiAgICAgICJuYW1lIjogIlBPTElDWV9URU1QTEFURV9SQVBJRF9ERVBMT1lNRU5UIgogICAgfSwKICAgICJlbmZvcmNlbWVudE1vZGUiOiAiYmxvY2tpbmciCiAgfQp9Cg=='
-                }],
-                skipAssert: true
-            },
-            {
-                name: 'enforcementMode',
-                inputValue: ['blocking', 'transparent', undefined],
-                expectedValue: ['blocking', 'transparent', 'blocking'],
-                extractFunction: () => getPolicyPath()
-                    .then((path) => {
-                        const requestOptions = {
-                            path,
-                            host: process.env.TARGET_HOST || process.env.AS3_HOST
-                        };
-                        return requestUtil.get(requestOptions);
-                    })
-                    .then((result) => result.body.enforcementMode)
-            },
-            {
-                name: 'serverTechnologies',
-                inputValue: [
-                    undefined,
-                    ['Apache Struts', 'Java Servlets/JSP'],
-                    undefined
-                ],
-                expectedValue: [
-                    [],
-                    ['Apache Struts', 'Java Servlets/JSP'],
-                    []
-                ],
-                extractFunction: () => getPolicyPath()
-                    .then((path) => {
-                        path += '/server-technologies';
-                        const requestOptions = {
-                            path,
-                            host: process.env.TARGET_HOST || process.env.AS3_HOST
-                        };
-                        return requestUtil.get(requestOptions);
-                    })
-                    .then((result) => Promise.all(
-                        // Need to run the resolveMcpReferences on each member of the array
-                        result.body.items.map((item) => resolveMcpReferences(item))
-                    ))
-                    .then((items) => {
-                        if (!items) {
-                            return [];
-                        }
-                        return items.map((item) => item.serverTechnology.serverTechnologyName).sort();
-                    })
-            },
-            {
-                name: 'disabledSignatures',
-                inputValue: [
-                    [],
-                    [200000002],
-                    []
-                ],
-                expectedValue: [
-                    [],
-                    [200000002],
-                    []
-                ],
-                extractFunction: () => getPolicyPath()
-                    .then((path) => {
-                        path += '/signatures';
-                        const requestOptions = {
-                            path,
-                            host: process.env.TARGET_HOST || process.env.AS3_HOST
-                        };
-                        return requestUtil.get(requestOptions);
-                    })
-                    .then((result) => result.body.items.filter((item) => !item.enabled && !item.performStaging))
-                    .then((items) => Promise.all(items.map((item) => resolveMcpReferences(item))))
-                    .then((items) => items.map((item) => item.signature.signatureId))
-                    // signatureId 200002305 is throwing false-positives
-                    .then((sigIds) => sigIds.filter((sigId) => sigId !== 200002305))
-            }
-        ];
 
         assertOptions.skipIdempotentCheck = true;
         return assertClass('WAF_Policy', properties, assertOptions);

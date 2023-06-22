@@ -23,7 +23,6 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 
 const asmUtil = require('../../../../src/lib/util/asmUtil');
-const util = require('../../../../src/lib/util/util');
 
 function createXml(policy) {
     return asmUtil.convertJsonToXml({ policy });
@@ -62,7 +61,7 @@ describe('asmUtil', () => {
             ]));
     });
 
-    it('should set enforcement_mode in XML policy', () => {
+    it('should set enforcement_mode', () => {
         let expected = '';
         return Promise.resolve()
             .then(() => createXml({
@@ -86,7 +85,7 @@ describe('asmUtil', () => {
             });
     });
 
-    it('should set server_technologies in XML policy', () => {
+    it('should set server_technologies', () => {
         let expected = '';
         return Promise.resolve()
             .then(() => createXml({
@@ -115,7 +114,7 @@ describe('asmUtil', () => {
             });
     });
 
-    it('should disable specified attack signatures in XML policy', () => {
+    it('should disable specified attack signatures', () => {
         let expected = '';
         return Promise.resolve()
             .then(() => createXml({
@@ -185,78 +184,12 @@ describe('asmUtil', () => {
             });
     });
 
-    it('should set enforcement_mode in JSON policy', () => {
-        const policy = {
-            policy: {
-                enforcementMode: 'transparent'
-            }
-        };
-
-        const expected = util.simpleCopy(policy);
-        expected.policy.enforcementMode = 'blocking';
-
-        return asmUtil.applyAs3Settings(JSON.stringify(policy), { enforcementMode: 'blocking' })
-            .then((result) => {
-                assert.strictEqual(result, JSON.stringify(expected));
-            });
-    });
-
-    it('should set server_technologies in JSON policy', () => {
-        const policy = {
-            policy: {
-                'server-technologies': [
-                    { serverTechnologyName: 'Initech Server' }
-                ]
-            }
-        };
-
-        const expected = util.simpleCopy(policy);
-        expected.policy['server-technologies'] = [
-            { serverTechnologyName: 'Java Servlets/JSP' },
-            { serverTechnologyName: 'Apache Struts' }
-        ];
-
-        return asmUtil.applyAs3Settings(JSON.stringify(policy), { serverTechnologies: ['Java Servlets/JSP', 'Apache Struts'] })
-            .then((result) => {
-                assert.strictEqual(result, JSON.stringify(expected));
-            });
-    });
-
-    it('should disable specified attack signatures in JSON policy', () => {
-        const policy = {
-            policy: {
-                signatures: [
-                    {
-                        signatureId: '200000001',
-                        enabled: true,
-                        performStaging: false
-                    },
-                    {
-                        signatureId: '200000002',
-                        enabled: true,
-                        performStaging: false
-                    },
-                    {
-                        signatureId: '200000003',
-                        enabled: true,
-                        performStaging: false
-                    }
-                ]
-            }
-        };
-
-        const expected = util.simpleCopy(policy);
-        expected.policy.signatures[0].enabled = false;
-        expected.policy.signatures[1].enabled = false;
-
-        return asmUtil.applyAs3Settings(JSON.stringify(policy), { disabledSignatures: [200000001, 200000002] })
-            .then((result) => {
-                assert.strictEqual(result, JSON.stringify(expected));
-            });
-    });
-
     it('should reject when not parsable input', () => assert.isRejected(
         asmUtil.applyAs3Settings('definitelyNotXml', {}),
         'Non-whitespace before first tag'
+    ));
+
+    it('should accept JSON input and ignore overrides', () => assert.isFulfilled(
+        asmUtil.applyAs3Settings('{}', {})
     ));
 });
