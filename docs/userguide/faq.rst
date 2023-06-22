@@ -29,7 +29,7 @@ See the |intro| for a description of BIG-IP AS3.  This entry contains informatio
 
 |
 
-.. _version13: 
+.. _version13:
 
 **Which TMOS versions does BIG-IP AS3 support?**
 
@@ -406,7 +406,7 @@ As a part of an initiative to clean up language that can be considered racially-
 
 .. |supportmd| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/master/SUPPORT.md" target="_blank">Support information on GitHub</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/main/SUPPORT.md" target="_blank">Support information on GitHub</a>
 
 .. |fast| raw:: html
 
@@ -424,4 +424,4 @@ As a part of an initiative to clean up language that can be considered racially-
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-declarative-onboarding/latest/" target="_blank">Declarative Onboarding</a>
 
-   
+

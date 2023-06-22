@@ -170,7 +170,7 @@ Notes and Tips
 
 .. |valid| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/master/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/main/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
 
 .. |postmancol| raw:: html
 
@@ -196,7 +196,7 @@ Notes and Tips
 .. |ocp| raw:: html
 
    <a href="https://support.f5.com/csp/article/K7208" target="_blank">OneConnect profile</a>
-   
+
 .. |mpp| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#multiplex-profile" target="_blank">Muliplex profile</a>
@@ -204,4 +204,3 @@ Notes and Tips
 .. |do| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-declarative-onboarding/latest/" target="_blank">Declarative Onboarding</a>
-

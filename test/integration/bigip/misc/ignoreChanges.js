@@ -166,7 +166,7 @@ describe('ignoreChanges', function () {
                         assert.strictEqual(response.results[0].tenant, 'Common');
                         assert.strictEqual(response.results[1].tenant, 'Common');
 
-                        decl.declaration.Common.Shared.testDatagroup.externalFilePath = 'https://test@raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json';
+                        decl.declaration.Common.Shared.testDatagroup.externalFilePath = 'https://test@raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/main/schema/latest/as3-schema.json';
                         return postDeclaration(decl, { declarationIndex: 2 });
                     })
                     .then((response) => {
@@ -249,7 +249,7 @@ describe('ignoreChanges', function () {
                         assert.strictEqual(response.results[0].tenant, 'Common');
                         assert.strictEqual(response.results[1].tenant, 'Common');
 
-                        decl.declaration.Common.Shared.testDatagroup.externalFilePath = 'https://test@raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json';
+                        decl.declaration.Common.Shared.testDatagroup.externalFilePath = 'https://test@raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/main/schema/latest/as3-schema.json';
                         return postDeclaration(decl, { declarationIndex: 2 });
                     })
                     .then((response) => {

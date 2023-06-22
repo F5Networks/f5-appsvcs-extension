@@ -665,7 +665,7 @@ create_docs:
     - make linkcheck
 
     # build developer documentation (optional)
-    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+    - if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
     -   npm install --registry $NPM_REGISTRY_URL -g jsdoc
     -   jsdoc src/nodejs/* -d contributing
     - fi
