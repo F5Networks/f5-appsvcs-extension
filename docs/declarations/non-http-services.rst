@@ -347,6 +347,39 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<tcp-examples>`
 
+
+|
+
+.. _portlist:
+
+Creating port and address lists for a service
+`````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for creating port lists for a virtual service is available in BIG-IP AS3 3.46 and later. |br| You must have BIG-IP v14.1 or later with the AFM module licensed and provisioned.
+
+In this example, we show how you can create address and port lists for a virtual service in AS3 3.46 and later. These objects were already supported in AS3, but not directly on a virtual service. Using address and port lists allows you to define multiple addresses and ports for a single virtual service.
+
+When you include a Firewall_Port_List in the declaration, BIG-IP AS3 creates a traffic-matching-criteria object in the background which defines how traffic is steered towards the virtual service.
+
+Although this example uses both address and port lists, it is not a requirement and either can be used alone. 
+
+For additional details and BIG-IP AS3 usage, see |fwal|, |fwpl|, and |servicetcp| in the Schema Reference.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **Tenant**.
+- An Application named **Application**.
+- Multiple firewall address lists. One is used for source addresses, and the others for destination addresses.
+- A firewall port list named **portList** that includes port 8080 and a range of ports from 1-999.
+- A virtual server named **service** using the Service_TCP class that references the address lists defined for source and destination, and the port list. 
+
+
+.. literalinclude:: ../../examples/declarations/example-service-tcp-with-source-destination-lists.json
+   :language: json
+
+:ref:`Back to top<tcp-examples>`
+
  
 
 .. |stateless| raw:: html
@@ -424,7 +457,17 @@ This declaration creates the following objects on the BIG-IP:
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#service-udp" target="_blank">Service_UDP</a>
 
+.. |fwpl| raw:: html
 
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#firewall-port-list" target="_blank">Firewall_Port_List</a>
+
+.. |fwal| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#firewall-address-list" target="_blank">Firewall_Address_List</a>
+
+
+
+#firewall-port-list
 
 
 
