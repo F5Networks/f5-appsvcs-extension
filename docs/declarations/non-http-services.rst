@@ -360,9 +360,9 @@ Creating port and address lists for a service
 
 In this example, we show how you can create address and port lists for a virtual service in AS3 3.46 and later. These objects were already supported in AS3, but not directly on a virtual service. Using address and port lists allows you to define multiple addresses and ports for a single virtual service.   
 
-Although this example uses both firewall address and port lists, it is not a requirement and either can be used alone.  You can also use |nal| and |npl|.
+Although this example uses both |fwal|, |fwpl|, it is not a requirement and either can be used alone.  You can also use |nal| and |npl|.
 
-When you include a Firewall_Port_List or Net_Port_list in a declaration, BIG-IP AS3 creates a traffic-matching-criteria object in the background which defines how traffic is steered towards the virtual service.
+When you include a port or address list in a declaration, BIG-IP AS3 creates a traffic-matching-criteria object in the background which defines how traffic is steered towards the virtual service.
 
 For additional details and BIG-IP AS3 usage, see |fwal|, |fwpl| (and |nal| and |npl|), and |servicetcp| in the Schema Reference.
 
@@ -373,7 +373,7 @@ This declaration creates the following objects on the BIG-IP:
 - Multiple firewall address lists. One is used for source addresses, and the others for destination addresses.
 - A firewall port list named **portList** that includes port 8080 and a range of ports from 1-999.
 - A traffic-matching-critera object that defines how traffic is directed based on the lists.
-- A virtual server named **service** using the Service_TCP class that references the traffic-matching-critera object, the address lists defined for source and destination, and the port list. 
+- A virtual server named **service** using the Service_TCP class that references the traffic-matching-criteria object. 
 
 
 .. literalinclude:: ../../examples/declarations/example-service-tcp-with-source-destination-lists.json
