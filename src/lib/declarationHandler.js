@@ -429,6 +429,9 @@ class DeclarationHandler {
         let decl = currentTask.declaration; // may be a stub
         if (!context.request.isPerApp) {
             decl.updateMode = decl.updateMode || 'selective';
+        } else {
+            // perApp mode relies on selective updates to prevent requests from overwriting each other
+            decl.updateMode = 'selective';
         }
         let mutexRefresher = null;
         const commonConfig = {};

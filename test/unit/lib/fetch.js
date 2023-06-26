@@ -1043,6 +1043,224 @@ describe('fetch', () => {
                 });
         });
 
+        // TODO: remove this unit test, when virtual-address per-app meta-data handling is complete
+        it('should remove virtual-address deletes when hanlding a per-app POST', () => {
+            context.request = {
+                method: 'Post',
+                isPerApp: true,
+                perAppInfo: {
+                    tenant: 'tenant1',
+                    decl: {}, // Abbreviated for testing
+                    apps: ['app1']
+                }
+            };
+            const currentConfig = {
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.200:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.200':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.200',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.1':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/': {
+                    command: 'sys folder', properties: {}, ignore: []
+                }
+            };
+            const desiredConfig = {
+                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                '/tenant1/Service_Address-192.0.2.100':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.100',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.100:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                }
+            };
+            const commonConfig = {
+                nodeList: [
+                    {
+                        fullPath: '/tenant1/192.0.2.10',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.10'
+                    },
+                    {
+                        fullPath: '/tenant1/192.0.2.20',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.20'
+                    }],
+                virtualAddressList: []
+            };
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    // Should be empty if attempting to Delete
+                    assert.strictEqual(results.length, 2);
+                    assert.deepStrictEqual(results,
+                        [
+                            {
+                                kind: 'E',
+                                path: ['/tenant1/app1/testItem', 'properties', 'destination'],
+                                lhs: '/tenant1/192.0.2.200:123',
+                                rhs: '/tenant1/192.0.2.100:123'
+                            },
+                            {
+                                kind: 'N',
+                                path: ['/tenant1/Service_Address-192.0.2.100'],
+                                rhs: {
+                                    command: 'ltm virtual-address',
+                                    properties: {
+                                        address: '192.0.2.100',
+                                        arp: 'enabled',
+                                        'icmp-echo': 'enabled',
+                                        mask: '255.255.255.255',
+                                        'route-advertisement': 'disabled',
+                                        spanning: 'disabled',
+                                        'traffic-group': 'default'
+                                    },
+                                    ignore: []
+                                }
+                            }
+                        ]);
+                });
+        });
+
         describe('iRule order', () => {
             it('should return a diff when iRule order changes', () => {
                 const currentConfig = {
@@ -7042,7 +7260,7 @@ describe('fetch', () => {
                     isPerApp: true,
                     perAppInfo: {
                         tenant: 'tenant',
-                        app: undefined
+                        apps: []
                     }
                 };
             });
@@ -7055,34 +7273,54 @@ describe('fetch', () => {
                 context.control = {
                     host: 'localhost'
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: appId
+                    apps: [appId]
                 };
                 const declaration = {
-                    [appId]: {
-                        class: 'Application',
-                        template: 'generic',
-                        [poolId]: {
-                            class: 'Pool',
-                            loadBalancingMode: 'round-robin',
-                            minimumMembersActive: 1,
-                            reselectTries: 0,
-                            serviceDownAction: 'none',
-                            slowRampTime: 10,
-                            minimumMonitors: 1
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
                         },
-                        enable: true
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
                     }
                 };
 
                 return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
                     .then((desiredConfig) => {
                         assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(desiredConfig['/My_tenant/'].command, 'auth partition');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/'].command, 'sys folder');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(typeof desiredConfig['/My_tenant/appOther/'], 'undefined'); // Should NOT include unspecified app
                     });
             });
 
@@ -7094,24 +7332,43 @@ describe('fetch', () => {
                 context.control = {
                     host: 'localhost'
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: undefined
+                    apps: []
                 };
                 const declaration = {
-                    [appId]: {
-                        class: 'Application',
-                        template: 'generic',
-                        [poolId]: {
-                            class: 'Pool',
-                            loadBalancingMode: 'round-robin',
-                            minimumMembersActive: 1,
-                            reselectTries: 0,
-                            serviceDownAction: 'none',
-                            slowRampTime: 10,
-                            minimumMonitors: 1
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
                         },
-                        enable: true
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
                     }
                 };
 
@@ -7122,6 +7379,9 @@ describe('fetch', () => {
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].properties['load-balancing-mode'], 'round-robin');
                     });
             });
         });
@@ -7281,7 +7541,7 @@ describe('fetch', () => {
                 context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: undefined
+                    apps: []
                 };
                 return Promise.resolve()
                     .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))

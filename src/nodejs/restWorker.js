@@ -180,7 +180,6 @@ class RestWorker {
 
         if (path) {
             const pathParts = path.split('?')[0].split('/');
-
             if (pathParts[0] === '') {
                 pathParts.shift();
             }
@@ -198,11 +197,23 @@ class RestWorker {
             }
 
             if (endpoint === 'declare') {
-                validPathLengths.push(4); // tenant name
+                validPathLengths.push(4); // tenant(s) name(s)
                 if ((pathParts.length === 5 || pathParts.length === 6)
                     && pathParts[4] === 'applications') {
-                    validPathLengths.push(5); // 'applications'
-                    validPathLengths.push(6); // application name
+                    switch (restOperation.method) {
+                    case 'Post':
+                        validPathLengths.push(5); // 'applications'
+                        break;
+                    case 'Get':
+                        validPathLengths.push(5); // 'applications'
+                        validPathLengths.push(6); // application name
+                        break;
+                    case 'Put':
+                    case 'Delete':
+                        validPathLengths.push(6); // requires application name
+                        break;
+                    default:
+                    }
                 }
             }
 

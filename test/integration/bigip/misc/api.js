@@ -640,25 +640,29 @@ describe('per-app API testing (__smoke)', function () {
     });
 
     describe('POST', () => {
+        afterEach(() => deleteDeclaration());
+
         it('should handle creating a tenant via POSTing to the applications endpoint', () => {
             const declaration = {
                 app1: {
                     class: 'Application',
                     template: 'generic',
-                    pool1: {
-                        class: 'Pool',
-                        loadBalancingMode: 'round-robin',
-                        minimumMembersActive: 1,
-                        reselectTries: 0,
-                        serviceDownAction: 'none',
-                        slowRampTime: 11,
-                        minimumMonitors: 1
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '1.1.1.12'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
                     }
                 }
             };
 
             return Promise.resolve()
-                .then(() => postDeclaration(declaration, logInfo, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then(() => postDeclaration(declaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
@@ -676,14 +680,31 @@ describe('per-app API testing (__smoke)', function () {
                         ]
                     );
                 })
+                .then(() => postDeclaration(declaration, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
                 .then(() => {
                     const options = {
-                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications?async=true',
-                        logResponse: true
+                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app1?async=true',
+                        logResponse: true,
+                        sendDelete: true
                     };
                     return deleteDeclaration(undefined, options);
                 }) // DELETE specific application
-                .then((results) => { // Confirm results
+                .then((results) => { // Confirm no change
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
                     delete results.results[0].lineCount;
@@ -699,6 +720,52 @@ describe('per-app API testing (__smoke)', function () {
                             }
                         ]
                     );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications/app1')
+                ))
+                .then((results) => {
+                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
+                    assert.deepStrictEqual(results, {
+                        app1: {
+                            class: 'Application',
+                            template: 'generic',
+                            testItem: {
+                                class: 'Service_TCP',
+                                remark: 'description',
+                                virtualPort: 123,
+                                virtualAddresses: [
+                                    '1.1.1.12'
+                                ],
+                                persistenceMethods: [
+                                    'source-address'
+                                ]
+                            }
+                        }
+                    });
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications')
+                ))
+                .then((results) => {
+                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
+                    assert.deepStrictEqual(results, {
+                        app1: {
+                            class: 'Application',
+                            template: 'generic',
+                            testItem: {
+                                class: 'Service_TCP',
+                                remark: 'description',
+                                virtualPort: 123,
+                                virtualAddresses: [
+                                    '1.1.1.12'
+                                ],
+                                persistenceMethods: [
+                                    'source-address'
+                                ]
+                            }
+                        }
+                    });
                 });
         });
 
@@ -712,14 +779,16 @@ describe('per-app API testing (__smoke)', function () {
                     app1: {
                         class: 'Application',
                         template: 'generic',
-                        pool1: {
-                            class: 'Pool',
-                            loadBalancingMode: 'round-robin',
-                            minimumMembersActive: 1,
-                            reselectTries: 0,
-                            serviceDownAction: 'none',
-                            slowRampTime: 11,
-                            minimumMonitors: 1
+                        testItem: {
+                            class: 'Service_TCP',
+                            remark: 'description',
+                            virtualPort: 123,
+                            virtualAddresses: [
+                                '1.1.1.12'
+                            ],
+                            persistenceMethods: [
+                                'source-address'
+                            ]
                         }
                     },
                     app2: {
@@ -731,15 +800,34 @@ describe('per-app API testing (__smoke)', function () {
                             minimumMembersActive: 1,
                             reselectTries: 0,
                             serviceDownAction: 'none',
-                            slowRampTime: 11,
-                            minimumMonitors: 1
+                            slowRampTime: 11
                         }
                     }
                 }
             };
 
-            const perAppDecl = {
+            const app1Decl = {
                 app1: {
+                    class: 'Application',
+                    template: 'generic',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.10'],
+                        pool: 'pool1'
+                    },
+                    pool1: {
+                        class: 'Pool',
+                        loadBalancingMode: 'round-robin',
+                        minimumMembersActive: 1,
+                        reselectTries: 0,
+                        serviceDownAction: 'none',
+                        slowRampTime: 11
+                    }
+                }
+            };
+
+            const app2Decl = {
+                app2: {
                     class: 'Application',
                     template: 'generic',
                     pool1: {
@@ -748,14 +836,13 @@ describe('per-app API testing (__smoke)', function () {
                         minimumMembersActive: 1,
                         reselectTries: 0,
                         serviceDownAction: 'none',
-                        slowRampTime: 11,
-                        minimumMonitors: 1
+                        slowRampTime: 11
                     }
                 }
             };
 
             return Promise.resolve()
-                .then(() => postDeclaration(perTenDecl, logInfo))
+                .then(() => postDeclaration(perTenDecl, { declarationIndex: 0 }))
                 .then((results) => {
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
@@ -784,14 +871,16 @@ describe('per-app API testing (__smoke)', function () {
                             app1: {
                                 class: 'Application',
                                 template: 'generic',
-                                pool1: {
-                                    class: 'Pool',
-                                    loadBalancingMode: 'round-robin',
-                                    minimumMembersActive: 1,
-                                    reselectTries: 0,
-                                    serviceDownAction: 'none',
-                                    slowRampTime: 11,
-                                    minimumMonitors: 1
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '1.1.1.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
                                 }
                             },
                             app2: {
@@ -803,14 +892,13 @@ describe('per-app API testing (__smoke)', function () {
                                     minimumMembersActive: 1,
                                     reselectTries: 0,
                                     serviceDownAction: 'none',
-                                    slowRampTime: 11,
-                                    minimumMonitors: 1
+                                    slowRampTime: 11
                                 }
                             }
                         }
                     );
                 })
-                .then(() => postDeclaration(perAppDecl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then(() => postDeclaration(app1Decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
@@ -828,48 +916,60 @@ describe('per-app API testing (__smoke)', function () {
                         ]
                     );
                 })
-                .then(() => {
-                    const options = {
-                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app1?async=true',
-                        logResponse: true
-                    };
-                    return deleteDeclaration(undefined, options);
-                }) // DELETE specific application
+                .then(() => postDeclaration(app1Decl, { declarationIndex: 2 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
                     delete results.results[0].runTime;
                     assert.deepStrictEqual(
                         results.results,
                         [
                             {
                                 code: 200,
-                                message: 'success',
+                                message: 'no change',
                                 host: 'localhost',
                                 tenant: 'tenant1'
                             }
                         ]
                     );
                 })
-                .then(() => {
-                    const options = {
-                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app2?async=true',
-                        logResponse: true
-                    };
-                    return deleteDeclaration(undefined, options);
-                }) // DELETE specific application
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.deepStrictEqual(
+                        results.tenant1,
+                        {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                template: 'generic',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.10'],
+                                    pool: 'pool1'
+                                },
+                                pool1: {
+                                    class: 'Pool',
+                                    loadBalancingMode: 'round-robin',
+                                    minimumMembersActive: 1,
+                                    reselectTries: 0,
+                                    serviceDownAction: 'none',
+                                    slowRampTime: 11
+                                }
+                            } // NOTE: after data-groups are fixed we should see app2
+                        }
+                    );
+                })
+                .then(() => postDeclaration(app2Decl, { declarationIndex: 3 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
                     delete results.results[0].runTime;
                     assert.deepStrictEqual(
                         results.results,
                         [
                             {
                                 code: 200,
-                                message: 'success',
+                                message: 'no change',
                                 host: 'localhost',
                                 tenant: 'tenant1'
                             }
@@ -882,7 +982,7 @@ describe('per-app API testing (__smoke)', function () {
                         logResponse: true
                     };
                     return deleteDeclaration(undefined, options);
-                }) // DELETE specific application
+                })
                 .then((results) => { // Confirm results
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');

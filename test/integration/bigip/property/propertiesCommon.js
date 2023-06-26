@@ -674,6 +674,7 @@ function postBigipItems(items, useTransaction) {
  * @param {string} tenant - the name of the tenant you want deleted (DO NOT INCLUDE THE FORWARD SLASH)
  * @param {object} [options] - options for function
  * @param {boolean} [options.logResponse] - whether or not to log the response from the delete operation
+ * @param {boolean} [options.sendDelete] - whether or not to send request as a DELETE or POST
  */
 function deleteDeclaration(tenant, options) {
     logEvent('delete Declaration');
@@ -691,7 +692,7 @@ function deleteDeclaration(tenant, options) {
         retryIf: (error, response) => response && response.statusCode === 503
     };
 
-    if (tenant) {
+    if (tenant || (options && options.sendDelete)) {
         requestPromise = requestUtil.delete(reqOpts);
     } else {
         reqOpts.body = {

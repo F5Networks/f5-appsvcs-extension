@@ -33,6 +33,7 @@ const util = require('../../../src/lib/util/util');
 const DEVICE_TYPES = require('../../../src/lib/constants').DEVICE_TYPES;
 const Context = require('../../../src/lib/context/context');
 const Config = require('../../../src/lib/config');
+const PostProcessor = require('../../../src/lib/postProcessor');
 
 const adcSchemaPath = `${__dirname}/../../../src/schema/latest/adc-schema.json`;
 const appSchemaPath = `${__dirname}/../../../src/schema/latest/app-schema.json`;
@@ -46,6 +47,7 @@ describe('adcParser', function () {
     let logErrorSpy;
     let secretTagSpy;
     let context;
+    let postProcessSpy;
 
     before(() => theParser.loadSchemas([as3AdcSchema, as3AppSchema]));
 
@@ -63,6 +65,7 @@ describe('adcParser', function () {
         sinon.stub(Tag.FetchTag, 'process').resolves();
         sinon.stub(Tag.BigComponentTag, 'process').resolves();
         sinon.stub(Config, 'getAllSettings').resolves({ serviceDiscoveryEnabled: true });
+        postProcessSpy = sinon.spy(PostProcessor, 'process');
     });
 
     afterEach(() => {
@@ -241,10 +244,13 @@ describe('adcParser', function () {
                 });
         });
 
-        it('should validate using the per app schema', () => {
+        it('should validate using the per app schema and skip PostProcessing', () => {
             context.request.isPerApp = true;
+            context.request.body = {
+                id: 'autogen_new-uuid-xxxx'
+            }; // This simulates the id added to the transformed declaration
+
             const decl = {
-                id: 'id',
                 app: {
                     class: 'Application',
                     service: {
@@ -258,19 +264,23 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return parseDeclaration(decl)
+            const options = {
+                isPerApp: true
+            };
+
+            return parseDeclaration(decl, undefined, options)
                 .then(() => {
+                    assert.strictEqual(postProcessSpy.called, false);
                     assert.deepStrictEqual(
                         decl,
                         {
-                            id: 'id',
                             app: {
                                 class: 'Application',
                                 service: {
                                     class: 'Service_HTTP',
                                     virtualAddresses: ['192.0.2.100'],
                                     virtualPort: 80,
-                                    pool: '/app/service/pool',
+                                    pool: 'pool', // Skipped PostProcessing
                                     persistenceMethods: ['cookie'],
                                     profileHTTP: 'basic',
                                     virtualType: 'standard',
@@ -312,7 +322,11 @@ describe('adcParser', function () {
 
         it('should invalidate when using a per app declaration with the adc schema', () => {
             context.request.isPerApp = false;
+            context.request.body = {
+                id: 'autogen_new-uuid-xxxx'
+            }; // This simulates the id added to the transformed declaration
             const decl = {
+                id: 'test', // While id is not supported, this is added to simulate bad user input
                 app: {
                     class: 'Application',
                     service: {
@@ -326,11 +340,23 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return assert.isRejected(parseDeclaration(decl));
+            return assert.isRejected(parseDeclaration(decl))
+                .then(() => {
+                    assert.deepStrictEqual(logWarningSpy.args[0][0], {
+                        status: 422,
+                        message: 'declaration is invalid',
+                        errors: [
+                            '/app/service/virtualAddresses: should be object'
+                        ]
+                    });
+                });
         });
 
         it('should invalidate when using the per app schema and an invalid property', () => {
             context.request.isPerApp = true;
+            context.request.body = {
+                id: 'autogen_new-uuid-xxxx'
+            }; // This simulates the id added to the transformed declaration
             const decl = {
                 app: {
                     class: 'Application',
@@ -346,14 +372,29 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return assert.isRejected(parseDeclaration(decl));
+            const options = {
+                isPerApp: true
+            };
+            return assert.isRejected(parseDeclaration(decl, undefined, options))
+                .then(() => {
+                    assert.strictEqual(postProcessSpy.called, false);
+                    assert.deepStrictEqual(logWarningSpy.args[0][0], {
+                        status: 422,
+                        message: 'declaration is invalid',
+                        errors: [
+                            '/app/invalidProperty: should be object'
+                        ]
+                    });
+                });
         });
 
         it('should invalidate when using a tenant declaration against the app schema', () => {
             context.request.isPerApp = true;
+            context.request.body = {
+                id: 'autogen_new-uuid-xxxx'
+            }; // This simulates the id added to the transformed declaration
             const decl = {
                 class: 'ADC',
-                id: 'theId',
                 schemaVersion: '3.45.0',
                 tenant: {
                     class: 'Tenant',
@@ -371,12 +412,30 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return assert.isRejected(parseDeclaration(decl));
+            const options = {
+                isPerApp: true
+            };
+            return assert.isRejected(parseDeclaration(decl, undefined, options))
+                .then(() => {
+                    assert.strictEqual(logWarningSpy.called, true);
+                    assert.deepStrictEqual(logWarningSpy.args[0][0], {
+                        errors: [
+                            '/class: should be object'
+                        ],
+                        message: 'declaration is invalid',
+                        status: 422
+                    });
+                    assert.strictEqual(postProcessSpy.called, false);
+                });
         });
 
         it('should invalidate when using a per-app declaration against the adc schema', () => {
             context.request.isPerApp = false;
+            context.request.body = {
+                id: 'autogen_new-uuid-xxxx'
+            }; // This simulates the id added to the transformed declaration
             const decl = {
+                id: 'test', // While id is not supported, this is added to simulate bad user input
                 app: {
                     class: 'Application',
                     service: {
@@ -390,7 +449,14 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return assert.isRejected(parseDeclaration(decl));
+            return assert.isRejected(parseDeclaration(decl))
+                .then(() => {
+                    assert.deepStrictEqual(logWarningSpy.args[0][0], {
+                        status: 422,
+                        message: 'declaration is invalid',
+                        errors: ['/app/service/virtualAddresses: should be object']
+                    });
+                });
         });
     });
 
