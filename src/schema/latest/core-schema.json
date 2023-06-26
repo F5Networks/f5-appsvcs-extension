@@ -2757,6 +2757,18 @@
                         "maximum": 399999999
                     },
                     "uniqueItems": true
+                },
+                "expand": {
+                    "title": "Expand",
+                    "description": "Performs AS3 string expansion on specified values within the WAF Policy. WAF Policies that are not in JSON format will be ignored",
+                    "type": "array",
+                    "items": {
+                        "title": "JSON pointer",
+                        "description": "A JSON pointer to a value within the WAF Policy that requires AS3 string expansion. Pointing to a parent property results in AS3 traversing the sub-properties and expanding any strings that it may find",
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+
                 }
             },
             "additionalProperties": false,

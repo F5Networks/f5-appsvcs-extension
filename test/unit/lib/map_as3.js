@@ -6364,7 +6364,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6401,7 +6401,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6453,7 +6453,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6488,7 +6488,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6551,7 +6551,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                settings: {
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.tar'
                                 },
@@ -6589,7 +6589,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6625,7 +6625,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6675,7 +6675,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6717,7 +6717,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6753,7 +6753,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6803,7 +6803,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6833,7 +6833,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 policy: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6861,7 +6861,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 file: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6913,7 +6913,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                settings: {
                                     enable: true,
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.xml'
@@ -11583,7 +11583,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {
@@ -11667,7 +11667,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {

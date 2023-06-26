@@ -428,7 +428,7 @@ const makeExternalMonitorRequests = function (context, tenantId, appId, itemId, 
     return normalize.actionableMcp(context, externalMonitorFile, 'sys file external-monitor', `${path}-script`);
 };
 
-const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisplayName) {
+const makeApmPolicyRequests = function (item, itemId, path, settings, classDisplayName) {
     if (item.url) {
         const urlObj = normalizeUrl(item.url);
         const url = urlObj.url;
@@ -436,7 +436,7 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         const type = url.includes('.tar.gz') ? '.tar.gz' : '.tar';
         const authentication = urlObj.authentication;
 
-        overrides.url = url;
+        settings.url = url;
 
         item.iControl_postFromRemote = {};
 
@@ -455,7 +455,7 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         item.iControl_postFromRemote.post.method = 'POST';
         item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
         item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
-        item.iControl_postFromRemote.post.overrides = overrides;
+        item.iControl_postFromRemote.post.settings = settings;
 
         if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
             item.ignore.iControl_postFromRemote = {
@@ -475,13 +475,13 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
     return item;
 };
 
-const makeDataGroupTokenRequests = function (item, itemId, path, overrides, classDisplayName) {
+const makeDataGroupTokenRequests = function (item, itemId, path, settings, classDisplayName) {
     const urlObj = normalizeUrl(item.externalFilePath);
     const url = urlObj.url;
     const rejectUnauthorized = urlObj.rejectUnauthorized;
     const authentication = urlObj.authentication;
 
-    overrides.externalFilePath.url = url;
+    settings.externalFilePath.url = url;
     item.iControl_postFromRemote = {};
 
     // GET policy
@@ -499,7 +499,7 @@ const makeDataGroupTokenRequests = function (item, itemId, path, overrides, clas
     item.iControl_postFromRemote.post.method = 'POST';
     item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
     item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
-    item.iControl_postFromRemote.post.overrides = overrides;
+    item.iControl_postFromRemote.post.settings = settings;
 
     return item;
 };
@@ -735,7 +735,7 @@ const translate = {
      */
     WAF_Policy(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, appId, itemId);
-        const overrides = util.simpleCopy(item);
+        const settings = util.simpleCopy(item);
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
@@ -746,7 +746,7 @@ const translate = {
             const rejectUnauthorized = urlObj.rejectUnauthorized;
             const authentication = urlObj.authentication;
 
-            overrides.url = url;
+            settings.url = url;
 
             item.iControl_postFromRemote = {};
 
@@ -761,11 +761,12 @@ const translate = {
 
             // post policy to bigip
             item.iControl_postFromRemote.post = {};
+            item.iControl_postFromRemote.post.reference = path;
             item.iControl_postFromRemote.post.path = `/mgmt/shared/file-transfer/uploads/${path.split('/').pop()}.xml`;
             item.iControl_postFromRemote.post.method = 'POST';
             item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
             item.iControl_postFromRemote.post.why = `upload asm policy ${itemId}`;
-            item.iControl_postFromRemote.post.overrides = overrides;
+            item.iControl_postFromRemote.post.settings = settings;
 
             if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
                 item.ignore.iControl_postFromRemote = {
@@ -784,7 +785,7 @@ const translate = {
             item.iControl_post.ctype = 'application/octet-stream';
             item.iControl_post.why = `upload asm policy ${itemId}`;
             item.iControl_post.send = item.policy || item.file;
-            item.iControl_post.overrides = overrides;
+            item.iControl_post.settings = settings;
             delete item.file;
         }
 
@@ -803,12 +804,12 @@ const translate = {
      */
     Access_Profile(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, '', itemId);
-        const overrides = util.simpleCopy(item);
-        delete overrides.enable;
+        const settings = util.simpleCopy(item);
+        delete settings.enable;
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
-        item = makeApmPolicyRequests(item, itemId, path, overrides, 'Access Profile');
+        item = makeApmPolicyRequests(item, itemId, path, settings, 'Access Profile');
 
         const config = normalize.actionableMcp(context, item, 'apm profile access', path);
         config.properties.enable = item.enable || false;
@@ -821,11 +822,11 @@ const translate = {
      */
     Per_Request_Access_Policy(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, '', itemId);
-        const overrides = util.simpleCopy(item);
+        const settings = util.simpleCopy(item);
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
-        item = makeApmPolicyRequests(item, itemId, path, overrides, 'Access Policy');
+        item = makeApmPolicyRequests(item, itemId, path, settings, 'Access Policy');
 
         const config = normalize.actionableMcp(context, item, 'apm policy access-policy', path);
         return { configs: [config] };
@@ -3755,8 +3756,8 @@ const translate = {
                 item.ignore.externalFilePath = item.externalFilePath;
             }
             if (util.getDeepValue(item, 'externalFilePath.authentication.method') === 'bearer-token') {
-                const overrides = util.simpleCopy(item);
-                item = makeDataGroupTokenRequests(item, itemId, path, overrides, 'Data Group');
+                const settings = util.simpleCopy(item);
+                item = makeDataGroupTokenRequests(item, itemId, path, settings, 'Data Group');
             } else {
                 item.externalFilePath = item.externalFilePath.url || item.externalFilePath;
             }

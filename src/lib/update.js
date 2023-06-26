@@ -66,11 +66,15 @@ const executeIControlCall = function (context, call) {
     if (call.command === 'iControl_post') {
         // handle simple posts to the bigip
         if (call.properties.why.startsWith('upload asm policy')) {
-            return asmUtil.applyAs3Settings(call.properties.send, call.properties.overrides)
-                .then((response) => {
-                    call.properties.send = response;
-                    return util.iControlRequest(context, call.properties);
-                });
+            return asmUtil.applyAs3Settings(
+                call.properties.send,
+                call.properties.settings,
+                call.properties.reference,
+                context.tasks[context.currentIndex].declaration
+            ).then((response) => {
+                call.properties.send = response;
+                return util.iControlRequest(context, call.properties);
+            });
         }
         return util.iControlRequest(context, call.properties);
     }
@@ -103,7 +107,9 @@ const executeIControlCall = function (context, call) {
 
                 return asmUtil.applyAs3Settings(
                     response,
-                    call.properties.post.overrides
+                    call.properties.post.settings,
+                    call.properties.reference,
+                    context.tasks[context.currentIndex].declaration
                 );
             })
             .then((response) => {

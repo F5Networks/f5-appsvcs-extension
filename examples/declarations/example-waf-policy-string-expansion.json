@@ -1,0 +1,27 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.46.0",
+    "id": "WAF_Policy",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": ["192.0.2.10"],
+                "policyWAF": {
+                    "use": "wafPolicy"
+                }
+            },
+            "wafPolicy": {
+                "class": "WAF_Policy",
+                "policy": {
+                    "base64": "ewogICJwb2xpY3kiOiB7CiAgICAibmFtZSI6ICJBcHBQb2xpY3kwMSIsCiAgICAiZGVzY3JpcHRpb24iOiAiZW1iZWRkZWQgV0FGIFBvbGljeSIsCiAgICAidGVtcGxhdGUiOiB7CiAgICAgICJuYW1lIjogIlBPTElDWV9URU1QTEFURV9SQVBJRF9ERVBMT1lNRU5UIgogICAgfSwKICAgICJvcGVuLWFwaS1maWxlcyI6IFsKICAgICAgewogICAgICAgICJsaW5rIjogImh0dHBzOi8vZXhhbXBsZS5jb20vZmlsZXMvYEFgL29wZW5hcGkueWFtbCIKICAgICAgfQogICAgXQogIH0KfQo="
+                },
+                "expand": [
+                    "/policy/open-api-files/0/link"
+                ]
+            }
+        }
+    }
+}

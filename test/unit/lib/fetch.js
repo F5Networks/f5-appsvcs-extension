@@ -778,7 +778,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Profile accessProfile',
-                                overrides: {
+                                settings: {
                                     class: 'Access_Profile',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -818,7 +818,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -859,7 +859,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy accessPolicy',
-                                overrides: {
+                                settings: {
                                     class: 'Per_Request_Access_Policy',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -899,7 +899,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy accessPolicy',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -2730,7 +2730,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfile',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/iam_policy.tar',
                                         ignoreChanges: true
@@ -2788,7 +2788,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/iam_policy.tar',
                                             ignoreChanges: true
@@ -2852,7 +2852,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar',
                                         ignoreChanges: true
@@ -2878,7 +2878,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar.gz',
                                         ignoreChanges: true
@@ -2904,7 +2904,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar',
                                         ignoreChanges: true
@@ -2930,7 +2930,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar.gz',
                                         ignoreChanges: true
@@ -2988,7 +2988,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_policy.tar',
                                             ignoreChanges: true
@@ -3024,7 +3024,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_profile.gz',
                                             ignoreChanges: true
@@ -3060,7 +3060,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar',
                                             ignoreChanges: true
@@ -3096,7 +3096,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar.gz',
                                             ignoreChanges: true
@@ -3160,7 +3160,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/per_request_policy.tar.gz',
                                         ignoreChanges: true
@@ -3218,7 +3218,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/per_request_policy.tar.gz',
                                             ignoreChanges: true
