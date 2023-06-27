@@ -432,11 +432,6 @@
         "class": "IP_Other_Profile",
         "tmshPath": "ltm profile ipother"
     },
-    "L4_Profile": {
-        "name": "fast L4 profile",
-        "class": "L4_Profile",
-        "tmshPath": "ltm profile fastl4"
-    },
     "Radius_Profile": {
         "name": "radius profile",
         "class": "Radius_Profile",
