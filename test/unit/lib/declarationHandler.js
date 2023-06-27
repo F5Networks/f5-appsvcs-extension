@@ -1676,6 +1676,59 @@ describe('DeclarationHandler', () => {
                     });
             });
         });
+
+        it('should add warnings from persistConfig', () => {
+            context.tasks[0].persist = true;
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declaration_id',
+                tenant: {
+                    class: 'Tenant'
+                }
+            };
+
+            sinon.stub(audit, 'allTenants').resolves([
+                {
+                    code: 200,
+                    message: 'no change',
+                    host: 'localhost',
+                    tenant: 'tenant',
+                    runTime: 59
+                }
+            ]);
+            nock('http://localhost:8100')
+                .post('/mgmt/tm/task/sys/config')
+                .reply(200, () => ({
+                    selfLink: 'https://localhost/mgmt/tm/task/sys/config/42',
+                    _taskId: 42
+                }));
+            nock('http://localhost:8100')
+                .put('/mgmt/tm/task/sys/config/42')
+                .reply(200);
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(404, { message: 'Task not found' });
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result.body.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant',
+                                runTime: 59,
+                                warnings: [
+                                    'AS3 was unable to verify that the configuration was persisted. To avoid this issue in the future, try increasing the following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout'
+                                ]
+                            }
+                        ]
+                    );
+                });
+        });
     });
 
     describe('.handlePatch', () => {
@@ -2132,6 +2185,13 @@ describe('DeclarationHandler', () => {
                 .reply(404, { message: 'Task not found - ID: 42 user: admin' });
         }
 
+        function nockConnectionRefused(n) {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .times(n)
+                .reply(500, { message: 'Connection refused' });
+        }
+
         function assertComplete() {
             const state = {};
             nockCompleted(state);
@@ -2242,12 +2302,27 @@ describe('DeclarationHandler', () => {
                 });
         });
 
-        it('should update error message if task is not found', () => {
-            const expectedMsg = /failed to save BIG-IP config \(Record no longer exists on BIG-IP for saving configuration task \(ID: 42\)/;
+        it('should resolve with warning if task not found', () => {
             nockCreate();
             nockStart();
             nockTaskNotFound();
-            return assert.isRejected(DeclarationHandler.persistConfig(context), expectedMsg);
+            return assert.isFulfilled(DeclarationHandler.persistConfig(context))
+                .then((result) => {
+                    assert.strictEqual(
+                        result.warning,
+                        'AS3 was unable to verify that the configuration was persisted. To avoid this issue in the future, try increasing the following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout'
+                    );
+                });
+        });
+
+        it('should reject if too many Connection refused errors are encountered', () => {
+            nockCreate();
+            nockStart();
+            nockConnectionRefused(121);
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /Connection refused/
+            );
         });
     });
 });

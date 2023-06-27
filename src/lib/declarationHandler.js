@@ -911,7 +911,16 @@ class DeclarationHandler {
                     // does customer want to save or sync updated config?
 
                     if (currentTask.persist) {
-                        promise = promise.then(() => persistConfig(context));
+                        promise = promise
+                            .then(() => persistConfig(context))
+                            .then((status) => {
+                                if (status.warning) {
+                                    response.results.forEach((result) => {
+                                        result.warnings = result.warnings || [];
+                                        result.warnings.push(status.warning);
+                                    });
+                                }
+                            });
                     }
                     if (currentTask.syncToGroup !== '') {
                         promise = promise.then(() => configSync(context,
@@ -1185,6 +1194,10 @@ function persistConfig(context) {
                         return true;
                     }
 
+                    if (error.message.indexOf('Connection refused') > -1) {
+                        return true;
+                    }
+
                     return false;
                 }
 
@@ -1194,9 +1207,11 @@ function persistConfig(context) {
                 }
 
                 if (error.message.indexOf('Task not found') > -1) {
-                    error.message = 'Record no longer exists on BIG-IP for saving configuration task'
-                    + ` (ID: ${id}). To avoid this issue in the future, try increasing the`
+                    const warning = 'AS3 was unable to verify that the configuration was persisted.'
+                    + ' To avoid this issue in the future, try increasing the'
                     + ' following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout';
+                    log.warning(warning);
+                    return Promise.resolve({ warning });
                 }
 
                 throw error;
@@ -1224,9 +1239,9 @@ function persistConfig(context) {
             return util.iControlRequest(context, startOptions);
         })
         .then(() => waitForCompletion(120))
-        .then(() => {
+        .then((result) => {
             log.debug('BIG-IP config saved');
-            return true;
+            return typeof result !== 'undefined' ? result : true;
         })
         .catch((e) => {
             e.message = `failed to save BIG-IP config (${e.message})`;
