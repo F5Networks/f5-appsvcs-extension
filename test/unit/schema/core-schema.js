@@ -3480,6 +3480,18 @@ describe('core-schema.json', () => {
 
             assert.ok(validate(data), getErrorString(validate));
         });
+
+        it('should validate with route domain as a string', () => {
+            data.Tenant.Application.socksProfile = {
+                class: 'SOCKS_Profile',
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                routeDomain: 'id-65534'
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
     });
 
     describe('Statistics_Profile', () => {

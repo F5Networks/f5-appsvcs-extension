@@ -7377,9 +7377,16 @@
                 },
                 "routeDomain": {
                     "description": "The route domain that will be used for outbound connect requests",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 65534,
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65534
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
                     "default": 0
                 },
                 "tunnelName": {
