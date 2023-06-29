@@ -16,16 +16,16 @@
 
 'use strict';
 
+const deepDiff = require('deep-diff');
 const atgStorage = require('@f5devcentral/atg-storage');
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
-const deepDiff = require('deep-diff');
+const arrayUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const mapAs3 = require('./map_as3');
 const mapMcp = require('./map_mcp');
 const mapCli = require('./map_cli');
 const paths = require('./paths.json');
 const util = require('./util/util');
-const arrayUtil = require('./util/arrayUtil');
 const log = require('./log');
 const constants = require('./constants');
 

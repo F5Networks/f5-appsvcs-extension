@@ -18,9 +18,9 @@
 
 const crypto = require('crypto');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
+const arrUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const normalize = require('./normalize');
 const util = require('./util/util');
-const arrUtil = require('./util/arrayUtil');
 const PolicyParser = require('./ltmPolicyParser');
 const log = require('./log');
 const serviceDiscovery = require('./serviceDiscovery');

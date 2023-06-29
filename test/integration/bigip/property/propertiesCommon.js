@@ -20,11 +20,11 @@ const assert = require('assert');
 const fs = require('fs');
 
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
+const arrayUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const classMap = require('../../../../src/lib/classes');
 const pathMap = require('../../../../src/lib/paths.json');
 const propertyMap = require('../../../../src/lib/properties.json');
 const util = require('../../../../src/lib/util/util');
-const arrayUtil = require('../../../../src/lib/util/arrayUtil');
 const schema = require('../../../../src/schema/latest/adc-schema.json');
 const constants = require('../../../../src/lib/constants');
 const requestUtil = require('../../../common/requestUtilPromise');

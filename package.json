@@ -63,7 +63,7 @@
     ]
   },
   "dependencies": {
-    "@f5devcentral/atg-shared-utilities": "^0.7.0",
+    "@f5devcentral/atg-shared-utilities": "^0.8.0",
     "@f5devcentral/atg-storage": "^1.3.9",
     "@f5devcentral/f5-teem": "^1.6.1",
     "ajv": "6.12.6",
