@@ -17,9 +17,9 @@ For traditional declarations to a specific tenant, AS3 supports requests to ``/a
 
  
 
-The following is an example per-application declaration (note the lack of the Tenant class):
+The following is an example per-application declaration (note the lack of the Tenant class).
 
-.. literalinclude:: ../examples/declarations/pre-app/example-per-app-single-app-object.json
+.. literalinclude:: ../examples/declarations/per-app/example-per-app-single-app-object.json
    :language: json
 
 
@@ -27,7 +27,7 @@ The following is an example per-application declaration (note the lack of the Te
 POSTing a per-application
 `````````````````````````
 
-The URI path for POSTing a per-application declaration is ``/appsvcs/declare/<tenant>/applications``.  For example: ``POST HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` 
+The URI path for POSTing a per-application declaration is ``/appsvcs/declare/<tenant>/applications``.  For example, you could send the example declaration to: ``POST HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` 
 
 
 
