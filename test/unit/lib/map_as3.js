@@ -148,6 +148,14 @@ describe('map_as3', () => {
                     expected: 'asm request disable'
                 },
                 {
+                    input: { type: 'botDefense', profile: { bigip: '/Common/myProfile' } },
+                    expected: 'bot-defense request enable from-profile /Common/myProfile'
+                },
+                {
+                    input: { type: 'botDefense' },
+                    expected: 'bot-defense request disable'
+                },
+                {
                     input: { type: 'drop' },
                     expected: 'shutdown client-accepted connection'
                 },

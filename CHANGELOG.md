@@ -10,6 +10,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3723: Add basic POST functionality for per-app declarations
 - AUTOTOOL-3876: Support for performing AS3 string expansion inside declarative WAF policy
 - AUTOTOOL-3866: Add support of route domain as a string for SOCKS profile
+- AUTOTOOL-3768: ([GitHub Issue 696](https://github.com/F5Networks/f5-appsvcs-extension/issues/696)): Add support for enable/disable BotDefense profile in Endpoint_Policy
 
 ### Fixed
 - AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile

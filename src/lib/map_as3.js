@@ -3074,6 +3074,14 @@ const translate = {
                     } else {
                         action.disable = true;
                     }
+                } else if (action.type === 'botDefense') {
+                    if (action.profile) {
+                        action.enable = true;
+                        action.fromProfile = bigipPath(action, 'profile');
+                        delete action.profile;
+                    } else {
+                        action.disable = true;
+                    }
                 } else if (action.type === 'drop') {
                     action.type = 'shutdown';
                 } else if (action.type === 'httpRedirect') {

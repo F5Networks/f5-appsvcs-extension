@@ -40,7 +40,7 @@ describe('LTM Policy Parsing', () => {
         it('should generate top level branches', () => {
             const actionBranches = Object.keys(parserSource.action.branches);
             const conditionBranches = Object.keys(parserSource.condition.branches);
-            assert.equal(actionBranches.length, 29, '29 action branches exist');
+            assert.equal(actionBranches.length, 30, '30 action branches exist');
             assert.equal(conditionBranches.length, 19, '19 condition branches exist');
             assert(parserSource.action.branches['http-cookie'], 'http-cookie is in top level branches');
         });

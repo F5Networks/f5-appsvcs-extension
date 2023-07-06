@@ -342,7 +342,8 @@ const getPolicyControls = function (policy) {
         asm: ['asm'],
         avr: ['avr'],
         websocket: ['websocket'],
-        l7dos: ['l7dos']
+        l7dos: ['l7dos'],
+        'bot-defense': ['bot-defense']
     };
     const controls = {};
 
