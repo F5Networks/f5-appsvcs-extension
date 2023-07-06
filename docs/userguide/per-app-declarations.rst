@@ -19,7 +19,7 @@ For traditional declarations to a specific tenant, AS3 supports requests to ``/a
 
 The following is an example per-application declaration (note the lack of the Tenant class):
 
-.. literalinclude:: ../../examples/declarations/pre-app/example-per-app-single-app-object.json
+.. literalinclude:: ../examples/declarations/pre-app/example-per-app-single-app-object.json
    :language: json
 
 
