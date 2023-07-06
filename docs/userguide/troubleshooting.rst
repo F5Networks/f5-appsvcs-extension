@@ -188,9 +188,9 @@ For information on the APM Access profile, see |portaldocs|.
 
 .. _hypentrouble:
 
-Why do some object names now have a trailing hypen in BIG-IP AS3 3.16.0?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-BIG-IP AS3 3.16.0 and later introduce changes in how BIG-IP AS3 generates names for certain objects.  Additionally, dots (.) and hypens (-) are now allowed in Application property names (BIG-IP AS3 3.17.0 allows dots and hyphens in Tenant and Application names).  
+Why do some object names now have a trailing hyphen in BIG-IP AS3 3.16.0?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+BIG-IP AS3 3.16.0 and later introduce changes in how BIG-IP AS3 generates names for certain objects.  Additionally, dots (.) and hyphens (-) are now allowed in Application property names (BIG-IP AS3 3.17.0 allows dots and hyphens in Tenant and Application names).  
 
 For complete details, see :ref:`naming-ref`
 
@@ -281,6 +281,15 @@ AS3 versions 3.42 and later are NOT compatible with BIG-IQ, and cause issues wit
 To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.
 
 If you are experiencing this issue, we recommend following the steps in :ref:`Downgrading the version of AS3 on BIG-IQ<down>`.
+
+
+|
+
+.. _pending:
+
+Why am I seeing **Changes Pending** returned when I send a declaration to a BIG-IP device group with an **action** of **dry-run**?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When sending a BIG-IP AS3 declaration to a device that is a part of a device group, when the **action** value is **dry-run**, a **Changes Pending** message is returned, even though no changes should have been made because of the dry-run action.  
 
 
 .. |br| raw:: html
