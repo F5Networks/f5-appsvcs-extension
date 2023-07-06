@@ -273,7 +273,7 @@ describe('update', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload asm policy exampleWAF',
-                                overrides: {
+                                settings: {
                                     class: 'WAF_Policy',
                                     url: 'https://192.0.2.0/mgmt/cm/asm/policy-files/download/0c32f1e4-dba5-3d17-991c-2d113478c261/14.1.0',
                                     ignoreChanges: false,
@@ -324,7 +324,7 @@ describe('update', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy exampleWAF',
                             send: '<policy><blocking><enforcement_mode>transparent</enforcement_mode></blocking></policy>',
-                            overrides: {
+                            settings: {
                                 class: 'WAF_Policy',
                                 policy: '<policy><blocking><enforcement_mode>blocking</enforcement_mode></blocking></policy>',
                                 ignoreChanges: false,
@@ -374,7 +374,7 @@ describe('update', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Profile apmExample',
-                                overrides: {
+                                settings: {
                                     class: 'Access_Profile',
                                     url: 'https://example.com/profile_ITS_ap_transfer.conf.tar.gz',
                                     ignoreChanges: true
@@ -420,7 +420,7 @@ describe('update', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy exampleWAF',
                             send: '<policy><blocking><enforcement_mode>transparent</enforcement_mode></blocking></policy>',
-                            overrides: {
+                            settings: {
                                 class: 'WAF_Policy',
                                 policy: '<policy><blocking><enforcement_mode>blocking</enforcement_mode></blocking></policy>',
                                 ignoreChanges: false,

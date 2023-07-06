@@ -94,7 +94,14 @@
                 "class": "GSLB_Prober_Pool",
                 "enabled": true,
                 "lbMode": "round-robin",
-                "members": []
+                "members": [
+                    {
+                        "server": {
+                            "use": "testServer"
+                        },
+                        "memberOrder": 0
+                    }
+                ]
             },
             "testServer": {
                 "class": "GSLB_Server",

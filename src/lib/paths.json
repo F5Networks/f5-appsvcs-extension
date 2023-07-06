@@ -269,6 +269,10 @@
             "minimumVersion": "14.0"
         },
         {
+            "endpoint": "/mgmt/tm/net/port-list",
+            "minimumVersion": "14.0"
+        },
+        {
             "endpoint": "/mgmt/tm/security/firewall/address-list",
             "modules": ["afm"]
         },

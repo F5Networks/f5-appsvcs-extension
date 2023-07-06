@@ -181,13 +181,16 @@ class As3Parser {
      *                                             modifications (WILL BE MODIFIED)
      * @param {Boolean} [options.copySecrets=false] - copy sv cryptograms to baseDeclaration
      * @param {Object} [options.previousDeclaration] - the previous saved declaration
+     * @param {Boolean} [options.isPerApp=false] - Validates against per-app && ignores
+     *                                             PostProcess step
      * @returns {Promise} - resolves to declaration label+id (declaration is MODIFIED)
      */
     digest(context, declaration, options) {
         const defaultOpts = {
             copySecrets: false,
             baseDeclaration: {},
-            previousDeclaration: {}
+            previousDeclaration: {},
+            isPerApp: false
         };
         this.options = Object.assign(this.options, defaultOpts, options);
         this.fetches = [];
@@ -201,8 +204,6 @@ class As3Parser {
         }
         this.context = context;
 
-        // TODO: Update as3Digest() to receive 'context' instead of 'this'
-        // return as3Digest.call(this, declaration) --> return as3Digest(context, declaration)
         return as3Digest.call(this, declaration)
             .then((results) => {
                 log.debug('success parsing declaration');
@@ -265,12 +266,6 @@ function prepareParserAjv() {
     // Add AS3 custom string formats
     parserFormats.forEach((format) => ajv.addFormat(format.name, format.check));
 
-    //
-    // Add AS3 custom keywords
-    //
-    // (AJV custom keyword execution order:
-    //      https://github.com/epoberezkin/ajv/issues/578 )
-    //
     parserKeywords.keywords.forEach((keyword) => ajv.addKeyword(keyword.name,
         keyword.definition(this)));
 
@@ -279,18 +274,25 @@ function prepareParserAjv() {
 
 function validate(declaration) {
     const parserTime = new Date();
+    const validator = this.options.isPerApp ? 'app' : 'adc';
+
     let id = declaration.id;
-    const validator = this.context.request.isPerApp ? 'app' : 'adc';
+    if (validator === 'app') {
+        // Use the transformed declaration id for consistency
+        id = this.context.request.body.id;
+    }
 
     // what is the ID of this declaration?
-    if (!Object.prototype.hasOwnProperty.call(declaration, 'id')
-        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/))) {
+    if (validator === 'adc' && (!Object.prototype.hasOwnProperty.call(declaration, 'id')
+        || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/)))) {
+        // Per-app declarations do not currently support id
         const error = new Error('declaration lacks valid \'id\' property');
         error.status = 422;
         return Promise.reject(error);
     }
-    if (Object.prototype.hasOwnProperty.call(declaration, 'label')
-        && (declaration.label.match(/^[^\x00-\x1f\x22#&*<>?\x5b-\x5d`\x7f]{1,48}$/))) {
+    if (validator === 'adc' && (Object.prototype.hasOwnProperty.call(declaration, 'label')
+        && (declaration.label.match(/^[^\x00-\x1f\x22#&*<>?\x5b-\x5d`\x7f]{1,48}$/)))) {
+        // Per-app declarations do not currently support label
         id = `id ${id}|${declaration.label.replace(/'/g, '.')}`;
     } else {
         id = `id ${id}`;
@@ -345,7 +347,8 @@ function as3Digest(declaration) {
     let getVirtualAddresses = Promise.resolve([]);
     let getAccessProfileList = Promise.resolve([]);
     let getAddressListList = Promise.resolve([]);
-    if (!declaration.scratch) {
+    if (!declaration.scratch && !this.options.isPerApp) {
+        // per-app validation does NOT require this
         getNodelist = util.getNodelist(this.context);
         getVirtualAddresses = util.getVirtualAddressList(this.context, 'Common');
         getAccessProfileList = util.getAccessProfileList(this.context);
@@ -367,11 +370,23 @@ function as3Digest(declaration) {
         .then(() => Config.getAllSettings())
         .then((settings) => { this.settings = settings; })
         .then(() => validate.call(this, declaration))
-        .then(() => PostProcessor.process(this.context, declaration, originalDeclaration, this.postProcess))
-        .then((postProcessResults) => {
-            results.warnings = postProcessResults.warnings;
+        .then(() => {
+            if (this.options.isPerApp) {
+                // We are skipping postProcessing as it will be done after transformation in request context
+                return Promise.resolve();
+            }
+            return PostProcessor.process(this.context, declaration, originalDeclaration, this.postProcess)
+                .then((postProcessResults) => {
+                    results.warnings = postProcessResults.warnings;
+                });
         })
-        .then(() => PostValidator.validate(this.context, declaration))
+        .then(() => {
+            if (this.options.isPerApp) {
+                // Without path expansion from postProcess, this step is pointless
+                return Promise.resolve();
+            }
+            return PostValidator.validate(this.context, declaration);
+        })
         .then(() => {
             if (this.options.copySecrets && this.options.baseDeclaration) {
                 copySecrets(declaration, this.options.baseDeclaration);

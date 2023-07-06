@@ -1,0 +1,39 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.46.0",
+        "id": "addressPortList",
+        "Tenant": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "addressList": {
+                    "class": "Net_Address_List",
+                    "addresses": [
+                        "192.168.2.10/32",
+                        "192.168.2.50-192.168.2.60"
+                    ]
+                },
+                "portList": {
+                    "class": "Net_Port_List",
+                    "ports": [
+                        8080,
+                        "1-999"
+                    ]
+                },
+                "tcpService": {
+                    "class": "Service_TCP",
+                    "virtualAddresses": {
+                        "use": "addressList"
+                    },
+                    "virtualPort": {
+                        "use": "portList"
+                    }
+                }
+            }
+        }
+    }
+}

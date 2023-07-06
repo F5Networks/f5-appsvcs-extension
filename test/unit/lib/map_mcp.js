@@ -844,6 +844,45 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:net:port-list:port-liststate', () => {
+            it('should perform basic transformation', () => {
+                const obj = {
+                    kind: 'tm:net:port-list:port-liststate',
+                    name: 'myPortList',
+                    partition: 'myApp',
+                    subPath: 'Application1',
+                    fullPath: '/myApp/Application1/myPortList',
+                    ports: [
+                        { name: '80' },
+                        { name: '443' }
+                    ],
+                    portLists: [
+                        {
+                            name: 'anotherList',
+                            partition: 'myApp',
+                            subPath: 'Application1'
+                        }
+                    ]
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/myApp/Application1/myPortList',
+                    command: 'net port-list',
+                    properties: {
+                        'port-lists': {
+                            '/myApp/Application1/anotherList': {}
+                        },
+                        ports: {
+                            443: {},
+                            80: {}
+                        }
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:security:protocol-inspection:profile:profilestate', () => {
             it('should perform basic transformation', () => {
                 const obj = {
@@ -2051,6 +2090,112 @@ describe('map_mcp', () => {
                                 'dh-groups': 'P256:P384',
                                 'signature-algorithms': 'DSA-SHA256:DSA-SHA512:ECDSA-SHA384'
                             }
+                        }
+                    ]
+                );
+            });
+        });
+
+        describe('tm:ltm:policy:policystate', () => {
+            it("should return ltm 'bot-defense' policy", () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'myPolicy',
+                    partition: 'TEST_Service_HTTP',
+                    fullPath: '/TEST_Service_HTTP/myPolicy',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy?ver=16.1.2',
+                    controls: [
+                        'bot-defense'
+                    ],
+                    status: 'published',
+                    strategy: '/Common/first-match',
+                    strategyReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy-strategy/~Common~first-match?ver=16.1.2'
+                    },
+                    references: {},
+                    rulesReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules?ver=16.1.2',
+                        isSubcollection: true,
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstat',
+                                name: 'myPolicy',
+                                fullPath: 'myPolicy',
+                                selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules/myPolicy?ver=16.1.2',
+                                ordinal: 0,
+                                actionsReference: {
+                                    link: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules/myPolicy/actions?ver=16.1.2',
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~Application~myPolicy/rules/myPolicy/actions/0?ver=16.1.2',
+                                            botDefense: true,
+                                            code: 0,
+                                            disable: true,
+                                            expirySecs: 0,
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            request: true,
+                                            status: 0,
+                                            timeout: 0,
+                                            vlanId: 0
+                                        },
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~Application~myPolicy/rules/myPolicy/actions/1?ver=16.1.2',
+                                            botDefense: true,
+                                            clientAccepted: true,
+                                            code: 0,
+                                            enable: true,
+                                            expirySecs: 0,
+                                            fromProfile: '/Common/bot-defense',
+                                            fromProfileReference: {
+                                                link: 'https://localhost/mgmt/tm/security/dos/profile/~Common~bot-defense?ver=16.1.2'
+                                            },
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            status: 0,
+                                            timeout: 0,
+                                            vlanId: 0
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results, [
+                        {
+                            path: '/TEST_Service_HTTP/myPolicy',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    myPolicy: {
+                                        ordinal: 0,
+                                        conditions: {},
+                                        actions: {
+                                            0: {
+                                                policyString: 'bot-defense request disable'
+                                            },
+                                            1: {
+                                                policyString: 'bot-defense request enable from-profile /Common/bot-defense'
+                                            }
+                                        }
+                                    }
+                                },
+                                strategy: '/Common/first-match'
+                            },
+                            ignore: []
                         }
                     ]
                 );

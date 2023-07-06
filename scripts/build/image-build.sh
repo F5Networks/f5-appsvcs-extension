@@ -6,7 +6,7 @@ IMAGE_NAME="${IMAGE_NAME:-f5-as3-container}"
 TARGET=$(ls -v dist/*appsvcs-3*.rpm 2>/dev/null|tail -1)
 IMAGE_TAG=$(rpm -qp --queryformat '%{VERSION}-%{RELEASE}' $TARGET)
 
-if [[ ${CI_COMMIT_REF_NAME} == 'master' ]]; then
+if [[ ${CI_COMMIT_REF_NAME} == 'main' ]]; then
   IMAGE_TAG=$(echo $IMAGE_TAG | grep -o "^[^-]\+")
 fi
 

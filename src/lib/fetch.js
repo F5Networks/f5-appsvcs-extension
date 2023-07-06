@@ -16,16 +16,16 @@
 
 'use strict';
 
+const deepDiff = require('deep-diff');
 const atgStorage = require('@f5devcentral/atg-storage');
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
-const deepDiff = require('deep-diff');
+const arrayUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const mapAs3 = require('./map_as3');
 const mapMcp = require('./map_mcp');
 const mapCli = require('./map_cli');
 const paths = require('./paths.json');
 const util = require('./util/util');
-const arrayUtil = require('./util/arrayUtil');
 const log = require('./log');
 const constants = require('./constants');
 
@@ -628,16 +628,16 @@ const checkDesiredForReferencedProfiles = function (context, desiredConfig) {
 const getDesiredConfig = function (context, tenantId, declaration, commonConfig) {
     let desiredConfig = {};
     let appList = [];
-    const tenantDecl = (context.request.isPerApp) ? declaration : declaration[tenantId];
+    const tenantDecl = declaration[tenantId];
     const appPromiseFuncs = [];
 
-    if (context.request.isPerApp || tenantId === 'Common'
-        || (tenantDecl && tenantDecl.enable)) {
+    if (tenantId === 'Common' || (tenantDecl && tenantDecl.enable)) {
         appList = validClassList(tenantDecl, 'Application');
     }
 
     appList.forEach((appId) => {
-        if (!tenantDecl[appId].enable) {
+        if ((context.request.isPerApp && (context.request.perAppInfo.apps.length > 0
+            && context.request.perAppInfo.apps.indexOf(appId) === -1)) || !tenantDecl[appId].enable) {
             return;
         }
 
@@ -1283,6 +1283,12 @@ const getFilteredPerAppConfig = function (perAppInfo, config) {
                 filteredConfig.push(c);
             }
             break;
+        case 'tm:ltm:virtual-address:virtual-addressstate':
+        case 'tm:ltm:node:nodestate':
+            // virtual addresses & nodes are saved at the root tenant, and so do NOT have a subPath to compare
+            // TODO: check metadata here
+            filteredConfig.push(c);
+            break;
         default:
             if (perAppInfo.apps.indexOf(c.subPath) !== -1) {
                 // Everything in an application should have a subPath of the application name
@@ -1728,6 +1734,15 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
                     delete currentValue.properties.geo;
                 }
             }
+
+            // Likewise for net port-lists and firewall port-lists
+            if (desiredValue.command === 'net port-list' || desiredValue.command === 'security firewall port-list') {
+                if (desiredValue.command === 'security firewall port-list') {
+                    currentValue.command = 'security firewall port-list';
+                } else {
+                    currentValue.command = 'net port-list';
+                }
+            }
         // we should only track this if we have a desired value
         } else if (currentValue && currentValue.command === 'gtm global-settings load-balancing') {
             delete currentConfig[configKey];
@@ -1770,6 +1785,12 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
                 keep = false;
             }
+        }
+        // TODO: remove/modify this when virtual-address metadata is handled
+        // filter out per-app virtual-address Deletes during Post
+        if (context.request.isPerApp && context.request.method === 'Post' && diff.kind === 'D'
+            && diff.lhs.command === 'ltm virtual-address') {
+            keep = false;
         }
         if (keep) {
             finalDiffs.push(diff);
@@ -2323,7 +2344,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             arrayUtil.insertAfterOrAtEnd(preTrans, ' address-list', diffUpdates.commands, 'inc');
                             arrayUtil.insertBeforeOrAtBeginning(
                                 rollback,
-                                'delete security firewall address-list',
+                                'delete net address-list',
                                 `catch { tmsh::delete ${
                                     diffUpdates.commands.split(' ').slice(1, 5).join(' ')} } e`,
                                 'inc'

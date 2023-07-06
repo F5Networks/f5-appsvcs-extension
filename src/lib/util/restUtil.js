@@ -20,6 +20,7 @@ const log = require('../log');
 const util = require('./util');
 const Config = require('../config');
 const STATUS_CODES = require('../constants').STATUS_CODES;
+const perAppUtil = require('./perAppUtil');
 
 /**
  * builds an operation result
@@ -105,6 +106,16 @@ function formatResult(result) {
     }
 }
 
+/**
+ * This function finishes a multi-declaration request the user
+ *   submitted and returns a formatted result
+ * Eng Note: Per-App API should never hit this function, as
+ *   multi-declaration is incompatible with the API
+ *
+ * @param {object} restOperation - RestOperation object
+ * @param {object} result - Response back to user
+ * @param {boolean} [format] - determines the format response
+ */
 const completeRequestMultiStatus = function (restOperation, results, format) {
     if (format) {
         const statusCode = getMultiStatusCode(results);
@@ -120,11 +131,28 @@ const completeRequestMultiStatus = function (restOperation, results, format) {
     checkWebhook(restOperation, results.body || results);
 };
 
-const completeRequest = function (restOperation, result) {
+/**
+ * This function finishes the request the user made and returns
+ * the results.
+ *
+ * @param {object} restOperation - RestOperation object
+ * @param {object} result - Response back to user
+ * @param {object} [perAppInfo] - Holds tenant, application, and original
+ *                                  declaration for per-app requests.
+ * Eng Note: perAppInfo should be provided when NOT expecting an error
+ */
+const completeRequest = function (restOperation, result, perAppInfo) {
     formatResult(result);
 
+    const body = util.simpleCopy(result.body);
+
+    if (perAppInfo && restOperation.method === 'Post' && !body.errors) {
+        // ONLY transform non-error per-app Post declarations
+        body.declaration = perAppUtil.convertToPerApp(body.declaration, perAppInfo);
+    }
+
     restOperation.setStatusCode(result.code);
-    restOperation.setBody(result.body);
+    restOperation.setBody(body);
 
     restOperation.complete();
     checkWebhook(restOperation, result);

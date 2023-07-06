@@ -148,6 +148,14 @@ describe('map_as3', () => {
                     expected: 'asm request disable'
                 },
                 {
+                    input: { type: 'botDefense', profile: { bigip: '/Common/myProfile' } },
+                    expected: 'bot-defense request enable from-profile /Common/myProfile'
+                },
+                {
+                    input: { type: 'botDefense' },
+                    expected: 'bot-defense request disable'
+                },
+                {
                     input: { type: 'drop' },
                     expected: 'shutdown client-accepted connection'
                 },
@@ -5547,6 +5555,43 @@ describe('map_as3', () => {
         });
     });
 
+    describe('Net_Port_List', () => {
+        it('should succeed with Net Port Lists', () => {
+            const context = {
+                target: {
+                    tmosVersion: '14.0'
+                }
+            };
+            const item = {
+                class: 'Net_Port_List',
+                ports: [80, 443],
+                portLists: [
+                    {
+                        use: 'portList'
+                    }
+                ]
+            };
+            const results = translate.Net_Port_List(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(
+                results.configs[0],
+                {
+                    command: 'net port-list',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'port-lists': {
+                            portList: {}
+                        },
+                        ports: {
+                            80: {},
+                            443: {}
+                        }
+                    }
+                }
+            );
+        });
+    });
+
     describe('Service_TCP', () => {
         it('should check profileFTP Service_TCP properties', () => {
             const item = {
@@ -6327,7 +6372,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6364,7 +6409,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6416,7 +6461,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6451,7 +6496,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6514,7 +6559,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                settings: {
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.tar'
                                 },
@@ -6552,7 +6597,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6588,7 +6633,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6638,7 +6683,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6680,7 +6725,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6716,7 +6761,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6766,7 +6811,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6796,7 +6841,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 policy: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6824,7 +6869,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 file: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6876,7 +6921,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                settings: {
                                     enable: true,
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.xml'
@@ -10305,6 +10350,68 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Prober_Pool', () => {
+        it('should return a correct config', () => {
+            const item = {
+                class: 'GSLB_Prober_Pool',
+                enabled: true,
+                members: [
+                    {
+                        server: {
+                            use: 'bigip1.f5demo.com'
+                        },
+                        memberOrder: 0,
+                        enabled: true
+                    },
+                    {
+                        server: {
+                            use: '/Common/bigip2.f5demo.com'
+                        },
+                        memberOrder: 1,
+                        enabled: false
+                    },
+                    {
+                        server: {
+                            use: '/Common/Shared/bigip3.f5demo.com'
+                        },
+                        memberOrder: 2,
+                        enabled: true
+                    }
+                ]
+            };
+
+            const results = translate.GSLB_Prober_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        path: '/tenantId/itemId',
+                        command: 'gtm prober-pool',
+                        properties: {
+                            description: '"This object is managed by appsvcs, do not modify this description"',
+                            enabled: true,
+                            'load-balancing-mode': 'global-availability',
+                            members: {
+                                '/Common/bigip1.f5demo.com': {
+                                    enabled: true,
+                                    order: 0
+                                },
+                                '/Common/bigip2.f5demo.com': {
+                                    enabled: false,
+                                    order: 1
+                                },
+                                '/Common/bigip3.f5demo.com': {
+                                    enabled: true,
+                                    order: 2
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                ]
+            });
+        });
+    });
+
     describe('Address_Discovery', () => {
         it('should create Address_Discovery config', () => {
             const item = {
@@ -11484,7 +11591,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {
@@ -11568,7 +11675,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {

@@ -1355,6 +1355,11 @@
     { "id":"addresses",                 "extend": "array"},
     { "id":"address-lists",             "extend": "array"}
   ],
+  "net port-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"ports",                     "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
+  ],
   "pem reporting format-script": [
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"definition" }
@@ -1901,7 +1906,7 @@
     { "id":"ctype" },
     { "id":"send" },
     { "id":"why" },
-    { "id":"overrides" }
+    { "id":"settings" }
   ],
   "iControl_postFromRemote": [
     { "id":"get",                       "extend": "object" },
@@ -1926,7 +1931,7 @@
     { "id":"method" },
     { "id":"ctype" },
     { "id":"why" },
-    { "id":"overrides" }
+    { "id":"settings" }
   ],
   "pem policy": [
     { "id":"description",               "altId": "remark", "quotedString": true},

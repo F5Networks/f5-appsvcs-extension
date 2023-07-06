@@ -450,6 +450,52 @@ describe('map_cli', () => {
             );
         });
 
+        describe('ltm policy "controls" aspects based on an action', () => {
+            it('should handle "controls" bot-defense', () => {
+                const config = {
+                    rules: {
+                        default: {
+                            ordinal: 0,
+                            conditions: {},
+                            actions: {
+                                0: {
+                                    policyString: 'bot-defense request disable'
+                                },
+                                1: {
+                                    policyString: 'bot-defense request enable from-profile /Common/myProfile'
+                                }
+                            }
+                        }
+                    },
+                    strategy: '/Common/best-match'
+                };
+                const diff = {
+                    command: 'ltm policy',
+                    kind: 'N',
+                    path: ['/tenant/app/policy'],
+                    lhsCommand: '',
+                    rhsCommand: 'ltm policy',
+                    rhs: {
+                        command: 'ltm policy',
+                        properties: config
+                    },
+                    tags: ['tmsh']
+                };
+                const result = mapCli.tmshCreate(context, diff, config);
+                assert.strictEqual(
+                    result.commands[0],
+                    [
+                        'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{',
+                        'ordinal 0 conditions none actions replace-all-with \\{',
+                        '0 \\{  bot-defense request disable \\}',
+                        '1 \\{  bot-defense request enable from-profile /Common/myProfile \\}',
+                        '\\} \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ http \\}',
+                        'controls replace-all-with \\{ bot-defense \\}'
+                    ].join(' ')
+                );
+            });
+        });
+
         describe('ltm policy "requires" aspects based on condition event', () => {
             it('should handle "requires" tcp', () => {
                 const config = {

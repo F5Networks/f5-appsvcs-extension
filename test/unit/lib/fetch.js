@@ -306,15 +306,16 @@ describe('fetch', () => {
                     });
             });
 
-            it('should return net address-list before firewall address-list', () => {
-                // Since firewall address-list and net address-list share the same path, we benefit
-                // from utilizing the firewall address-list (if it is available). As such, if we order
-                // paths.json with net address-list first and firewall second, the net address-list will
-                // be overwritten, if a firewall address-list is available.
+            it('should return net address- and port-list before firewall address- and port-list', () => {
+                // Since firewall address- and port-list and net address- and port-list share the same path, we benefit
+                // from utilizing the firewall address- and port-list (if it is available). As such, if we order
+                // paths.json with net address- and port-list first and firewall second, the net address- and port-list
+                // will be overwritten, if a firewall address- and/or port-list is available.
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:net:address-list:address-listcollectionstate',
                             items: [
@@ -327,8 +328,20 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:net:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -341,8 +354,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -363,26 +390,42 @@ describe('fetch', () => {
                                     addresses: ['192.0.2.0/24']
                                 },
                                 {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                },
+                                {
                                     kind: 'tm:security:firewall:address-list:address-liststate',
                                     name: 'addressListExample',
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
                                 }
                             ]
                         );
                     });
             });
 
-            it('should return firewall address-list if on BIG-IP version 13.1', () => {
-                // net address-lists are not on 13.1, so we need to confirm that it is not queried
+            it('should return firewall address- and port-list if on BIG-IP version 13.1', () => {
+                // net address- and port-lists are not on 13.1, so we need to confirm that it is not queried
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
-                        throw new Error('Should not have queried this endpoint');
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net address-list endpoint');
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net port-list endpoint');
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -395,8 +438,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -415,6 +472,13 @@ describe('fetch', () => {
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
                                 }
                             ]
                         );
@@ -714,7 +778,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Profile accessProfile',
-                                overrides: {
+                                settings: {
                                     class: 'Access_Profile',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -754,7 +818,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -795,7 +859,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy accessPolicy',
-                                overrides: {
+                                settings: {
                                     class: 'Per_Request_Access_Policy',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -835,7 +899,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy accessPolicy',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -976,6 +1040,224 @@ describe('fetch', () => {
                         path: ['/myApp/Application1/gjd-inspect-profile', 'properties', 'avr-stat-collect'],
                         rhs: 'off'
                     });
+                });
+        });
+
+        // TODO: remove this unit test, when virtual-address per-app meta-data handling is complete
+        it('should remove virtual-address deletes when hanlding a per-app POST', () => {
+            context.request = {
+                method: 'Post',
+                isPerApp: true,
+                perAppInfo: {
+                    tenant: 'tenant1',
+                    decl: {}, // Abbreviated for testing
+                    apps: ['app1']
+                }
+            };
+            const currentConfig = {
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.200:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.200':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.200',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.1':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/': {
+                    command: 'sys folder', properties: {}, ignore: []
+                }
+            };
+            const desiredConfig = {
+                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                '/tenant1/Service_Address-192.0.2.100':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.100',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.100:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                }
+            };
+            const commonConfig = {
+                nodeList: [
+                    {
+                        fullPath: '/tenant1/192.0.2.10',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.10'
+                    },
+                    {
+                        fullPath: '/tenant1/192.0.2.20',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.20'
+                    }],
+                virtualAddressList: []
+            };
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    // Should be empty if attempting to Delete
+                    assert.strictEqual(results.length, 2);
+                    assert.deepStrictEqual(results,
+                        [
+                            {
+                                kind: 'E',
+                                path: ['/tenant1/app1/testItem', 'properties', 'destination'],
+                                lhs: '/tenant1/192.0.2.200:123',
+                                rhs: '/tenant1/192.0.2.100:123'
+                            },
+                            {
+                                kind: 'N',
+                                path: ['/tenant1/Service_Address-192.0.2.100'],
+                                rhs: {
+                                    command: 'ltm virtual-address',
+                                    properties: {
+                                        address: '192.0.2.100',
+                                        arp: 'enabled',
+                                        'icmp-echo': 'enabled',
+                                        mask: '255.255.255.255',
+                                        'route-advertisement': 'disabled',
+                                        spanning: 'disabled',
+                                        'traffic-group': 'default'
+                                    },
+                                    ignore: []
+                                }
+                            }
+                        ]);
                 });
         });
 
@@ -2035,6 +2317,118 @@ describe('fetch', () => {
                         );
                     });
             });
+
+            it('should be able to convert from firewall port-list to net port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
+
+            it('should be able to convert from net port-list to firewall port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
         });
 
         describe('.maintainCommonNodes', () => {
@@ -2554,7 +2948,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfile',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/iam_policy.tar',
                                         ignoreChanges: true
@@ -2612,7 +3006,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/iam_policy.tar',
                                             ignoreChanges: true
@@ -2676,7 +3070,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar',
                                         ignoreChanges: true
@@ -2702,7 +3096,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar.gz',
                                         ignoreChanges: true
@@ -2728,7 +3122,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar',
                                         ignoreChanges: true
@@ -2754,7 +3148,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar.gz',
                                         ignoreChanges: true
@@ -2812,7 +3206,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_policy.tar',
                                             ignoreChanges: true
@@ -2848,7 +3242,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_profile.gz',
                                             ignoreChanges: true
@@ -2884,7 +3278,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar',
                                             ignoreChanges: true
@@ -2920,7 +3314,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar.gz',
                                             ignoreChanges: true
@@ -2984,7 +3378,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/per_request_policy.tar.gz',
                                         ignoreChanges: true
@@ -3042,7 +3436,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/per_request_policy.tar.gz',
                                             ignoreChanges: true
@@ -6866,7 +7260,7 @@ describe('fetch', () => {
                     isPerApp: true,
                     perAppInfo: {
                         tenant: 'tenant',
-                        app: undefined
+                        apps: []
                     }
                 };
             });
@@ -6879,34 +7273,54 @@ describe('fetch', () => {
                 context.control = {
                     host: 'localhost'
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: appId
+                    apps: [appId]
                 };
                 const declaration = {
-                    [appId]: {
-                        class: 'Application',
-                        template: 'generic',
-                        [poolId]: {
-                            class: 'Pool',
-                            loadBalancingMode: 'round-robin',
-                            minimumMembersActive: 1,
-                            reselectTries: 0,
-                            serviceDownAction: 'none',
-                            slowRampTime: 10,
-                            minimumMonitors: 1
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
                         },
-                        enable: true
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
                     }
                 };
 
                 return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
                     .then((desiredConfig) => {
                         assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
-                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(desiredConfig['/My_tenant/'].command, 'auth partition');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/'].command, 'sys folder');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(typeof desiredConfig['/My_tenant/appOther/'], 'undefined'); // Should NOT include unspecified app
                     });
             });
 
@@ -6918,24 +7332,43 @@ describe('fetch', () => {
                 context.control = {
                     host: 'localhost'
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: undefined
+                    apps: []
                 };
                 const declaration = {
-                    [appId]: {
-                        class: 'Application',
-                        template: 'generic',
-                        [poolId]: {
-                            class: 'Pool',
-                            loadBalancingMode: 'round-robin',
-                            minimumMembersActive: 1,
-                            reselectTries: 0,
-                            serviceDownAction: 'none',
-                            slowRampTime: 10,
-                            minimumMonitors: 1
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
                         },
-                        enable: true
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
                     }
                 };
 
@@ -6946,6 +7379,9 @@ describe('fetch', () => {
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
                         assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].properties['load-balancing-mode'], 'round-robin');
                     });
             });
         });
@@ -7105,7 +7541,7 @@ describe('fetch', () => {
                 context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     tenant: tenantId,
-                    app: undefined
+                    apps: []
                 };
                 return Promise.resolve()
                     .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))

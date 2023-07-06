@@ -1172,6 +1172,15 @@ const translate = {
         }
         return [normalize.actionableMcp(context, obj, 'net address-list', obj.fullPath)];
     },
+    'tm:net:port-list:port-liststate': function (context, obj) {
+        if (obj.ports) {
+            obj.ports = obj.ports.map((port) => port.name);
+        }
+        if (obj.portLists) {
+            obj.portLists = obj.portLists.map((portList) => util.mcpPath(portList.partition, portList.subPath, portList.name)); // eslint-disable-line max-len
+        }
+        return [normalize.actionableMcp(context, obj, 'net port-list', obj.fullPath)];
+    },
     'tm:pem:irule:irulestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'pem irule', obj.fullPath)];
     },

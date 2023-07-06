@@ -48,7 +48,7 @@ describe('core-schema.json', () => {
         describe('valid', () => {
             it('should $schema property', () => {
                 const data = {
-                    $schema: 'https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json',
+                    $schema: 'https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/main/schema/latest/as3-schema.json',
                     class: 'ADC',
                     schemaVersion: '3.0.0',
                     id: 'declarationId'
@@ -3476,6 +3476,18 @@ describe('core-schema.json', () => {
                 routeDomain: 65534,
                 tunnelName: 'http-tunnel',
                 defaultConnectAction: 'allow'
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate with route domain as a string', () => {
+            data.Tenant.Application.socksProfile = {
+                class: 'SOCKS_Profile',
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                routeDomain: 'id-65534'
             };
 
             assert.ok(validate(data), getErrorString(validate));

@@ -17,6 +17,9 @@
 'use strict';
 
 const xml2js = require('xml2js');
+const jsonpointer = require('jsonpointer');
+const expandUtil = require('./expandUtil');
+const util = require('./util');
 
 function convertJsonToXml(jsonObject) {
     const builder = new xml2js.Builder({
@@ -87,7 +90,8 @@ function mapSettings(jsonObject, settings) {
         'url',
         'file',
         'ignoreChanges',
-        'policy'
+        'policy',
+        'expand'
     ];
     Object.keys(settings)
         .filter((key) => ignoredKeys.indexOf(key) < 0)
@@ -102,6 +106,39 @@ function mapSettings(jsonObject, settings) {
     return jsonObject;
 }
 
+function expandStrings(jsonPointers, jsonObject, instancePath, declaration) {
+    (jsonPointers || []).forEach((pointer) => {
+        const value = jsonpointer.get(jsonObject, pointer);
+        if (typeof value === 'undefined') {
+            throw new Error(`Could not expand string in ${instancePath}. JSON pointer "${pointer}" references a nonexistent value in the policy`);
+        }
+        const policyPointer = `${instancePath}/policy`;
+        // copy decl to avoid modifying original
+        const declCopy = util.simpleCopy(declaration);
+        // Add the full WAF policy JSON object to the WAF_Policy instance in the declaration. We do this so that
+        // expandUtil can traverse the WAF Policy data as if it was originally part of the declaration, allowing any
+        // string expansion to autofill declaration related data such as application name, class name, etc
+        jsonpointer.set(declCopy, policyPointer, jsonObject);
+        expandString(declCopy, `${policyPointer}${pointer}`, value);
+    });
+    return jsonObject;
+}
+
+function expandString(declaration, pointer, value) {
+    const valueType = typeof value;
+    if (valueType === 'string') {
+        const lastSlashIdx = pointer.lastIndexOf('/');
+        const parentDataProperty = pointer.substring(lastSlashIdx + 1);
+        const parentData = jsonpointer.get(declaration, pointer.substring(0, lastSlashIdx));
+        expandUtil.backquoteExpand(value, pointer, parentData, declaration, parentData, parentDataProperty);
+    } else if (valueType === 'object' && value !== null) {
+        Object.keys(value).forEach((key) => {
+            const refKey = key.replace('~', '~0').replace('/', '~1');
+            expandString(declaration, `${pointer}/${refKey}`, value[key]);
+        });
+    }
+}
+
 function isJson(string) {
     try {
         JSON.parse(string);
@@ -111,13 +148,18 @@ function isJson(string) {
     return true;
 }
 
-function applyAs3Settings(xmlString, settings) {
+function applyAs3Settings(xmlString, settings, instancePath, declaration) {
     if (!xmlString) {
         return Promise.reject(new Error('Missing required xmlString argument'));
     }
 
     if (isJson(xmlString)) {
-        return Promise.resolve(xmlString);
+        return Promise.resolve()
+            .then(() => {
+                const jsonObject = JSON.parse(xmlString);
+                const newJsonObject = expandStrings(settings.expand, jsonObject, instancePath, declaration);
+                return JSON.stringify(newJsonObject);
+            });
     }
 
     return Promise.resolve()

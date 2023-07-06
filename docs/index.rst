@@ -69,7 +69,7 @@ And the Using BIG-IP AS3 video:
 
 .. |supportmd| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/master/SUPPORT.md" target="_blank">Support information on GitHub</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/main/SUPPORT.md" target="_blank">Support information on GitHub</a>
 
 
 .. |release| raw:: html

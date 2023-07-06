@@ -432,4 +432,72 @@ describe('WAF Policy', function () {
                 return assertClass('WAF_Policy', properties, assertOptions);
             });
     });
+
+    it('should expand and fetch open API spec', function () {
+        assertModuleProvisioned.call(this, 'asm');
+
+        if (util.versionLessThan(getBigIpVersion(), '16.0') || process.env.TEST_IN_AZURE === 'true') {
+            this.skip();
+        }
+
+        const policy = {
+            policy: {
+                name: 'policy',
+                description: 'Test API',
+                template: {
+                    name: 'POLICY_TEMPLATE_API_SECURITY'
+                },
+                enforcementMode: 'blocking',
+                'server-technologies': [
+                    {
+                        serverTechnologyName: 'MySQL'
+                    },
+                    {
+                        serverTechnologyName: 'Unix/Linux'
+                    },
+                    {
+                        serverTechnologyName: 'MongoDB'
+                    }
+                ],
+                'signature-settings': {
+                    signatureStaging: false
+                },
+                'policy-builder': {
+                    learnOnlyFromNonBotTraffic: false
+                },
+                'open-api-files': [
+                    {
+                        link: `https://${policyHost}/asm-policy/\`T\`_API.yaml`
+                    }
+                ]
+            }
+        };
+
+        const properties = [
+            {
+                name: 'policy',
+                inputValue: [
+                    {
+                        base64: Buffer.from(JSON.stringify(policy)).toString('base64')
+                    }
+                ],
+                expectedValue: [`/${tenantName}/Application/${getItemName({ tenantName, maxPathLength })}`],
+                extractFunction: (o) => o.fullPath
+            },
+            {
+                name: 'expand',
+                inputValue: [
+                    ['/policy/open-api-files/0/link']
+                ],
+                skipAssert: true
+            },
+            {
+                name: 'ignoreChanges',
+                inputValue: [true],
+                skipAssert: true
+            }
+        ];
+
+        return assertClass('WAF_Policy', properties, assertOptions);
+    });
 });

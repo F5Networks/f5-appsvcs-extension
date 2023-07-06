@@ -181,6 +181,21 @@ describe('restWorker', () => {
             {
                 name: 'extra value added to the end of the path after application name',
                 path: '/shared/appsvcs/declare/exampleTenant/applications/App1/somethingElse'
+            },
+            {
+                name: 'cannot use Put on applications endpoint as we do NOT know the application to target',
+                method: 'Put',
+                path: '/shared/appsvcs/declare/foo/applications'
+            },
+            {
+                name: 'cannot use Delete on applications endpoint as we should NOT be impacting unspecified applications',
+                method: 'Delete',
+                path: '/shared/appsvcs/declare/foo/applications'
+            },
+            {
+                name: 'we do NOT support Post on specific applications as best practice indicates this should be done as a Put',
+                method: 'Post',
+                path: '/shared/appsvcs/declare/foo/applications/bar'
             }
         ];
 
@@ -214,11 +229,28 @@ describe('restWorker', () => {
                 path: '/shared/appsvcs/task/foo'
             },
             {
-                name: 'declare with tenant on per-app',
+                name: 'declare with Get with tenant on per-app',
+                method: 'Get',
                 path: '/shared/appsvcs/declare/foo/applications'
             },
             {
-                name: 'declare with tenant on per-app with application',
+                name: 'declare with Post with tenant on per-app',
+                method: 'Post',
+                path: '/shared/appsvcs/declare/foo/applications'
+            },
+            {
+                name: 'declare with Get on per-app with applications and specific app',
+                method: 'Get',
+                path: '/shared/appsvcs/declare/foo/applications/bar'
+            },
+            {
+                name: 'declare with Put on per-app with applications and specific app',
+                method: 'Put',
+                path: '/shared/appsvcs/declare/foo/applications/bar'
+            },
+            {
+                name: 'declare with Delete on per-app with applications and specific app',
+                method: 'Delete',
                 path: '/shared/appsvcs/declare/foo/applications/bar'
             }
         ];
@@ -226,6 +258,9 @@ describe('restWorker', () => {
         invalidPaths.forEach((path) => {
             it(`Should reject ${path.name} paths`, (done) => {
                 const restOp = createRestOpMock(400, done, null, path.path);
+                if (path.method) {
+                    restOp.method = path.method;
+                }
                 assert.doesNotThrow(() => restWorker.onGet(restOp));
             });
         });
@@ -233,6 +268,9 @@ describe('restWorker', () => {
         validPaths.forEach((path) => {
             it(`Should accept ${path.name} paths`, (done) => {
                 const restOp = createRestOpMock(200, done, null, path.path);
+                if (path.method) {
+                    restOp.method = path.method;
+                }
                 sinon.stub(restWorker, 'continuePost').callsFake((context, restOperation) => {
                     restOperation.statusCode = 200;
                     restOperation.body = {
@@ -352,24 +390,20 @@ describe('restWorker', () => {
                     const result = restUtil.buildOpResult(
                         STATUS_CODES.OK,
                         'retrieving all tenant1 applications for per-app',
-                        [
-                            {
-                                app1: {
-                                    class: 'Application',
-                                    accelerator: {
-                                        class: 'HTTP_Acceleration_Profile'
-                                    }
+                        {
+                            app1: {
+                                class: 'Application',
+                                accelerator: {
+                                    class: 'HTTP_Acceleration_Profile'
                                 }
                             },
-                            {
-                                app2: {
-                                    class: 'Application',
-                                    accelerator: {
-                                        class: 'HTTP_Acceleration_Profile'
-                                    }
+                            app2: {
+                                class: 'Application',
+                                accelerator: {
+                                    class: 'HTTP_Acceleration_Profile'
                                 }
                             }
-                        ]
+                        }
                     );
                     restUtil.completeRequest(restOp, result);
                 });
@@ -379,24 +413,20 @@ describe('restWorker', () => {
                 const restOp = createRestOpMock(
                     200,
                     done,
-                    [
-                        {
-                            app1: {
-                                class: 'Application',
-                                accelerator: {
-                                    class: 'HTTP_Acceleration_Profile'
-                                }
+                    {
+                        app1: {
+                            class: 'Application',
+                            accelerator: {
+                                class: 'HTTP_Acceleration_Profile'
                             }
                         },
-                        {
-                            app2: {
-                                class: 'Application',
-                                accelerator: {
-                                    class: 'HTTP_Acceleration_Profile'
-                                }
+                        app2: {
+                            class: 'Application',
+                            accelerator: {
+                                class: 'HTTP_Acceleration_Profile'
                             }
                         }
-                    ]
+                    }
                 );
                 restOp.method = 'Get';
                 restOp.setPathName('/shared/appsvcs/declare/tenant1/applications');
