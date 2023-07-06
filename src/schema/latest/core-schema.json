@@ -5958,6 +5958,18 @@
                         }
                     ],
                     "default": "indefinite"
+                },
+                "sslSignHash": {
+                    "title": "SSL Sign Hash",
+                    "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "sha1",
+                        "sha256",
+                        "sha384"
+                    ],
+                    "default": "any"
                 }
             },
             "additionalProperties": false,
@@ -6397,6 +6409,18 @@
                         }
                     ],
                     "default": "indefinite"
+                },
+                "sslSignHash": {
+                    "title": "SSL Sign Hash",
+                    "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "sha1",
+                        "sha256",
+                        "sha384"
+                    ],
+                    "default": "any"
                 }
             },
             "allOf": [

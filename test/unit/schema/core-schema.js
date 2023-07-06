@@ -927,6 +927,28 @@ describe('core-schema.json', () => {
                 assert.strictEqual(validate(data), false);
                 assertErrorString('should be equal to one of the allowed values');
             });
+
+            it('should invalidate sslSignHash when invalid values are used', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Server',
+                                certificates: [{ certificate: 'webcert' }],
+                                sslSignHash: 'invalid'
+                            }
+                        }
+                    }
+                };
+                assert.strictEqual(validate(data), false);
+                assertErrorString('should be equal to one of the allowed values');
+            });
         });
 
         describe('valid', () => {
@@ -1321,6 +1343,27 @@ describe('core-schema.json', () => {
             };
             assert.ok(validate(data), getErrorString(validate));
         });
+
+        it('should validate when sslSignHash is provided', () => {
+            const data = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declarationId',
+                theTenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        tlsserver: {
+                            class: 'TLS_Server',
+                            certificates: [{ certificate: 'webcert' }],
+                            sslSignHash: 'sha256'
+                        }
+                    }
+                }
+            };
+            assert.ok(validate(data), getErrorString(validate));
+        });
     });
 
     describe('TLS_Client', () => {
@@ -1383,6 +1426,27 @@ describe('core-schema.json', () => {
                             tlsserver: {
                                 class: 'TLS_Client',
                                 secureRenegotiation: 'invalid'
+                            }
+                        }
+                    }
+                };
+                assert.strictEqual(validate(data), false);
+                assertErrorString('should be equal to one of the allowed values');
+            });
+
+            it('should invalidate sslSignHash when invalid values are used', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                sslSignHash: 'invalid'
                             }
                         }
                     }
@@ -1678,6 +1742,26 @@ describe('core-schema.json', () => {
                             tlsserver: {
                                 class: 'TLS_Client',
                                 requireSNI: true
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when sslSignHash is provided', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                sslSignHash: 'sha256'
                             }
                         }
                     }

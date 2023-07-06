@@ -637,6 +637,7 @@
     { "id":"ssl-c3d",                       "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy",             "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy-bypass",      "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-sign-hash" },
     { "id":"hostname-whitelist",            "altId": "forwardProxyBypassAllowlist" },
     { "id":"unclean-shutdown",              "altId": "uncleanShutdownEnabled", "truth": "enabled", "falsehood": "disabled" }
   ],
@@ -723,6 +724,7 @@
     { "id":"ssl-c3d",                         "altId": "c3dEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy",               "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy-bypass",        "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ssl-sign-hash" },
     { "id":"unclean-shutdown",                "altId": "uncleanShutdownEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"untrusted-cert-response-control", "truth": "ignore", "falsehood": "drop", "altId": "ignoreUntrusted" }
   ],
