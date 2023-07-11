@@ -20,9 +20,9 @@ Currently supported versions:
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
 | AS 3.36.1        | LTS           |  31-May-2022        | 31-Aug-2023     |
-| AS 3.43.0        | Feature       |  09-Feb-2023        | 09-May-2023     |
-| AS 3.44.0        | Feature       |  27-Mar-2022        | 27-Jun-2023     |
 | AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
+| AS 3.46.0        | Feature       |  24-Jul-2023        | 24-Oct-2023     |
+
 
 Versions no longer supported:
 
@@ -81,6 +81,8 @@ Versions no longer supported:
 | AS 3.40.0        | Feature       |  04-Oct-2022        | 04-Jan-2023     |
 | AS 3.41.0        | Feature       |  14-Nov-2022        | 14-Feb-2023     |
 | AS 3.42.0        | Feature       |  12-Jan-2023        | 12-Apr-2023     |
+| AS 3.43.0        | Feature       |  09-Feb-2023        | 09-May-2023     |
+| AS 3.44.0        | Feature       |  27-Mar-2022        | 27-Jun-2023     |
 
 \* Fix for updated Docker Container packaging only  
 \*\* Update for the schema description for Pool minimumMonitors
