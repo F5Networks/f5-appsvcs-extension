@@ -108,7 +108,7 @@ const executeIControlCall = function (context, call) {
                 return asmUtil.applyAs3Settings(
                     response,
                     call.properties.post.settings,
-                    call.properties.reference,
+                    call.properties.post.reference,
                     context.tasks[context.currentIndex].declaration
                 );
             })

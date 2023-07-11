@@ -1931,7 +1931,8 @@
     { "id":"method" },
     { "id":"ctype" },
     { "id":"why" },
-    { "id":"settings" }
+    { "id":"settings" },
+    { "id":"reference" }
   ],
   "pem policy": [
     { "id":"description",               "altId": "remark", "quotedString": true},

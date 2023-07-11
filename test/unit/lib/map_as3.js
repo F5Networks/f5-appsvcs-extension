@@ -6725,6 +6725,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
+                            reference: '/tenantId/appId/itemId',
                             settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
@@ -6761,6 +6762,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
+                            reference: '/tenantId/appId/itemId',
                             settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
@@ -6811,6 +6813,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
+                            reference: '/tenantId/appId/itemId',
                             settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
@@ -6921,6 +6924,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
+                                reference: '/tenantId/appId/itemId',
                                 settings: {
                                     enable: true,
                                     ignoreChanges: true,
