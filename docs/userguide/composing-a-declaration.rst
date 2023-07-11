@@ -34,7 +34,7 @@ This is our example declaration.  We break down the components in the following 
 
 
     {
-        "class": "BIG-IP AS3",
+        "class": "AS3",
         "action": "deploy",
         "persist": true,
         "declaration": {

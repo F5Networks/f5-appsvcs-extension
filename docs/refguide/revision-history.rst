@@ -12,7 +12,7 @@ Document Revision History
         - Date
 
       * - 3.46
-        - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| *  |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fixed issue with running a DELETE after a dry-run on BIG-IQ |br| * SNAT_Pool handling in /Common/Shared, `GitHub Issue 727 <https://github.com/F5Networks/f5-appsvcs-extension/issues/727>`_ |br| * Fixed idempotency issue with a Pool's minimumMonitors
+        - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| * Added support for using address and port lists in a virtual service (see :ref:`Address and Port lists<portlist>`), `GitHub Issue 269 <https://github.com/F5Networks/f5-appsvcs-extension/issues/269>`_ |br| * |br| * Added a troubleshooting entry for Changes Pending returned on dry-runs (see :ref:`Troubleshooting<pending>`) |br| * Added members to the Prober Pool in the GSLB example declaration (see :ref:`GSLB example<gslbex>`) |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fixed issue with running a DELETE after a dry-run on BIG-IQ |br| * SNAT_Pool handling in /Common/Shared, `GitHub Issue 727 <https://github.com/F5Networks/f5-appsvcs-extension/issues/727>`_ |br| * Fixed idempotency issue with a Pool's minimumMonitors |br|
         - 7-24-23
 
       * - Unreleased (documentation updates)

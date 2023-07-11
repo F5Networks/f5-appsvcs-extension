@@ -23,7 +23,6 @@ Currently supported versions:
 | AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
 | AS 3.46.0        | Feature       |  24-Jul-2023        | 24-Oct-2023     |
 
-
 Versions no longer supported:
 
 | Software Version | Release Type  | First Customer Ship | End of  Support |
