@@ -512,8 +512,10 @@ describe('per-app API testing (__smoke)', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     describe('GET', () => {
-        before('prep', function () {
-            const declaration = {
+        let declaration;
+
+        beforeEach('prep', function () {
+            declaration = {
                 class: 'ADC',
                 schemaVersion: '3.0.0',
                 id: 'myId',
@@ -547,13 +549,12 @@ describe('per-app API testing (__smoke)', function () {
                     }
                 }
             };
-
-            return postDeclaration(declaration, logInfo);
         });
 
         after(() => deleteDeclaration()); // No sense deleting the declaration till after the GETs are done querying it
 
         it('should handle per-app GETs with accurate tenant against applications', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications'))
             .then((response) => {
                 assert.strictEqual(response.statusCode, 200);
@@ -582,6 +583,7 @@ describe('per-app API testing (__smoke)', function () {
             }));
 
         it('should handle per-app GETs with accurate tenant and application', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/testApp1'))
             .then((response) => {
                 assert.strictEqual(response.statusCode, 200);
@@ -604,6 +606,7 @@ describe('per-app API testing (__smoke)', function () {
             }));
 
         it('should error on per-app GET if the tenant provided in the URL does not exist in the declaraiton', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_TEN/applications'),
                 /"code":404.*specified tenant 'API_TEST_TEN' not found in declaration/,
@@ -611,6 +614,7 @@ describe('per-app API testing (__smoke)', function () {
             )));
 
         it('should error on per-app GET if the application provided in the URL does not exist in the declaration', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/randomApp'),
                 /"code":404.*specified Application 'randomApp' not found in 'API_TEST_Tenant1'/,
@@ -618,6 +622,7 @@ describe('per-app API testing (__smoke)', function () {
             )));
 
         it('should error on per-app GET with commas in the tenant', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1,API_TEST_Tenant2/applications'),
                 /"code":400.*declare\/API_TEST_Tenant1,API_TEST_Tenant2\/applications is an invalid path. Only 1 tenant and 1 application may be specified in the URL./,
@@ -625,6 +630,7 @@ describe('per-app API testing (__smoke)', function () {
             )));
 
         it('should error on per-app GET with commas in the application', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/applications/testApp1,testExampleApp2'),
                 /"code":400.*declare\/API_TEST_Tenant1\/applications\/testApp1,testExampleApp2 is an invalid path. Only 1 tenant and 1 application may be specified in the URL./,
@@ -632,6 +638,7 @@ describe('per-app API testing (__smoke)', function () {
             )));
 
         it('should error on per-app GETs if applications is misspelled to application', () => Promise.resolve()
+            .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_Tenant1/application/testApp1'),
                 /"code":400.*Bad Request: Invalid path/,
@@ -764,6 +771,41 @@ describe('per-app API testing (__smoke)', function () {
                                     'source-address'
                                 ]
                             }
+                        }
+                    });
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
+                    assert.strictEqual(typeof results.id, 'string');
+                    delete results.controls.archiveTimestamp;
+                    delete results.id;
+
+                    assert.deepStrictEqual(results, {
+                        class: 'ADC',
+                        controls: {},
+                        schemaVersion: '3.0.0',
+                        updateMode: 'selective',
+                        tenant1: {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '1.1.1.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+
                         }
                     });
                 });
