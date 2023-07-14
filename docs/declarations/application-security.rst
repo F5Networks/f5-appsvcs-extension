@@ -794,11 +794,54 @@ This declaration creates the following objects on the BIG-IP (if you try to use 
 
 |
 
+.. _disablebd:
 
+Enabling and disabling a bot defense profile in an Endpoint policy
+``````````````````````````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for disabling a bot defense profile in an Endpoint policy is available in BIG-IP AS3 v3.46 and later. 
+
+In this example, we show how you can enable or disable a bot defense profile in an Endpoint policy using BIG-IP AS3 3.46 or later. This allows you to enable or disable the bot defense profile when specific conditions occur, such as when a particular HTTP URI is called.
+
+For more information, see |eppolicy| and |botdef| in the Schema Reference.
+
+For detailed information on bot defense, see |bdf5| and |configbd|.
+
+
+
+This declaration creates the following objects on the BIG-IP
+
+- Partition (tenant) named **Endpoint_Policy_BotDefense**.
+- An Application named **Application**.
+- A virtual server named **testItem** that references an endpoint policy and a bot defense profile.
+- An endpoint policy named **endpointPolicy** with multiple rules that enable or disable the bot defense profile.
+
+.. literalinclude:: ../../examples/declarations/example-endpoint-policy-enable-disable-botdefense.json
+    :language: json
+
+    
+
+:ref:`Back to top<app-sec-examples>`
+
+|
+
+
+.. |bdf5| raw:: html
+
+   <a href="https://www.f5.com/cloud/products/bot-defense" target="_blank">Bot defense overview</a>
+
+.. |configbd| raw:: html
+
+   <a href="https://techdocs.f5.com/en-us/bigip-16-1-0/big-ip-asm-implementations/configuring-bot-defense.html" target="_blank">Configuring Bot defense</a>
 
 .. |asm| raw:: html
 
    <a href="https://support.f5.com/kb/en-us/products/big-ip_asm/manuals/product/asm-implementations-13-1-0.html" target="_blank">BIG-IP ASM Implementations Guide</a>
+
+.. |botdef| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#dos-profile-application-bot-defense" target="_blank">DOS_Profile_Application_Bot_Defense</a>  
 
 .. |export| raw:: html
 
