@@ -867,7 +867,7 @@ Configuring a SOCKS profile in a declaration
 ````````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-   Support for SOCKS profiles is available in BIG-IP AS3 v3.43 and later. 
+   Support for SOCKS profiles is available in BIG-IP AS3 v3.43 and later. Support for using strings to specify a route domain is available in 3.46 and later.
 
 This example shows how you can configure a SOCKS (Socket Secure) profile in a declaration using the **SOCKS_Profile** class introduced in AS3 3.43.
 
@@ -875,12 +875,16 @@ You can use the SOCKS profile to configure the BIG-IP system to handle proxy req
 
 See |socksref| in the Schema Reference for options and BIG-IP AS3 usage.
 
-This declaration creates the following objects on the BIG-IP:
+**New in 3.46** |br|
+BIG-IP AS3 3.46 and later adds support for using a string to specify a route domain in the SOCKS profile. The example declaration has been updated with an additional SOCKS profile using a string for the route domain.
+
+This declaration creates the following objects on the BIG-IP. **IMPORTANT**: If you are using this example on a version prior to 3.46, it will fail. Remove the additional SOCKS profile, highlighted in yellow, and the preceeding comma:
 
 - Partition (tenant) named **Tenant**.
 - An Application named **Application**.
 - A virtual server named **TCP** that references a SOCKS profile.
 - A SOCKS profile named **socksProfile** with a number of properties configured.
+- A SOCKS profile named **socksProfileString** that uses a string for the route domain property (3.46+ only)
 
 
 .. literalinclude:: ../../examples/declarations/example-using-socks-profile.json
