@@ -943,8 +943,6 @@ Using adminState to disable a virtual, but leave the configuration
    
 In this example, we show how you can use the **adminState** property on a virtual service in BIG-IP AS3 3.39 and later. This is useful when you want to disable a specific service, but want the configuration to remain, allowing it to be quickly renabled if necessary.  Previously, the only option was to use **"enable: false"** on the virtual service, which would remove the service configuration from the BIG-IP (**enable** controls whether the service exists, **adminState** creates the service either way, but disables the service if set to **disable**).
 
-
-
 When you set **adminState** to **disable**, the Service no longer accepts new connection requests, but allows current connections to finish processing before going to a down state.
 
 For more information and BIG-IP AS3 usage, see the Service classes in the Schema Reference, for example |servicehttp|. 
@@ -962,7 +960,32 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<misc-examples>`
 
+|
 
+.. _poolmeta:
+
+Adding metadata to pools and pool members
+`````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for adding metadata to pools and pool members is available in BIG-IP AS3 3.46 and later. 
+   
+In this example, we show how you can add metadata to pools and in BIG-IP AS3 3.46 and later. In previous versions, adding metadata was not an option for these objects and could only be configured on the virtual service. Adding metadata to pools and pool members allows more flexibility for deployments using automation.
+
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **Test**.
+- An Application named **Application**.
+- A virtual server named **testVirtual** with metadata on the virtual server, and referencing a pool.
+- A pool named **testPool** with one member and includes metadata for the pool.
+
+
+
+.. literalinclude:: ../../examples/declarations/example-pool-with-metadata.json
+   :language: json
+
+:ref:`Back to top<misc-examples>`
 
 .. |mon| raw:: html
 
