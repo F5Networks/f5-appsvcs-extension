@@ -191,9 +191,8 @@ const createIRule = function createIRule(config) {
         config.properties['api-anonymous'] = config.properties['api-anonymous']
             .trim()
             .replace(/\r\n/g, '\n') // unix-style line endings
-            .replace(/\s+\n/g, '\n') // trim whitespace on every line
-            .replace(/\\\n[ \t]+/g, '') // remove continuation characters
-            .replace(/\n\n/g, '\n \n'); // preserve double newlines
+            .replace(/[ \t]+\n/g, '\n') // trim whitespace on every line
+            .replace(/\\\n[ \t]+/g, ''); // remove continuation characters
     }
     return { configs: [config] };
 };

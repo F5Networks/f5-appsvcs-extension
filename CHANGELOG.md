@@ -31,6 +31,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
 - AUTOTOOL-3810:  ([GitHub Issue 715](https://github.com/F5Networks/f5-appsvcs-extension/issues/715)): GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]"
 - AUTOTOOL-3879: AS3 declaration fails on save config from v3.35.0 onwards
+- AUTOTOOL-3886: ([GitHub Issue 730](https://github.com/F5Networks/f5-appsvcs-extension/issues/730)): Empty lines are stripped of base64 encoded iRule
 
 ### Changed
 - Updated to Service Discovery 1.14.0-1
