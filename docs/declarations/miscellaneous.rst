@@ -970,7 +970,7 @@ Adding metadata to pools and pool members
 
    Support for adding metadata to pools and pool members is available in BIG-IP AS3 3.46 and later. 
    
-In this example, we show how you can add metadata to pools and in BIG-IP AS3 3.46 and later. In previous versions, adding metadata was not an option for these objects and could only be configured on the virtual service. Adding metadata to pools and pool members allows more flexibility for deployments using automation.
+In this example, we show how you can add metadata to pools and in BIG-IP AS3 3.46 and later. In previous versions, adding metadata was not an option for these objects and could only be configured on the virtual service. Adding metadata to pools and pool members can be useful for deployments using automation.
 
 
 This declaration creates the following objects on the BIG-IP:
