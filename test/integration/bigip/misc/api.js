@@ -998,7 +998,19 @@ describe('per-app API testing (__smoke)', function () {
                                     serviceDownAction: 'none',
                                     slowRampTime: 11
                                 }
-                            } // NOTE: after data-groups are fixed we should see app2
+                            },
+                            app2: {
+                                class: 'Application',
+                                pool1: {
+                                    class: 'Pool',
+                                    loadBalancingMode: 'round-robin',
+                                    minimumMembersActive: 1,
+                                    reselectTries: 0,
+                                    serviceDownAction: 'none',
+                                    slowRampTime: 11
+                                },
+                                template: 'generic'
+                            }
                         }
                     );
                 })

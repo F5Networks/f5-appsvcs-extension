@@ -765,6 +765,8 @@ class DeclarationHandler {
                         if (Object.prototype.hasOwnProperty.call(newDecl, key)) {
                             delete newDecl[key];
                         }
+                    } else if (context.request.perAppInfo && newDecl[key]) {
+                        newDecl[key] = Object.assign(newDecl[key], util.simpleCopy(baseDecl[key]));
                     } else {
                         newDecl[key] = util.simpleCopy(baseDecl[key]);
                     }

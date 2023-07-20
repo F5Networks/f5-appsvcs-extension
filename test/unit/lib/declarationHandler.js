@@ -1627,26 +1627,29 @@ describe('DeclarationHandler', () => {
                 context.tasks[0].showAge = 0;
                 context.tasks[0].fullPath = 'shared/appsvcs/declare/otherTenant/applications';
                 context.tasks[0].declaration = {
-                    Application1: {
-                        class: 'Application',
-                        service: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: [
-                                '192.0.2.1'
-                            ],
-                            appPool: 'pool'
-                        },
-                        appPool: {
-                            class: 'Pool',
-                            members: [
-                                {
-                                    servicePort: 80,
-                                    serverAddresses: [
-                                        '192.0.2.10',
-                                        '192.0.2.20'
-                                    ]
-                                }
-                            ]
+                    otherTenant: {
+                        class: 'Tenant',
+                        Application1: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                appPool: 'pool'
+                            },
+                            appPool: {
+                                class: 'Pool',
+                                members: [
+                                    {
+                                        servicePort: 80,
+                                        serverAddresses: [
+                                            '192.0.2.10',
+                                            '192.0.2.20'
+                                        ]
+                                    }
+                                ]
+                            }
                         }
                     }
                 };
@@ -1673,6 +1676,84 @@ describe('DeclarationHandler', () => {
                         assert.strictEqual(result.body.results[0].code, 200);
                         assert.strictEqual(result.body.results[0].message, 'success');
                         assert.strictEqual(result.errorMessage, undefined);
+                    });
+            });
+
+            it('should continue to store other apps in the tenant not specified in declaration', () => {
+                context.tasks[0].showAge = 0;
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
+                context.tasks[0].declaration = {
+                    firstTenant: {
+                        app: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '192.0.2.1'
+                                ]
+                            }
+                        }
+                    }
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['app'],
+                    tenant: 'firstTenant'
+                };
+
+                handler.declarationProvider.getBigipDeclaration.restore();
+                sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
+                    declaration: {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'PATCH_Sample',
+                        firstTenant: {
+                            class: 'Tenant',
+                            Application: { class: 'Application' },
+                            App1: { class: 'Application' },
+                            controls: { class: 'Controls' }
+                        },
+                        updateMode: 'selective'
+                    },
+                    metadata: {}
+                });
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'firstTenant',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        assert.deepStrictEqual(
+                            result.body.declaration.firstTenant,
+                            {
+                                App1: {
+                                    class: 'Application'
+                                },
+                                Application: {
+                                    class: 'Application'
+                                },
+                                app: {
+                                    class: 'Application',
+                                    service: {
+                                        class: 'Service_HTTP',
+                                        virtualAddresses: [
+                                            '192.0.2.1'
+                                        ]
+                                    }
+                                },
+                                class: 'Tenant',
+                                controls: {
+                                    class: 'Controls'
+                                }
+                            }
+                        );
                     });
             });
         });
