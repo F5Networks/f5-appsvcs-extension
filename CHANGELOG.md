@@ -17,7 +17,6 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3881: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for net port-lists
 - AUTOTOOL-3821: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for port and address lists in virtuals
 - AUTOTOOL-3704: Expose metadata property for pools and pool members
-- AUTOTOOL-3723: Add basic POST functionality for per-app declarations
 - AUTOTOOL-3876: Support for performing AS3 string expansion inside declarative WAF policy
 - AUTOTOOL-3866: Add support of route domain as a string for SOCKS profile
 - AUTOTOOL-3768: ([GitHub Issue 696](https://github.com/F5Networks/f5-appsvcs-extension/issues/696)): Add support for enable/disable BotDefense profile in Endpoint_Policy
