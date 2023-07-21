@@ -842,7 +842,9 @@ The **expand** property accepts an array of JSON pointers that denote which prop
 
 For more information, see |wafp| in the Schema Reference.
 
-This declaration creates the following objects on the BIG-IP
+For more information on BIG-IP AS3 string expansion, see |stringexpand| in the Reference Guide.
+
+This declaration creates the following objects on the BIG-IP:
 
 - Partition (tenant) named **Tenant**.
 - An Application named **Application**.
@@ -858,6 +860,12 @@ This declaration creates the following objects on the BIG-IP
 
 |
 
+https://automation-toolchain.pages.gitswarm.f5net.com/f5-appsvcs-extension/public-docs/refguide/declaration-purpose-function.html#string-expansion-in-urls-irules-and-other-values
+
+
+.. |stringexpand| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/declaration-purpose-function.html#string-expansion-in-urls-irules-and-other-values" target="_blank">String Expansion in URLs, iRules, and Other Values</a>
 
 .. |bdf5| raw:: html
 
