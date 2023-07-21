@@ -27,7 +27,7 @@
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "eslint": "7.32.0",
-    "f5-schema-doc": "file:packages/f5-schema-doc-0.1.0.tgz",
+    "f5-schema-doc": "file:packages/f5-schema-doc-0.1.1.tgz",
     "json-schema-faker": "^0.5.3",
     "mkdirp": "^3.0.1",
     "mocha": "^10.2.0",
