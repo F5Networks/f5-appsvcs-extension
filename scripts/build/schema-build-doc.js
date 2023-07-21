@@ -18,7 +18,7 @@
 
 const fs = require('fs');
 const util = require('util');
-const rimraf = require('rimraf');
+const rimraf = require('rimraf').rimraf;
 const schemaDoc = require('f5-schema-doc');
 const schemaBuild = require('./schema-build').build;
 

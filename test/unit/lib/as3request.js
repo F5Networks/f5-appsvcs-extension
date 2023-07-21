@@ -585,36 +585,6 @@ describe('as3request', function () {
     });
 
     describe('.validateAndWrap', () => {
-        it('should validate and wrap per-app requests', () => {
-            const requestContext = {
-                isPerApp: true,
-                pathName: 'declare',
-                body: {
-                    myApplication: {
-                        class: 'Application'
-                    }
-                }
-            };
-            const results = as3Request.validateAndWrap(requestContext, {});
-            assert.strictEqual(results.error, undefined);
-            assert.strictEqual(results.request[0].class, 'AS3');
-            assert.strictEqual(results.request[0].action, 'deploy');
-        });
-
-        it('should error if request is not per-app and is missing AS3 class', () => {
-            const requestContext = {
-                isPerApp: false,
-                pathName: 'declare',
-                body: {
-                    myApplication: {
-                        class: 'Application'
-                    }
-                }
-            };
-            const results = as3Request.validateAndWrap(requestContext, {});
-            assert.notStrictEqual(results.error.indexOf('"missingProperty":"class"'), -1);
-        });
-
         it('should error if requestContext is not provided', () => {
             assert.throws(
                 () => as3Request.validateAndWrap(undefined, {}),

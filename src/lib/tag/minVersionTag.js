@@ -16,6 +16,8 @@
 
 'use strict';
 
+const AJV = require('ajv');
+
 const jsonpointer = require('jsonpointer');
 const util = require('../util/util');
 
@@ -41,22 +43,42 @@ function process(context, declaration, minVersions, originalDeclaration) {
         return Promise.resolve();
     }
 
-    const warnings = minVersions
-        .map((minVersion) => {
-            if (isDeviceVersionTooLow(context, minVersion.schemaData)) {
-                removeProperty(declaration, minVersion.instancePath);
-                return getWarning(
-                    originalDeclaration,
-                    minVersion.tenant,
-                    minVersion.instancePath,
-                    minVersion.schemaData,
-                    minVersion.parentData.class,
-                    minVersion.parentDataProperty
-                );
+    const warnings = [];
+    const errors = [];
+    minVersions.forEach((minVersion) => {
+        let schemaData = typeof minVersion.schemaData === 'string' ? { version: minVersion.schemaData } : minVersion.schemaData;
+        schemaData = Object.assign({ strict: false }, schemaData);
+
+        if (isDeviceVersionTooLow(context, schemaData.version)) {
+            removeProperty(declaration, minVersion.instancePath);
+            // If the setting was also in the original declaration (and not just a default that we added)
+            // issue error or warning
+            if (typeof jsonpointer.get(originalDeclaration, minVersion.instancePath) !== 'undefined') {
+                if (schemaData.strict) {
+                    const error = getError(
+                        minVersion.instancePath,
+                        schemaData.version,
+                        minVersion.parentData.class,
+                        minVersion.parentDataProperty
+                    );
+                    errors.push(error);
+                } else {
+                    const warning = getWarning(
+                        minVersion.tenant,
+                        minVersion.instancePath,
+                        schemaData.version,
+                        minVersion.parentData.class,
+                        minVersion.parentDataProperty
+                    );
+                    warnings.push(warning);
+                }
             }
-            return undefined;
-        })
-        .filter(Boolean);
+        }
+    });
+
+    if (errors.length > 0) {
+        return Promise.reject(new AJV.ValidationError(errors));
+    }
 
     return Promise.resolve({ warnings });
 }
@@ -69,20 +91,23 @@ function removeProperty(declaration, dataPath) {
     jsonpointer.set(declaration, dataPath, undefined);
 }
 
-function getWarning(declaration, tenant, dataPath, minVersionAllowed, propertyClass, propertyName) {
-    // If the setting was also in the original declaration (and not just a default that we added)
-    // issue a warning
-    let warning;
-    if (typeof jsonpointer.get(declaration, dataPath) !== 'undefined') {
-        warning = {
-            tenant,
-            dataPath: dataPath || 'unknown path',
-            keyword: 'f5PostProcess(minVersion)',
-            params: {},
-            message: `${propertyClass}.${propertyName} ignored. This is only valid on BIG-IP versions ${minVersionAllowed} and above.`
-        };
-    }
-    return warning;
+function getWarning(tenant, dataPath, minVersionAllowed, propertyClass, propertyName) {
+    return {
+        tenant,
+        dataPath: dataPath || 'unknown path',
+        keyword: 'f5PostProcess(minVersion)',
+        params: {},
+        message: `${propertyClass}.${propertyName} ignored. This is only valid on BIG-IP versions ${minVersionAllowed} and above.`
+    };
+}
+
+function getError(dataPath, minVersionAllowed, propertyClass, propertyName) {
+    return {
+        dataPath: dataPath || 'unknown path',
+        keyword: 'f5PostProcess(minVersion)',
+        params: {},
+        message: `${propertyClass}.${propertyName} is only valid on BIG-IP versions ${minVersionAllowed} and above.`
+    };
 }
 
 module.exports = {

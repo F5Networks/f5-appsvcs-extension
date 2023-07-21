@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  version: 3.44.0
+  version: 3.46.0
   title: F5 BIG-IP AS3
   description: This reference describes the BIG-IP AS3 API and available endpoints.
 externalDocs:
@@ -300,7 +300,7 @@ paths:
       tags:
         - Configuration
       description: |
-        Retrieve a declarations for all per-app declarations
+        Retrieve the declarations for all applications under a tenant
       responses:
         200:
           description: Successful response
@@ -369,7 +369,7 @@ paths:
       tags:
         - Configuration
       description: |
-        Retrieve a declarations for all per-app declarations
+        Retrieve the declaration for a specific application under a tenant
       responses:
         200:
           description: Successful response

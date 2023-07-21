@@ -18,9 +18,9 @@
 
 const crypto = require('crypto');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
+const arrUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const normalize = require('./normalize');
 const util = require('./util/util');
-const arrUtil = require('./util/arrayUtil');
 const PolicyParser = require('./ltmPolicyParser');
 const log = require('./log');
 const serviceDiscovery = require('./serviceDiscovery');
@@ -192,7 +192,7 @@ const createIRule = function createIRule(config) {
             .trim()
             .replace(/\r\n/g, '\n') // unix-style line endings
             .replace(/\s+\n/g, '\n') // trim whitespace on every line
-            .replace(/\\\n/g, '\n') // remove continuation characters
+            .replace(/\\\n[ \t]+/g, '') // remove continuation characters
             .replace(/\n\n/g, '\n \n'); // preserve double newlines
     }
     return { configs: [config] };
@@ -362,11 +362,12 @@ const isInternal = function (item) {
 
 const updatePropsIfInternal = function (item) {
     if (isInternal(item)) {
+        const sourceType = typeof item.sourceAddress;
         item.internal = {};
         // internal virtuals allow a source address but destination is
         // always 0.0.0.0 with a port of 'any'
         item.destination = '0.0.0.0:any';
-        item.virtualAddresses = typeof item.sourceAddress === 'undefined' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
+        item.virtualAddresses = sourceType === 'undefined' || sourceType === 'object' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
 
         // ICAP should only be on internal virtuals
         item = profile(item, 'profileICAP');
@@ -427,7 +428,7 @@ const makeExternalMonitorRequests = function (context, tenantId, appId, itemId, 
     return normalize.actionableMcp(context, externalMonitorFile, 'sys file external-monitor', `${path}-script`);
 };
 
-const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisplayName) {
+const makeApmPolicyRequests = function (item, itemId, path, settings, classDisplayName) {
     if (item.url) {
         const urlObj = normalizeUrl(item.url);
         const url = urlObj.url;
@@ -435,7 +436,7 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         const type = url.includes('.tar.gz') ? '.tar.gz' : '.tar';
         const authentication = urlObj.authentication;
 
-        overrides.url = url;
+        settings.url = url;
 
         item.iControl_postFromRemote = {};
 
@@ -454,7 +455,7 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
         item.iControl_postFromRemote.post.method = 'POST';
         item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
         item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
-        item.iControl_postFromRemote.post.overrides = overrides;
+        item.iControl_postFromRemote.post.settings = settings;
 
         if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
             item.ignore.iControl_postFromRemote = {
@@ -474,13 +475,13 @@ const makeApmPolicyRequests = function (item, itemId, path, overrides, classDisp
     return item;
 };
 
-const makeDataGroupTokenRequests = function (item, itemId, path, overrides, classDisplayName) {
+const makeDataGroupTokenRequests = function (item, itemId, path, settings, classDisplayName) {
     const urlObj = normalizeUrl(item.externalFilePath);
     const url = urlObj.url;
     const rejectUnauthorized = urlObj.rejectUnauthorized;
     const authentication = urlObj.authentication;
 
-    overrides.externalFilePath.url = url;
+    settings.externalFilePath.url = url;
     item.iControl_postFromRemote = {};
 
     // GET policy
@@ -498,7 +499,7 @@ const makeDataGroupTokenRequests = function (item, itemId, path, overrides, clas
     item.iControl_postFromRemote.post.method = 'POST';
     item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
     item.iControl_postFromRemote.post.why = `upload ${classDisplayName} ${itemId}`;
-    item.iControl_postFromRemote.post.overrides = overrides;
+    item.iControl_postFromRemote.post.settings = settings;
 
     return item;
 };
@@ -547,6 +548,12 @@ const updateMember = function updateMember(member) {
             log.error(`Invalid adminState state: ${member.adminState}`);
         }
     }
+
+    if (member.metadata) {
+        Object.keys(member.metadata).forEach((key) => {
+            member.metadata[key].persist = member.metadata[key].persist.toString();
+        });
+    }
 };
 
 const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, item, sdRequired, resources, pool) {
@@ -564,7 +571,7 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
         } else {
             def.fqdn.autopopulate = 'disabled';
         }
-        def.metadata = [{ name: 'source', value: 'declaration' }];
+
         if (!sdRequired) {
             poolItem.members.push(normalize.actionableMcp(context, def, 'ltm pool members', null).properties);
         }
@@ -728,7 +735,7 @@ const translate = {
      */
     WAF_Policy(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, appId, itemId);
-        const overrides = util.simpleCopy(item);
+        const settings = util.simpleCopy(item);
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
@@ -739,7 +746,7 @@ const translate = {
             const rejectUnauthorized = urlObj.rejectUnauthorized;
             const authentication = urlObj.authentication;
 
-            overrides.url = url;
+            settings.url = url;
 
             item.iControl_postFromRemote = {};
 
@@ -754,11 +761,12 @@ const translate = {
 
             // post policy to bigip
             item.iControl_postFromRemote.post = {};
+            item.iControl_postFromRemote.post.reference = path;
             item.iControl_postFromRemote.post.path = `/mgmt/shared/file-transfer/uploads/${path.split('/').pop()}.xml`;
             item.iControl_postFromRemote.post.method = 'POST';
             item.iControl_postFromRemote.post.ctype = 'application/octet-stream';
             item.iControl_postFromRemote.post.why = `upload asm policy ${itemId}`;
-            item.iControl_postFromRemote.post.overrides = overrides;
+            item.iControl_postFromRemote.post.settings = settings;
 
             if (item.ignoreChanges && urlObj.authentication && urlObj.authentication.token) {
                 item.ignore.iControl_postFromRemote = {
@@ -777,7 +785,7 @@ const translate = {
             item.iControl_post.ctype = 'application/octet-stream';
             item.iControl_post.why = `upload asm policy ${itemId}`;
             item.iControl_post.send = item.policy || item.file;
-            item.iControl_post.overrides = overrides;
+            item.iControl_post.settings = settings;
             delete item.file;
         }
 
@@ -796,12 +804,12 @@ const translate = {
      */
     Access_Profile(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, '', itemId);
-        const overrides = util.simpleCopy(item);
-        delete overrides.enable;
+        const settings = util.simpleCopy(item);
+        delete settings.enable;
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
-        item = makeApmPolicyRequests(item, itemId, path, overrides, 'Access Profile');
+        item = makeApmPolicyRequests(item, itemId, path, settings, 'Access Profile');
 
         const config = normalize.actionableMcp(context, item, 'apm profile access', path);
         config.properties.enable = item.enable || false;
@@ -814,11 +822,11 @@ const translate = {
      */
     Per_Request_Access_Policy(context, tenantId, appId, itemId, item) {
         const path = util.mcpPath(tenantId, '', itemId);
-        const overrides = util.simpleCopy(item);
+        const settings = util.simpleCopy(item);
 
         item.ignore = item.ignore || {};
         item.ignoreChanges = item.url && item.url.ignoreChanges ? true : item.ignoreChanges;
-        item = makeApmPolicyRequests(item, itemId, path, overrides, 'Access Policy');
+        item = makeApmPolicyRequests(item, itemId, path, settings, 'Access Policy');
 
         const config = normalize.actionableMcp(context, item, 'apm policy access-policy', path);
         return { configs: [config] };
@@ -1942,7 +1950,7 @@ const translate = {
             }
         });
 
-        if (item.monitors && item.monitors.length === 0) {
+        if (!item.monitors || item.monitors.length === 0) {
             delete item.monitors;
             delete item.minimumMonitors;
         }
@@ -1970,6 +1978,12 @@ const translate = {
             // Discovery Worker will handle member assignment, so ignore in AS3 diff
             item.ignore.members = '';
             delete item.members;
+        }
+
+        if (item.metadata) {
+            Object.keys(item.metadata).forEach((member) => {
+                item.metadata[member].persist = item.metadata[member].persist.toString();
+            });
         }
 
         configs.push(normalize.actionableMcp(context, item, 'ltm pool', path));
@@ -2145,7 +2159,7 @@ const translate = {
             }
         );
         // set the name to the address
-        // The addres property is read-only and there can be only 1 copy of the address among all the translations.
+        // The address property is read-only and there can be only 1 copy of the address among all the translations.
         // When BIGIP auto generates a translation it picks the address as the name of the object.
         // For the maintenance of translations moving between auto generated and user specified it is easier to always
         // make the translation names the same as the address.
@@ -2420,6 +2434,24 @@ const translate = {
         const addrPath = `${util.mcpPath(tenantId, appId, itemId).substring(1).replace(/\//g, '.')}`
             + '.virtualAddresses';
         const metadata = context.tasks[context.currentIndex].metadata;
+
+        let destinationPortList;
+        let destinationAddressList;
+        let sourceAddressList;
+        if (typeof item.virtualPort === 'object') {
+            destinationPortList = item.virtualPort;
+            item.virtualPort = 0;
+        }
+        // If we're referencing an Address_List, we want the created traffic-matching-criteria to have a
+        // destination-address-inline of 0.0.0.0
+        if (!Array.isArray(item.virtualAddresses)) {
+            destinationAddressList = item.virtualAddresses;
+            item.virtualAddresses = ['0.0.0.0'];
+        }
+        if (typeof item.sourceAddress === 'object') {
+            sourceAddressList = item.sourceAddress;
+        }
+
         item.virtualAddresses.forEach((addr, index) => {
             let dst;
             let src;
@@ -2564,9 +2596,11 @@ const translate = {
                     declaration
                 );
 
-                // internal virtuals can't create virtual-addresses because the addreses are all 0.0.0.0
-                // which causes an error due to duplicates
-                if (!isInternal(item)) {
+                // internal virtuals can't create virtual-addresses because the addresses are all 0.0.0.0
+                // which causes an error due to duplicates. For virtuals with a destinationAddressList,
+                // our only virtual-address would be 'any' which we don't need as it is covered by the
+                // traffic-matching-criteria destination-address-inline
+                if (!isInternal(item) && !destinationAddressList) {
                     configs = configs.concat(translatedServiceAddr.configs);
                 }
                 destIp = translatedServiceAddr.configs[0].properties.address;
@@ -2626,6 +2660,35 @@ const translate = {
             item.mask = msk;
 
             item.remark = item.remark || appId;
+
+            if (!util.versionLessThan(context.target.tmosVersion, '14.1')
+                && (destinationPortList || destinationAddressList || sourceAddressList)) {
+                const parsed = ipUtil.parseIpAddress(item.source);
+                const source = `${parsed.ip}/${parsed.netmask}`;
+
+                const tmcObj = {
+                    protocol: item.layer4,
+                    destinationAddressInline: `${destIp.split('%')[0]}/${msk}`, // strip the route domain
+                    destinationAddressList: bigipPathFromSrc(destinationAddressList),
+                    destinationPortList: bigipPathFromSrc(destinationPortList),
+                    sourceAddressList: bigipPathFromSrc(sourceAddressList),
+                    sourceAddressInline: source
+                };
+
+                tmcObj.routeDomain = routeDomain ? `/Common/${routeDomain.split('%')[1]}` : 'any';
+
+                item.trafficMatchingCriteria = util.mcpPath(tenantId, appId, `${alias}_VS_TMC_OBJ`);
+                delete item.destination;
+                delete item.source;
+
+                configs.push(normalize.actionableMcp(
+                    context,
+                    tmcObj,
+                    'ltm traffic-matching-criteria',
+                    util.mcpPath(tenantId, appId, `${alias}_VS_TMC_OBJ`)
+                ));
+            }
+
             configs.push(normalize.actionableMcp(context, item, 'ltm virtual', util.mcpPath(tenantId, appId, alias)));
         });
         return { configs };
@@ -3008,6 +3071,14 @@ const translate = {
                     if (action.policy) {
                         action.enable = true;
                         action.policy = bigipPath(action, 'policy');
+                    } else {
+                        action.disable = true;
+                    }
+                } else if (action.type === 'botDefense') {
+                    if (action.profile) {
+                        action.enable = true;
+                        action.fromProfile = bigipPath(action, 'profile');
+                        delete action.profile;
                     } else {
                         action.disable = true;
                     }
@@ -3426,6 +3497,19 @@ const translate = {
         return { configs };
     },
 
+    /**
+     * Defines a Net Port List
+     */
+    Net_Port_List(context, tenantId, appId, itemId, item) {
+        const path = util.mcpPath(tenantId, appId, itemId);
+        const configs = [];
+        item.ignore = item.ignore || {};
+
+        configs.push(normalize.actionableMcp(context, item, 'net port-list', path));
+
+        return { configs };
+    },
+
     NAT_Policy(context, tenantId, appId, itemId, item) {
         if (item.rules) {
             item.rules.forEach((rule) => {
@@ -3680,8 +3764,8 @@ const translate = {
                 item.ignore.externalFilePath = item.externalFilePath;
             }
             if (util.getDeepValue(item, 'externalFilePath.authentication.method') === 'bearer-token') {
-                const overrides = util.simpleCopy(item);
-                item = makeDataGroupTokenRequests(item, itemId, path, overrides, 'Data Group');
+                const settings = util.simpleCopy(item);
+                item = makeDataGroupTokenRequests(item, itemId, path, settings, 'Data Group');
             } else {
                 item.externalFilePath = item.externalFilePath.url || item.externalFilePath;
             }
@@ -4401,7 +4485,8 @@ const translate = {
         tagDescription(item);
         (item.members || []).forEach((member, index) => {
             member.order = index;
-            member.name = `${bigipPath(member, 'server')}`;
+            member.name = `${bigipPath(member, 'server').replace('/Shared', '')}`;
+            member.name = member.name.includes('/') ? member.name : `/Common/${member.name}`;
         });
         const path = util.mcpPath(tenantId, '', itemId);
         const config = [normalize.actionableMcp(context, item, 'gtm prober-pool', path)];

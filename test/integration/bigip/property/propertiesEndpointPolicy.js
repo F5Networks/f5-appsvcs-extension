@@ -19,6 +19,7 @@
 const {
     assertClass,
     extractPolicy,
+    extractProfile,
     assertModuleProvisioned,
     getBigIpVersion,
     GLOBAL_TIMEOUT
@@ -805,6 +806,55 @@ describe('Endpoint_Policy', function () {
             }
         ];
         return assertClass('Endpoint_Policy', properties);
+    });
+
+    it('BotDefense Action', function () {
+        if (util.versionLessThan(getBigIpVersion(), '14.0')) {
+            this.skip();
+        }
+        assertModuleProvisioned.call(this, 'asm');
+
+        const properties = [
+            {
+                name: 'policyEndpoint',
+                inputValue: ['endpointPolicy'],
+                expectedValue: ['endpointPolicy'],
+                extractFunction: extractPolicy,
+                referenceObjects: {
+                    endpointPolicy: {
+                        class: 'Endpoint_Policy',
+                        rules: [
+                            {
+                                name: 'enableBotDefense',
+                                conditions: [],
+                                actions: [{
+                                    type: 'botDefense',
+                                    profile: { bigip: '/Common/bot-defense' }
+                                }]
+                            },
+                            {
+                                name: 'disableBotDefense',
+                                conditions: [],
+                                actions: [{ type: 'botDefense' }]
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['10.1.40.50']],
+                skipAssert: true
+            },
+            {
+                name: 'profileBotDefense',
+                inputValue: [{ bigip: '/Common/bot-defense' }],
+                expectedValue: ['bot-defense'],
+                extractFunction: (virtual) => extractProfile(virtual, 'bot-defense')
+            }
+        ];
+
+        return assertClass('Service_HTTP', properties);
     });
 
     it('WAF Action', function () {

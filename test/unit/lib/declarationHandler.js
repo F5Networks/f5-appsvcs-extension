@@ -314,7 +314,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'secondTenant'
                     };
 
@@ -335,7 +335,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'firstTenant'
                     };
 
@@ -357,7 +357,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/Application';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'Application',
+                        apps: ['Application'],
                         tenant: 'firstTenant'
                     };
 
@@ -378,7 +378,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant/applications';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: undefined,
+                        apps: [],
                         tenant: 'someTenant'
                     };
 
@@ -401,7 +401,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/otherApplication';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'otherApplication',
+                        apps: ['otherApplication'],
                         tenant: 'firstTenant'
                     };
 
@@ -425,7 +425,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'App1',
+                        apps: ['App1'],
                         tenant: 'firstTenant'
                     };
 
@@ -445,7 +445,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
-                        app: 'App1',
+                        apps: ['App1'],
                         tenant: 'firstTenant'
                     };
 
@@ -1652,19 +1652,82 @@ describe('DeclarationHandler', () => {
                 };
                 context.request.isPerApp = true;
                 context.request.perAppInfo = {
-                    app: undefined,
+                    apps: [],
                     tenant: 'otherTenant'
                 };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'otherTenant',
+                        runTime: 956
+                    }
+                ]);
 
                 return handler.handleCreateUpdateOrDelete(context)
                     .then((result) => {
                         assert.strictEqual(result.statusCode, 200);
-                        // NOTE: Further POST development will likely change the following responses
                         assert.strictEqual(result.body.results[0].code, 200);
-                        assert.strictEqual(result.body.results[0].message, 'no change');
+                        assert.strictEqual(result.body.results[0].message, 'success');
                         assert.strictEqual(result.errorMessage, undefined);
                     });
             });
+        });
+
+        it('should add warnings from persistConfig', () => {
+            context.tasks[0].persist = true;
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declaration_id',
+                tenant: {
+                    class: 'Tenant'
+                }
+            };
+
+            sinon.stub(audit, 'allTenants').resolves([
+                {
+                    code: 200,
+                    message: 'no change',
+                    host: 'localhost',
+                    tenant: 'tenant',
+                    runTime: 59
+                }
+            ]);
+            nock('http://localhost:8100')
+                .post('/mgmt/tm/task/sys/config')
+                .reply(200, () => ({
+                    selfLink: 'https://localhost/mgmt/tm/task/sys/config/42',
+                    _taskId: 42
+                }));
+            nock('http://localhost:8100')
+                .put('/mgmt/tm/task/sys/config/42')
+                .reply(200);
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .reply(404, { message: 'Task not found' });
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result.body.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant',
+                                runTime: 59,
+                                warnings: [
+                                    'AS3 was unable to verify that the configuration was persisted. To avoid this issue in the future, try increasing the following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout'
+                                ]
+                            }
+                        ]
+                    );
+                });
         });
     });
 
@@ -2122,6 +2185,13 @@ describe('DeclarationHandler', () => {
                 .reply(404, { message: 'Task not found - ID: 42 user: admin' });
         }
 
+        function nockConnectionRefused(n) {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/task/sys/config/42')
+                .times(n)
+                .reply(500, { message: 'Connection refused' });
+        }
+
         function assertComplete() {
             const state = {};
             nockCompleted(state);
@@ -2232,12 +2302,27 @@ describe('DeclarationHandler', () => {
                 });
         });
 
-        it('should update error message if task is not found', () => {
-            const expectedMsg = /failed to save BIG-IP config \(Record no longer exists on BIG-IP for saving configuration task \(ID: 42\)/;
+        it('should resolve with warning if task not found', () => {
             nockCreate();
             nockStart();
             nockTaskNotFound();
-            return assert.isRejected(DeclarationHandler.persistConfig(context), expectedMsg);
+            return assert.isFulfilled(DeclarationHandler.persistConfig(context))
+                .then((result) => {
+                    assert.strictEqual(
+                        result.warning,
+                        'AS3 was unable to verify that the configuration was persisted. To avoid this issue in the future, try increasing the following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout'
+                    );
+                });
+        });
+
+        it('should reject if too many Connection refused errors are encountered', () => {
+            nockCreate();
+            nockStart();
+            nockConnectionRefused(121);
+            return assert.isRejected(
+                DeclarationHandler.persistConfig(context),
+                /Connection refused/
+            );
         });
     });
 });

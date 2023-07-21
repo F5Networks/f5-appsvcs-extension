@@ -49,6 +49,16 @@
                             ]
                         }
                     ]
+                },
+                "service2": {
+                    "class": "Service_UDP",
+                    "virtualPort": 53,
+                    "virtualAddresses": [
+                        "192.0.2.2"
+                    ],
+                    "profileProtocolInspection": {
+                        "bigip": "/Common/protocol_inspection_dns"
+                    }
                 }
             }
         }

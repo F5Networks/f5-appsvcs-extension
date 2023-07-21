@@ -116,7 +116,7 @@ function service(context, declaration) {
     let err;
     serviceClasses.forEach((serviceClass) => {
         if (findItems(declaration, serviceClass).some(isVersionTooLow)) {
-            err = new Error('profileBotDefense is only available of TMOS 14.1+');
+            err = new Error('profileBotDefense is only available on TMOS 14.1+');
             err.statusCode = 422;
         }
     });

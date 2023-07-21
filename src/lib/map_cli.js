@@ -93,6 +93,8 @@ const prefix = {
     'net address-list addresses': 'replace-all-with',
     'net address-list address-lists': 'replace-all-with',
     'net bwc policy categories': 'replace-all-with',
+    'net port-list ports': 'replace-all-with',
+    'net port-list port-lists': 'replace-all-with',
     'net service-policy': 'replace-all-with',
     'net timer-policy': 'replace-all-with',
     'net timer-policy rules': 'replace-all-with',
@@ -340,7 +342,8 @@ const getPolicyControls = function (policy) {
         asm: ['asm'],
         avr: ['avr'],
         websocket: ['websocket'],
-        l7dos: ['l7dos']
+        l7dos: ['l7dos'],
+        'bot-defense': ['bot-defense']
     };
     const controls = {};
 
@@ -650,6 +653,10 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'auth partition':
         regex = /\//g;
         diff.path[0] = diff.path[0].replace(regex, '');
+        if (context.request.isPerApp && diff.kind !== 'N') {
+            // Per-app should only create a partition if a partition needs to be created
+            return commandObj;
+        }
         if (diff.kind === 'E') {
             commandObj.commands = [`tmsh::modify ${diff.rhsCommand} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
             return commandObj;
@@ -749,9 +756,6 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         if ((typeof targetConfig.members === 'object') && (targetConfig.members !== null)) {
             Object.keys(targetConfig.members).forEach((member) => {
                 targetConfig.members[member] = pushMonitors(targetConfig.members[member]);
-                if (typeof targetConfig.members[member].metadata === 'undefined') {
-                    targetConfig.members[member].metadata = { source: { value: 'declaration' } };
-                }
             });
         }
         if (diff.kind === 'D' && diff.path.find((p) => p === 'members')) {
@@ -1147,6 +1151,12 @@ const tmshDelete = function (context, diff, currentConfig) {
 
     switch (diff.lhsCommand) {
     case 'auth partition':
+        if (context.request.isPerApp) {
+            // Tenants should ONLY be deleted in per-app mode IF done via a DELETE
+            if (context.request.method === 'Post') {
+                return commandObj;
+            }
+        }
         if (diff.kind === 'E') {
             // Modifies are handled in tmshCreate
             return commandObj;

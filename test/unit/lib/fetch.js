@@ -90,7 +90,7 @@ describe('fetch', () => {
 
                 assert.isFulfilled(fetch.getBigipConfig(context, testPath, 'Common')
                     .then((config) => {
-                        assert.deepEqual(config, []);
+                        assert.deepStrictEqual(config, []);
                     }));
             });
 
@@ -306,15 +306,16 @@ describe('fetch', () => {
                     });
             });
 
-            it('should return net address-list before firewall address-list', () => {
-                // Since firewall address-list and net address-list share the same path, we benefit
-                // from utilizing the firewall address-list (if it is available). As such, if we order
-                // paths.json with net address-list first and firewall second, the net address-list will
-                // be overwritten, if a firewall address-list is available.
+            it('should return net address- and port-list before firewall address- and port-list', () => {
+                // Since firewall address- and port-list and net address- and port-list share the same path, we benefit
+                // from utilizing the firewall address- and port-list (if it is available). As such, if we order
+                // paths.json with net address- and port-list first and firewall second, the net address- and port-list
+                // will be overwritten, if a firewall address- and/or port-list is available.
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:net:address-list:address-listcollectionstate',
                             items: [
@@ -327,8 +328,20 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:net:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -341,8 +354,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -363,26 +390,42 @@ describe('fetch', () => {
                                     addresses: ['192.0.2.0/24']
                                 },
                                 {
+                                    kind: 'tm:net:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
+                                },
+                                {
                                     kind: 'tm:security:firewall:address-list:address-liststate',
                                     name: 'addressListExample',
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    ports: [80, 8080]
                                 }
                             ]
                         );
                     });
             });
 
-            it('should return firewall address-list if on BIG-IP version 13.1', () => {
-                // net address-lists are not on 13.1, so we need to confirm that it is not queried
+            it('should return firewall address- and port-list if on BIG-IP version 13.1', () => {
+                // net address- and port-lists are not on 13.1, so we need to confirm that it is not queried
                 util.iControlRequest.restore();
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
-                    if (icrOptions.path === '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen') {
-                        throw new Error('Should not have queried this endpoint');
-                    }
-                    if (icrOptions.path === '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen') {
+                    switch (icrOptions.path) {
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net address-list endpoint');
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                        throw new Error('Should not have queried net port-list endpoint');
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -395,8 +438,22 @@ describe('fetch', () => {
                                 }
                             ]
                         });
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                        return Promise.resolve({
+                            kind: 'tm:security:firewall:port-list:port-listcollectionstate',
+                            items: [
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
+                                }
+                            ]
+                        });
+                    default:
+                        return Promise.resolve([]);
                     }
-                    return Promise.resolve([]);
                 });
 
                 context.target = {
@@ -415,6 +472,13 @@ describe('fetch', () => {
                                     partition: 'testTen',
                                     fullPath: '/testTen/testApp/addressListExample',
                                     addresses: ['192.0.2.0/24']
+                                },
+                                {
+                                    kind: 'tm:security:firewall:port-list:port-liststate',
+                                    name: 'portListExample',
+                                    partition: 'testTen',
+                                    fullPath: '/testTen/testApp/portListExample',
+                                    addresses: [80, 8080]
                                 }
                             ]
                         );
@@ -664,6 +728,14 @@ describe('fetch', () => {
                 assert.strictEqual(result, true, `${item.kind} should return true`);
             });
         });
+
+        it('should return true when item.kind is a snat-translation', () => {
+            const item = {
+                kind: 'tm:ltm:snat-translation:snat-translationstate'
+            };
+            const result = fetch.isAs3Item(context, item, 'thePartition');
+            assert.strictEqual(result, true, `${item.kind} should return true`);
+        });
     });
 
     describe('.getDiff', () => {
@@ -706,7 +778,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Profile accessProfile',
-                                overrides: {
+                                settings: {
                                     class: 'Access_Profile',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -724,7 +796,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Access_Profile/accessProfile'
@@ -746,7 +818,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -787,7 +859,7 @@ describe('fetch', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy accessPolicy',
-                                overrides: {
+                                settings: {
                                     class: 'Per_Request_Access_Policy',
                                     url: 'https://example.com/example.tar',
                                     ignoreChanges: false
@@ -805,7 +877,7 @@ describe('fetch', () => {
             return assert.isFulfilled(fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {}), 'Promise should not reject')
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'N',
                         path: [
                             '/Per_Request_Access_Policy/accessPolicy'
@@ -827,7 +899,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy accessPolicy',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/example.tar',
                                             ignoreChanges: false
@@ -839,6 +911,97 @@ describe('fetch', () => {
                             ignore: []
                         }
                     });
+                });
+        });
+
+        it('should return diff deleting a snat pool in Common Shared but not the matching snat translation', () => {
+        // When a snat pool is deleted BIGIP will check and delete any snat translations that are no longer needed
+            const currentConfig = {
+                '/Common/Shared/CreateSnatPool3': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/Common/192.0.2.12': {},
+                            '/Common/192.0.2.13': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.12': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.12',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.13': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.13',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                }
+            };
+
+            const desiredConfig = {};
+
+            const commonConfig = {
+                nodeList: []
+            };
+
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, 'Common')
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    assert.deepStrictEqual(results, [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/CreateSnatPool3'
+                            ],
+                            lhs: {
+                                command: 'ltm snatpool',
+                                properties: {
+                                    members: {
+                                        '/Common/192.0.2.12': {},
+                                        '/Common/192.0.2.13': {}
+                                    }
+                                },
+                                ignore: []
+                            }
+                        },
+                        {
+                            kind: 'D',
+                            path: [
+                                '/Common/Shared/'
+                            ],
+                            lhs: {
+                                command: 'sys folder',
+                                properties: {},
+                                ignore: []
+                            }
+                        }
+                    ]);
                 });
         });
 
@@ -871,12 +1034,230 @@ describe('fetch', () => {
                 })
                 .then((results) => {
                     assert.strictEqual(results.length, 1);
-                    assert.deepEqual(results[0], {
+                    assert.deepStrictEqual(results[0], {
                         kind: 'E',
                         lhs: 'on',
                         path: ['/myApp/Application1/gjd-inspect-profile', 'properties', 'avr-stat-collect'],
                         rhs: 'off'
                     });
+                });
+        });
+
+        // TODO: remove this unit test, when virtual-address per-app meta-data handling is complete
+        it('should remove virtual-address deletes when hanlding a per-app POST', () => {
+            context.request = {
+                method: 'Post',
+                isPerApp: true,
+                perAppInfo: {
+                    tenant: 'tenant1',
+                    decl: {}, // Abbreviated for testing
+                    apps: ['app1']
+                }
+            };
+            const currentConfig = {
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.200:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.200':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.200',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/Service_Address-192.0.2.1':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/': {
+                    command: 'sys folder', properties: {}, ignore: []
+                }
+            };
+            const desiredConfig = {
+                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                '/tenant1/Service_Address-192.0.2.100':
+                {
+                    command: 'ltm virtual-address',
+                    properties:
+                    {
+                        address: '192.0.2.100',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/tenant1/app1/testItem':
+                {
+                    command: 'ltm virtual',
+                    properties:
+                    {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"description"',
+                        destination: '/tenant1/192.0.2.100:123',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/source_addr': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {},
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant1/':
+                {
+                    command: 'auth partition',
+                    properties: { 'default-route-domain': 0 },
+                    ignore: []
+                }
+            };
+            const commonConfig = {
+                nodeList: [
+                    {
+                        fullPath: '/tenant1/192.0.2.10',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.10'
+                    },
+                    {
+                        fullPath: '/tenant1/192.0.2.20',
+                        partition: 'tenant1',
+                        ephemeral: false,
+                        metadata: undefined,
+                        commonNode: false,
+                        domain: '',
+                        key: '192.0.2.20'
+                    }],
+                virtualAddressList: []
+            };
+            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
+                .catch(() => {
+                    assert.fail('Promise should not reject');
+                })
+                .then((results) => {
+                    // Should be empty if attempting to Delete
+                    assert.strictEqual(results.length, 2);
+                    assert.deepStrictEqual(results,
+                        [
+                            {
+                                kind: 'E',
+                                path: ['/tenant1/app1/testItem', 'properties', 'destination'],
+                                lhs: '/tenant1/192.0.2.200:123',
+                                rhs: '/tenant1/192.0.2.100:123'
+                            },
+                            {
+                                kind: 'N',
+                                path: ['/tenant1/Service_Address-192.0.2.100'],
+                                rhs: {
+                                    command: 'ltm virtual-address',
+                                    properties: {
+                                        address: '192.0.2.100',
+                                        arp: 'enabled',
+                                        'icmp-echo': 'enabled',
+                                        mask: '255.255.255.255',
+                                        'route-advertisement': 'disabled',
+                                        spanning: 'disabled',
+                                        'traffic-group': 'default'
+                                    },
+                                    ignore: []
+                                }
+                            }
+                        ]);
                 });
         });
 
@@ -916,7 +1297,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -931,7 +1312,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -1024,7 +1405,7 @@ describe('fetch', () => {
                     })
                     .then((results) => {
                         assert.strictEqual(results.length, 2);
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[0],
                             {
                                 kind: 'E',
@@ -1039,7 +1420,7 @@ describe('fetch', () => {
                                 rhs: 'rule1'
                             }
                         );
-                        assert.deepEqual(
+                        assert.deepStrictEqual(
                             results[1],
                             {
                                 kind: 'E',
@@ -1936,6 +2317,118 @@ describe('fetch', () => {
                         );
                     });
             });
+
+            it('should be able to convert from firewall port-list to net port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
+
+            it('should be able to convert from net port-list to firewall port-list', () => {
+                const currentConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'net port-list',
+                        properties: {
+                            ports: {
+                                8080: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+                const desiredConfig = {
+                    'testTenant/testApp/testAL': {
+                        command: 'security firewall port-list',
+                        properties: {
+                            ports: {
+                                80: {}
+                            },
+                            'port-lists': {}
+                        },
+                        ignore: []
+                    }
+                };
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, {})
+                    .then((diff) => {
+                        assert.deepStrictEqual(
+                            diff,
+                            [
+                                {
+                                    kind: 'D',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '8080'
+                                    ],
+                                    lhs: {}
+                                },
+                                {
+                                    kind: 'N',
+                                    path: [
+                                        'testTenant/testApp/testAL',
+                                        'properties',
+                                        'ports',
+                                        '80'
+                                    ],
+                                    rhs: {}
+                                }
+                            ]
+                        );
+                    });
+            });
         });
 
         describe('.maintainCommonNodes', () => {
@@ -2455,7 +2948,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfile',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/iam_policy.tar',
                                         ignoreChanges: true
@@ -2513,7 +3006,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfile',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/iam_policy.tar',
                                             ignoreChanges: true
@@ -2577,7 +3070,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar',
                                         ignoreChanges: true
@@ -2603,7 +3096,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Profile accessProfileTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Access_Profile',
                                         url: 'https://example.com/access_profile.tar.gz',
                                         ignoreChanges: true
@@ -2629,7 +3122,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTar',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar',
                                         ignoreChanges: true
@@ -2655,7 +3148,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/perRequestPolicy.tar.gz',
                                         ignoreChanges: true
@@ -2713,7 +3206,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_policy.tar',
                                             ignoreChanges: true
@@ -2749,7 +3242,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Profile accessProfileTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Access_Profile',
                                             url: 'https://example.com/access_profile.gz',
                                             ignoreChanges: true
@@ -2785,7 +3278,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTar',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar',
                                             ignoreChanges: true
@@ -2821,7 +3314,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/perRequestPolicy.tar.gz',
                                             ignoreChanges: true
@@ -2885,7 +3378,7 @@ describe('fetch', () => {
                                     method: 'POST',
                                     ctype: 'application/octet-stream',
                                     why: 'upload Access Policy perRequestPolicyTarGz',
-                                    overrides: {
+                                    settings: {
                                         class: 'Per_Request_Access_Policy',
                                         url: 'https://example.com/per_request_policy.tar.gz',
                                         ignoreChanges: true
@@ -2943,7 +3436,7 @@ describe('fetch', () => {
                                         method: 'POST',
                                         ctype: 'application/octet-stream',
                                         why: 'upload Access Policy perRequestPolicyTarGz',
-                                        overrides: {
+                                        settings: {
                                             class: 'Per_Request_Access_Policy',
                                             url: 'https://example.com/per_request_policy.tar.gz',
                                             ignoreChanges: true
@@ -3906,6 +4399,583 @@ describe('fetch', () => {
                     'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule rules modify \\{ theRule \\{ source \\{ address-lists none port-lists none \\} destination \\{ address-lists none port-lists none \\} \\} \\}\ntmsh::begin_transaction\ntmsh::delete security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule\ntmsh::modify auth partition TEST_Firewall_Rule_List description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ncatch { tmsh::modify security firewall rule-list /TEST_Firewall_Rule_List/Application/testFirewallRule rules modify \\{ theRule \\{ source \\{ address-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/addList \\} port-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/portList \\} \\} destination \\{ address-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/addList \\} port-lists replace-all-with \\{/TEST_Firewall_Rule_List/Application/portList \\} \\} \\} \\} } e\n}}\n}'
                 );
             });
+
+            it('should delete virtuals with transaction-matching-criteria outside of transaction', () => {
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/portList/': {
+                        command: 'auth partition',
+                        properties: {}
+                    },
+                    '/portList/Application/tcpService_VS_TMC_OBJ': {
+                        command: 'ltm traffic-matching-criteria',
+                        properties: {}
+                    },
+                    '/portList/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            'traffic-matching-criteria': '/portList/Application/tcpService_VS_TMC_OBJ'
+                        }
+                    },
+                    '/portList/Service_Address-192.0.2.1': {
+                        command: 'ltm virtual-address',
+                        properties: {}
+                    },
+                    '/portList/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    },
+                    '/portList/Application/firewallPortList1': {
+                        command: 'security firewall port-list',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/'
+                        ],
+                        lhs: {
+                            command: 'auth partition',
+                            properties: {}
+                        },
+                        command: 'auth partition'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/tcpService_VS_TMC_OBJ'
+                        ],
+                        lhs: {
+                            command: 'ltm traffic-matching-criteria',
+                            properties: {}
+                        },
+                        command: 'ltm traffic-matching-criteria'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/tcpService'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {}
+                        },
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Service_Address-192.0.2.1'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {}
+                        },
+                        command: 'ltm virtual-address'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/'
+                        ],
+                        lhs: {
+                            command: 'sys folder',
+                            properties: {}
+                        },
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/portList/Application/firewallPortList1'
+                        ],
+                        lhs: {
+                            command: 'security firewall port-list',
+                            properties: {}
+                        },
+                        command: 'security firewall port-list'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::delete ltm virtual /portList/Application/tcpService\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm traffic-matching-criteria /portList/Application/tcpService_VS_TMC_OBJ\n\n\ntmsh::delete security firewall port-list /portList/Application/firewallPortList1\ntmsh::commit_transaction\ntmsh::delete ltm virtual-address /portList/192.0.2.1\ntmsh::delete sys folder /portList/Application/\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
+            });
+
+            it('should find referenced address lists inside the transaction and move them out if necessary', () => {
+                const desiredConfig = {
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Tenant/Application/sourceAddressList': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.100.0/24': {},
+                                '192.168.200.50-192.168.200.60': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList1': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.40.0/24': {},
+                                '192.168.50.1-192.168.50.10': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList2': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.60.0/24': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {}
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/destinationAddressList3': {
+                        command: 'security firewall address-list',
+                        properties: {
+                            addresses: {
+                                '192.168.10.0/24': {},
+                                '192.168.20.20-192.168.20.50': {}
+                            },
+                            fqdns: {},
+                            geo: {},
+                            'address-lists': {
+                                '/Tenant/Application/destinationAddressList1': {},
+                                '/Tenant/Application/destinationAddressList2': {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/tcpService_VS_TMC_OBJ': {
+                        command: 'ltm traffic-matching-criteria',
+                        properties: {
+                            protocol: 'tcp',
+                            'destination-address-inline': 'any/any',
+                            'destination-address-list': '/Tenant/Application/destinationAddressList3',
+                            'source-address-inline': '0.0.0.0/any',
+                            'source-address-list': '/Tenant/Application/sourceAddressList',
+                            'route-domain': 'any'
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            description: 'Application',
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'traffic-matching-criteria': '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                        },
+                        ignore: []
+                    },
+                    '/Tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/sourceAddressList'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.100.0/24': {},
+                                    '192.168.200.50-192.168.200.60': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList1'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.40.0/24': {},
+                                    '192.168.50.1-192.168.50.10': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList2'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.60.0/24': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/destinationAddressList3'
+                        ],
+                        rhs: {
+                            command: 'security firewall address-list',
+                            properties: {
+                                addresses: {
+                                    '192.168.10.0/24': {},
+                                    '192.168.20.20-192.168.20.50': {}
+                                },
+                                fqdns: {},
+                                geo: {},
+                                'address-lists': {
+                                    '/Tenant/Application/destinationAddressList1': {},
+                                    '/Tenant/Application/destinationAddressList2': {}
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'security firewall address-list'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                        ],
+                        rhs: {
+                            command: 'ltm traffic-matching-criteria',
+                            properties: {
+                                protocol: 'tcp',
+                                'destination-address-inline': 'any/any',
+                                'destination-address-list': '/Tenant/Application/destinationAddressList3',
+                                'source-address-inline': '0.0.0.0/any',
+                                'source-address-list': '/Tenant/Application/sourceAddressList',
+                                'route-domain': 'any'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm traffic-matching-criteria'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/Application/tcpService'
+                        ],
+                        rhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                description: 'Application',
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    }
+                                },
+                                'traffic-matching-criteria': '/Tenant/Application/tcpService_VS_TMC_OBJ'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::create auth partition Tenant default-route-domain 0\ntmsh::create sys folder /Tenant/Application/\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList1 addresses replace-all-with \\{ 192.168.40.0/24 192.168.50.1-192.168.50.10 \\} fqdns none geo none address-lists none\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList2 addresses replace-all-with \\{ 192.168.60.0/24 \\} fqdns none geo none address-lists none\ntmsh::create security firewall address-list /Tenant/Application/destinationAddressList3 addresses replace-all-with \\{ 192.168.10.0/24 192.168.20.20-192.168.20.50 \\} fqdns none geo none address-lists replace-all-with \\{ /Tenant/Application/destinationAddressList1 /Tenant/Application/destinationAddressList2 \\}\ntmsh::create security firewall address-list /Tenant/Application/sourceAddressList addresses replace-all-with \\{ 192.168.100.0/24 192.168.200.50-192.168.200.60 \\} fqdns none geo none address-lists none\ntmsh::create ltm traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ protocol tcp destination-address-inline any/any destination-address-list /Tenant/Application/destinationAddressList3 source-address-inline 0.0.0.0/any source-address-list /Tenant/Application/sourceAddressList route-domain any\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::create ltm virtual /Tenant/Application/tcpService enabled  description Application profiles replace-all-with \\{ /Common/f5-tcp-progressive \\{ context all \\} \\} traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ\ntmsh::commit_transaction\ncatch { tmsh::delete ltm traffic-matching-criteria /Tenant/Application/tcpService_VS_TMC_OBJ protocol } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/sourceAddressList } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList3 } e\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList2 } e\ncatch { tmsh::delete security firewall address-list /Tenant/Application/destinationAddressList1 } e\ncatch { tmsh::delete sys folder /Tenant/Application/ } e\ncatch { tmsh::delete auth partition Tenant } e\n}}\n}'
+                );
+            });
+
+            describe('no traffic-matching-criteria', () => {
+                let desiredConfig;
+                let currentConfig;
+                let configDiff;
+
+                beforeEach(() => {
+                    desiredConfig = {};
+                    currentConfig = {
+                        '/portList/': {
+                            command: 'auth partition',
+                            properties: {}
+                        },
+                        '/portList/Application/': {
+                            command: 'sys folder',
+                            properties: {}
+                        }
+                    };
+                    configDiff = [
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/'
+                            ],
+                            lhs: {
+                                command: 'auth partition',
+                                properties: {}
+                            },
+                            command: 'auth partition'
+                        },
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/'
+                            ],
+                            lhs: {
+                                command: 'sys folder',
+                                properties: {}
+                            },
+                            command: 'sys folder'
+                        }
+                    ];
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/192.0.2.1:80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-192.0.2.1'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/192.0.2.1:80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-192.0.2.1'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/192.0.2.1\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction with any', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/any:80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-any'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: 'any'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/any:80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-any'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+
+                it('should delete virtuals without traffic-matching-criteria inside of transaction with any6', () => {
+                    currentConfig['/portList/Application/tcpService'] = {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/portList/any6.80'
+                        }
+                    };
+                    currentConfig['/portList/Service_Address-any6'] = {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: 'any6'
+                        }
+                    };
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Application/tcpService'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    destination: '/portList/any6.80'
+                                }
+                            },
+                            command: 'ltm virtual'
+                        }
+                    );
+                    configDiff.push(
+                        {
+                            kind: 'D',
+                            path: [
+                                '/portList/Service_Address-any6'
+                            ],
+                            lhs: {
+                                command: 'ltm virtual-address',
+                                properties: {}
+                            },
+                            command: 'ltm virtual-address'
+                        }
+                    );
+
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any6\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+            });
         });
 
         describe('pem policy', () => {
@@ -3961,6 +5031,7 @@ describe('fetch', () => {
                 );
             });
         });
+
         describe('sys log-config publisher', () => {
             it('should properly modify the log publisher to empty destinations', () => {
                 const desiredConfig = {
@@ -4293,7 +5364,7 @@ describe('fetch', () => {
                     sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
                     return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
                         .then((actualDiffs) => {
-                            assert.deepEqual(actualDiffs, []);
+                            assert.deepStrictEqual(actualDiffs, []);
                         });
                 });
 
@@ -4903,7 +5974,7 @@ describe('fetch', () => {
                     + 'tmsh::cd /tenant\n'
                     + 'foreach {node} [tmsh::get_config /ltm node] {\n'
                     + '  tmsh::delete ltm node [tmsh::get_name $node]\n}\n'
-                    + 'tmsh::cd /\n'
+                    + 'tmsh::cd /Common\n'
                     + 'tmsh::delete sys folder /tenant/app/\n'
                     + 'tmsh::delete sys folder /tenant/\n'
                     + '} err] } {\ncatch { tmsh::cancel_transaction } e\n'
@@ -4938,7 +6009,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, partition, config)
                 .then((result) => {
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                     assert.deepStrictEqual(context.tasks, [{}]);
                 });
         });
@@ -4963,7 +6034,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5031,7 +6102,7 @@ describe('fetch', () => {
 
             return fetch.gatherAccessProfileItems(context, 'thePartition', config)
                 .then((result) => {
-                    assert.deepEqual(
+                    assert.deepStrictEqual(
                         result,
                         [
                             '/thePartition/accessProfile-sp_transfer',
@@ -5123,7 +6194,7 @@ describe('fetch', () => {
                             urlPrefix: 'http://localhost:8100'
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5162,7 +6233,7 @@ describe('fetch', () => {
                             }
                         }
                     ]);
-                    assert.deepEqual(result, []);
+                    assert.deepStrictEqual(result, []);
                 });
         });
 
@@ -5182,7 +6253,7 @@ describe('fetch', () => {
             ];
             return fetch.gatherAccessProfileItems(context, 'Common', config)
                 .then((result) => {
-                    assert.deepEqual(result, ['Profile/Policy']);
+                    assert.deepStrictEqual(result, ['Profile/Policy']);
                 });
         });
     });
@@ -5373,12 +6444,200 @@ describe('fetch', () => {
                         ]
                     }
                 ]
+            },
+            {
+                name: 'remove destination address lists addresses in non-Common tenant',
+                config: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address lists addresses in Common tenant',
+                config: [
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Common/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ],
+                commonConfig: {
+                    addressListList: [
+                        {
+                            fullPath: '/Common/myAddressList',
+                            addresses: [
+                                { name: '192.0.2.10/32' }
+                            ]
+                        }
+                    ]
+                },
+                expected: [
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Common/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address lists addresses that match range',
+                config: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10-192.0.2.20' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.15'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.30'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10-192.0.2.20' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.30'
+                    }
+                ]
+            },
+            {
+                name: 'remove destination address list addresses in referenced lists',
+                config: [
+                    {
+                        fullPath: '/Tenant/Application/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ],
+                        addressLists: [
+                            {
+                                name: 'myOtherAddressList',
+                                partition: 'Tenant',
+                                subPath: 'Application'
+                            }
+                        ]
+                    },
+                    {
+                        fullPath: '/Tenant/Application/myOtherAddressList',
+                        addresses: [
+                            { name: '192.0.2.200/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/Application/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.200'
+                    }
+                ],
+                expected: [
+                    {
+                        fullPath: '/Tenant/Application/myAddressList',
+                        addresses: [
+                            { name: '192.0.2.10/32' }
+                        ],
+                        addressLists: [
+                            {
+                                name: 'myOtherAddressList',
+                                partition: 'Tenant',
+                                subPath: 'Application'
+                            }
+                        ]
+                    },
+                    {
+                        fullPath: '/Tenant/Application/myOtherAddressList',
+                        addresses: [
+                            { name: '192.0.2.200/32' }
+                        ]
+                    },
+                    {
+                        kind: 'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate',
+                        destinationAddressList: '/Tenant/Application/myAddressList'
+                    },
+                    {
+                        kind: 'tm:ltm:virtual-address:virtual-addressstate',
+                        address: '192.0.2.20'
+                    }
+                ]
             }
         ];
 
         filterTestCases.forEach((testCase) => {
             it(`should ${testCase.name}`, () => {
-                const actualConfig = fetch.filterAs3Items(testCase.config);
+                const actualConfig = fetch.filterAs3Items(context, testCase.config, testCase.commonConfig);
                 assert.deepStrictEqual(actualConfig, testCase.expected);
             });
         });
@@ -5989,6 +7248,371 @@ describe('fetch', () => {
                     });
             });
         });
+
+        describe('per-app', () => {
+            beforeEach(() => {
+                commonConfig = {
+                    nodeList: [],
+                    virtualAddressList: []
+                };
+                context.request = {
+                    postProcessing: [],
+                    isPerApp: true,
+                    perAppInfo: {
+                        tenant: 'tenant',
+                        apps: []
+                    }
+                };
+            });
+
+            it('should pull just the application in tenant when application is specified', () => {
+                const tenantId = 'My_tenant';
+                const appId = 'My_app';
+                const poolId = 'My_pool';
+                context.target.tmosVersion = '14.1.0';
+                context.control = {
+                    host: 'localhost'
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: [appId]
+                };
+                const declaration = {
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        },
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
+                    }
+                };
+
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
+                        assert.strictEqual(desiredConfig['/My_tenant/'].command, 'auth partition');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/'].command, 'sys folder');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(typeof desiredConfig['/My_tenant/appOther/'], 'undefined'); // Should NOT include unspecified app
+                    });
+            });
+
+            it('should pull the application in tenant when application is NOT specified', () => {
+                const tenantId = 'My_tenant';
+                const appId = 'My_app';
+                const poolId = 'My_pool';
+                context.target.tmosVersion = '14.1.0';
+                context.control = {
+                    host: 'localhost'
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: []
+                };
+                const declaration = {
+                    [tenantId]: {
+                        class: 'Tenant',
+                        enable: true,
+                        [appId]: {
+                            class: 'Application',
+                            template: 'generic',
+                            [poolId]: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        },
+                        appOther: {
+                            class: 'Application',
+                            template: 'generic',
+                            poolOther: {
+                                class: 'Pool',
+                                loadBalancingMode: 'round-robin',
+                                minimumMembersActive: 1,
+                                reselectTries: 0,
+                                serviceDownAction: 'none',
+                                slowRampTime: 10,
+                                minimumMonitors: 1
+                            },
+                            enable: true
+                        }
+                    }
+                };
+
+                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/`].command, 'auth partition');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/${appId}/${poolId}`].properties['load-balancing-mode'], 'round-robin');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/`].command, 'sys folder');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].command, 'ltm pool');
+                        assert.strictEqual(desiredConfig[`/${tenantId}/appOther/poolOther`].properties['load-balancing-mode'], 'round-robin');
+                    });
+            });
+        });
+    });
+
+    describe('.getTenantConfig', () => {
+        let tenantId;
+        let commonConfig;
+        let isOneOfProvisionedStub;
+
+        beforeEach(() => {
+            context.target.tmosVersion = '17.1'; // Needed for getBigipConfig filter
+            tenantId = 'tenant1';
+            commonConfig = {
+                nodeList: [],
+                virtualAddressList: []
+            };
+
+            sinon.stub(fullPathList, 'root').value([ // Abbreviated for testing purposes, lines up with nock
+                { endpoint: '/mgmt/tm/auth/partition' },
+                { endpoint: '/mgmt/tm/sys/folder' },
+                { endpoint: '/mgmt/tm/ltm/pool' }
+            ]);
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/auth/partition/')
+                .reply(200, {
+                    kind: 'tm:auth:partition:partitioncollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'Common',
+                            fullPath: 'Common',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/Common',
+                            defaultRouteDomain: 0
+                        },
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'tenant1',
+                            fullPath: 'tenant1',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/tenant1',
+                            defaultRouteDomain: 0
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/auth/partition?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:auth:partition:partitioncollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/auth/partition?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:auth:partition:partitionstate',
+                            name: 'tenant1',
+                            fullPath: 'tenant1',
+                            selfLink: 'https://localhost/mgmt/tm/auth/partition/tenant1',
+                            defaultRouteDomain: 0
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/sys/folder?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:sys:folder:foldercollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/sys/folder?$filter=partition+eq+tenant1',
+                    items: [
+                        {
+                            kind: 'tm:sys:folder:folderstate',
+                            name: 'app1',
+                            partition: 'tenant1',
+                            fullPath: '/tenant1/app1',
+                            noRefCheck: 'false',
+                            trafficGroup: '/Common/traffic-group-1'
+                        },
+                        {
+                            kind: 'tm:sys:folder:folderstate',
+                            name: 'app2',
+                            partition: 'tenant1',
+                            fullPath: '/tenant1/app2',
+                            noRefCheck: 'false',
+                            trafficGroup: '/Common/traffic-group-1'
+                        }
+                    ]
+                })
+                .get('/mgmt/tm/ltm/pool?$filter=partition%20eq%20tenant1')
+                .reply(200, {
+                    kind: 'tm:ltm:pool:poolcollectionstate',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/pool?$filter=partition+eq+tenant1&expandSubcollections=true',
+                    items:
+                        [{
+                            kind: 'tm:ltm:pool:poolstate',
+                            name: 'pool1',
+                            partition: 'tenant1',
+                            subPath: 'app1',
+                            fullPath: '/tenant1/app1/pool1',
+                            ipTosToServer: 'pass-through',
+                            linkQosToClient: 'pass-through',
+                            linkQosToServer: 'pass-through',
+                            membersReference: {}
+                        },
+                        {
+                            kind: 'tm:ltm:pool:poolstate',
+                            name: 'pool1',
+                            partition: 'tenant1',
+                            subPath: 'app2',
+                            fullPath: '/tenant1/app2/pool1',
+                            ipTosToServer: 'pass-through',
+                            linkQosToClient: 'pass-through',
+                            linkQosToServer: 'pass-through',
+                            membersReference: {}
+                        }]
+                });
+            isOneOfProvisionedStub = sinon.stub(util, 'isOneOfProvisioned').resolves(true);
+        });
+
+        describe('per-tenant', () => {
+            it('should return early if iControlRequest lacks the tenantId', () => {
+                tenantId = 'tenantOther';
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(results, {});
+                        assert.strictEqual(isOneOfProvisionedStub.called, false, 'isOneOfProvisioned should NOT have been called');
+                    });
+            });
+
+            it('should return actionable items if tenant exists', () => {
+                tenantId = 'tenant1';
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app2/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                },
+                                '/tenant1/app2/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+        });
+
+        describe('per-app', () => {
+            it('should return early if iControlRequest lacks the tenantId', () => {
+                tenantId = 'tenantOther';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: []
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(results, {});
+                        assert.strictEqual(isOneOfProvisionedStub.called, false, 'isOneOfProvisioned should NOT have been called');
+                    });
+            });
+
+            it('should filter out any applications not in the declaration', () => {
+                tenantId = 'tenant1';
+
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: ['app1']
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+
+            it('should return actionable items if tenant exists and application is undefined', () => {
+                tenantId = 'tenant1';
+
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    tenant: tenantId,
+                    apps: []
+                };
+                return Promise.resolve()
+                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
+                    .then((results) => {
+                        assert.deepStrictEqual(
+                            results,
+                            {
+                                '/tenant1/': {
+                                    command: 'auth partition',
+                                    properties: { 'default-route-domain': 0 },
+                                    ignore: []
+                                },
+                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app2/': { command: 'sys folder', properties: {}, ignore: [] },
+                                '/tenant1/app1/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                },
+                                '/tenant1/app2/pool1': {
+                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
+                                }
+                            }
+                        );
+                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
+                    });
+            });
+        });
     });
 
     describe('updateWildcardMonitorDiffs', () => {
@@ -6161,7 +7785,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
                     const actualCmds = fetch.tmshUpdateScript(
@@ -6190,7 +7814,7 @@ describe('fetch', () => {
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
-                            'tmsh::create ltm pool /tenant/app/tenant_pool members replace-all-with \\{ /Common/10.70.61.10:9021 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} /Common/10.70.61.11:9021 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} /Common/10.70.61.9:9021 \\{ monitor min 1 of \\{ /Common/gateway_icmp \\} metadata replace-all-with \\{ source \\{ value declaration \\} \\} \\} \\} monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool members replace-all-with \\{ /Common/10.70.61.10:9021 /Common/10.70.61.11:9021 /Common/10.70.61.9:9021 \\{ monitor min 1 of \\{ /Common/gateway_icmp \\} \\} \\} monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::commit_transaction',
                             '} err] } {',
                             'catch { tmsh::cancel_transaction } e',
@@ -6290,7 +7914,7 @@ describe('fetch', () => {
 
             return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
                 .then((actualDiffs) => {
-                    assert.deepEqual(actualDiffs, expectedDiffs);
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
 
                     const actualScript = fetch.tmshUpdateScript(context, desiredConf, currConf, actualDiffs).script;
                     const actualCmds = actualScript.split('\n');
@@ -6396,7 +8020,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
+                assert.deepStrictEqual(configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0:8080');
             });
 
             it('should handle IPv6', () => {
@@ -6416,7 +8040,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28.8080'
                 );
             });
@@ -6440,7 +8064,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/192.0.2.0%100:8080'
                 );
             });
@@ -6462,7 +8086,7 @@ describe('fetch', () => {
                 };
 
                 fetch.updateAddressesWithRouteDomain(configs, 'Tenant');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/Tenant/Application/L4'].properties.destination, '/Tenant/2001:db8::28%100.8080'
                 );
             });
@@ -6485,7 +8109,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -6506,7 +8130,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/0.0.0.0%100:0'
                 );
             });
@@ -6527,7 +8151,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });
@@ -6548,7 +8172,7 @@ describe('fetch', () => {
                     }
                 };
                 fetch.updateAddressesWithRouteDomain(configs, 'forwarding_vs');
-                assert.deepEqual(
+                assert.deepStrictEqual(
                     configs['/forwarding_vs/forwarding_vs/forward_any_to_any'].properties.destination, '/forwarding_vs/::%100.0'
                 );
             });

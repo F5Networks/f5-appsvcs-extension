@@ -180,14 +180,14 @@ class DeclarationHandler {
     /**
      * This function parses and formats the declaration for per-app
      *
-     * @param {object} decl     The declaration which holds the application and tenant info
-     * @param {string} tenant   The desired tenant name which holds the application
-     * @param {string} [app]      The desired application name, if undefined return array of all applications
+     * @param {object} decl   - The declaration which holds the application and tenant info
+     * @param {string} tenant - The desired tenant name which holds the application
+     * @param {string[]} apps - Array of desired application names, if empty return array of all applications
      * @returns {object}        .body: is the GET returned value
      *                          .statusCode: STATUS_CODE of the result
      *                          .message: The error message, if there is one
      */
-    filterAppInDeclaration(decl, tenant, app) {
+    filterAppsInDeclaration(decl, tenant, apps) {
         if (typeof decl[tenant] === 'undefined') {
             return {
                 statusCode: STATUS_CODES.NOT_FOUND,
@@ -195,8 +195,8 @@ class DeclarationHandler {
             };
         }
         const perAppDecl = {};
-        if (typeof app === 'undefined') {
-            // If apps is undefined, we want all apps in tenant
+        if (apps.length === 0) {
+            // If the apps array is empty, we want all apps in tenant
             Object.keys(decl[tenant]).forEach((appName) => {
                 if (decl[tenant][appName].class === 'Application') {
                     perAppDecl[appName] = decl[tenant][appName];
@@ -207,14 +207,23 @@ class DeclarationHandler {
                 statusCode: STATUS_CODES.OK
             };
         }
-        if (typeof decl[tenant][app] === 'undefined') {
-            return {
-                statusCode: STATUS_CODES.NOT_FOUND,
-                message: (`specified Application '${app}' not found in '${tenant}'`)
-            };
-        }
 
-        perAppDecl[app] = decl[tenant][app];
+        const missingApps = [];
+        apps.forEach((app) => {
+            if (typeof decl[tenant][app] === 'undefined') {
+                missingApps.push({
+                    statusCode: STATUS_CODES.NOT_FOUND,
+                    message: (`specified Application '${app}' not found in '${tenant}'`)
+                });
+            } else {
+                perAppDecl[app] = decl[tenant][app];
+            }
+        });
+
+        if (missingApps.length > 0) {
+            // Only 1 error message can be returned at a time, so return the first
+            return missingApps[0];
+        }
 
         return {
             body: perAppDecl,
@@ -327,10 +336,10 @@ class DeclarationHandler {
                             return digestDeclaration;
                         }
 
-                        const appFilterResult = this.filterAppInDeclaration(
+                        const appFilterResult = this.filterAppsInDeclaration(
                             digestDeclaration,
                             context.request.perAppInfo.tenant,
-                            context.request.perAppInfo.app
+                            context.request.perAppInfo.apps
                         );
                         if (appFilterResult.statusCode !== STATUS_CODES.OK) {
                             return DeclarationHandler.buildResult(appFilterResult.statusCode, appFilterResult.message);
@@ -420,6 +429,9 @@ class DeclarationHandler {
         let decl = currentTask.declaration; // may be a stub
         if (!context.request.isPerApp) {
             decl.updateMode = decl.updateMode || 'selective';
+        } else {
+            // perApp mode relies on selective updates to prevent requests from overwriting each other
+            decl.updateMode = 'selective';
         }
         let mutexRefresher = null;
         const commonConfig = {};
@@ -638,6 +650,7 @@ class DeclarationHandler {
                 context.host.parser.nodelist = commonNodeList;
                 commonConfig.nodeList = commonNodeList;
                 commonConfig.virtualAddressList = context.host.parser.virtualAddressList;
+                commonConfig.addressListList = context.host.parser.addressListList;
 
                 let x;
                 declarationFullId = decl.id;
@@ -655,7 +668,7 @@ class DeclarationHandler {
                     declarationFullId += `|${decl.label.replace(regex, '.')}`;
                 }
 
-                const tenantListResult = fetch.tenantList(decl);
+                const tenantListResult = fetch.tenantList(decl, context.request.perAppInfo);
                 context.tasks[context.currentIndex].firstPassNoDelete = tenantListResult.firstPassNoDelete;
                 const tenantList = tenantListResult.list;
 
@@ -898,7 +911,16 @@ class DeclarationHandler {
                     // does customer want to save or sync updated config?
 
                     if (currentTask.persist) {
-                        promise = promise.then(() => persistConfig(context));
+                        promise = promise
+                            .then(() => persistConfig(context))
+                            .then((status) => {
+                                if (status.warning) {
+                                    response.results.forEach((result) => {
+                                        result.warnings = result.warnings || [];
+                                        result.warnings.push(status.warning);
+                                    });
+                                }
+                            });
                     }
                     if (currentTask.syncToGroup !== '') {
                         promise = promise.then(() => configSync(context,
@@ -1061,7 +1083,7 @@ class DeclarationHandler {
      * just map whatever they get from caller and/or
      * framework to a request object and send it here
      *
-     * @param {object} context
+     * @param {object} context - full AS3 context object
      * @returns {Promise}
      */
     process(context) {
@@ -1172,6 +1194,10 @@ function persistConfig(context) {
                         return true;
                     }
 
+                    if (error.message.indexOf('Connection refused') > -1) {
+                        return true;
+                    }
+
                     return false;
                 }
 
@@ -1181,9 +1207,11 @@ function persistConfig(context) {
                 }
 
                 if (error.message.indexOf('Task not found') > -1) {
-                    error.message = 'Record no longer exists on BIG-IP for saving configuration task'
-                    + ` (ID: ${id}). To avoid this issue in the future, try increasing the`
+                    const warning = 'AS3 was unable to verify that the configuration was persisted.'
+                    + ' To avoid this issue in the future, try increasing the'
                     + ' following DB variables: icrd.timeout, restjavad.timeout, restnoded.timeout';
+                    log.warning(warning);
+                    return Promise.resolve({ warning });
                 }
 
                 throw error;
@@ -1211,9 +1239,9 @@ function persistConfig(context) {
             return util.iControlRequest(context, startOptions);
         })
         .then(() => waitForCompletion(120))
-        .then(() => {
+        .then((result) => {
             log.debug('BIG-IP config saved');
-            return true;
+            return typeof result !== 'undefined' ? result : true;
         })
         .catch((e) => {
             e.message = `failed to save BIG-IP config (${e.message})`;

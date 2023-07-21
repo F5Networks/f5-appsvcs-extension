@@ -48,7 +48,7 @@ describe('core-schema.json', () => {
         describe('valid', () => {
             it('should $schema property', () => {
                 const data = {
-                    $schema: 'https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json',
+                    $schema: 'https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/main/schema/latest/as3-schema.json',
                     class: 'ADC',
                     schemaVersion: '3.0.0',
                     id: 'declarationId'
@@ -1990,6 +1990,51 @@ describe('core-schema.json', () => {
                 };
                 assert.ok(validate(data), getErrorString(validate));
             });
+
+            it('should validate when virtualAddresses references an Address_List', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            coreService: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: {
+                                    use: 'myAddressList'
+                                }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when sourceAddress references an Address_List', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            coreService: {
+                                class: 'Service_HTTP',
+                                virtualType: 'internal',
+                                sourceAddress: {
+                                    use: 'myAddressList'
+                                }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
         });
 
         describe('.maximumBandwidth', () => {
@@ -2053,6 +2098,30 @@ describe('core-schema.json', () => {
     });
 
     describe('Service_L4', () => {
+        describe('valid', () => {
+            it('should validate when virtualPort references a Firewall_Port_List', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    tenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            serviceGeneric: {
+                                class: 'Service_L4',
+                                virtualAddresses: ['192.0.2.1'],
+                                virtualPort: {
+                                    use: 'myPortList'
+                                }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
         describe('invalid', () => {
             it('should invalidate when required property virtualAddresses is not specified', () => {
                 const data = {
@@ -2077,6 +2146,30 @@ describe('core-schema.json', () => {
     });
 
     describe('Service_SCTP', () => {
+        describe('valid', () => {
+            it('should validate when virtualPort references a Firewall_Port_List', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    tenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            serviceGeneric: {
+                                class: 'Service_SCTP',
+                                virtualAddresses: ['192.0.2.1'],
+                                virtualPort: {
+                                    use: 'myPortList'
+                                }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
         describe('invalid', () => {
             it('should invalidate when required property virtualAddresses is not specified', () => {
                 const data = {
@@ -2119,6 +2212,11 @@ describe('core-schema.json', () => {
                     }
                 }
             };
+        });
+
+        it('should validate when virtualPort references a Firewall_Port_List', () => {
+            data.tenant.application.serviceGeneric.virtualPort = { use: 'myPortList' };
+            assert.ok(validate(data), getErrorString(validate));
         });
 
         it('should invalidate when required property virtualAddresses is not specified', () => {
@@ -2166,6 +2264,30 @@ describe('core-schema.json', () => {
     });
 
     describe('Service_TCP', () => {
+        describe('valid', () => {
+            it('should validate when virtualPort references a Firewall_Port_List', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    tenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            serviceGeneric: {
+                                class: 'Service_TCP',
+                                virtualAddresses: ['192.0.2.1'],
+                                virtualPort: {
+                                    use: 'myPortList'
+                                }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
         describe('invalid', () => {
             it('should invalidate when required property virtualAddresses is not specified', () => {
                 const data = {
@@ -2281,6 +2403,20 @@ describe('core-schema.json', () => {
                 };
                 assert.ok(validate(data), getErrorString(validate));
             });
+
+            it('should validate when virtualPort references a Firewall_Port_List', () => {
+                data.theTenant.application.service = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: ['192.0.2.3'],
+                    virtualPort: {
+                        use: 'myPortList'
+                    },
+                    serverTLS: {
+                        bigip: '/Common/tlsServer'
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
         });
 
         describe('invalid', () => {
@@ -2363,6 +2499,13 @@ describe('core-schema.json', () => {
             it('should validate profileApiProtection property when referencing BIG-IP object', () => {
                 data.theTenant.application.service.profileApiProtection = {
                     bigip: '/Common/profileApiProtection'
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when virtualPort references a Firewall_Port_List', () => {
+                data.theTenant.application.service.virtualPort = {
+                    use: 'myPortList'
                 };
                 assert.ok(validate(data), getErrorString(validate));
             });
@@ -3333,6 +3476,18 @@ describe('core-schema.json', () => {
                 routeDomain: 65534,
                 tunnelName: 'http-tunnel',
                 defaultConnectAction: 'allow'
+            };
+
+            assert.ok(validate(data), getErrorString(validate));
+        });
+
+        it('should validate with route domain as a string', () => {
+            data.Tenant.Application.socksProfile = {
+                class: 'SOCKS_Profile',
+                resolver: {
+                    bigip: '/Common/myDnsResolver'
+                },
+                routeDomain: 'id-65534'
             };
 
             assert.ok(validate(data), getErrorString(validate));

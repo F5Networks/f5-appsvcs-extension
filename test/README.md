@@ -69,12 +69,6 @@ If you need BIG-IP test devices to test with, visit:
 * `test/common/env/terraform/plans/azure/README.md` for Azure.
 * `test/common/env/terraform/plans/openstack/README.md` for openstack(VIO).
 
-### Collection Tests
-Location: `test/integration/bigip/collections`
-
-This subset of BIG-IP integration tests is a collection of [Postman collections](https://www.getpostman.com/docs/v6/postman/collections/creating_collections) that are run on a specified BIG-IP.
-As an alternative to running these tests with Mocha, the Postman collections can be used directly with [Postman](https://www.getpostman.com/) and the [newman npm package](https://www.npmjs.com/package/newman).  The long term plan for these tests are to migrate them from newman to Mocha and then move them to Misc Tests.
-
 ### Misc Tests
 Location: `test/integration/bigip/misc`
 

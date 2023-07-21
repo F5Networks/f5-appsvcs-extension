@@ -60,8 +60,8 @@ describe('Pool', function () {
             },
             {
                 name: 'minimumMonitors',
-                inputValue: [undefined, 2, 'all'],
-                expectedValue: [undefined, '2', 'all'],
+                inputValue: [undefined, 2, 'all', 1],
+                expectedValue: [undefined, '2', 'all', undefined],
                 extractFunction: (o) => {
                     if (!o.monitor) {
                         return undefined;
@@ -74,11 +74,12 @@ describe('Pool', function () {
             },
             {
                 name: 'monitors',
-                inputValue: [undefined, ['https', 'http'], ['https', 'tcp', 'http']],
+                inputValue: [undefined, ['https', 'http'], ['https', 'tcp', 'http'], undefined],
                 expectedValue: [
                     undefined,
                     'min 2 of { /Common/https /Common/http }',
-                    '/Common/https and /Common/tcp and /Common/http'
+                    '/Common/https and /Common/tcp and /Common/http',
+                    undefined
                 ],
                 extractFunction: (o) => ((o.monitor) ? o.monitor.trim() : undefined)
             },
@@ -100,7 +101,16 @@ describe('Pool', function () {
                             addressDiscovery: 'static',
                             serverAddresses: ['2.2.2.2'],
                             description: 'Test Description',
-                            routeDomain: 1
+                            routeDomain: 1,
+                            metadata: {
+                                example: {
+                                    value: 'test'
+                                },
+                                example1: {
+                                    value: '123',
+                                    persist: false
+                                }
+                            }
                         }
                     ],
                     undefined
@@ -121,9 +131,14 @@ describe('Pool', function () {
                             logging: 'disabled',
                             metadata: [
                                 {
-                                    name: 'source',
+                                    name: 'example',
                                     persist: 'true',
-                                    value: 'declaration'
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
                                 }
                             ],
                             monitor: 'min 1 of { /Common/http }',
@@ -147,6 +162,25 @@ describe('Pool', function () {
                     });
                     return o.members;
                 }
+            },
+            {
+                name: 'metadata',
+                inputValue: [
+                    undefined,
+                    {
+                        example: { value: 'test' },
+                        example1: { value: '123', persist: false }
+                    },
+                    undefined
+                ],
+                expectedValue: [
+                    undefined,
+                    [
+                        { name: 'example', persist: 'true', value: 'test' },
+                        { name: 'example1', persist: 'false', value: '123' }
+                    ],
+                    undefined
+                ]
             },
             {
                 name: 'reselectTries',
@@ -641,14 +675,7 @@ describe('Pool', function () {
                             rateLimit: 'disabled',
                             ratio: 1,
                             session: 'user-enabled',
-                            state: 'unchecked',
-                            metadata: [
-                                {
-                                    name: 'source',
-                                    persist: 'true',
-                                    value: 'declaration'
-                                }
-                            ]
+                            state: 'unchecked'
                         },
                         {
                             name: '192.0.1.2:400',
@@ -668,14 +695,7 @@ describe('Pool', function () {
                             rateLimit: 'disabled',
                             ratio: 1,
                             session: 'user-enabled',
-                            state: 'unchecked',
-                            metadata: [
-                                {
-                                    name: 'source',
-                                    persist: 'true',
-                                    value: 'declaration'
-                                }
-                            ]
+                            state: 'unchecked'
                         },
                         {
                             name: 'mynode1.example.com:400',
@@ -695,14 +715,7 @@ describe('Pool', function () {
                             rateLimit: 'disabled',
                             ratio: 1,
                             session: 'user-enabled',
-                            state: 'unchecked',
-                            metadata: [
-                                {
-                                    name: 'source',
-                                    persist: 'true',
-                                    value: 'declaration'
-                                }
-                            ]
+                            state: 'unchecked'
                         },
                         {
                             name: 'mynode2.example.com:400',
@@ -722,14 +735,7 @@ describe('Pool', function () {
                             rateLimit: 'disabled',
                             ratio: 1,
                             session: 'user-enabled',
-                            state: 'unchecked',
-                            metadata: [
-                                {
-                                    name: 'source',
-                                    persist: 'true',
-                                    value: 'declaration'
-                                }
-                            ]
+                            state: 'unchecked'
                         }
                     ],
                     []

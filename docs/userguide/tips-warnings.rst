@@ -12,6 +12,8 @@ Warnings
 
 - You must use the **admin** user (and not just a user with administrator privileges) to install BIG-IP AS3.
 
+- AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.  If you need to downgrade the version of AS3 on your BIG-IQ, see :ref:`Downgrade<down>`.
+
 - BIG-IP AS3 does not function properly when the BIG-IP has |appliance| enabled.  We strongly recommend disabling Appliance mode when using BIG-IP AS3.
 
 - BIG-IP AS3 saves the BIG-IP configuration (**tmsh save sys config**) even when the operation result is **no change**, unless **persist** is set to **false** (persist is set to true by default). This could affect performance for BIG-IP devices with a large number of configuration objects.  |br| |br|
@@ -168,7 +170,7 @@ Notes and Tips
 
 .. |valid| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/master/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/main/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
 
 .. |postmancol| raw:: html
 
@@ -194,7 +196,7 @@ Notes and Tips
 .. |ocp| raw:: html
 
    <a href="https://support.f5.com/csp/article/K7208" target="_blank">OneConnect profile</a>
-   
+
 .. |mpp| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#multiplex-profile" target="_blank">Muliplex profile</a>
@@ -202,4 +204,3 @@ Notes and Tips
 .. |do| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-declarative-onboarding/latest/" target="_blank">Declarative Onboarding</a>
-

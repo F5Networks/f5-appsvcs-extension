@@ -450,6 +450,52 @@ describe('map_cli', () => {
             );
         });
 
+        describe('ltm policy "controls" aspects based on an action', () => {
+            it('should handle "controls" bot-defense', () => {
+                const config = {
+                    rules: {
+                        default: {
+                            ordinal: 0,
+                            conditions: {},
+                            actions: {
+                                0: {
+                                    policyString: 'bot-defense request disable'
+                                },
+                                1: {
+                                    policyString: 'bot-defense request enable from-profile /Common/myProfile'
+                                }
+                            }
+                        }
+                    },
+                    strategy: '/Common/best-match'
+                };
+                const diff = {
+                    command: 'ltm policy',
+                    kind: 'N',
+                    path: ['/tenant/app/policy'],
+                    lhsCommand: '',
+                    rhsCommand: 'ltm policy',
+                    rhs: {
+                        command: 'ltm policy',
+                        properties: config
+                    },
+                    tags: ['tmsh']
+                };
+                const result = mapCli.tmshCreate(context, diff, config);
+                assert.strictEqual(
+                    result.commands[0],
+                    [
+                        'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{',
+                        'ordinal 0 conditions none actions replace-all-with \\{',
+                        '0 \\{  bot-defense request disable \\}',
+                        '1 \\{  bot-defense request enable from-profile /Common/myProfile \\}',
+                        '\\} \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ http \\}',
+                        'controls replace-all-with \\{ bot-defense \\}'
+                    ].join(' ')
+                );
+            });
+        });
+
         describe('ltm policy "requires" aspects based on condition event', () => {
             it('should handle "requires" tcp', () => {
                 const config = {
@@ -1084,6 +1130,52 @@ describe('map_cli', () => {
             assert.deepStrictEqual(result.commands, ['tmsh::modify auth partition tenant']);
         });
 
+        it('should ignore the auth partition if isPerApp and the kind is not N', () => {
+            const diff = {
+                kind: 'D',
+                path: ['/tenant1/', 'properties', 'default-route-domain'],
+                lhs: 0,
+                tags: ['tmsh'],
+                command: 'auth partition',
+                lhsCommand: 'auth partition',
+                rhsCommand: 'auth partition'
+            };
+            const config = {};
+
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            context.target.tmosVersion = '13.1.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            assert.deepStrictEqual(result.commands, []);
+        });
+
+        it('should create the auth partition if isPerApp and the kind is N', () => {
+            const diff = {
+                kind: 'N',
+                path: ['/tenant1/'],
+                rhs: { command: 'auth partition', properties: {}, ignore: [] },
+                tags: ['tmsh'],
+                command: 'auth partition',
+                lhsCommand: '',
+                rhsCommand: 'auth partition'
+            };
+            const config = {};
+
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            context.target.tmosVersion = '13.1.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            assert.deepStrictEqual(result.commands, ['tmsh::create auth partition tenant1']);
+        });
+
         it('should return a modify for the ltm node if the diff.kind is E', () => {
             const diff = {
                 kind: 'E',
@@ -1425,6 +1517,49 @@ describe('map_cli', () => {
 
         beforeEach(() => {
             context = Context.build(null, null, null, [{ firstPassNoDelete: false }]);
+        });
+
+        it('should skip auth partition delete if diff.kind === "E"', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/tenant1/',
+                    'properties',
+                    'default-route-domain'
+                ],
+                lhs: 0,
+                rhs: 12,
+                tags: [
+                    'tmsh'
+                ],
+                lhsCommand: 'auth partition'
+            };
+            const result = mapCli.tmshDelete(context, diff);
+            assert.deepStrictEqual(result.commands, []);
+        });
+
+        it('should skip auth partition delete if isPerApp && a POST', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/tenant1/',
+                    'properties',
+                    'default-route-domain'
+                ],
+                lhs: 0,
+                tags: [
+                    'tmsh'
+                ],
+                lhsCommand: 'auth partition'
+            };
+            context.request.method = 'Post';
+            context.request.isPerApp = true;
+            context.request.perAppInfo = {
+                tenant: 'tenant1',
+                app: undefined
+            };
+            const result = mapCli.tmshDelete(context, diff);
+            assert.deepStrictEqual(result.commands, []);
         });
 
         it('should skip ltm node delete if diff.kind === "E"', () => {

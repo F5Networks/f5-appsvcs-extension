@@ -171,6 +171,19 @@ function getApplicationClassNames(schema) {
         .filter((name) => skipList.indexOf(name) === -1);
 }
 
+/**
+ * identifies special class cases and returns their expected values
+ * @param {string} cls - class name like "iRule"
+ */
+function checkClass(cls) {
+    switch (cls) {
+    case 'iRule':
+        return 'IRule'; // Shared Schema requires definitions start with capitals
+    default:
+        return cls;
+    }
+}
+
 function buildApplicationAdditionalProps() {
     return readSchema('adc-schema.json')
         .then((data) => {
@@ -185,7 +198,7 @@ function buildApplicationAdditionalProps() {
                 },
                 allOf: classes.map((c) => ({
                     if: { properties: { class: { const: c } } },
-                    then: { $ref: `#/definitions/${c}` }
+                    then: { $ref: `#/definitions/${checkClass(c)}` }
                 }))
             };
             return writeSchema('adc-schema.json', schema);
@@ -249,8 +262,16 @@ function buildSharedSchema() {
         'HTTP_Profile_Reverse',
         'HTTP_Profile_Transparent',
         'HTTP2_Profile',
+        'IRule',
+        'IRule_Core',
         'JWE',
+        'Log_Destination',
+        'Log_Destination_Management_Port',
+        'Log_Destination_Remote_Syslog',
+        'Log_Destination_Remote_High_Speed_Log',
+        'Log_Destination_Splunk',
         'Log_Publisher',
+        'L4_Profile',
         'Pointer_BIGIP',
         'Pointer_BIGIP_Or_Use',
         'Pointer_CA_Bundle',
@@ -260,6 +281,7 @@ function buildSharedSchema() {
         'Pointer_F5_String_Or_BIGIP',
         'Pointer_HTTP_Acceleration_Profile',
         'Pointer_HTTP_Profile',
+        'Pointer_L4_Profile',
         'Pointer_Log_Destination',
         'Pointer_Log_Publisher',
         'Pointer_Pool',

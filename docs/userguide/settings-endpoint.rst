@@ -7,6 +7,7 @@ To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS
 - **Check current settings** |br| Using a GET request returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like:
 
    .. code-block:: json
+      
        {
           "asyncTaskStorage": "data-group",
           "burstHandlingEnabled": false,

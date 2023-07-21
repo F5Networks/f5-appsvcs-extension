@@ -148,6 +148,14 @@ describe('map_as3', () => {
                     expected: 'asm request disable'
                 },
                 {
+                    input: { type: 'botDefense', profile: { bigip: '/Common/myProfile' } },
+                    expected: 'bot-defense request enable from-profile /Common/myProfile'
+                },
+                {
+                    input: { type: 'botDefense' },
+                    expected: 'bot-defense request disable'
+                },
+                {
                     input: { type: 'drop' },
                     expected: 'shutdown client-accepted connection'
                 },
@@ -367,7 +375,17 @@ describe('map_as3', () => {
                 reselectTries: 0,
                 serviceDownAction: 'none',
                 slowRampTime: 10,
-                minimumMonitors: 1
+                minimumMonitors: 1,
+                metadata: {
+                    example: {
+                        value: 'test',
+                        persist: true
+                    },
+                    example1: {
+                        value: '123',
+                        persist: false
+                    }
+                }
             };
         });
 
@@ -382,8 +400,17 @@ describe('map_as3', () => {
                     properties: {
                         'load-balancing-mode': 'round-robin',
                         members: {},
+                        metadata: {
+                            example: {
+                                persist: 'true',
+                                value: 'test'
+                            },
+                            example1: {
+                                persist: 'false',
+                                value: '123'
+                            }
+                        },
                         'min-active-members': 1,
-                        minimumMonitors: 1,
                         'reselect-tries': 0,
                         'service-down-action': 'none',
                         'slow-ramp-time': 10
@@ -440,6 +467,12 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+
+        it('should remove minimumMonitors if no monitors defined', () => {
+            const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+            assert.isUndefined(config.properties.monitors);
+            assert.isUndefined(config.properties.minimumMonitors);
         });
 
         describe('with Service Discovery', () => {
@@ -549,8 +582,17 @@ describe('map_as3', () => {
                         path: '/tenantId/appId/myPool',
                         properties: {
                             'load-balancing-mode': 'round-robin',
+                            metadata: {
+                                example: {
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                example1: {
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            },
                             'min-active-members': 1,
-                            minimumMonitors: 1,
                             'reselect-tries': 0,
                             'service-down-action': 'none',
                             'slow-ramp-time': 10
@@ -1855,6 +1897,17 @@ describe('map_as3', () => {
                 assert.strictEqual(results.configs[0].properties['api-anonymous'], expectedIRule);
             });
 
+            it('should merge line continuations', () => {
+                const item = {
+                    class: ruleClass.name,
+                    iRule: 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock \\\n    seconds].  Request headers were [HTTP::header names]. \\\n    Method was [HTTP::method]"\n\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" \\\n        "/xyz/"} [HTTP::uri]]\n    }\n}'
+                };
+                const results = translate[ruleClass.name](defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(
+                    results.configs[0].properties['api-anonymous'], 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock seconds].  Request headers were [HTTP::header names]. Method was [HTTP::method]"\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" "/xyz/"} [HTTP::uri]]\n    }\n}'
+                );
+            });
+
             it('should add to ignore when ignore changes is set to true', () => {
                 const item = {
                     class: ruleClass.name,
@@ -2921,6 +2974,93 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+
+        describe('virtualPort list', () => {
+            it('should map virtualPort list to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.virtualPort = {
+                    use: 'firewallPortList'
+                };
+                declaration.tenantId.appId.itemId.firewallPortList = {
+                    class: 'Firewall_Port_List',
+                    ports: [
+                        '1-999'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], 'firewallPortList');
+                assert.strictEqual(tmc['destination-address-list'], undefined);
+                assert.strictEqual(tmc['source-address-list'], undefined);
+            });
+        });
+
+        describe('virtualAddresses list', () => {
+            it('should map virtualAddresses list to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.virtualAddresses = {
+                    use: 'virtualAddressList'
+                };
+                declaration.tenantId.appId.itemId.virtualAddressList = {
+                    class: 'Firewall_Address_List',
+                    addresses: [
+                        '192.0.2.10',
+                        '192.0.2.20'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], 'any/any');
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], undefined);
+                assert.strictEqual(tmc['destination-address-list'], 'virtualAddressList');
+                assert.strictEqual(tmc['source-address-list'], undefined);
+            });
+        });
+
+        describe('sourceAddress list', () => {
+            it('should map sourceAddress list to traffic matching criteria', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '14.1';
+                item.virtualType = 'internal';
+                item.sourceAddress = {
+                    use: 'sourceAddressList'
+                };
+                declaration.tenantId.appId.itemId.sourceAddressList = {
+                    class: 'Firewall_Address_List',
+                    addresses: [
+                        '192.0.2.10',
+                        '192.0.2.20'
+                    ]
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                const tmc = data.configs.find((c) => c.command === 'ltm traffic-matching-criteria').properties;
+                assert.strictEqual(virtual['traffic-matching-criteria'], '/tenant/app/item_VS_TMC_OBJ');
+                assert.strictEqual(virtual.destination, undefined);
+                assert.strictEqual(virtual.source, undefined);
+                assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
+                assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-list'], undefined);
+                assert.strictEqual(tmc['destination-address-list'], undefined);
+                assert.strictEqual(tmc['source-address-list'], 'sourceAddressList');
+            });
         });
 
         describe('maximumBandwidth', () => {
@@ -5415,6 +5555,43 @@ describe('map_as3', () => {
         });
     });
 
+    describe('Net_Port_List', () => {
+        it('should succeed with Net Port Lists', () => {
+            const context = {
+                target: {
+                    tmosVersion: '14.0'
+                }
+            };
+            const item = {
+                class: 'Net_Port_List',
+                ports: [80, 443],
+                portLists: [
+                    {
+                        use: 'portList'
+                    }
+                ]
+            };
+            const results = translate.Net_Port_List(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(
+                results.configs[0],
+                {
+                    command: 'net port-list',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'port-lists': {
+                            portList: {}
+                        },
+                        ports: {
+                            80: {},
+                            443: {}
+                        }
+                    }
+                }
+            );
+        });
+    });
+
     describe('Service_TCP', () => {
         it('should check profileFTP Service_TCP properties', () => {
             const item = {
@@ -6195,7 +6372,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6232,7 +6409,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6284,7 +6461,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6319,7 +6496,7 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload Access Profile itemId',
-                            overrides: {
+                            settings: {
                                 url: 'https://example.url.helloThere.tar'
                             }
                         }
@@ -6382,7 +6559,7 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                settings: {
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.tar'
                                 },
@@ -6420,7 +6597,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6456,7 +6633,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6506,7 +6683,7 @@ describe('map_as3', () => {
                                 method: 'POST',
                                 ctype: 'application/octet-stream',
                                 why: 'upload Access Policy itemId',
-                                overrides: {
+                                settings: {
                                     url: 'https://example.url.helloThere.tar'
                                 }
                             }
@@ -6548,7 +6725,8 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            reference: '/tenantId/appId/itemId',
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6584,7 +6762,8 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            reference: '/tenantId/appId/itemId',
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6634,7 +6813,8 @@ describe('map_as3', () => {
                             method: 'POST',
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
-                            overrides: {
+                            reference: '/tenantId/appId/itemId',
+                            settings: {
                                 url: 'https://example.url/helloThere.xml'
                             }
                         }
@@ -6664,7 +6844,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 policy: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6692,7 +6872,7 @@ describe('map_as3', () => {
                             ctype: 'application/octet-stream',
                             why: 'upload asm policy itemId',
                             send: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }',
-                            overrides: {
+                            settings: {
                                 file: '{\n  "policy": {\n    "name": "Complete_OWASP_Top_Ten",\n    "description": "The WAF Policy"\n    }\n  }'
                             }
                         }
@@ -6744,7 +6924,8 @@ describe('map_as3', () => {
                             post: {
                                 ctype: 'application/octet-stream',
                                 method: 'POST',
-                                overrides: {
+                                reference: '/tenantId/appId/itemId',
+                                settings: {
                                     enable: true,
                                     ignoreChanges: true,
                                     url: 'https://example.url.helloThere.xml'
@@ -10173,6 +10354,68 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Prober_Pool', () => {
+        it('should return a correct config', () => {
+            const item = {
+                class: 'GSLB_Prober_Pool',
+                enabled: true,
+                members: [
+                    {
+                        server: {
+                            use: 'bigip1.f5demo.com'
+                        },
+                        memberOrder: 0,
+                        enabled: true
+                    },
+                    {
+                        server: {
+                            use: '/Common/bigip2.f5demo.com'
+                        },
+                        memberOrder: 1,
+                        enabled: false
+                    },
+                    {
+                        server: {
+                            use: '/Common/Shared/bigip3.f5demo.com'
+                        },
+                        memberOrder: 2,
+                        enabled: true
+                    }
+                ]
+            };
+
+            const results = translate.GSLB_Prober_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        path: '/tenantId/itemId',
+                        command: 'gtm prober-pool',
+                        properties: {
+                            description: '"This object is managed by appsvcs, do not modify this description"',
+                            enabled: true,
+                            'load-balancing-mode': 'global-availability',
+                            members: {
+                                '/Common/bigip1.f5demo.com': {
+                                    enabled: true,
+                                    order: 0
+                                },
+                                '/Common/bigip2.f5demo.com': {
+                                    enabled: false,
+                                    order: 1
+                                },
+                                '/Common/bigip3.f5demo.com': {
+                                    enabled: true,
+                                    order: 2
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                ]
+            });
+        });
+    });
+
     describe('Address_Discovery', () => {
         it('should create Address_Discovery config', () => {
             const item = {
@@ -11352,7 +11595,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {
@@ -11436,7 +11679,7 @@ describe('map_as3', () => {
                                 post: {
                                     ctype: 'application/octet-stream',
                                     method: 'POST',
-                                    overrides: {
+                                    settings: {
                                         class: 'Data_Group',
                                         externalFilePath: {
                                             authentication: {

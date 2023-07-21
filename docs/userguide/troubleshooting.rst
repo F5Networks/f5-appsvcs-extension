@@ -270,6 +270,19 @@ If you have an iRule in an AS3 declaration which is returning 422 errors, there 
 
 
 
+|
+
+.. _bigiqas3:
+
+Why are application templates on BIG-IQ not working properly?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AS3 versions 3.42 and later are NOT compatible with BIG-IQ, and cause issues with application templates on the BIG-IQ.
+
+To see the version of AS3 your BIG-IQ device is running, from the BIG-IQ command line, type: **curl http://localhost:8105/shared/appsvcs/info**.
+
+If you are experiencing this issue, we recommend following the steps in :ref:`Downgrading the version of AS3 on BIG-IQ<down>`.
+
+
 .. |br| raw:: html
 
    <br />

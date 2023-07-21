@@ -101,6 +101,10 @@
         "        [enable*",
         "                [from-profile STRING] ]",
         "        [disable]]",
+        " [bot-defense [request*]",
+        "        [enable*",
+        "                [from-profile STRING] ]",
+        "        [disable]]",
         " [shutdown [client-accepted* | ssl-client-hello | ssl-client-serverhello-send | ssl-server-hello | ssl-server-handshake | server-connected | proxy-request | request | proxy-connect | proxy-response | response | ws_request | ws_response]",
         "        [connection*]"
 

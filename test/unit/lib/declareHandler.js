@@ -1091,6 +1091,247 @@ describe('DeclareHandler', () => {
                         });
                 });
             });
+
+            describe('per-app', () => {
+                let restOp;
+
+                beforeEach(() => {
+                    sinon.stub(log, 'error');
+                    restOp = new RestOperationMock();
+                    context.request = {
+                        method: 'Post',
+                        action: 'deploy',
+                        tracer: new Tracer('test tracer', { enabled: false })
+                    };
+                    context.tasks = [
+                        {
+                            action: 'deploy',
+                            declaration: {
+                                class: 'ADC',
+                                controls: {
+                                    class: 'Controls',
+                                    trace: false
+                                }
+                            }
+                        }
+                    ];
+                });
+
+                it('should handle verifying if the per-app declaration is valid', () => {
+                    sinon.stub(As3Parser.prototype, 'digest').resolves({});
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        tenant: 'tenant1',
+                        apps: ['app1'],
+                        decl: {
+                            app1: {
+                                class: 'Application',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.100'],
+                                    virtualPort: 80,
+                                    pool: 'pool'
+                                },
+                                pool: {
+                                    class: 'Pool'
+                                }
+                            }
+                        }
+                    };
+                    context.request.body = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        tenant1: {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.100'],
+                                    virtualPort: 80,
+                                    pool: 'pool'
+                                },
+                                pool: {
+                                    class: 'Pool'
+                                }
+                            }
+                        }
+                    };
+                    context.tasks[0].declaration = context.request.body;
+
+                    const expectedCode = STATUS_CODES.OK;
+                    const expectedResult = {
+                        declaration: {
+                            class: 'ADC',
+                            id: 'autogen_new-uuid-xxxx',
+                            schemaVersion: '3.0.0',
+                            tenant1: {
+                                class: 'Tenant',
+                                app1: {
+                                    class: 'Application',
+                                    service: {
+                                        class: 'Service_HTTP',
+                                        virtualAddresses: ['192.0.2.100'],
+                                        virtualPort: 80,
+                                        pool: 'pool'
+                                    },
+                                    pool: {
+                                        class: 'Pool'
+                                    }
+                                }
+                            }
+                        },
+                        results: []
+                    };
+
+                    return assertResultAndRestComplete(context, restOp, expectedResult, expectedCode)
+                        .then(() => {
+                            assert.deepStrictEqual(context.tasks[0].tenantsInPath, []);
+                            assert.strictEqual(typeof context.tasks[0].isPerApp, 'undefined');
+                            assert.strictEqual(typeof context.tasks[0].perAppInfo, 'undefined');
+                        });
+                });
+
+                it('should error if the per-app declaration is a per-tenant declaration', () => {
+                    sinon.stub(As3Parser.prototype, 'digest').rejects({
+                        status: 422,
+                        message: 'declaration is invalid',
+                        errors: ['/class: should be object']
+                    });
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        tenant: 'tenant1',
+                        apps: ['app1'],
+                        decl: {
+                            class: 'ADC',
+                            id: 'autogen_new-uuid-xxxx',
+                            schemaVersion: '3.0.0',
+                            tenant1: {
+                                class: 'Tenant',
+                                app1: {
+                                    class: 'Application',
+                                    service: {
+                                        class: 'Service_HTTP',
+                                        virtualAddresses: ['192.0.2.100'],
+                                        virtualPort: 80,
+                                        pool: 'pool'
+                                    },
+                                    pool: {
+                                        class: 'Pool'
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    context.request.body = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'autogen_new-uuid-xxxx',
+                        tenant1: {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.100'],
+                                    virtualPort: '80',
+                                    pool: 'pool'
+                                },
+                                pool: {
+                                    class: 'Pool'
+                                }
+                            }
+                        }
+                    };
+                    context.tasks[0].declaration = context.request.body;
+
+                    const expectedCode = STATUS_CODES.UNPROCESSABLE_ENTITY;
+                    const expectedResult = {
+                        code: 422,
+                        message: 'declaration is invalid',
+                        errors: [
+                            '/class: should be object'
+                        ]
+                    };
+
+                    return assertResultAndRestComplete(context, restOp, expectedResult, expectedCode)
+                        .then(() => {
+                            assert.deepStrictEqual(context.tasks[0].tenantsInPath, undefined);
+                            assert.strictEqual(typeof context.tasks[0].isPerApp, 'undefined');
+                            assert.strictEqual(typeof context.tasks[0].perAppInfo, 'undefined');
+                        });
+                });
+
+                it('should error if the per-app declaration fails validation - such as string instead of integer', () => {
+                    sinon.stub(As3Parser.prototype, 'digest').rejects({
+                        status: 422,
+                        message: 'declaration is invalid',
+                        errors: ['/app1/testItem/virtualPort: should be integer']
+                    });
+                    context.request.isPerApp = true;
+                    context.request.perAppInfo = {
+                        tenant: 'tenant1',
+                        apps: ['app1'],
+                        decl: {
+                            class: 'ADC',
+                            id: 'autogen_new-uuid-xxxx',
+                            schemaVersion: '3.0.0',
+                            tenant1: {
+                                class: 'Tenant',
+                                app1: {
+                                    class: 'Application',
+                                    service: {
+                                        class: 'Service_HTTP',
+                                        virtualAddresses: ['192.0.2.100'],
+                                        virtualPort: '80',
+                                        pool: 'pool'
+                                    },
+                                    pool: {
+                                        class: 'Pool'
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    context.request.body = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'autogen_new-uuid-xxxx',
+                        tenant1: {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.100'],
+                                    virtualPort: '80',
+                                    pool: 'pool'
+                                },
+                                pool: {
+                                    class: 'Pool'
+                                }
+                            }
+                        }
+                    };
+                    context.tasks[0].declaration = context.request.body;
+
+                    const expectedCode = STATUS_CODES.UNPROCESSABLE_ENTITY;
+                    const expectedResult = {
+                        code: 422,
+                        message: 'declaration is invalid',
+                        errors: [
+                            '/app1/testItem/virtualPort: should be integer'
+                        ]
+                    };
+
+                    return assertResultAndRestComplete(context, restOp, expectedResult, expectedCode)
+                        .then(() => {
+                            assert.deepStrictEqual(context.tasks[0].tenantsInPath, undefined);
+                            assert.strictEqual(typeof context.tasks[0].isPerApp, 'undefined');
+                            assert.strictEqual(typeof context.tasks[0].perAppInfo, 'undefined');
+                        });
+                });
+            });
         });
 
         describe('body defaults and request options', () => {
