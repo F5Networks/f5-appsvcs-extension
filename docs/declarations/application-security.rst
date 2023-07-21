@@ -826,6 +826,38 @@ This declaration creates the following objects on the BIG-IP
 
 |
 
+.. _expand:
+
+Using expand for values in a WAF policy
+```````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for expand in a WAF policy is available in BIG-IP AS3 v3.46 and later. 
+
+In this example, we show how you can use the **expand** property in a WAF policy in BIG-IP AS3 3.46 or later. When using expand, BIG-IP AS3 performs string expansion on specified values within the WAF Policy. 
+
+.. NOTE:: To use expand, the WAF Policy must be in JSON format; WAF policies that are not in JSON format are ignored.
+
+The **expand** property accepts an array of JSON pointers that denote which properties in the imported WAF policy should have AS3 string expansion performed on them. AS3 expands the target property values in the WAF policy and overwrites the data before passing it to the BIG-IP. 
+
+For more information, see |wafp| in the Schema Reference.
+
+This declaration creates the following objects on the BIG-IP
+
+- Partition (tenant) named **Tenant**.
+- An Application named **Application**.
+- A virtual server named **service** that references a WAF policy.
+- A WAF policy named **wafPolicy** with a text policy, and the **expand** property that includes a JSON pointer to a value to expand.
+
+.. literalinclude:: ../../examples/declarations/example-waf-policy-string-expansion.json
+    :language: json
+
+    
+
+:ref:`Back to top<app-sec-examples>`
+
+|
+
 
 .. |bdf5| raw:: html
 
