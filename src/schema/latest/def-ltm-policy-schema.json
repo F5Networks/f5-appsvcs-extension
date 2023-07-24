@@ -156,6 +156,7 @@
                         "httpHeader",
                         "httpRedirect",
                         "httpUri",
+                        "botDefense",
                         "waf",
                         "forward",
                         "drop",
@@ -175,6 +176,10 @@
                 {
                     "if": { "properties": { "type": { "const": "waf" } } },
                     "then": { "$ref": "#/definitions/Policy_Action_WAF" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "botDefense" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_Bot_Defense" }
                 },
                 {
                     "if": { "properties": { "type": { "const": "forward" } } },
@@ -201,7 +206,7 @@
                     "then": { "$ref": "#/definitions/Policy_Action_HTTP_Cookie" }
                 },
                 {
-                    "if": { "properties": { "type": { "const": "serverSsl" } } },
+                    "if": { "properties": { "type": { "const": "clientSsl" } } },
                     "then": { "$ref": "#/definitions/Policy_Action_Client_SSL" }
                 },
                 {
@@ -262,6 +267,27 @@
                 },
                 "policy": {
                     "$ref": "#/definitions/Pointer_WAF_Policy"
+                }
+            },
+            "required": []
+        },
+
+        "Policy_Action_Bot_Defense": {
+            "type": "object",
+            "description": "Enable or disable Unified Bot Defense processing",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "client-accepted",
+                        "proxy-request",
+                        "request"
+                    ],
+                    "default": "request"
+                },
+                "profile": {
+                    "$ref": "#/definitions/Pointer_Bot_Defense_Profile"
                 }
             },
             "required": []

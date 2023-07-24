@@ -216,6 +216,10 @@
             "endpoint": "/mgmt/tm/ltm/snat-translation"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/traffic-matching-criteria",
+            "minimumVersion": "14.1"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/virtual",
             "expand": true
         },
@@ -262,6 +266,10 @@
         },
         {
             "endpoint": "/mgmt/tm/net/address-list",
+            "minimumVersion": "14.0"
+        },
+        {
+            "endpoint": "/mgmt/tm/net/port-list",
             "minimumVersion": "14.0"
         },
         {

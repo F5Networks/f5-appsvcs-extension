@@ -456,6 +456,8 @@ function parseDeclRequest(requestContextCopy, task) {
     delete declReq.restOp;
     delete declReq.controls;
     delete declReq.basicAuth;
+    delete declReq.isPerApp;
+    delete declReq.perAppInfo;
 
     return Promise.resolve(declReq);
 }
@@ -496,11 +498,10 @@ function getInitialControls(context, settings) {
 }
 
 function processDeclInArray(item, index, context) {
-    let errorMessage;
     let declResult;
 
     if (item.hasDuplicate) {
-        errorMessage = 'Error(s): \'Invalid/Duplicate\': another request exists with the same targetHost-declaration tenant, declaration target, and/or declaration tenant-app';
+        let errorMessage = 'Error(s): \'Invalid/Duplicate\': another request exists with the same targetHost-declaration tenant, declaration target, and/or declaration tenant-app';
         if (!item.validatorResult.isValid) {
             errorMessage += `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
         }
@@ -508,32 +509,67 @@ function processDeclInArray(item, index, context) {
         return Promise.resolve(declResult);
     }
     if (!item.validatorResult.isValid) {
-        errorMessage = `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
+        const errorMessage = `${VALIDATOR_ERR_PREFIX} ${item.validatorResult.data}`;
         declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, errorMessage);
         return Promise.resolve(declResult);
     }
 
-    const reqCopy = Object.assign({}, context.request);
-    const task = Object.assign({}, context.tasks[index]);
+    return Promise.resolve()
+        .then(() => {
+            if (context.request.isPerApp && context.request.method !== 'Get' && context.request.method !== 'Delete') {
+                // validate the per-app declaration
+                return Promise.resolve()
+                    .then(() => context.host.parser.digest(
+                        context,
+                        context.request.perAppInfo.decl,
+                        { isPerApp: true } // Runs in perApp verification mode (e.g. skips PostProcess)
+                    ))
+                    .catch((e) => {
+                        if (typeof e.errors === 'undefined') {
+                            // Continue on if there are no actual errors
+                            return Promise.resolve();
+                        }
+                        log.error(e);
 
-    return parseDeclRequest(reqCopy, task)
-        .then((declReq) => {
-            if (typeof declReq.success !== 'undefined' && !declReq.success) {
-                return declReq;
+                        const body = {
+                            code: STATUS_CODES.UNPROCESSABLE_ENTITY,
+                            errors: e.errors,
+                            message: e.message
+                        };
+                        declResult = restUtil.buildOpResult(STATUS_CODES.UNPROCESSABLE_ENTITY, e.message, body);
+                        return Promise.resolve(declResult);
+                    });
+            }
+            return Promise.resolve();
+        })
+        .then((perAppError) => {
+            if (perAppError && typeof perAppError.message !== 'undefined') {
+                // If we have an error return it like the validation failures above
+                return Promise.resolve(perAppError);
             }
 
-            // TODO: Review these values being saved into context object
-            context.currentIndex = index;
-            context.control = context.request.controls[index];
-            context.tasks[index] = declReq;
-            context.tasks[index].control = context.request.controls[index];
-            context.tasks[index].uuid = uuid.v4();
-            const handler = new DeclarationHandler();
-            return handler.process(context);
-        })
-        .then((result) => {
-            declResult = restUtil.buildOpResult(result.statusCode, result.errorMessage, result.body);
-            return declResult;
+            const reqCopy = Object.assign({}, context.request);
+            const task = Object.assign({}, context.tasks[index]);
+
+            return parseDeclRequest(reqCopy, task)
+                .then((declReq) => {
+                    if (typeof declReq.success !== 'undefined' && !declReq.success) {
+                        return declReq;
+                    }
+
+                    // TODO: Review these values being saved into context object
+                    context.currentIndex = index;
+                    context.control = context.request.controls[index];
+                    context.tasks[index] = declReq;
+                    context.tasks[index].control = context.request.controls[index];
+                    context.tasks[index].uuid = uuid.v4();
+                    const handler = new DeclarationHandler();
+                    return handler.process(context);
+                })
+                .then((result) => {
+                    declResult = restUtil.buildOpResult(result.statusCode, result.errorMessage, result.body);
+                    return declResult;
+                });
         });
 }
 
@@ -565,7 +601,7 @@ function processRequest(context) {
                 if (context.request.isMultiDecl) {
                     restUtil.completeRequestMultiStatus(context.request.restOp, result);
                 } else {
-                    restUtil.completeRequest(context.request.restOp, result);
+                    restUtil.completeRequest(context.request.restOp, result, context.request.perAppInfo);
                 }
             }
             return result;
@@ -707,7 +743,7 @@ function processSync(context) {
                 if (context.request.isMultiDecl) {
                     restUtil.completeRequestMultiStatus(context.request.restOp, result);
                 } else {
-                    restUtil.completeRequest(context.request.restOp, result);
+                    restUtil.completeRequest(context.request.restOp, result, context.request.perAppInfo);
                 }
             }, 45000);
         });
@@ -719,7 +755,7 @@ function processAsync(context) {
             if (context.request.isMultiDecl) {
                 restUtil.completeRequestMultiStatus(context.request.restOp, result);
             } else {
-                restUtil.completeRequest(context.request.restOp, result);
+                restUtil.completeRequest(context.request.restOp, result, context.request.perAppInfo);
             }
         });
 }

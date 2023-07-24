@@ -176,6 +176,7 @@ module.exports = {
         NAT_Policy: 'security nat policy',
         NAT_Source_Translation: 'security nat source-translation',
         Net_Address_List: 'net address-list',
+        Net_Port_List: 'net port-list',
         Log_Publisher: 'sys log-config publisher',
         Log_Destination: [
             'sys log-config destination management-port',

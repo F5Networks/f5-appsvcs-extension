@@ -548,7 +548,7 @@ describe('per-app API testing (__smoke)', function () {
                 }
             };
 
-            return postDeclaration(declaration);
+            return postDeclaration(declaration, logInfo);
         });
 
         after(() => deleteDeclaration()); // No sense deleting the declaration till after the GETs are done querying it
@@ -637,5 +637,369 @@ describe('per-app API testing (__smoke)', function () {
                 /"code":400.*Bad Request: Invalid path/,
                 'should have failed with an invalid path, as application is an unsupported endpoint'
             )));
+    });
+
+    describe('POST', () => {
+        afterEach(() => deleteDeclaration());
+
+        it('should handle creating a tenant via POSTing to the applications endpoint', () => {
+            const declaration = {
+                app1: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '1.1.1.12'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                }
+            };
+
+            return Promise.resolve()
+                .then(() => postDeclaration(declaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => postDeclaration(declaration, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app1?async=true',
+                        logResponse: true,
+                        sendDelete: true
+                    };
+                    return deleteDeclaration(undefined, options);
+                }) // DELETE specific application
+                .then((results) => { // Confirm no change
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications/app1')
+                ))
+                .then((results) => {
+                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
+                    assert.deepStrictEqual(results, {
+                        app1: {
+                            class: 'Application',
+                            template: 'generic',
+                            testItem: {
+                                class: 'Service_TCP',
+                                remark: 'description',
+                                virtualPort: 123,
+                                virtualAddresses: [
+                                    '1.1.1.12'
+                                ],
+                                persistenceMethods: [
+                                    'source-address'
+                                ]
+                            }
+                        }
+                    });
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications')
+                ))
+                .then((results) => {
+                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
+                    assert.deepStrictEqual(results, {
+                        app1: {
+                            class: 'Application',
+                            template: 'generic',
+                            testItem: {
+                                class: 'Service_TCP',
+                                remark: 'description',
+                                virtualPort: 123,
+                                virtualAddresses: [
+                                    '1.1.1.12'
+                                ],
+                                persistenceMethods: [
+                                    'source-address'
+                                ]
+                            }
+                        }
+                    });
+                });
+        });
+
+        it('should NOT modify applications outside the declaration', () => {
+            const perTenDecl = {
+                class: 'ADC',
+                schemaVersion: '3.44.0',
+                id: 'per-app_pools',
+                tenant1: {
+                    class: 'Tenant',
+                    app1: {
+                        class: 'Application',
+                        template: 'generic',
+                        testItem: {
+                            class: 'Service_TCP',
+                            remark: 'description',
+                            virtualPort: 123,
+                            virtualAddresses: [
+                                '1.1.1.12'
+                            ],
+                            persistenceMethods: [
+                                'source-address'
+                            ]
+                        }
+                    },
+                    app2: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1: {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11
+                        }
+                    }
+                }
+            };
+
+            const app1Decl = {
+                app1: {
+                    class: 'Application',
+                    template: 'generic',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.10'],
+                        pool: 'pool1'
+                    },
+                    pool1: {
+                        class: 'Pool',
+                        loadBalancingMode: 'round-robin',
+                        minimumMembersActive: 1,
+                        reselectTries: 0,
+                        serviceDownAction: 'none',
+                        slowRampTime: 11
+                    }
+                }
+            };
+
+            const app2Decl = {
+                app2: {
+                    class: 'Application',
+                    template: 'generic',
+                    pool1: {
+                        class: 'Pool',
+                        loadBalancingMode: 'round-robin',
+                        minimumMembersActive: 1,
+                        reselectTries: 0,
+                        serviceDownAction: 'none',
+                        slowRampTime: 11
+                    }
+                }
+            };
+
+            return Promise.resolve()
+                .then(() => postDeclaration(perTenDecl, { declarationIndex: 0 }))
+                .then((results) => {
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.deepStrictEqual(
+                        results.tenant1,
+                        {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '1.1.1.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            },
+                            app2: {
+                                class: 'Application',
+                                template: 'generic',
+                                pool1: {
+                                    class: 'Pool',
+                                    loadBalancingMode: 'round-robin',
+                                    minimumMembersActive: 1,
+                                    reselectTries: 0,
+                                    serviceDownAction: 'none',
+                                    slowRampTime: 11
+                                }
+                            }
+                        }
+                    );
+                })
+                .then(() => postDeclaration(app1Decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => postDeclaration(app1Decl, { declarationIndex: 2 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.deepStrictEqual(
+                        results.tenant1,
+                        {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                template: 'generic',
+                                service: {
+                                    class: 'Service_HTTP',
+                                    virtualAddresses: ['192.0.2.10'],
+                                    pool: 'pool1'
+                                },
+                                pool1: {
+                                    class: 'Pool',
+                                    loadBalancingMode: 'round-robin',
+                                    minimumMembersActive: 1,
+                                    reselectTries: 0,
+                                    serviceDownAction: 'none',
+                                    slowRampTime: 11
+                                }
+                            } // NOTE: after data-groups are fixed we should see app2
+                        }
+                    );
+                })
+                .then(() => postDeclaration(app2Decl, { declarationIndex: 3 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'no change',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/appsvcs/declare/tenant1?async=true',
+                        logResponse: true
+                    };
+                    return deleteDeclaration(undefined, options);
+                })
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                });
+        });
     });
 });

@@ -41,7 +41,7 @@
   * git commit -m 'Update schema files for release'
   * git push
 * Prepare the develop branch for the next development cycle
-  * Create a new branch off of develop like any other development task
+  * Create a new branch off of `develop` like any other development task
   * Update version changes to `package.json` and `package-lock.json`.  The release number of the new version should start at 0 (e.g. 3.10.0-4 would become 3.11.0-0).
   * Update the `info.version` property in `docs/openapi.yaml` to the new AS3 version (e.g. 3.27.0).
   * Add a new version to the beginning of the schemaVersion enum in `src/schema/latest/core-schema.js` using the preexisting format.
@@ -61,30 +61,30 @@
   * Create a merge request like for any other development task and announce on Teams `AS3-DO General`.
 
 ### Perform actions after go ahead from Go/No-Go meeting
-Merge the release branch into develop and master following the steps below for each merge.
+Merge the release branch into `develop` and `main` following the steps below for each merge.
 * Navigate to the `Merge Requests` page and click on `New merge request` in the upper right corner.
 * Select the release branch as the `source branch`.
   * If merging into `develop` select `develop` as the `target branch`.
-  * If merging into `master` select `master` as the `target branch`.
+  * If merging into `main` select `main` as the `target branch`.
 * Click on `Compare branches and continue`.
 * On the next page do NOT select `Delete source branch` or `Squash commits`.  The release branch needs to be preserved in case a `.1` release is needed in the future.
 * Click on `Submit merge request`.
 * Note: If the GUI suggests a rebase, do a merge locally instead. DO NOT TRUST the GUI rebase tool.
   * Make sure that the version numbers in `package.json`, `package-lock.json`, `CHANGELOG.md`, etc... is correct. Rebase can sometimes rebase `develop` into the release branch.
   * Even though the MR was created via the GUI, pushing a local should be reflected in the MR
-* Self approve the merge request and merge. It is not uncommon when attempting to merge into `develop` for there to be no changes in the merge request. If this happens close the merge request (optionally commenting that there were no changes to merge) and move on to the merge into `master` merge request.
-* In the f5-appsvcs-schema repository add a new version to the beginning of the schemaVersion enum in `schemas/core-schema.js` using the preexisting format. Also, be sure to run `npm run compile-schema` after adding the new version.
+* Self approve the merge request and merge. It is not uncommon when attempting to merge into `develop` for there to be no changes in the merge request. If this happens close the merge request (optionally commenting that there were no changes to merge) and move on to the merge into `main` merge request.
+* In the f5-appsvcs-schema repository add the current release version to the beginning of the schemaVersion enum in `schemas/core-schema.json` using the preexisting format. Also, be sure to run `npm run compile-schema` after adding the new version. If you don't have the typescript compiler (tsc) installed, you will need to run `npm install -g typescript`. Also be sure to run `npm ci`.
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
 
-Tag master with the release version, for example: `v3.27.0` (Note: if you are tagging/re-tagging older releases that may trigger the publish, make sure to cancel the job as it will try to reupload the artifacts).
+Tag `main` with the release version, for example: `v3.27.0` (Note: if you are tagging/re-tagging older releases that may trigger the publish, make sure to cancel the job as it will try to reupload the artifacts).
 * Navigate to the `Repository -> Tags` page.
 * Click on `New Tag`.
 * Name the version tag with the release version but without the build number.  For example `v3.27.0`.
-* Choose the `master` branch from the `Create from` list.
+* Choose the `main` branch from the `Create from` list.
 * Click on `Create Tag`.
 
 ### Release Manager tasks
-* Artifacts are copied from master to GitHub and Docker Hub by release management
+* Artifacts are copied from `main` to GitHub and Docker Hub by release management
 * Add a `released` property with a value of `true` to the released RPM in Artifactory
 
 ## Process for LTS release
@@ -110,14 +110,14 @@ Tag master with the release version, for example: `v3.27.0` (Note: if you are ta
 * Go to the atg-build project in GitLab
   * Edit the AS3 schedule to set the `gitBranch` variable to the LTS branch.
   * Run the AS3 schedule.
-  * After the build completes, edit the AS3 schedule to set the `gitBranch` variable back to develop.
+  * After the build completes, edit the AS3 schedule to set the `gitBranch` variable back to `develop`.
 * Using the GUI create a tag off the LTS branch (e.g. 3.36.1)
   * In the GUI go to `Repository -> Tags -> New tag`.
   * The name of the tag should be the LTS version with a 'v' at the front (e.g. v3.36.1).
   * Update the `createFrom` to point at the LTS branch.
   * Set the message to: `LTS release v<LTS version>` (e.g. "LTS release v3.36.1")
-* Merge the LTS branch (without updating the package version) into develop and create an MR for this.
-* Merge the LTS branch (only update package version if LTS is latest) into master and create an MR for this.
+* Merge the LTS branch (without updating the package version) into `develop` and create an MR for this.
+* Merge the LTS branch (only update package version if LTS is latest) into `main` and create an MR for this.
 
 ## Documentation Release process
 * After the third sprint is finished and the release branch has been created, checkout out the dev release branch and then merge it into **doc-release-branch**.

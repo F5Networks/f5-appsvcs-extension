@@ -1,6 +1,42 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.47.0
+
+### Added
+
+### Fixed
+
+### Changed
+
+### Removed
+
+## 3.46.0
+
+### Added
+- AUTOTOOL-3881: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for net port-lists
+- AUTOTOOL-3821: ([GitHub Issue 269](https://github.com/F5Networks/f5-appsvcs-extension/issues/269)): Add support for port and address lists in virtuals
+- AUTOTOOL-3704: Expose metadata property for pools and pool members
+- AUTOTOOL-3876: Support for performing AS3 string expansion inside declarative WAF policy
+- AUTOTOOL-3866: Add support of route domain as a string for SOCKS profile
+- AUTOTOOL-3768: ([GitHub Issue 696](https://github.com/F5Networks/f5-appsvcs-extension/issues/696)): Add support for enable/disable BotDefense profile in Endpoint_Policy
+
+### Fixed
+- AUTOTOOL-3842: Updated list of services for Protocol_Inspection_Profile
+- AUTOTOOL-3718: ([GitHub Issue 704](https://github.com/F5Networks/f5-appsvcs-extension/issues/704)): Handling of line continuation character in iRule
+- AUTOTOOL-3831: Fix issue with running a DELETE after a dry-run on BIG-IQ
+- AUTOTOOL-3880: ([GitHub Issue 727](https://github.com/F5Networks/f5-appsvcs-extension/issues/727)): SNAT_Pool handling in /Common/Shared
+- AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
+- AUTOTOOL-3810:  ([GitHub Issue 715](https://github.com/F5Networks/f5-appsvcs-extension/issues/715)): GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]"
+- AUTOTOOL-3879: AS3 declaration fails on save config from v3.35.0 onwards
+
+### Changed
+- Updated to Service Discovery 1.14.0-1
+  - Update packages to latest available versions
+
+### Removed
+- AUTOTOOL-3871 Remove express package and app.js
+
 ## 3.45.0
 
 ### Added

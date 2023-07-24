@@ -422,7 +422,7 @@ describe('postValidator', () => {
                 defaultContext.target.tmosVersion = '13.1';
                 return assert.isRejected(
                     PostValidator.validate(defaultContext, declaration),
-                    'profileBotDefense is only available of TMOS 14.1+'
+                    'profileBotDefense is only available on TMOS 14.1+'
                 );
             });
         });

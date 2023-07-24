@@ -1,0 +1,27 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.46.0",
+    "id": "WAF_Policy",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": ["192.0.2.10"],
+                "policyWAF": {
+                    "use": "wafPolicy"
+                }
+            },
+            "wafPolicy": {
+                "class": "WAF_Policy",
+                "policy": {
+                    "text": "{\n  \"policy\": {\n    \"name\": \"AppPolicy01\",\n    \"description\": \"embedded WAF Policy\",\n    \"template\": {\n      \"name\": \"POLICY_TEMPLATE_RAPID_DEPLOYMENT\"\n    },\n    \"open-api-files\": [\n      {\n        \"link\": \"https:\/\/example.com\/files\/`A`\/openapi.yaml\"\n      }\n    ]\n  }\n}\n"
+                },
+                "expand": [
+                    "/policy/open-api-files/0/link"
+                ]
+            }
+        }
+    }
+}

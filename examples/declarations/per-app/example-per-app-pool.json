@@ -1,0 +1,15 @@
+{
+    "app1": {
+        "class": "Application",
+        "template": "generic",
+        "pool1": {
+            "class": "Pool",
+            "loadBalancingMode": "round-robin",
+            "minimumMembersActive": 1,
+            "reselectTries": 0,
+            "serviceDownAction": "none",
+            "slowRampTime": 11,
+            "minimumMonitors": 1
+        }
+    }
+}

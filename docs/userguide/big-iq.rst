@@ -216,3 +216,7 @@ AS3 versions 3.42 and later are NOT compatible with BIG-IQ.  Use the following p
 
    <a href="https://support.f5.com/csp/article/K54909607" target="_blank">K54909607</a>
 
+.. |release| raw:: html
+
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/releases" target="_blank">AS3 releases on GitHub</a>
+

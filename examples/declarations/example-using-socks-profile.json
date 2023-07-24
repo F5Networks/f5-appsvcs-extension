@@ -29,6 +29,19 @@
                 "routeDomain": 2222,
                 "tunnelName": "http-tunnel",
                 "defaultConnectAction": "allow"
+            },
+            "socksProfileString": {
+                "class": "SOCKS_Profile",
+                "protocolVersions": [
+                    "socks4"
+                ],
+                "resolver": {
+                    "bigip": "/Common/f5-azure-dns"
+                },
+                "ipv6First": true,
+                "routeDomain": "myRouteDomain",
+                "tunnelName": "http-tunnel",
+                "defaultConnectAction": "allow"
             }
         }
     }

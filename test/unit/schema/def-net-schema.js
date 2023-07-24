@@ -344,6 +344,61 @@ describe('def-net-schema.json', () => {
             });
         });
     });
+
+    describe('Net_Port_List', () => {
+        let baseDecl;
+        beforeEach(() => {
+            baseDecl = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declarationId',
+                theTenant: {
+                    class: 'Tenant',
+                    A1: {
+                        class: 'Application',
+                        template: 'generic',
+                        npl: {
+                            class: 'Net_Port_List',
+                            ports: [
+                                80,
+                                443,
+                                '8080-8088'
+                            ]
+                        }
+                    }
+                }
+            };
+        });
+
+        describe('valid', () => {
+            it('should validate with just ports', () => {
+                assert.ok(validate(baseDecl), getErrorString(validate));
+            });
+
+            it('should validate with just port-lists', () => {
+                delete baseDecl.theTenant.A1.npl.ports;
+                baseDecl.theTenant.A1.npl.portLists = [
+                    { use: '/Common/myPortList' }
+                ];
+                assert.ok(validate(baseDecl), getErrorString(validate));
+            });
+
+            it('should validate with ALL properties', () => {
+                baseDecl.theTenant.A1.npl.remark = 'The description';
+                baseDecl.theTenant.A1.npl.portLists = [
+                    { use: '/Common/myPortList' }
+                ];
+                assert.ok(validate(baseDecl), getErrorString(validate));
+            });
+        });
+
+        describe('invalid', () => {
+            it('should invalidate with neither ports nor port-lists', () => {
+                delete baseDecl.theTenant.A1.npl.ports;
+                assert.strictEqual(validate(baseDecl), false, 'must have at least one of ports or port-lists');
+            });
+        });
+    });
 });
 
 function getErrorString() {

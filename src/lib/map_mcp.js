@@ -1052,6 +1052,26 @@ const translate = {
         obj.address = ipUtil.minimizeIP(obj.address);
         return [normalize.actionableMcp(context, obj, 'ltm snat-translation', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
+    'tm:ltm:traffic-matching-criteria:traffic-matching-criteriastate': function (context, obj) {
+        delete obj.partition;
+        // Incoming ip/cidr is converted to ip/netmask, so do the same here for idempotentcy
+        let addr = obj.destinationAddressInline;
+        if (addr) {
+            const parsed = ipUtil.parseIpAddress(addr);
+            if (parsed.ip === '0.0.0.0') {
+                parsed.ip = 'any';
+            }
+            obj.destinationAddressInline = `${parsed.ip}/${parsed.netmask}`;
+        }
+
+        addr = obj.sourceAddressInline;
+        if (addr) {
+            const parsed = ipUtil.parseIpAddress(addr);
+            obj.sourceAddressInline = `${parsed.ip}/${parsed.netmask}`;
+        }
+
+        return [normalize.actionableMcp(context, obj, 'ltm traffic-matching-criteria', obj.fullPath)];
+    },
     'tm:ltm:virtual:virtualstate': function (context, obj) {
         obj.enabled = util.isEnabledObject(obj);
         delete obj.disabled;
@@ -1114,6 +1134,11 @@ const translate = {
             obj.rateLimit = parseInt(obj.rateLimit, 10);
         }
 
+        if (obj.trafficMatchingCriteria) {
+            delete obj.destination;
+            delete obj.source;
+        }
+
         return [normalize.actionableMcp(context, obj, 'ltm virtual', path)];
     },
     'tm:ltm:virtual-address:virtual-addressstate': function (context, obj) {
@@ -1146,6 +1171,15 @@ const translate = {
             ));
         }
         return [normalize.actionableMcp(context, obj, 'net address-list', obj.fullPath)];
+    },
+    'tm:net:port-list:port-liststate': function (context, obj) {
+        if (obj.ports) {
+            obj.ports = obj.ports.map((port) => port.name);
+        }
+        if (obj.portLists) {
+            obj.portLists = obj.portLists.map((portList) => util.mcpPath(portList.partition, portList.subPath, portList.name)); // eslint-disable-line max-len
+        }
+        return [normalize.actionableMcp(context, obj, 'net port-list', obj.fullPath)];
     },
     'tm:pem:irule:irulestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'pem irule', obj.fullPath)];

@@ -634,5 +634,61 @@ describe('audit', () => {
                     });
             });
         });
+
+        describe('per-app mode', () => {
+            it('should handle per-app declaration when unchecked mode is disabled', () => {
+                context.log = {};
+                context.control = {};
+                context.tasks.push({ unchecked: false });
+                context.target.deviceType = DEVICE_TYPES.BIG_IP;
+                context.host.parser = {
+                    digest: sinon.stub()
+                };
+                declaration.tenant.controls.traceResponse = true;
+
+                return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                    .then(() => {
+                        assert.deepStrictEqual(context.log.tenantDesired, { desired: {} });
+                        assert.deepStrictEqual(context.log.tenantCurrent, { current: {} });
+                        assert.deepStrictEqual(context.log.tenantDiff, { diff: {} });
+                    });
+            });
+
+            it('should handle per-app declaration when unchecked mode is enabled', () => {
+                context.log = {};
+                context.control = {};
+                context.tasks.push({ unchecked: true });
+                context.target.deviceType = DEVICE_TYPES.BIG_IP;
+                context.host.parser = {
+                    digest: sinon.stub()
+                };
+                declaration.tenant.controls.traceResponse = true;
+
+                return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                    .then(() => {
+                        assert.deepStrictEqual(context.log.tenantDesired, { desired: {} });
+                        assert.deepStrictEqual(context.log.tenantCurrent, { desired: {} });
+                        assert.deepStrictEqual(context.log.tenantDiff, { diff: {} });
+                    });
+            });
+
+            it('should digest previous declaration when unchecked mode enabled', () => {
+                let prevDecl;
+                context.log = {};
+                context.control = {};
+                context.tasks.push({ unchecked: true });
+                context.target.deviceType = DEVICE_TYPES.BIG_IP;
+                context.host.parser = {
+                    digest: sinon.stub().callsFake((ctx, decl) => {
+                        prevDecl = decl;
+                    })
+                };
+
+                return audit.auditTenant(context, 'tenant', declaration, {}, { prevDecl: true })
+                    .then(() => {
+                        assert.deepStrictEqual(prevDecl, { prevDecl: true });
+                    });
+            });
+        });
     });
 });

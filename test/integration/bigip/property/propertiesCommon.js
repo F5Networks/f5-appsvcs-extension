@@ -20,11 +20,11 @@ const assert = require('assert');
 const fs = require('fs');
 
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
+const arrayUtil = require('@f5devcentral/atg-shared-utilities').arrayUtils;
 const classMap = require('../../../../src/lib/classes');
 const pathMap = require('../../../../src/lib/paths.json');
 const propertyMap = require('../../../../src/lib/properties.json');
 const util = require('../../../../src/lib/util/util');
-const arrayUtil = require('../../../../src/lib/util/arrayUtil');
 const schema = require('../../../../src/schema/latest/adc-schema.json');
 const constants = require('../../../../src/lib/constants');
 const requestUtil = require('../../../common/requestUtilPromise');
@@ -674,19 +674,25 @@ function postBigipItems(items, useTransaction) {
  * @param {string} tenant - the name of the tenant you want deleted (DO NOT INCLUDE THE FORWARD SLASH)
  * @param {object} [options] - options for function
  * @param {boolean} [options.logResponse] - whether or not to log the response from the delete operation
+ * @param {boolean} [options.sendDelete] - whether or not to send request as a DELETE or POST
  */
 function deleteDeclaration(tenant, options) {
     logEvent('delete Declaration');
+    let requestPromise;
+    let path = '/mgmt/shared/appsvcs/declare?async=true';
+    if (tenant) {
+        path = `/mgmt/shared/appsvcs/declare/${tenant}?async=true`;
+    } else if (options && options.path) {
+        path = options.path;
+    }
     const reqOpts = {
-        path: '/mgmt/shared/appsvcs/declare?async=true',
+        path,
         host: process.env.TARGET_HOST || process.env.AS3_HOST,
         retryCount: 3,
         retryIf: (error, response) => response && response.statusCode === 503
     };
-    let requestPromise;
 
-    if (tenant) {
-        reqOpts.path = `/mgmt/shared/appsvcs/declare/${tenant}?async=true`;
+    if (tenant || (options && options.sendDelete)) {
         requestPromise = requestUtil.delete(reqOpts);
     } else {
         reqOpts.body = {

@@ -103,7 +103,7 @@ schema:
     - npm ci --no-optional
     - npm run build-schema
   artifacts:
-    name: f5-appsvcs-extension-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_COMMIT_SHA
     paths:
       - src/schema/latest/adc-schema.json
       - src/schema/latest/as3-schema.json
@@ -147,35 +147,45 @@ audit:
     - npm audit
 
 node:4.6:
-  image: $DOCKER_URL/node:4.6.2
+  image: $DOCKER_URL/node:12-buster
   stage: test
   needs:
     - schema
   tags:
     - cm-official-docker-executor
   script:
+    # npm install fails for some packages on older versions of node, so use a newer
+    # version just for the install
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - source "$NVM_DIR/nvm.sh"
+    - nvm install 4
+    - nvm install --latest-npm 12
+    - nvm use 12
     - npm install mocha@5.2.0 --save-dev
     - npm install --no-optional
+    - nvm use 4
     - npm run test-no-build
 
 node:6:
-  image: $DOCKER_URL/node:6
+  image: $DOCKER_URL/node:12-buster
   stage: test
   needs:
     - schema
   tags:
     - cm-official-docker-executor
   script:
-    - currentDirectory=$(pwd)
-    - mkdir -p /tmp/npm-install-directory
-    - cd /tmp/npm-install-directory
-    - npm install npm@5.10.0
-    - rm -rf /usr/local/lib/node_modules
-    - mv node_modules /usr/local/lib/
-    - ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
-    - cd $currentDirectory
+    # npm install fails for some packages on older versions of node, so use a newer
+    # version just for the install
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - source "$NVM_DIR/nvm.sh"
+    - nvm install 6
+    - nvm install --latest-npm 12
+    - nvm use 12
     - npm ci --no-optional
     - npm install mocha@5.2.0
+    - nvm use 6
     - npm run test-no-build -- $TEST_REPORTER_OPTIONS
   artifacts:
     when: always
@@ -183,15 +193,14 @@ node:6:
       junit: test_report.xml
 
 node:8:
-  image: $DOCKER_URL/node:8.11.1
+  image: $DOCKER_URL/node:8
   stage: test
   needs:
     - schema
   tags:
     - cm-official-docker-executor
   script:
-    - npm install --global npm@5.10.0
-    - npm ci --no-optional
+    - npm ci
     - npm install mocha@7
     - npm run test-no-build -- $TEST_REPORTER_OPTIONS
   artifacts:
@@ -215,7 +224,7 @@ build_rpm:
   tags:
     - cm-official-docker-executor
   artifacts:
-    name: f5-appsvcs-extension-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_COMMIT_SHA
     paths:
       - dist
       - src/schema/latest/adc-schema.json
@@ -237,11 +246,14 @@ create_source:
       - dist/*-examples.tar.gz
 
 build_api_docs:
-  image: $DOCKER_URL/node:12
+  image: $DOCKER_URL/node:16
   stage: build
   needs: []
   script:
     # install packages
+    # package-lock ends up with OS specific info during npm install, so
+    # make sure it is right for the platform we're on
+    - rm package-lock.json
     - npm install
     # generate docs
     - npm run make-api-docs
@@ -490,7 +502,7 @@ test_rpms_in_azure:
     TEST_RESOURCES_URL: "$TEST_RESOURCES_URL_AZURE"
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-extension-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_COMMIT_SHA
     when: always
     paths:
       - test/logs
@@ -515,7 +527,7 @@ test_rpms_for_this_project:
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-extension-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_COMMIT_SHA
     when: always
     paths:
       - test/logs
@@ -537,7 +549,7 @@ test_rpms_for_other_project:
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
   <<: *test_rpms_common
   artifacts:
-    name: f5-appsvcs-extension-$CI_BUILD_REF
+    name: f5-appsvcs-extension-$CI_COMMIT_SHA
     when: always
     paths:
       - test/logs
@@ -653,7 +665,7 @@ create_docs:
     - make linkcheck
 
     # build developer documentation (optional)
-    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+    - if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
     -   npm install --registry $NPM_REGISTRY_URL -g jsdoc
     -   jsdoc src/nodejs/* -d contributing
     - fi
@@ -661,7 +673,7 @@ create_docs:
     - cm-official-docker-executor
   artifacts:
     expire_in: 1 week
-    name: sphinx-docs_$CI_BUILD_REF
+    name: sphinx-docs_$CI_COMMIT_SHA
     paths:
       - docs/_build/html
       - contributing

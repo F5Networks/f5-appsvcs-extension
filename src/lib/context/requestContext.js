@@ -37,7 +37,8 @@
  *   Otherwise it is undefined.
  * isPerApp - Detects if the request used the per-app interface and sets the
  *   boolean appropriately.
- * perAppInfo - logs the tenant and the application name for later reference
+ * perAppInfo - logs the tenant, relevant application names, and original
+ *   declaration for later reference
  * declarations - An array of wrapped and normalized sub-declarations
  * dryRun - A boolean to indicate if the task is to run as a dry-run
  *
@@ -57,6 +58,7 @@
  */
 
 const EventEmitter = require('events');
+
 const log = require('../log');
 const constants = require('../constants');
 const config = require('../config');
@@ -66,6 +68,7 @@ const Tracer = require('../tracer').Tracer;
 const tracerUtil = require('../tracer').Util;
 const tracerTags = require('../tracer').Tags;
 const STATUS_CODES = require('../constants').STATUS_CODES;
+const perAppUtil = require('../util/perAppUtil');
 
 class RequestContext {
     static get(restOperation, hostContext) {
@@ -73,6 +76,10 @@ class RequestContext {
             this.as3Wrapper = new As3Request(constants.reqSchemaFile);
         }
         const initialContext = buildInitialContext(restOperation);
+        if (initialContext.error) {
+            return Promise.resolve(initialContext);
+        }
+
         const allowedCheck = checkIfAllowed(initialContext, hostContext);
         if (allowedCheck.failed) {
             initialContext.error = allowedCheck.error;
@@ -101,6 +108,11 @@ class RequestContext {
             .then((reqContext) => {
                 if (reqContext.error) {
                     return reqContext;
+                }
+
+                if (reqContext.isPerApp && reqContext.method !== 'Get' && reqContext.method !== 'Delete') {
+                    // Blindly transform into per-tenant, to be validated in declareHandler
+                    reqContext.body = perAppUtil.convertToPerTenant(reqContext.body, reqContext.perAppInfo);
                 }
 
                 const validated = this.as3Wrapper.validateAndWrap(reqContext, hostContext);
@@ -295,9 +307,34 @@ function buildInitialContext(restOperation) {
         context.isPerApp = splitSubPath[1] === 'applications';
         if (context.isPerApp) {
             context.perAppInfo = {
-                tenant: splitSubPath[0],
-                app: splitSubPath[2]
+                tenant: splitSubPath[0]
             };
+
+            let apps = [];
+            switch (context.method) {
+            case 'Delete':
+            case 'Get':
+                // DELETE & GET apps come from the URL
+                apps = (typeof splitSubPath[2] === 'undefined') ? [] : [splitSubPath[2]];
+                break;
+            case 'Post':
+                if (Array.isArray(context.body)) {
+                    context.error = 'declaration should be an object';
+                    context.errorCode = 422;
+                } else {
+                    // POST apps comes from the declaration
+                    Object.keys(context.body).forEach((key) => {
+                        if (context.body[key].class === 'Application') {
+                            apps.push(key);
+                        }
+                    });
+                    // Store original declaration for later validation
+                    context.perAppInfo.decl = util.simpleCopy(context.body);
+                }
+                break;
+            default:
+            }
+            context.perAppInfo.apps = apps;
         }
     }
     context.queryParams = getQueryParams(context.fullPath, context.pathName);

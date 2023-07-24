@@ -50,6 +50,10 @@ describe('SOCKS_Profile', function () {
                 {
                     endpoint: '/mgmt/tm/net/route-domain',
                     data: { name: '2600' }
+                },
+                {
+                    endpoint: '/mgmt/tm/net/route-domain',
+                    data: { name: 'id-2601', id: '2601' }
                 }
             ]
         };
@@ -87,8 +91,8 @@ describe('SOCKS_Profile', function () {
             },
             {
                 name: 'routeDomain',
-                inputValue: [undefined, 2600, undefined],
-                expectedValue: ['/Common/0', '/Common/2600', '/Common/0'],
+                inputValue: [undefined, 2600, 'id-2601', undefined],
+                expectedValue: ['/Common/0', '/Common/2600', '/Common/id-2601', '/Common/0'],
                 extractFunction: (o) => o.routeDomain.fullPath
             },
             {

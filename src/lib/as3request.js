@@ -137,11 +137,6 @@ class As3Request {
             });
     }
 
-    convertToADCClass(request) {
-        request.class = request.class || 'ADC';
-        return request;
-    }
-
     // wrap to get/set the context of the AS3 host and the targeted device
     // For container, target* properties in AS3 class determines the device to deploy config to
     // For bigiq, target* properties refer to itself, and decl.target determines the device to deploy config to
@@ -195,21 +190,11 @@ class As3Request {
         let error;
         let request = util.simpleCopy(requestContext.body);
 
-        if (requestContext.isPerApp) {
-            request = this.convertToADCClass(request);
-        }
-
         // populate AS3 class prop defaults from schema if req === [ADC]
         request = this.wrapWithAS3Class(request, requestContext.pathName);
 
         if (!this.validator(request)) {
             error = this.getValidatorError();
-        }
-
-        // 'class' is not part of a per-app request, but we added it to pass this
-        // early validation and need to remove it now
-        if (requestContext.isPerApp && request.declaration) {
-            delete request.declaration.class;
         }
 
         if (!Array.isArray(request)) {

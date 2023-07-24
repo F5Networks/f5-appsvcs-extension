@@ -1,0 +1,68 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.46.0",
+        "id": "addressList",
+        "Tenant": {
+            "class": "Tenant",
+            "Application": {
+                "class": "Application",
+                "sourceAddressList": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "192.168.2.10/32",
+                        "192.168.2.50-192.168.2.60"
+                    ]
+                },
+                "destinationAddressList1": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "192.168.2.1-192.168.2.10"
+                    ]
+                },
+                "destinationAddressList2": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "192.168.2.20/32"
+                    ]
+                },
+                "destinationAddressList3": {
+                    "class": "Firewall_Address_List",
+                    "addresses": [
+                        "192.168.2.100/32"
+                    ],
+                    "addressLists": [
+                        {
+                            "use": "destinationAddressList1"
+                        },
+                        {
+                            "use": "destinationAddressList2"
+                        }
+                    ]
+                },
+                "portList": {
+                    "class": "Firewall_Port_List",
+                    "ports": [
+                        8080,
+                        "1-999"
+                    ]
+                },
+                "tcpService": {
+                    "class": "Service_TCP",
+                    "sourceAddress": {
+                        "use": "sourceAddressList"
+                    },
+                    "virtualAddresses": {
+                        "use": "destinationAddressList3"
+                    },
+                    "virtualPort": {
+                        "use": "portList"
+                    }
+                }
+            }
+        }
+    }
+}

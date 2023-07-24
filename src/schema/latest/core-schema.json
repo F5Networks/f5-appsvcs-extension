@@ -30,7 +30,7 @@
             "description": "Version of ADC Declaration schema this declaration uses",
             "type": "string",
             "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
-            "enum": [ "3.45.0", "3.44.0", "3.43.0", "3.42.0", "3.41.0", "3.40.0", "3.39.0", "3.38.0", "3.37.0", "3.36.0", "3.35.0", "3.34.0", "3.33.0", "3.32.0", "3.31.0", "3.30.0", "3.29.0", "3.28.0", "3.27.0", "3.26.0", "3.25.0", "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0", "3.17.0", "3.16.0", "3.15.0", "3.14.0", "3.13.0", "3.12.0", "3.11.0", "3.10.0", "3.9.0", "3.8.0", "3.7.0", "3.6.0", "3.5.0", "3.4.0", "3.3.0", "3.2.0", "3.1.0", "3.0.0" ]
+            "enum": [ "3.47.0", "3.46.0", "3.45.0", "3.44.0", "3.43.0", "3.42.0", "3.41.0", "3.40.0", "3.39.0", "3.38.0", "3.37.0", "3.36.0", "3.35.0", "3.34.0", "3.33.0", "3.32.0", "3.31.0", "3.30.0", "3.29.0", "3.28.0", "3.27.0", "3.26.0", "3.25.0", "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0", "3.17.0", "3.16.0", "3.15.0", "3.14.0", "3.13.0", "3.12.0", "3.11.0", "3.10.0", "3.9.0", "3.8.0", "3.7.0", "3.6.0", "3.5.0", "3.4.0", "3.3.0", "3.2.0", "3.1.0", "3.0.0" ]
         },
         "id": {
             "title": "Declaration ID",
@@ -503,8 +503,28 @@
                 },
                 "virtualPort": {
                     "title": "Virtual server TCP port",
-                    "description": "Default 80 is well-known HTTP port",
-                    "type": "integer",
+                    "description": "Default 80 is well-known HTTP port. Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "default": 80
                 }
             },
@@ -561,8 +581,28 @@
                 },
                 "virtualPort": {
                     "title": "Virtual server TCP port",
-                    "description": "Default 443 is well-known HTTPS port",
-                    "type": "integer",
+                    "description": "Default 443 is well-known HTTPS port. Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "default": 443
                 },
                 "redirect80": {
@@ -959,8 +999,28 @@
                 },
                 "virtualPort": {
                     "title": "virtual server TCP port",
-                    "description": "virtual server TCP port",
-                    "type": "integer",
+                    "description": "Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "minimum": 0,
                     "maximum": 65535
                 },
@@ -1249,8 +1309,28 @@
                 },
                 "virtualPort": {
                     "title": "Virtual server UDP port",
-                    "description": "Virtual server UDP port",
-                    "type": "integer",
+                    "description": "Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "minimum": 0,
                     "maximum": 65535
                 },
@@ -1396,8 +1476,28 @@
                 },
                 "virtualPort": {
                     "title": "virtual server SCTP port",
-                    "description": "virtual server port",
-                    "type": "integer",
+                    "description": "Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "minimum": 0,
                     "maximum": 65535
                 },
@@ -1416,7 +1516,8 @@
             "allOf": [
                 { "$ref": "#/definitions/Service_Core" }
             ],
-            "required": [ "class", "virtualPort" ]
+
+            "required": [ "class", "virtualPort"]
         },
 
 
@@ -1491,8 +1592,28 @@
             "properties": {
                 "virtualPort": {
                     "title": "virtual server TCP port",
-                    "description": "virtual server port",
-                    "type": "integer",
+                    "description": "Accepts either an integer or a reference to a Firewall_Port_List that contains the ports on which to listen. Firewall_Port_List is only supported on BIG-IP 14.1 and later. If a Firewall_Port_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "integer"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Port_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
                     "minimum": 0,
                     "maximum": 65535
                 },
@@ -1642,37 +1763,57 @@
 
                 "virtualAddresses": {
                     "title": "Virtual addresses",
-                    "description": "Virtual server will listen to each IP address in list.  To accept connections only from certain subnet(s), replace IP address with array [IP-address, accept-from-subnet]. IP address can also be replaced by a reference to a Service_Address.",
-                    "type": "array",
-                    "f5PostProcess": {
-                        "tag": "virtualAddress"
-                    },
-                    "items": {
-                        "if": { "type": "string" },
-                        "then": { "format": "f5ip" },
-                        "else": {
-                            "if": { "type": "array" },
-                            "then": {
-                                "type": "array",
-                                "items": {
-                                    "title": "Virtual address",
-                                    "if": { "type": "string" },
-                                    "then": { "format": "f5ip" },
+                    "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "array",
+                            "f5PostProcess": {
+                                "tag": "virtualAddress"
+                            },
+                            "items": {
+                                "if": { "type": "string" },
+                                "then": { "format": "f5ip" },
+                                "else": {
+                                    "if": { "type": "array" },
+                                    "then": {
+                                        "type": "array",
+                                        "items": {
+                                            "title": "Virtual address",
+                                            "if": { "type": "string" },
+                                            "then": { "format": "f5ip" },
+                                            "else": {
+                                                "$ref": "#/definitions/Pointer_Service_Address"
+                                            }
+                                        },
+                                        "minItems": 2,
+                                        "maxItems": 2,
+                                        "uniqueItems": true
+                                    },
                                     "else": {
                                         "$ref": "#/definitions/Pointer_Service_Address"
                                     }
-                                },
-                                "minItems": 2,
-                                "maxItems": 2,
-                                "uniqueItems": true
+                                }
                             },
-                            "else": {
-                                "$ref": "#/definitions/Pointer_Service_Address"
-                            }
+                            "minItems": 1,
+                            "uniqueItems": true
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Address_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
                         }
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
+                    ]
                 },
                 "serviceDownImmediateAction": {
                     "title": "Service Down Immediate Action",
@@ -1693,9 +1834,29 @@
                 },
                 "sourceAddress": {
                     "title": "Source address",
-                    "description": "Accept connections only from these subnet(s). Only allowed if virtualType is internal, otherwise use virtualAddresses.",
-                    "type": "string",
-                    "format": "f5ip"
+                    "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "format": "f5ip"
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/Pointer_Address_List"
+                                },
+                                {
+                                    "f5PostProcess": {
+                                        "tag": "minVersion",
+                                        "data": {
+                                            "version": "14.1",
+                                            "strict": true
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 },
                 "enable": {
                     "title": "Enable",
@@ -2252,10 +2413,7 @@
                         }
                     },
                     "then": {
-                        "required": [ "virtualAddresses" ],
-                        "not": {
-                            "required": [ "sourceAddress" ]
-                        }
+                        "required": [ "virtualAddresses" ]
                     }
                 },
                 { "$ref": "#/definitions/Include" }
@@ -2502,57 +2660,9 @@
             "required": [ "class", "address" ]
         },
 
-        "iRule": {
-            "title": "iRule",
-            "description": "An iRule",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "iRule"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-
-                "expand": {
-                    "title": "Expand",
-                    "description": "If true (default), expand backquoted variables in iRule",
-                    "type": "boolean",
-                    "default": true
-                },
-                "iRule": {
-                    "$ref": "#/definitions/iRule_Core"
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "class", "iRule" ]
-        },
-
-        "iRule_Core": {
-            "title": "iRule Core definition",
-            "description": "Reference to an iRule or text of an iRule",
-            "allOf": [
-                { "$ref": "#/definitions/F5string" },
-                {
-                    "f5PostProcess": {
-                        "tag": "expand",
-                        "data": { "when": "1/expand" }
-                    }
-                },
-                {
-                    "f5PostProcess": {
-                        "tag": "fetch",
-                        "data": "string"
-                    }
-                }
-            ]
-        },
-
         "WAF_Policy": {
             "title": "WAF_Policy",
-            "description": "A Web Application Firewall Policy",
+            "description": "A Web Application Firewall Policy. Supports both traditional and advanced WAF policies. Advanced WAF policies require TMOS version 16.0 or newer.",
             "type": "object",
             "f5PostProcess": {
                 "tag": "modules",
@@ -2619,7 +2729,7 @@
 
                 "enforcementMode": {
                     "title": "Enforcement Mode",
-                    "description": "Overrides the enforcement mode setting of the WAF policy",
+                    "description": "Overrides the enforcement mode setting of the WAF policy. Ignored on Advanced WAF policies",
                     "type": "string",
                     "enum": [
                         "blocking",
@@ -2628,7 +2738,7 @@
                 },
                 "serverTechnologies": {
                     "title": "Server Technologies",
-                    "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts",
+                    "description": "Define server technologies for the WAF Policy, such as Java Servlets or Apache Struts. Ignored on Advanced WAF policies",
                     "type": "array",
                     "items": {
                         "title": "Server Technology",
@@ -2638,7 +2748,7 @@
                 },
                 "disabledSignatures": {
                     "title": "Disabled attack signatures",
-                    "description": "Disable various attack signatures by ID.",
+                    "description": "Disable various attack signatures by ID. Ignored on Advanced WAF policies",
                     "type": "array",
                     "items": {
                         "title": "Attack Signature ID",
@@ -2647,6 +2757,18 @@
                         "maximum": 399999999
                     },
                     "uniqueItems": true
+                },
+                "expand": {
+                    "title": "Expand",
+                    "description": "Performs AS3 string expansion on specified values within the WAF Policy. WAF Policies that are not in JSON format will be ignored",
+                    "type": "array",
+                    "items": {
+                        "title": "JSON pointer",
+                        "description": "A JSON pointer to a value within the WAF Policy that requires AS3 string expansion. Pointing to a parent property results in AS3 traversing the sub-properties and expanding any strings that it may find",
+                        "type": "string"
+                    },
+                    "uniqueItems": true
+
                 }
             },
             "additionalProperties": false,
@@ -3267,6 +3389,9 @@
                         "tag": "node"
                     }
                 },
+                "metadata": {
+                    "$ref": "#/definitions/Metadata"
+                },
                 "reselectTries": {
                     "title": "Reselect tries",
                     "description": "Maximum number of attempts to find a responsive member for a connection",
@@ -3672,6 +3797,9 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 63
+                },
+                "metadata": {
+                    "$ref": "#/definitions/Metadata"
                 },
                 "adminState": {
                     "title": "Administration State",
@@ -7249,9 +7377,16 @@
                 },
                 "routeDomain": {
                     "description": "The route domain that will be used for outbound connect requests",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 65534,
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65534
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
                     "default": 0
                 },
                 "tunnelName": {
@@ -7917,114 +8052,6 @@
             "f5aliases": {
                 "synCookieAllowlist": "synCookieWhitelist"
             }
-        },
-
-
-        "L4_Profile": {
-            "title": "L4_Profile",
-            "description": "Configures a Fast Layer 4 profile",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "L4_Profile"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-
-                "clientTimeout": {
-                    "title": "Client timeout",
-                    "description": "Number of seconds allowed for a client to transmit enough data to select a server when you have late binding enabled. Value -1 means indefinite (not recommended)",
-                    "type": "integer",
-                    "minimum": -1,
-                    "maximum": 86400,
-                    "default": 30
-                },
-                "idleTimeout": {
-                    "title": "Idle timeout",
-                    "description": "Number of seconds (default 300; may not be 0) connection may remain idle before it becomes eligible for deletion.  Value -1 (not recommended) means infinite",
-                    "type": "integer",
-                    "anyOf": [
-                        {
-                            "minimum": 1,
-                            "maximum": 86400
-                        },
-                        { "const": -1 }
-                    ],
-                    "default": 300
-                },
-                "keepAliveInterval": {
-                    "title": "Keep-alive interval",
-                    "description": "Number of seconds between keep-alive probes. A value of 0 seconds disables the feature.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 0
-                },
-                "looseClose": {
-                    "title": "Loose close",
-                    "description": "When true, system closes a loosely-initiated connection when the system receives the first FIN packet from either the client or the server (default false).",
-                    "type": "boolean",
-                    "default": false
-                },
-                "looseInitialization": {
-                    "title": "Loose initialization",
-                    "description": "When true, system initializes a connection when it receives any TCP packet, rather than requiring a SYN packet for connection initiation (default false).",
-                    "type": "boolean",
-                    "default": false
-                },
-                "maxSegmentSize": {
-                    "title": "MSS",
-                    "description": "Sets MSS advertised to peer.  Value 0 (default) will set MSS automatically in proportion to interface MTU.  Default 0 is usually the best choice",
-                    "type": "integer",
-                    "anyOf": [
-                        {
-                            "minimum": 256,
-                            "maximum": 9162
-                        },
-                        { "const": 0 }
-                    ],
-                    "default": 0
-                },
-                "resetOnTimeout": {
-                    "title": "Reset on timeout",
-                    "description": "If true (default), connections which time out will be reset (that is, the system sends an RST packet to the peer) before the system expunges them",
-                    "type": "boolean",
-                    "default": true
-                },
-                "synCookieAllowlist": {
-                    "title": "Syn Cookie Allowlist",
-                    "description": "Specifies whether or not to use a SYN Cookie Allowlist when doing software SYN Cookies. This means not doing a SYN Cookie for the same src IP address if it has been done already in the previous tm.flowstate.timeout (30) seconds. The default value is disabled.",
-                    "type": "boolean",
-                    "default": false
-                },
-                "synCookieEnable": {
-                    "title": "SYN cookie enable",
-                    "description": "Enables syn-cookies capability on this virtual server. If true (default), the system may use SYN cookies to avert connection-table overflow (for example, from DoS attacks)",
-                    "type": "boolean",
-                    "default": true
-                },
-                "tcpCloseTimeout": {
-                    "title": "TCP Close timeout",
-                    "description": "Specifies an TCP close timeout in seconds.  Value -1 means indefinite (not recommended)",
-                    "type": "integer",
-                    "minimum": -1,
-                    "maximum": 86400,
-                    "default": 5
-                },
-                "tcpHandshakeTimeout": {
-                    "title": "TCP Handshake timeout",
-                    "description": "Specifies a TCP handshake timeout in seconds. The default value is 5 seconds.  Value -1 means indefinite (not recommended)",
-                    "type": "integer",
-                    "minimum": -1,
-                    "maximum": 86400,
-                    "default": 5
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "class" ]
         },
 
         "Classification_Profile": {

@@ -266,7 +266,13 @@
     { "id": "service-down-action" },
     { "id": "slow-ramp-time" },
     { "id": "allow-nat",                 "altId": "allowNATEnabled", "truth": "yes", "falsehood": "no" },
-    { "id": "allow-snat",                "altId": "allowSNATEnabled", "truth": "yes", "falsehood": "no" }
+    { "id": "allow-snat",                "altId": "allowSNATEnabled", "truth": "yes", "falsehood": "no" },
+    { "id": "metadata",                  "extend": "objArray" }
+  ],
+  "ltm pool metadata": [
+    { "id": "name" },
+    { "id": "value" },
+    { "id": "persist" }
   ],
   "ltm pool members": [
     { "id":"connection-limit" },
@@ -287,8 +293,9 @@
     { "id":"autopopulate",              "truth": "enabled", "falsehood": "disabled" }
   ],
   "ltm pool members metadata": [
-    { "id":"name" },
-    { "id":"value" }
+    { "id": "name" },
+    { "id": "value" },
+    { "id": "persist" }
   ],
   "sys config merge file": [
     { "id":"filePath" },
@@ -1171,14 +1178,12 @@
     { "id":"field31",                    "quotedString": true },
     { "id":"field32",                    "quotedString": true }
   ],
-  
   "ltm profile tftp": [
     { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
     { "id":"idle-timeout",              "intToString": true },
     { "id":"log-profile",               "altId": "algLogProfile", "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } },
     { "id":"log-publisher",             "default": "none", "requiredModules": { "anyOf": [ "cgnat" ] } }
   ],
-
   "ltm rule": [
     { "id":"api-anonymous",             "altId": "iRule" }
   ],
@@ -1197,6 +1202,16 @@
     { "id":"tcp-idle-timeout",          "intToString": true },
     { "id":"traffic-group" },
     { "id":"udp-idle-timeout",          "intToString": true }
+  ],
+  "ltm traffic-matching-criteria": [
+    { "id":"partition",                  "minVersion": "14.1" },
+    { "id":"protocol",                   "minVersion": "14.1" },
+    { "id":"destination-address-inline", "minVersion": "14.1" },
+    { "id":"destination-address-list",   "minVersion": "14.1" },
+    { "id":"destination-port-list",      "minVersion": "14.1" },
+    { "id":"source-address-inline",      "minVersion": "14.1" },
+    { "id":"source-address-list",        "minVersion": "14.1" },
+    { "id":"route-domain",               "minVersion": "14.1" }
   ],
   "ltm virtual": [
     { "id":"enabled",                   "altId": "adminState" },
@@ -1234,6 +1249,7 @@
     { "id":"source-port",               "truth": "change", "falsehood": "preserve", "altId": "translateClientPort" },
     { "id":"translate-address",         "truth": "enabled", "falsehood": "disabled", "altId": "translateServerAddress" },
     { "id":"translate-port",            "truth": "enabled", "falsehood": "disabled", "altId": "translateServerPort" },
+    { "id":"traffic-matching-criteria", "minVersion": "14.1" },
     { "id":"nat64",                     "truth": "enabled", "falsehood": "disabled", "altId": "nat64Enabled" },
     { "id":"vlans",                     "extend":"array" },
     { "id":"vlans-enabled" },
@@ -1338,6 +1354,11 @@
     { "id":"description",               "altId": "remark", "quotedString": true},
     { "id":"addresses",                 "extend": "array"},
     { "id":"address-lists",             "extend": "array"}
+  ],
+  "net port-list": [
+    { "id":"description",               "altId": "remark", "quotedString": true},
+    { "id":"ports",                     "extend": "array"},
+    { "id":"port-lists",                "extend": "array"}
   ],
   "pem reporting format-script": [
     { "id":"description",               "altId": "remark", "quotedString": true },
@@ -1885,7 +1906,7 @@
     { "id":"ctype" },
     { "id":"send" },
     { "id":"why" },
-    { "id":"overrides" }
+    { "id":"settings" }
   ],
   "iControl_postFromRemote": [
     { "id":"get",                       "extend": "object" },
@@ -1910,7 +1931,8 @@
     { "id":"method" },
     { "id":"ctype" },
     { "id":"why" },
-    { "id":"overrides" }
+    { "id":"settings" },
+    { "id":"reference" }
   ],
   "pem policy": [
     { "id":"description",               "altId": "remark", "quotedString": true},

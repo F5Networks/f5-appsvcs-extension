@@ -119,6 +119,11 @@ resource "azurerm_virtual_machine" "vm" {
   identity {
     type = "SystemAssigned"
   }
+
+  timeouts {
+    create = "1h"
+    delete = "1h"
+  }
 }
 
 # TODO: Make this logic smarter to handle 2 NICs case.

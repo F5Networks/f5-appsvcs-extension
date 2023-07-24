@@ -493,6 +493,23 @@ class DeclarationProvider {
                 } else {
                     declToReturn = {};
                 }
+
+                const controlsName = Object.keys(declToReturn)
+                    .find((key) => declToReturn[key].class === 'Controls');
+                if (controlsName) {
+                    const action = util.getDeepValue(declToReturn[controlsName], 'internalUse.action');
+                    if (action === 'dry-run') {
+                        declToReturn[controlsName].dryRun = true;
+                        if (Object.keys(declToReturn[controlsName].internalUse).length === 1) {
+                            delete declToReturn[controlsName].internalUse;
+                        } else {
+                            log.warning(`Unexpected properties in controls.internalUse: ${JSON.stringify(declToReturn[controlsName].internalUse)}`);
+                        }
+                    } else {
+                        log.warning(`Unexpected action "${action}" in controls`);
+                    }
+                }
+
                 log.debug(`fetched declaration from target, ${fakeDecl.metadata.blocks} blocks, ${fakeDecl.metadata.tenants.length} Tenants`);
 
                 return (includeMetadata) ? {

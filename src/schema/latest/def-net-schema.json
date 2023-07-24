@@ -288,6 +288,42 @@
                 { "required": [ "addressLists" ] }
             ],
             "additionalProperties": false
+        },
+        "Net_Port_List": {
+            "title": "Net_Port_List",
+            "description": "You can use the port-list component to define reusable lists of ports. This property requires a BIG-IP version of 14.1 or higher.",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Net_Port_List"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "ports": {
+                    "type": "array",
+                    "description": "A list of ports and port ranges (for example, 80, \"8080-8090\").",
+                    "items": {
+                        "type": ["integer", "string"]
+                    },
+                    "minItems": 1
+                },
+                "portLists": {
+                    "type": "array",
+                    "description": "A list of other port lists (each by BIG-IP AS3 pointer or BIG-IP pathname).",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_Net_Port_List"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["class"],
+            "anyOf": [
+                { "required": [ "ports" ] },
+                { "required": [ "portLists" ] }
+            ],
+            "additionalProperties": false
         }
     }
 }

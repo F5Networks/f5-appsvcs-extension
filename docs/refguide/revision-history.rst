@@ -9,7 +9,11 @@ Document Revision History
 
       * - Release
         - Description
-        - Date 
+        - Date
+
+      * - 3.46
+        - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| * Added support for using address and port lists in a virtual service (see :ref:`Address and Port lists<portlist>`), `GitHub Issue 269 <https://github.com/F5Networks/f5-appsvcs-extension/issues/269>`_ |br| * Added support for disabling bot defense profiles in an endpoint policy (see :ref:`Enabling or Disabling a bot defense profile<disablebd>`) |br| * Added support for metadata on pools and pool members (see :ref:`Metadata for pools<poolmeta>`) |br| * Added support for using a string to specify a route domain in a SOCKS profile (see the updated :ref:`SOCKS profile<socks>` example) |br| * Added support for using **expand** in WAF policies (see :ref:`WAF policy expand example<expand>`) |br| * Added a troubleshooting entry for Changes Pending returned on dry-runs (see :ref:`Troubleshooting<pending>`) |br| * Added members to the Prober Pool in the GSLB example declaration (see :ref:`GSLB example<gslbex>`) |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fixed issue with running a DELETE after a dry-run on BIG-IQ |br| * SNAT_Pool handling in /Common/Shared, `GitHub Issue 727 <https://github.com/F5Networks/f5-appsvcs-extension/issues/727>`_ |br| * Fixed idempotency issue with a Pool's minimumMonitors |br| * Updated list of services for Protocol_Inspection_Profile |br| * GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]", `GitHub Issue 715 <https://github.com/F5Networks/f5-appsvcs-extension/issues/715>`_ 
+        - 7-24-23
 
       * - Unreleased (documentation updates)
         - This documentation only update contains the following changes: |br| * Added a procedure for downgrading BIG-IP AS3 on a BIG-IQ (see :ref:`Downgrade<down>`) |br| * Added a troubleshooting entry for potential AS3 incompatibility on BIG-IQ (see :ref:`Troubleshooting<bigiqas3>`)
@@ -245,7 +249,7 @@ Document Revision History
         - 10-19-18
 
       * - 3.5
-        - Updated the documentation for AS3 v3.5.0.  This release contains the following changes: |br| * Added a Community Supported version of AS3 in a Container on Docker Hub |br| * Added support for Generic Services (see :ref:`Using the Service_Generic class<genex>` and :doc:`schema-reference` for usage). |br| * Added support for the FIX Profile for Service_TCP and Service_L4, which includes the ability to configure Sender Tag Mapping and Log Publishers (see :ref:`Using a FIX profile and data groups in a declaration <fixex>` for details). |br| * Added support for internal, external, and existing Data Groups (see :doc:`schema-reference` and :ref:`the FIX example<fixex>` for usage). |br| * Added support for spanning in Serivce_Address (see :doc:`schema-reference` for usage).  |br| * The AS3 schema is now published on GitHub (https://github.com/F5Networks/f5-appsvcs-extension/tree/master/schema) |br| |br| Issues Resolved: |br| * Pointing to a Service_Address in a declaration can fail . |br| * Incorrect validation of declarations wrapped in an AS3 Request object.  |br| * Multiple conditions or actions in an Endpoint Policy Rule can cause AS3 to lock up.  |br| * Errors when processing a declaration can cause AS3 to lock up.  |br| * HTTP Profile Compression issues (Extra “glob” characters included in content-type and Cannot update uri and content-type include/exclude values). |br| * Declaration updates that remove a property can silently fail.   |br| * Enforcement_Listener declarations cannot reference Service_Generic declarations.   |br| * Service_Address and Pool members can have naming conflicts.  |br| * Persist update not idempotent due to prop with regex value. |br| * Success on second POST with Diameter Endpoint Profile. |br| * Cannot update certificate properties.
+        - Updated the documentation for AS3 v3.5.0.  This release contains the following changes: |br| * Added a Community Supported version of AS3 in a Container on Docker Hub |br| * Added support for Generic Services (see :ref:`Using the Service_Generic class<genex>` and :doc:`schema-reference` for usage). |br| * Added support for the FIX Profile for Service_TCP and Service_L4, which includes the ability to configure Sender Tag Mapping and Log Publishers (see :ref:`Using a FIX profile and data groups in a declaration <fixex>` for details). |br| * Added support for internal, external, and existing Data Groups (see :doc:`schema-reference` and :ref:`the FIX example<fixex>` for usage). |br| * Added support for spanning in Serivce_Address (see :doc:`schema-reference` for usage).  |br| * The AS3 schema is now published on GitHub (https://github.com/F5Networks/f5-appsvcs-extension/tree/main/schema) |br| |br| Issues Resolved: |br| * Pointing to a Service_Address in a declaration can fail . |br| * Incorrect validation of declarations wrapped in an AS3 Request object.  |br| * Multiple conditions or actions in an Endpoint Policy Rule can cause AS3 to lock up.  |br| * Errors when processing a declaration can cause AS3 to lock up.  |br| * HTTP Profile Compression issues (Extra “glob” characters included in content-type and Cannot update uri and content-type include/exclude values). |br| * Declaration updates that remove a property can silently fail.   |br| * Enforcement_Listener declarations cannot reference Service_Generic declarations.   |br| * Service_Address and Pool members can have naming conflicts.  |br| * Persist update not idempotent due to prop with regex value. |br| * Success on second POST with Diameter Endpoint Profile. |br| * Cannot update certificate properties.
         - 10-02-18
 
       * - Unreleased
@@ -302,7 +306,7 @@ Document Revision History
 
 .. |valid| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/master/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/main/AS3-schema-validator" target="_blank">AS3 Schema Validator</a>
 
 .. |tlsc| raw:: html
 
@@ -316,7 +320,7 @@ Document Revision History
 
 .. |schemalink| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/master/schema" target="_blank">schema files</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/tree/main/schema" target="_blank">schema files</a>
 
 .. |pmcol| raw:: html
 
@@ -324,7 +328,7 @@ Document Revision History
 
 .. |supportmd| raw:: html
 
-   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/master/SUPPORT.md" target="_blank">Support page on GitHub</a>
+   <a href="https://github.com/F5Networks/f5-appsvcs-extension/blob/main/SUPPORT.md" target="_blank">Support page on GitHub</a>
 
 .. |bigiqvid| raw:: html
 

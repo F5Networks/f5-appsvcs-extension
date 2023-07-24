@@ -472,6 +472,74 @@ describe('RequestContext', () => {
                 });
             });
         });
+
+        describe('invalid requests on BIGIP', () => {
+            let path;
+            let hostContext;
+
+            beforeEach(() => {
+                path = '/shared/appsvcs/declare';
+                hostContext = new HostContext();
+
+                hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
+                hostContext.as3VersionInfo = {};
+            });
+
+            it('should invalidate per-app declaration POST to /declare', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+
+                restOp.setPathName(path);
+                restOp.setPath(path);
+                restOp.setBody({
+                    app1: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1:
+                        {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11,
+                            minimumMonitors: 1
+                        }
+                    }
+                });
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.strictEqual(ctxt.errorCode, 422);
+                        assert.strictEqual(ctxt.isPerApp, false);
+                        assert.strictEqual(ctxt.method, 'Post');
+                        assert.strictEqual(ctxt.error,
+                            'Invalid request value \'[object Object]\' (path: /declaration) : should have required property \'class\' {"missingProperty":"class"}');
+                        assert.strictEqual(ctxt.pathName, 'declare');
+                        assert.strictEqual(ctxt.subPath, undefined);
+                        assert.deepStrictEqual(ctxt.queryParams, []);
+                        assert.deepEqual(
+                            ctxt.body,
+                            {
+                                app1: {
+                                    class: 'Application',
+                                    template: 'generic',
+                                    pool1:
+                                    {
+                                        class: 'Pool',
+                                        loadBalancingMode: 'round-robin',
+                                        minimumMembersActive: 1,
+                                        reselectTries: 0,
+                                        serviceDownAction: 'none',
+                                        slowRampTime: 11,
+                                        minimumMonitors: 1
+                                    }
+                                }
+                            }
+                        );
+                    });
+            });
+        });
     });
 
     describe('/declare/tenant/applications', () => {
@@ -505,7 +573,7 @@ describe('RequestContext', () => {
 
                 restOp.setPathName(`${path}/Tenant1/applications`);
                 restOp.setPath(`${path}/Tenant1/applications`);
-                restOp.setBody(Object.assign({}, validDecl));
+                restOp.setBody({});
 
                 return RequestContext.get(restOp, hostContext)
                     .then((ctxt) => {
@@ -518,7 +586,7 @@ describe('RequestContext', () => {
                         assert.deepStrictEqual(
                             ctxt.request.perAppInfo,
                             {
-                                app: undefined, // Note: this is by design
+                                apps: [], // Note: this is by design
                                 tenant: 'Tenant1'
                             }
                         );
@@ -579,7 +647,7 @@ describe('RequestContext', () => {
                         assert.deepStrictEqual(
                             ctxt.request.perAppInfo,
                             {
-                                app: undefined, // Note: this is by design
+                                apps: [],
                                 tenant: 'Tenant1'
                             }
                         );
@@ -615,7 +683,7 @@ describe('RequestContext', () => {
                                 isMultiDecl: false,
                                 isPerApp: true,
                                 perAppInfo: {
-                                    app: 'App1',
+                                    apps: ['App1'],
                                     tenant: 'Tenant1'
                                 },
                                 method: 'Delete',
@@ -657,6 +725,214 @@ describe('RequestContext', () => {
                         );
                     });
             });
+
+            it('should validate a per-app POST request with one app', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+
+                restOp.setPathName(`${path}/Tenant1/applications/`);
+                restOp.setPath(`${path}/Tenant1/applications/`);
+                restOp.setBody({
+                    app1: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1:
+                        {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11,
+                            minimumMonitors: 1
+                        }
+                    }
+                });
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.request.error);
+                        assert.strictEqual(ctxt.request.method, 'Post');
+                        assert.strictEqual(ctxt.request.pathName, 'declare');
+                        assert.strictEqual(ctxt.request.subPath, 'Tenant1/applications');
+                        assert.deepStrictEqual(ctxt.request.queryParams, []);
+                        assert.strictEqual(ctxt.request.isPerApp, true);
+                        assert.deepStrictEqual(
+                            ctxt.request.perAppInfo,
+                            {
+                                apps: ['app1'],
+                                tenant: 'Tenant1',
+                                decl: {
+                                    app1: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    }
+                                }
+                            }
+                        );
+                        assert.strictEqual(ctxt.request.body.id.match(/^autogen/).length > 0, true);
+                        delete ctxt.request.body.id; // The id is random, no need to check the value specifically
+                        assert.deepEqual(
+                            ctxt.request.body,
+                            {
+                                class: 'ADC',
+                                schemaVersion: '3.0.0',
+                                Tenant1: {
+                                    class: 'Tenant',
+                                    app1: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    }
+                                }
+                            }
+                        );
+                    });
+            });
+
+            it('should validate a per-app POST request with two apps', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+
+                restOp.setPathName(`${path}/Tenant1/applications/`);
+                restOp.setPath(`${path}/Tenant1/applications/`);
+                restOp.setBody({
+                    app1: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1:
+                        {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11,
+                            minimumMonitors: 1
+                        }
+                    },
+                    app2: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1:
+                        {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11,
+                            minimumMonitors: 1
+                        }
+                    }
+                });
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.request.error);
+                        assert.strictEqual(ctxt.request.method, 'Post');
+                        assert.strictEqual(ctxt.request.pathName, 'declare');
+                        assert.strictEqual(ctxt.request.subPath, 'Tenant1/applications');
+                        assert.deepStrictEqual(ctxt.request.queryParams, []);
+                        assert.strictEqual(ctxt.request.isPerApp, true);
+                        assert.deepStrictEqual(
+                            ctxt.request.perAppInfo,
+                            {
+                                apps: ['app1', 'app2'],
+                                tenant: 'Tenant1',
+                                decl: {
+                                    app1: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    },
+                                    app2: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    }
+                                }
+                            }
+                        );
+                        assert.strictEqual(ctxt.request.body.id.match(/^autogen/).length > 0, true);
+                        delete ctxt.request.body.id; // The id is random, no need to check the value specifically
+                        assert.deepEqual(
+                            ctxt.request.body,
+                            {
+                                class: 'ADC',
+                                schemaVersion: '3.0.0',
+                                Tenant1: {
+                                    class: 'Tenant',
+                                    app1: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    },
+                                    app2: {
+                                        class: 'Application',
+                                        template: 'generic',
+                                        pool1:
+                                        {
+                                            class: 'Pool',
+                                            loadBalancingMode: 'round-robin',
+                                            minimumMembersActive: 1,
+                                            reselectTries: 0,
+                                            serviceDownAction: 'none',
+                                            slowRampTime: 11,
+                                            minimumMonitors: 1
+                                        }
+                                    }
+                                }
+                            }
+                        );
+                    });
+            });
         });
 
         describe('invalid', () => {
@@ -679,7 +955,7 @@ describe('RequestContext', () => {
                                 fullPath: '/shared/appsvcs/declare/tenant,tenantId2/applications/app1',
                                 isPerApp: true,
                                 perAppInfo: {
-                                    app: 'app1',
+                                    apps: ['app1'],
                                     tenant: 'tenant,tenantId2'
                                 },
                                 pathName: 'declare',
@@ -709,13 +985,67 @@ describe('RequestContext', () => {
                                 fullPath: '/shared/appsvcs/declare/tenant/applications/app1,app2',
                                 isPerApp: true,
                                 perAppInfo: {
-                                    app: 'app1,app2',
+                                    apps: ['app1,app2'],
                                     tenant: 'tenant'
                                 },
                                 pathName: 'declare',
                                 queryParams: [],
                                 subPath: 'tenant/applications/app1,app2'
                             }
+                        );
+                    });
+            });
+
+            it('should invalidate a per-app POST request with per-app array', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+
+                restOp.setPathName(`${path}/Tenant1/applications/`);
+                restOp.setPath(`${path}/Tenant1/applications/`);
+                restOp.setBody([{
+                    app1: {
+                        class: 'Application',
+                        template: 'generic',
+                        pool1:
+                        {
+                            class: 'Pool',
+                            loadBalancingMode: 'round-robin',
+                            minimumMembersActive: 1,
+                            reselectTries: 0,
+                            serviceDownAction: 'none',
+                            slowRampTime: 11,
+                            minimumMonitors: 1
+                        }
+                    }
+                }]);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.strictEqual(ctxt.errorCode, 422);
+                        assert.strictEqual(ctxt.isPerApp, true);
+                        assert.strictEqual(ctxt.method, 'Post');
+                        assert.strictEqual(ctxt.error, 'declaration should be an object');
+                        assert.strictEqual(ctxt.pathName, 'declare');
+                        assert.strictEqual(ctxt.subPath, 'Tenant1/applications');
+                        assert.deepStrictEqual(ctxt.queryParams, []);
+                        assert.deepEqual(
+                            ctxt.body,
+                            [{
+                                app1: {
+                                    class: 'Application',
+                                    template: 'generic',
+                                    pool1:
+                                    {
+                                        class: 'Pool',
+                                        loadBalancingMode: 'round-robin',
+                                        minimumMembersActive: 1,
+                                        reselectTries: 0,
+                                        serviceDownAction: 'none',
+                                        slowRampTime: 11,
+                                        minimumMonitors: 1
+                                    }
+                                }
+                            }]
                         );
                     });
             });
