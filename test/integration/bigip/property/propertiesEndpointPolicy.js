@@ -61,15 +61,16 @@ const extractEvents = (obj, eventsArr) => {
     return str.trim();
 };
 
-const PERSIST_EVENTS = ['proxy-request', 'request'];
+const PERSIST_EVENTS = ['proxy-request', 'request', 'client-accepted'];
 
 const actionTemplates = [
     {
         type: 'forward',
-        events: ['ssl-client-hello', 'request'],
+        events: ['ssl-client-hello', 'request', 'cilent-accepted'],
         actions: [
             { select: { service: { bigip: '/Common/testVs' } } },
-            { select: { pool: { bigip: '/Common/testPool' }, snat: 'automap' } }
+            { select: { pool: { bigip: '/Common/testPool' }, snat: 'automap' } },
+            { select: { service: { bigip: '/Common/testVs' } } }
         ]
     },
     {
@@ -348,6 +349,7 @@ describe('Endpoint_Policy', function () {
     function testEvent(event, actionOverrides, conditionOverrides) {
         const options = { bigipItems: [] };
         const actions = genValues(actionOverrides || actionTemplates, 'actions', event);
+        let testVsAdded = false;
         const actionsExpected = actions.map((action) => {
             const actionCopy = util.simpleCopy(action);
             if (actionCopy.type === 'httpRedirect') {
@@ -360,13 +362,16 @@ describe('Endpoint_Policy', function () {
             if (actionCopy.type === 'forward') {
                 if (actionCopy.select) {
                     if (actionCopy.select.service) {
-                        options.bigipItems.push({
-                            endpoint: '/mgmt/tm/ltm/virtual',
-                            data: {
-                                name: 'testVs',
-                                partition: 'Common'
-                            }
-                        });
+                        if (!testVsAdded) {
+                            testVsAdded = true;
+                            options.bigipItems.push({
+                                endpoint: '/mgmt/tm/ltm/virtual',
+                                data: {
+                                    name: 'testVs',
+                                    partition: 'Common'
+                                }
+                            });
+                        }
                         actionCopy.select.virtual = actionCopy.select.service.bigip;
                         delete actionCopy.select.service;
                     } else if (actionCopy.select.pool) {

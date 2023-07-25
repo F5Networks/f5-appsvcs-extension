@@ -361,6 +361,7 @@
                             "type": "string",
                             "description": "When to run this event in the request-response cycle",
                             "enum": [
+                                "client-accepted",
                                 "ssl-client-hello",
                                 "request"
                             ],

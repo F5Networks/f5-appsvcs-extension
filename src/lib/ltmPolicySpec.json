@@ -54,7 +54,7 @@
         "        [universal key TCLSTRING [timeout NUMBER] ]",
         "        [hash key TCLSTRING [timeout NUMBER] ]",
         "        [carp key TCLSTRING [timeout NUMBER] ]]",
-        " [forward [ssl-client-hello* | request]",
+        " [forward [client-accepted | ssl-client-hello* | request]",
         "        [select* [snat STRING]",
         "                [pool STRING]",
         "                [node STRING]",
