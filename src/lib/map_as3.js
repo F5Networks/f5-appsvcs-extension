@@ -356,20 +356,34 @@ const updateTlsOptions = function (item, context) {
 };
 
 const isInternal = function (item) {
-    return typeof item.virtualType !== 'undefined' && item.virtualType === 'internal';
+    return item.virtualType === 'internal';
 };
 
 const updatePropsIfInternal = function (item) {
     if (isInternal(item)) {
-        const sourceType = typeof item.sourceAddress;
         item.internal = {};
+
         // internal virtuals allow a source address but destination is
         // always 0.0.0.0 with a port of 'any'
         item.destination = '0.0.0.0:any';
-        item.virtualAddresses = sourceType === 'undefined' || sourceType === 'object' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
+        item.virtualAddresses = ['0.0.0.0'];
 
         // ICAP should only be on internal virtuals
         item = profile(item, 'profileICAP');
+    }
+    return item;
+};
+
+const updatePropsForSourceAddress = function (item) {
+    // 'object' sourceAddress (that is, pointers to address lists) are handled elsewhere
+    if (typeof item.sourceAddress === 'string') {
+        item.virtualAddresses = item.virtualAddresses.map((virtualAddress) => {
+            if (!Array.isArray(virtualAddress)) {
+                return [virtualAddress, item.sourceAddress];
+            }
+            return virtualAddress;
+        });
+        delete item.sourceAddress;
     }
     return item;
 };
@@ -2241,6 +2255,8 @@ const translate = {
         if (!item.enable) return { configs: [] };
 
         item.adminState = item.adminState === 'enable';
+
+        item = updatePropsForSourceAddress(item);
 
         // support for vlans-disabled, vlans-enabled
         if (item.allowVlans) {

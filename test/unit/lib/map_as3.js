@@ -3033,11 +3033,19 @@ describe('map_as3', () => {
             });
         });
 
-        describe('sourceAddress list', () => {
+        describe('sourceAddress', () => {
+            it('should map sourceAddress', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                item.sourceAddress = '192.0.2.10/32';
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                console.log(JSON.stringify(virtual, null, 4));
+                assert.strictEqual(virtual.source, '192.0.2.10/32');
+            });
+
             it('should map sourceAddress list to traffic matching criteria', () => {
                 const fullContext = Object.assign({}, defaultContext, context);
                 fullContext.target.tmosVersion = '14.1';
-                item.virtualType = 'internal';
                 item.sourceAddress = {
                     use: 'sourceAddressList'
                 };

@@ -2051,7 +2051,7 @@ const doesDestinationMatchVirtualAddress = function (destination, virtualAddress
     const portIndex = lastDot > lastColon ? lastDot : lastColon;
 
     const destinationWithoutPort = destination.substring(0, portIndex);
-    const destinationWithoutTenantOrPort = destinationWithoutPort.split('/')[2];
+    const destinationWithoutTenantOrPort = destinationWithoutPort.startsWith('/') ? destinationWithoutPort.split('/')[2] : destinationWithoutPort;
     let destinationAddress = destinationWithoutTenantOrPort;
     if (destinationAddress.startsWith('any6')) {
         destinationAddress = destinationAddress.replace('any6', '::');

@@ -1792,7 +1792,7 @@ describe('core-schema.json', () => {
                 assert.strictEqual(validate(data), false, 'should have required property virtualAddresses');
             });
 
-            it('should invalidate with sourceAddress and not internal type', () => {
+            it('should invalidate with virtualAddresses that include a source address where service also has sourceAddress', () => {
                 const data = {
                     class: 'ADC',
                     schemaVersion: '3.0.0',
@@ -1804,12 +1804,15 @@ describe('core-schema.json', () => {
                             template: 'generic',
                             coreService: {
                                 class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    ['192.0.2.3', '192.0.2.4']
+                                ],
                                 sourceAddress: '192.0.2.3'
                             }
                         }
                     }
                 };
-                assert.strictEqual(validate(data), false, 'must be internal virtual type');
+                assert.strictEqual(validate(data), false, 'service with virtualAddresses that include source address cannot also have sourceAddress');
             });
 
             it('should invalidate with fallbackPersistenceMethod and no persistenceMethods', () => {
@@ -2113,6 +2116,27 @@ describe('core-schema.json', () => {
                                 sourceAddress: {
                                     use: 'myAddressList'
                                 }
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate with both simple virtualAddresses and sourceAddress', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            coreService: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: ['192.0.2.1'],
+                                sourceAddress: '192.0.2.2'
                             }
                         }
                     }

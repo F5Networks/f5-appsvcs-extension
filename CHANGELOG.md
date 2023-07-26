@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3929: client-accepted event to the Policy_Action_Forward class for the Endpoint_Policy class
 
 ### Fixed
+- AUTOTOOL-3915: sourceAddress property ignored on non-internal virtuals
 
 ### Changed
 

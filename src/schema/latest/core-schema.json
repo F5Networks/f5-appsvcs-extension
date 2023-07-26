@@ -1763,7 +1763,7 @@
 
                 "virtualAddresses": {
                     "title": "Virtual addresses",
-                    "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. If you do this, you cannot also include the sourceAddress property. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
                     "oneOf": [
                         {
                             "type": "array",
@@ -1834,7 +1834,7 @@
                 },
                 "sourceAddress": {
                     "title": "Source address",
-                    "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual. If you also include the virtualAddresses property, those addresses cannot include the accept-from-subnet field.",
                     "oneOf": [
                         {
                             "type": "string",
@@ -2414,6 +2414,29 @@
                     },
                     "then": {
                         "required": [ "virtualAddresses" ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties" : {
+                            "virtualAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2
+                                }
+                            }
+                        },
+                        "required": [ "virtualAddresses" ]
+                    },
+                    "then": {
+                        "not": {
+                            "properties": {
+                                "sourceAddress": {}
+                            },
+                            "required": [ "sourceAddress" ]
+                        }
                     }
                 },
                 { "$ref": "#/definitions/Include" }
