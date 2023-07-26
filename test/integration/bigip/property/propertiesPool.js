@@ -269,6 +269,148 @@ describe('Pool', function () {
         return assertPoolClass(properties, { bigipItems });
     });
 
+    it('Remove metadata', () => {
+        const properties = [
+            {
+                name: 'members',
+                inputValue: [
+                    [
+                        {
+                            servicePort: 80,
+                            serverAddresses: ['2.2.2.2'],
+                            metadata: {
+                                example: {
+                                    value: 'test'
+                                },
+                                example1: {
+                                    value: '123',
+                                    persist: false
+                                }
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            servicePort: 80,
+                            serverAddresses: ['2.2.2.2'],
+                            metadata: {
+                                example: {
+                                    value: 'test'
+                                }
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            servicePort: 80,
+                            serverAddresses: ['2.2.2.2'],
+                            metadata: {}
+                        }
+                    ],
+                    undefined
+                ],
+                expectedValue: [
+                    [
+                        {
+                            address: '2.2.2.2',
+                            connectionLimit: 0,
+                            dynamicRatio: 1,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/2.2.2.2:80',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            ],
+                            monitor: 'default',
+                            name: '2.2.2.2:80',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 0,
+                            rateLimit: 'disabled',
+                            ratio: 1,
+                            session: 'user-enabled',
+                            state: 'unchecked'
+                        }
+                    ],
+                    [
+                        {
+                            address: '2.2.2.2',
+                            connectionLimit: 0,
+                            dynamicRatio: 1,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/2.2.2.2:80',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                }
+                            ],
+                            monitor: 'default',
+                            name: '2.2.2.2:80',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 0,
+                            rateLimit: 'disabled',
+                            ratio: 1,
+                            session: 'user-enabled',
+                            state: 'unchecked'
+                        }
+                    ],
+                    [
+                        {
+                            address: '2.2.2.2',
+                            connectionLimit: 0,
+                            dynamicRatio: 1,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/2.2.2.2:80',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            monitor: 'default',
+                            name: '2.2.2.2:80',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 0,
+                            rateLimit: 'disabled',
+                            ratio: 1,
+                            session: 'user-enabled',
+                            state: 'unchecked'
+                        }
+                    ],
+                    []
+                ],
+                extractFunction: (o) => {
+                    o.members.forEach((member) => {
+                        delete member.kind;
+                        delete member.generation;
+                        delete member.selfLink;
+                    });
+                    return o.members;
+                }
+            }
+        ];
+
+        return assertPoolClass(properties);
+    });
+
     describe('FQDN members', function () {
         function extractFunction(o) {
             const fqdnMember = o.members.find((member) => member.ephemeral === 'false');
