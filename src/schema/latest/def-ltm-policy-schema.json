@@ -1070,13 +1070,14 @@
                     "description": "Selects the LTM policy condition this object describes",
                     "type": "string",
                     "enum": [
+                        "geoip",
+                        "httpCookie",
                         "httpHeader",
+                        "httpHost",
                         "httpMethod",
                         "httpUri",
-                        "httpCookie",
                         "sslExtension",
-                        "tcp",
-                        "geoip"
+                        "tcp"
                     ]
                 }
             },
@@ -1089,6 +1090,10 @@
                 {
                     "if": { "properties": { "type": { "const": "httpHeader" } } },
                     "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Header" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpHost" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Host" }
                 },
                 {
                     "if": { "properties": { "type": { "const": "httpMethod" } } },
@@ -1363,6 +1368,68 @@
                                 }
                             },
                             "required": ["all", "name"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_HTTP_Host": {
+            "description": "Match against an HTTP request's Host header",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-request",
+                                "request",
+                                "proxy-connect"
+                            ],
+                            "default": "proxy-request"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "all": {
+                                    "description": "Match against the full string of the Host header",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["all"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "description": "Match against the host of the Host header",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["host"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "port": {
+                                    "description": "Match against the port of the Host header",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_Number" }
+                                    ]
+                                }
+                            },
+                            "required": ["port"]
                         }
                     ]
                 }

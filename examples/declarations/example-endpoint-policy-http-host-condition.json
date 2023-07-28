@@ -1,0 +1,96 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.37.0",
+    "remark": "HTTP Host condition with LTM policy",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {            
+            "class": "Application",
+            "http_host_service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.0.1.10"
+                ],
+                "policyEndpoint": "http_host_policy",
+                "profileHTTP": {
+                    "use": "httpProfile"
+                }
+            },
+            "httpProfile": {
+                "class": "HTTP_Profile",
+                "proxyConnectEnabled": true,
+                "proxyType": "explicit",
+                "resolver": {
+                    "bigip": "/Common/f5-aws-dns"
+                }
+            },
+            "hostnames": {
+                "class": "Data_Group",
+                "keyDataType": "string",
+                "records": [
+                    {
+                        "key": "testKey",
+                        "value": "test.com"
+                    },
+                    {
+                        "key": "exampleKey",
+                        "value": "example.com"
+                    }
+                ]
+            },
+            "http_host_policy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "http_host_1",
+                        "conditions": [
+                            {
+                                "type": "httpHost",
+                                "event": "proxy-request",
+                                "all": {
+                                    "operand": "contains",
+                                    "datagroup": {
+                                        "bigip": "/Common/hostnames"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "http_host_2",
+                        "conditions": [
+                            {
+                                "type": "httpHost",
+                                "event": "request",
+                                "host": {
+                                    "operand": "ends-with",
+                                    "values": [
+                                        "test.com",
+                                        "example.com"
+                                    ]
+                                },
+                                "caseSensitive": true
+                            }
+                        ]
+                    },
+                    {
+                        "name": "http_host_3",
+                        "conditions": [
+                            {
+                                "type": "httpHost",
+                                "event": "proxy-connect",
+                                "port": {
+                                    "operand": "equals",
+                                    "values": [
+                                        8080,
+                                        8443
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

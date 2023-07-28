@@ -213,6 +213,40 @@ describe('map_as3', () => {
             const conditions = [
                 {
                     input: {
+                        type: 'httpHost',
+                        event: 'proxy-request',
+                        all: {
+                            operand: 'contains',
+                            datagroup: { bigip: '/Common/hostnames' }
+                        }
+                    },
+                    expected: 'http-host proxy-request all contains datagroup /Common/hostnames case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpHost',
+                        event: 'request',
+                        host: {
+                            operand: 'ends-with',
+                            values: ['test.com', 'example.com']
+                        },
+                        caseSensitive: true
+                    },
+                    expected: 'http-host request host ends-with values { test.com example.com } case-sensitive'
+                },
+                {
+                    input: {
+                        type: 'httpHost',
+                        event: 'proxy-connect',
+                        port: {
+                            operand: 'equals',
+                            values: [8080, 8443]
+                        }
+                    },
+                    expected: 'http-host proxy-connect port equals values { 8080 8443 } case-insensitive'
+                },
+                {
+                    input: {
                         type: 'httpUri',
                         event: 'request',
                         host: {

@@ -250,6 +250,15 @@ const conditionTemplates = [
         ]
     },
     {
+        type: 'httpHost',
+        events: ['request', 'proxy-request', 'proxy-connect'],
+        conditions: [
+            { all: { operand: 'contains', datagroup: { bigip: '/Common/images' } } },
+            { host: { operand: 'ends-with', values: ['test.com', 'example.com'] } },
+            { port: { operand: 'equals', values: [8080, 8443] } }
+        ]
+    },
+    {
         type: 'httpUri',
         events: ['request', 'proxy-request'],
         conditions: [
@@ -443,6 +452,7 @@ describe('Endpoint_Policy', function () {
     it('All Response Rules', () => testEvent('response'));
     it('All Client-Accepted Rules', () => testEvent('client-accepted'));
     it('All SSL Client Hello Rules', () => testEvent('ssl-client-hello'));
+    it('ALL Proxy Connect Rules', () => testEvent('proxy-connect'));
     it('ALL Proxy Request Rules', () => testEvent('proxy-request'));
 
     it('All SSL Server Hello Rules', function () {
