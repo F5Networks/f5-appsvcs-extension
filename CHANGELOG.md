@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 - AUTOTOOL-3915: sourceAddress property ignored on non-internal virtuals
 - AUTOTOOL-3948: Not able to remove pool member's metadata from declaration
+- AUTOTOOL-3930: Adding new pool with updated monitor failed at posting
 
 ### Changed
 

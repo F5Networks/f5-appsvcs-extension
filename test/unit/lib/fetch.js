@@ -7946,6 +7946,125 @@ describe('fetch', () => {
                     assert.deepStrictEqual(actualCmds, expCmds);
                 });
         });
+
+        it('should add pool with updated monitor', () => {
+            const desiredConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon1': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:*',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon2': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:9631',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon3': {
+                    command: 'ltm monitor radius',
+                    properties: {
+                        destination: '*:*',
+                        interval: 30
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Common/10.70.61.10:9021': {
+                                minimumMonitors: 1,
+                                monitor: { '/tenant/app/tenant_mon2': {} }
+                            },
+                            '/Common/10.70.61.11:9021': {
+                                minimumMonitors: 1,
+                                monitor: { default: {} }
+                            },
+                            '/Common/10.70.61.9:9021': {
+                                minimumMonitors: 1,
+                                monitor: {
+                                    '/Common/gateway_icmp': {}
+                                }
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon1': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool1': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Common/10.70.61.10:9021': {}
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon2': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: []
+                }
+            };
+
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    lhs: '*:*',
+                    path: ['/tenant/app/tenant_mon2', 'properties', 'destination'],
+                    rhs: '*:9631'
+                },
+                {
+                    kind: 'D',
+                    lhs: {},
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', '/tenant/app/tenant_mon2']
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', 'default'],
+                    rhs: {}
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool1'],
+                    rhs: {
+                        command: 'ltm pool',
+                        ignore: [],
+                        properties: {
+                            members: {
+                                '/Common/10.70.61.10:9021': {}
+                            },
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/Common/gateway_icmp': {},
+                                '/tenant/app/tenant_mon2': {}
+                            }
+                        }
+                    }
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+                });
+        });
     });
 
     describe('.checkDesiredForReferencedProfiles', () => {
