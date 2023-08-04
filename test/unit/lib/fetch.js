@@ -8065,6 +8065,128 @@ describe('fetch', () => {
                     assert.deepStrictEqual(actualDiffs, expectedDiffs);
                 });
         });
+
+        it('should handle wildcard monitors on Service Discovery pools (which have no members property)', () => {
+            const desiredConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon1': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:911',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon2': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:119',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon3': {
+                    command: 'ltm monitor radius',
+                    properties: {
+                        destination: '*:*',
+                        interval: 30
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon1': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: ['members']
+                }
+            };
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/app/tenant_mon1',
+                        'properties',
+                        'destination'
+                    ],
+                    lhs: '*:*',
+                    rhs: '*:911'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/app/tenant_mon2',
+                        'properties',
+                        'destination'
+                    ],
+                    lhs: '*:*',
+                    rhs: '*:119'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/tenant_pool',
+                        'properties',
+                        'monitor',
+                        '/tenant/app/tenant_mon1'
+                    ],
+                    rhs: {}
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+
+                    // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConf, currConf, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none members none',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon1',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon1 destination *:911 interval 10',
+                            'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
+                            'tmsh::delete ltm pool /tenant/app/tenant_pool',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
+                });
+        });
     });
 
     describe('.checkDesiredForReferencedProfiles', () => {

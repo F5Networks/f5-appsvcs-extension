@@ -1550,7 +1550,7 @@ const updateWildcardMonitorDiffs = function (monKey, currentConf, desiredConf, c
                     } else {
                         delete currentConfItem.properties.monitor[monKey];
                     }
-                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members);
+                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members || {});
                     poolMembersKeys.forEach((pmKey) => {
                         const poolMember = desiredConfItem.properties.members[pmKey];
                         if (poolMember.monitor) {
