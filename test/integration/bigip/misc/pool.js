@@ -85,4 +85,101 @@ describe('Pool', function () {
                 assert.strictEqual(response.items[0].name, '192.0.2.1:80');
             });
     });
+
+    it('should add pool with updated monitor', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.47.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '10.0.0.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'testMonitor'
+                            }
+                        ]
+                    },
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            }
+        };
+
+        const declaration1 = {
+            class: 'ADC',
+            schemaVersion: '3.47.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '10.0.0.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'testMonitor'
+                            }
+                        ]
+                    },
+                    pool1: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '10.0.0.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'testMonitor'
+                            }
+                        ]
+                    },
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https',
+                        targetPort: 9631
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /tenant/app/testMonitor }');
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 1 }))
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool1/'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /tenant/app/testMonitor }');
+            });
+    });
 });

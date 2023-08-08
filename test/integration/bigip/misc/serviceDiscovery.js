@@ -261,7 +261,7 @@ describe('Service Discovery', function () {
             hostname: 'www.google.com'
         };
 
-        function createPoolDeclaration(members) {
+        function createPoolDeclaration(members, monitors) {
             const properties = [
                 {
                     name: 'members',
@@ -269,6 +269,15 @@ describe('Service Discovery', function () {
                     skipAssert: true
                 }
             ];
+            if (monitors) {
+                properties.push(
+                    {
+                        name: 'monitors',
+                        inputValue: [monitors],
+                        skipAssert: true
+                    }
+                );
+            }
             const options = {
                 tenantName: 'TEST_ServiceDiscovery',
                 applicationName: 'Application'
@@ -278,6 +287,18 @@ describe('Service Discovery', function () {
 
         function assertConnectPool(provider, cloudDecl) {
             return assertConnect(provider, [cloudDecl], createPoolDeclaration);
+        }
+
+        function registerConsulNode(options) {
+            return requestUtil.put(
+                Object.assign(options, { path: '/v1/catalog/register' })
+            );
+        }
+
+        function deregisterConsulNode(options) {
+            return requestUtil.put(
+                Object.assign(options, { path: '/v1/catalog/deregister' })
+            );
         }
 
         before('set up', function () {
@@ -311,18 +332,6 @@ describe('Service Discovery', function () {
             // consul instance deployed in VIO and not available from outside.
             if (process.env.TEST_IN_AZURE === 'true') {
                 this.skip();
-            }
-
-            function registerConsulNode(options) {
-                return requestUtil.put(
-                    Object.assign(options, { path: '/v1/catalog/register' })
-                );
-            }
-
-            function deregisterConsulNode(options) {
-                return requestUtil.put(
-                    Object.assign(options, { path: '/v1/catalog/deregister' })
-                );
             }
 
             const options = {
@@ -402,6 +411,82 @@ describe('Service Discovery', function () {
                             }
                         ]
                     )));
+        });
+
+        it('should support changing to a wildcard monitor', function () {
+            before(() => {
+                validateEnvVars(['TEST_RESOURCES_URL']);
+            });
+
+            // Skipping consul testing in Azure for now because
+            // consul instance deployed in VIO and not available from outside.
+            if (process.env.TEST_IN_AZURE === 'true') {
+                this.skip();
+            }
+
+            const options = {
+                protocol: 'http:',
+                host: process.env.CONSUL_URI,
+                port: 8500,
+                body: {
+                    Node: 'as3-node',
+                    Address: '192.0.2.4'
+                }
+            };
+
+            const monitors = {
+                use: 'consul_monitor'
+            };
+
+            const consulMonitor = {
+                class: 'Monitor',
+                monitorType: 'http',
+                send: 'GET /healthcheck HTTP/1.1\r\nHost: f5check\r\nConnection:Close\r\n\r\n',
+                receive: 'status.*ok',
+                receiveDown: 'status.*disabled',
+                targetPort: 80,
+                adaptive: false
+            };
+
+            return Promise.resolve()
+                .then(() => createPoolDeclaration([SD.CONSUL], [monitors]))
+                .then((declaration) => {
+                    declaration.declaration[tenantName].Application.consul_monitor = consulMonitor;
+                    return declaration;
+                })
+                .then((declaration) => postDeclaration(declaration, { declarationIndex: 0 }))
+                .then((result) => {
+                    assert.strictEqual(result.results[0].code, 200);
+                })
+                .then(() => createPoolDeclaration([SD.CONSUL], [monitors]))
+                .then((declaration) => {
+                    consulMonitor.targetPort = 0;
+                    declaration.declaration[tenantName].Application.consul_monitor = consulMonitor;
+                    return declaration;
+                })
+                .then((declaration) => postDeclaration(declaration, { declarationIndex: 1 }))
+                .then((result) => {
+                    assert.strictEqual(result.results[0].code, 200);
+                })
+                .then(() => deregisterConsulNode(options))
+                .then(() => registerConsulNode(options))
+                // We need some time for SD to get nodes and populate pool.
+                .then(() => promiseUtil.delay(20000))
+                .then(() => {
+                    const getNodesOptions = {
+                        path: '/mgmt/tm/ltm/node'
+                    };
+                    return requestUtil.get(getNodesOptions);
+                })
+                .then((results) => {
+                    const nodeList = [];
+                    results.body.items.forEach((result) => {
+                        nodeList.push(result.name);
+                    });
+                    const message = `Node's list ${nodeList} doesn't have consul node.`;
+                    assert.ok(nodeList.includes('consul-as3-node-private'), message);
+                })
+                .finally(() => deregisterConsulNode(options));
         });
     });
 

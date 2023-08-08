@@ -1543,14 +1543,14 @@ const updateWildcardMonitorDiffs = function (monKey, currentConf, desiredConf, c
             if (key !== monKey) {
                 const desiredConfItem = desiredConf[key];
                 const currentConfItem = currentConf[key];
-                if (desiredConfItem.command.startsWith('ltm pool') && desiredConfItem.properties.monitor) {
+                if (desiredConfItem.command.startsWith('ltm pool') && desiredConfItem.properties.monitor && currentConfItem) {
                     const poolMonitors = Object.keys(desiredConfItem.properties.monitor);
                     if (poolMonitors.length === 1 && poolMonitors[0] === monKey) {
                         currentConfItem.properties.monitor = 'none';
                     } else {
                         delete currentConfItem.properties.monitor[monKey];
                     }
-                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members);
+                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members || {});
                     poolMembersKeys.forEach((pmKey) => {
                         const poolMember = desiredConfItem.properties.members[pmKey];
                         if (poolMember.monitor) {
