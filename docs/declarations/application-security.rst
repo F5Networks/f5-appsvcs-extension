@@ -860,8 +860,6 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
-https://automation-toolchain.pages.gitswarm.f5net.com/f5-appsvcs-extension/public-docs/refguide/declaration-purpose-function.html#string-expansion-in-urls-irules-and-other-values
-
 
 .. |stringexpand| raw:: html
 
