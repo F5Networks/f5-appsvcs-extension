@@ -866,7 +866,7 @@ Using the httpHost condition in an Endpoint policy rule
 ````````````````````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-    Support for HttpHost conditions is available in 3.47 and later.
+    Support for httpHost conditions is available in 3.47 and later.
 
 In this example, we show how you can use the **httpHost** condition in your Endpoint policy rules. This allows you to match the host of an HTTP request, proxy request, or proxy connect.
 
