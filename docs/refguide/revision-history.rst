@@ -12,7 +12,7 @@ Document Revision History
         - Date
 
       * - 3.47
-        - Updated the documentation for AS3 v3.47.0. This release contains the following changes: |br| * Added support for httpHost conditions in Endpoint policy rules (see :ref:`httpHost<httphost>`) |br| |br| Issues Resolved: |br| * sourceAddress property ignored on non-internal virtuals |br| * Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object' |br| * Not able to remove pool member's metadata from declaration |br| * Adding new pool with updated monitor failed at posting
+        - Updated the documentation for AS3 v3.47.0. This release contains the following changes: |br| * Added support for httpHost conditions in Endpoint policy rules (see :ref:`httpHost<httphost>`) |br| * Added client-accepted as an event when using a policy action type **forward** in an Endpoint policy  (see |apf| in the Schema Reference for usage) |br| |br| Issues Resolved: |br| * sourceAddress property ignored on non-internal virtuals |br| * Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object' |br| * Not able to remove pool member's metadata from declaration |br| * Adding new pool with updated monitor failed at posting
         - 7-24-23
 
 
@@ -366,6 +366,10 @@ Document Revision History
 .. |apfs| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-action-forward-select" target="_blank">Policy_Action_Forward_Select</a>
+
+.. |apf| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-action-forward" target="_blank">Policy_Action_Forward</a>
 
 .. |tlss| raw:: html
 
