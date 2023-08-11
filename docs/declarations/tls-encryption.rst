@@ -757,6 +757,35 @@ This declaration creates the following objects on the BIG-IP:
 
 :ref:`Back to top<ck-examples>`
 
+|
+
+.. _advssl:
+
+Specifying the SSL sign hash type
+``````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+   Support for the sslSignHash property is available in BIG-IP AS3 v3.47 and later.
+
+This example shows how you can use the **sslSignHash** property in the TLS_Client and TLS_Server classes to specify the SSL signature hash algorithm. Use this property to choose the SSL sign hash algorithm used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.  The options are **any** (default), **sha1**, **sha256**, and **sha384**.
+
+See |servertls| and |clienttls| in the Schema Reference for specific information and BIG-IP AS3 usage.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **AS3_Tenant**.
+- An Application named **AS3_App**.
+- A virtual server named **service** that includes the Client and Server SSL profiles.
+- A Client SSL profile (TLS_Server in AS3) that references a certificate, and has the **sslSignHash** set to **sha256**.
+- A Server SSL profile (TLS_Client in AS3) that references a certificate, and has the **sslSignHash** set to **sha256**.
+- A certificate which includes the cert and key.
+
+.. literalinclude:: ../../examples/declarations/example-tls-client-and-server-ssl-sign-hash.json
+   :language: json
+
+
+:ref:`Back to top<ck-examples>`
+
 
 
 .. |twopass| raw:: html
