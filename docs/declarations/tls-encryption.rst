@@ -759,7 +759,7 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
-.. _advssl:
+.. _sslsign:
 
 Specifying the SSL signature hash type
 ``````````````````````````````````````
