@@ -761,8 +761,8 @@ This declaration creates the following objects on the BIG-IP:
 
 .. _advssl:
 
-Specifying the SSL sign hash type
-``````````````````````````````````
+Specifying the SSL signature hash type
+``````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
    Support for the sslSignHash property is available in BIG-IP AS3 v3.47 and later.
