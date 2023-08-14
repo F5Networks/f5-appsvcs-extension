@@ -767,7 +767,7 @@ Specifying the SSL signature hash type
 
    Support for the sslSignHash property is available in BIG-IP AS3 v3.47 and later.
 
-This example shows how you can use the **sslSignHash** property in the TLS_Client and TLS_Server classes to specify the SSL signature hash algorithm. Use this property to choose the SSL sign hash algorithm used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.  The options are **any** (default), **sha1**, **sha256**, and **sha384**.
+This example shows how you can use the **sslSignHash** property in the TLS_Client and TLS_Server classes to specify the SSL signature hash algorithm. Use this property to choose the SSL signature hash algorithm used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.  The options are **any** (default), **sha1**, **sha256**, and **sha384**.
 
 See |servertls| and |clienttls| in the Schema Reference for specific information and BIG-IP AS3 usage.
 
