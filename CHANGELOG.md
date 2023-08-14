@@ -13,6 +13,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3945: Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object'
 - AUTOTOOL-3948: Not able to remove pool member's metadata from declaration
 - AUTOTOOL-3930: Adding new pool with updated monitor failed at posting
+- AUTOTOOL-3925: Declaration can fail when switching from redirect to no-redirect with route domain
 
 ### Changed
 
