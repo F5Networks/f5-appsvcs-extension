@@ -47,10 +47,7 @@ describe('settings-schema.json', () => {
                         perAppDeploymentAllowed: true
                     }
                 };
-
-                // Temporarily disabled while per-app is developed
-                // assert.ok(validate(data), getErrorString(validate));
-                assert.strictEqual(validate(data), false, 'Restricts to false during development');
+                assert.ok(validate(data), getErrorString(validate));
             });
         });
 
