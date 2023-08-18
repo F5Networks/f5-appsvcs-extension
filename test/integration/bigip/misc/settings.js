@@ -66,7 +66,7 @@ describe('settings (__smoke)', function () {
         const declaration = {
             asyncTaskStorage: 'memory',
             betaOptions: {
-                perAppDeploymentAllowed: false
+                perAppDeploymentAllowed: true
             },
             burstHandlingEnabled: true,
             performanceTracingEnabled: false, // need to leave false because jaeger-client not installed
