@@ -134,8 +134,6 @@ describe('settingsHandler', () => {
                     perAppDeploymentAllowed: true
                 }
             };
-
-            /* Temporarily disabled while per-app is under development
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
                 betaOptions: {
@@ -146,29 +144,6 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serviceDiscoveryEnabled: true,
                 webhook: ''
-            }); */
-
-            const restOpPromise = createRestOpCompletePromise(restOp, 422, {
-                code: 422,
-                errors: [
-                    {
-                        data: true,
-                        dataPath: '.betaOptions.perAppDeploymentAllowed',
-                        keyword: 'const',
-                        message: 'should be equal to constant',
-                        params: { allowedValue: false },
-                        parentSchema: {
-                            const: false,
-                            default: false,
-                            description: 'Whether or not to allow per-application deployments',
-                            title: 'Per Application Deployment',
-                            type: 'boolean'
-                        },
-                        schema: false,
-                        schemaPath: '#/properties/betaOptions/properties/perAppDeploymentAllowed/const'
-                    }
-                ],
-                message: 'declaration is invalid'
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);

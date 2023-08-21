@@ -511,6 +511,26 @@ describe('API Testing (__smoke)', function () {
 describe('per-app API testing (__smoke)', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
+    function postSettings(settings) {
+        return postDeclaration(
+            settings,
+            undefined,
+            '?async=false',
+            '/mgmt/shared/appsvcs/settings'
+        );
+    }
+
+    before('activate perAppDeploymentAllowed', () => Promise.resolve()
+        .then(() => postSettings(
+            {
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                }
+            }
+        )));
+
+    after('restore settings', () => postSettings({}));
+
     describe('GET', () => {
         let declaration;
 
@@ -605,7 +625,7 @@ describe('per-app API testing (__smoke)', function () {
                 );
             }));
 
-        it('should error on per-app GET if the tenant provided in the URL does not exist in the declaraiton', () => Promise.resolve()
+        it('should error on per-app GET if the tenant provided in the URL does not exist in the declaration', () => Promise.resolve()
             .then(() => postDeclaration(declaration, logInfo))
             .then(() => assert.isRejected(
                 getPathFullResponse('/mgmt/shared/appsvcs/declare/API_TEST_TEN/applications'),

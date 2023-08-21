@@ -2915,7 +2915,7 @@ const translate = {
         }
 
         let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration).configs;
-        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}-Redirect-`, redirectDef, declaration).configs);
+        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration).configs);
         return { configs };
     },
 

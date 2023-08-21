@@ -4323,6 +4323,95 @@ describe('fetch', () => {
             );
         });
 
+        it('should remove member in pre-trans when we have to update a member', () => {
+            const desiredConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'enabled',
+                            name: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'enabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'disabled',
+                            tmName: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Application/myPool',
+                        'properties',
+                        'members',
+                        '/Tenant/my.example.com:80',
+                        'fqdn',
+                        'autopopulate'
+                    ],
+                    lhs: 'disabled',
+                    rhs: 'enabled',
+                    tags: ['tmsh']
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            assert.strictEqual(
+                result.script,
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}\ntmsh::begin_transaction\ntmsh::delete ltm pool /Tenant/Application/myPool\ntmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate enabled \\} metadata none \\} \\} metadata none\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Tenant/Application/myPool members add \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate disabled \\} metadata none \\} \\}\n}}\n}'
+            );
+        });
+
         describe('security firewall', () => {
             it('should properly setup preTrans, trans, and rollback during a delete', () => {
                 const desiredConfig = {};
@@ -4975,6 +5064,150 @@ describe('fetch', () => {
                         'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any6\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
                     );
                 });
+            });
+        });
+
+        describe('redirect handling', () => {
+            it('should delete redirect virtuals outside the transaction when there is a non-0 route-domain destination', () => {
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/Application/tcpService-Redirect-': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:80'
+                        }
+                    },
+                    '/Tenant/192.0.2.1%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1%1'
+                        }
+                    },
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/Application/tcpService-Redirect-'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {}
+                        },
+                        command: 'ltm virtual'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\ntmsh::delete ltm virtual /Tenant/Application/tcpService-Redirect-\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
+            });
+
+            it('should not delete the virtual address when we are changing the destination and deleting the redirect virtual', () => {
+                const desiredConfig = {
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    },
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/192.0.2.2%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.2%1'
+                        }
+                    }
+                };
+                const currentConfig = {
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/Application/tcpService-Redirect-': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:80'
+                        }
+                    },
+                    '/Tenant/192.0.2.1%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1%1'
+                        }
+                    },
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/Application/tcpService-Redirect-'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                destination: '/Tenant/192.0.2.1%1:80",'
+                            }
+                        },
+                        command: 'ltm virtual',
+                        lhsCommand: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/192.0.2.1%1:443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '192.0.2.1%1'
+                            }
+                        },
+                        command: 'ltm virtual-address',
+                        lhsCommand: 'ltm virtual-address'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/192.0.2.2%1:443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '192.0.2.2%1'
+                            }
+                        },
+                        command: 'ltm virtual-address',
+                        rhsCommand: 'ltm virtual-address'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n\ntmsh::create ltm virtual-address /Tenant/192.0.2.2%1:443 address 192.0.2.2%1\ntmsh::commit_transaction\n\ntmsh::delete ltm virtual /Tenant/Application/tcpService-Redirect-\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
             });
         });
 

@@ -111,4 +111,112 @@ describe('serviceAddress', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+
+    it('should allow switch back and forth between virtual with redirect to one without when there is a route-domain', () => {
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1000,
+                app: {
+                    class: 'Application',
+                    'address-10.10.1.1': {
+                        class: 'Service_Address',
+                        virtualAddress: '10.10.1.1'
+                    },
+                    service: {
+                        class: 'Service_HTTPS',
+                        redirect80: true,
+                        servicePort: 443,
+                        routeAdvertisement: 'selective',
+                        pool: 'pool423',
+                        virtualAddresses: [
+                            {
+                                use: 'address-10.10.1.1'
+                            }
+                        ],
+                        serverTLS: {
+                            bigip: '/Common/clientssl'
+                        }
+                    },
+                    pool423: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                serverAddresses: ['10.1.1.1'],
+                                servicePort: 443
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+        const decl2 = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1000,
+                app: {
+                    class: 'Application',
+                    'address-10.10.1.1': {
+                        class: 'Service_Address',
+                        virtualAddress: '10.10.1.1'
+                    },
+                    service: {
+                        class: 'Service_HTTPS',
+                        redirect80: false,
+                        servicePort: 443,
+                        routeAdvertisement: 'selective',
+                        pool: 'pool123',
+                        virtualAddresses: [
+                            {
+                                use: 'address-10.10.1.1'
+                            }
+                        ],
+                        serverTLS: {
+                            bigip: '/Common/clientssl'
+                        }
+                    },
+                    pool123: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                serverAddresses: ['10.1.1.1'],
+                                servicePort: 123
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '1000' }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl2, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
 });
