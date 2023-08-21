@@ -491,6 +491,54 @@ describe('Pool', function () {
             ];
             return assertPoolClass(properties);
         });
+
+        it('modify autopopulate', () => {
+            const properties = [
+                {
+                    name: 'members',
+                    inputValue: [
+                        [{
+                            servicePort: 80,
+                            addressDiscovery: 'fqdn',
+                            autoPopulate: true,
+                            hostname: 'www.f5.com',
+                            queryInterval: 0,
+                            shareNodes: false,
+                            fqdnPrefix: 'node-'
+                        }],
+                        [{
+                            servicePort: 80,
+                            addressDiscovery: 'fqdn',
+                            autoPopulate: false,
+                            hostname: 'www.f5.com',
+                            queryInterval: 0,
+                            shareNodes: false,
+                            fqdnPrefix: 'node-'
+                        }]
+                    ],
+                    expectedValue: [
+                        {
+                            fullPath: '/TEST_Pool/node-www.f5.com:80',
+                            name: 'node-www.f5.com:80',
+                            fqdn: {
+                                autopopulate: 'enabled',
+                                tmName: 'www.f5.com'
+                            }
+                        },
+                        {
+                            fullPath: '/TEST_Pool/node-www.f5.com:80',
+                            name: 'node-www.f5.com:80',
+                            fqdn: {
+                                autopopulate: 'disabled',
+                                tmName: 'www.f5.com'
+                            }
+                        }
+                    ],
+                    extractFunction
+                }
+            ];
+            return assertPoolClass(properties);
+        });
     });
 
     it('Service discovery members', function () {

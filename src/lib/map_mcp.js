@@ -426,6 +426,14 @@ const translate = {
         } else {
             delete obj.address;
         }
+
+        if (obj.metadata) {
+            obj.metadata.forEach((md) => {
+                if (md.name === 'fqdnPrefix' && !md.value) {
+                    md.value = 'none';
+                }
+            });
+        }
         return [normalize.actionableMcp(context, obj, 'ltm node', path)];
     },
     'tm:ltm:persistence:cookie:cookiestate': function (context, obj) {

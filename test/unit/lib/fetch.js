@@ -4323,6 +4323,95 @@ describe('fetch', () => {
             );
         });
 
+        it('should remove member in pre-trans when we have to update a member', () => {
+            const desiredConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'enabled',
+                            name: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'enabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'disabled',
+                            tmName: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Application/myPool',
+                        'properties',
+                        'members',
+                        '/Tenant/my.example.com:80',
+                        'fqdn',
+                        'autopopulate'
+                    ],
+                    lhs: 'disabled',
+                    rhs: 'enabled',
+                    tags: ['tmsh']
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            assert.strictEqual(
+                result.script,
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}\ntmsh::begin_transaction\ntmsh::delete ltm pool /Tenant/Application/myPool\ntmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate enabled \\} metadata none \\} \\} metadata none\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Tenant/Application/myPool members add \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate disabled \\} metadata none \\} \\}\n}}\n}'
+            );
+        });
+
         describe('security firewall', () => {
             it('should properly setup preTrans, trans, and rollback during a delete', () => {
                 const desiredConfig = {};

@@ -2518,6 +2518,22 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             }
                         });
                         trans.push(commands.join('\n'));
+                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1) {
+                        // This is a command to modify the pool to delete members just like we have with the
+                        // delete code below.
+                        const commands = diffUpdates.commands.split('\n');
+                        commands.forEach((command) => {
+                            if (command.startsWith('tmsh::modify')) {
+                                arrayUtil.insertBeforeOrAtBeginning(
+                                    preTrans,
+                                    'delete ltm node',
+                                    command,
+                                    'inc'
+                                );
+                            } else {
+                                trans.push(command);
+                            }
+                        });
                     } else {
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);
