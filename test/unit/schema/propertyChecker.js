@@ -52,6 +52,7 @@ const EXPECTED_KEYS = [
     'description',
     'else',
     'enum',
+    'errorMessage',
     'f5PostProcess',
     'f5aliases',
     'f5serviceDiscovery',
@@ -113,7 +114,7 @@ function getSchemaKeys(schema) {
 
 describe('propertyChecker.js', () => {
     describe('invalid', () => {
-        it('should alert on non-whitelisted schema keys', () => {
+        it('should alert on non-allowlisted schema keys', () => {
             getSchemaKeys({ bogus: true }).forEach((key) => {
                 assert(EXPECTED_KEYS.indexOf(key) === -1);
             });
@@ -121,7 +122,7 @@ describe('propertyChecker.js', () => {
     });
 
     describe('valid', () => {
-        it('should have whitelisted all schema keys (not including AS3 classes)', () => {
+        it('should have allowlisted all schema keys (not including AS3 classes)', () => {
             getSchemaKeys(as3Schema).forEach((key) => {
                 assert((EXPECTED_KEYS.indexOf(key) !== -1), `Missing key '${key}'`);
             });
