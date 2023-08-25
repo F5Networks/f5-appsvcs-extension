@@ -15,11 +15,11 @@ For information about support policies, see http://www.f5.com/about/guidelines-p
 * Feature releases are supported for 3 months
 * "End of Support" = End of Software Development (EOSD) + End of Technical Support (EOTS)
 
-Currently supported versions:
+Currently supported versions (the next LTS release, 3.46.1, will release on 9/12/23):
 
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
-| AS 3.36.1        | LTS           |  31-May-2022        | 31-Aug-2023     |
+| AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
 | AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
 | AS 3.46.0        | Feature       |  24-Jul-2023        | 24-Oct-2023     |
 
