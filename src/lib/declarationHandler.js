@@ -32,6 +32,7 @@ const fortunes = require('./fortunes.json');
 const mutex = require('./mutex');
 const hash = require('./util/hashUtil');
 const constants = require('./constants');
+const perAppUtil = require('./util/perAppUtil');
 
 const STATUS_CODES = require('./constants').STATUS_CODES;
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
@@ -177,60 +178,6 @@ class DeclarationHandler {
         return statusCodeOk; // success
     }
 
-    /**
-     * This function parses and formats the declaration for per-app
-     *
-     * @param {object} decl   - The declaration which holds the application and tenant info
-     * @param {string} tenant - The desired tenant name which holds the application
-     * @param {string[]} apps - Array of desired application names, if empty return array of all applications
-     * @returns {object}        .body: is the GET returned value
-     *                          .statusCode: STATUS_CODE of the result
-     *                          .message: The error message, if there is one
-     */
-    filterAppsInDeclaration(decl, tenant, apps) {
-        if (typeof decl[tenant] === 'undefined') {
-            return {
-                statusCode: STATUS_CODES.NOT_FOUND,
-                message: (`specified tenant '${tenant}' not found in declaration`)
-            };
-        }
-        const perAppDecl = {};
-        if (apps.length === 0) {
-            // If the apps array is empty, we want all apps in tenant
-            Object.keys(decl[tenant]).forEach((appName) => {
-                if (decl[tenant][appName].class === 'Application') {
-                    perAppDecl[appName] = decl[tenant][appName];
-                }
-            });
-            return {
-                body: perAppDecl,
-                statusCode: STATUS_CODES.OK
-            };
-        }
-
-        const missingApps = [];
-        apps.forEach((app) => {
-            if (typeof decl[tenant][app] === 'undefined') {
-                missingApps.push({
-                    statusCode: STATUS_CODES.NOT_FOUND,
-                    message: (`specified Application '${app}' not found in '${tenant}'`)
-                });
-            } else {
-                perAppDecl[app] = decl[tenant][app];
-            }
-        });
-
-        if (missingApps.length > 0) {
-            // Only 1 error message can be returned at a time, so return the first
-            return missingApps[0];
-        }
-
-        return {
-            body: perAppDecl,
-            statusCode: STATUS_CODES.OK
-        }; // success
-    }
-
     getFilteredDeclaration(context, ignoreMissingTenant) {
         const currentTask = context.tasks[context.currentIndex];
         function extractTenants(decl) {
@@ -332,21 +279,19 @@ class DeclarationHandler {
                 return Promise.resolve()
                     .then(() => filterAndDigest(context, decl, currentTask))
                     .then((digestDeclaration) => {
-                        if (!context.request.isPerApp) {
-                            return digestDeclaration;
+                        // POST creates missing tenant and apps, so no need to check if they exist in the declaration
+                        if (context.request.isPerApp && context.request.method !== 'Post') {
+                            const verifyResults = perAppUtil.verifyResourcesExist(
+                                digestDeclaration,
+                                context.request.perAppInfo
+                            );
+
+                            if (verifyResults.statusCode !== STATUS_CODES.OK) {
+                                return DeclarationHandler.buildResult(verifyResults.statusCode, verifyResults.message);
+                            }
                         }
 
-                        const appFilterResult = this.filterAppsInDeclaration(
-                            digestDeclaration,
-                            context.request.perAppInfo.tenant,
-                            context.request.perAppInfo.apps
-                        );
-                        if (appFilterResult.statusCode !== STATUS_CODES.OK) {
-                            return DeclarationHandler.buildResult(appFilterResult.statusCode, appFilterResult.message);
-                        }
-
-                        // Note: this can be either an object or array of objects
-                        return appFilterResult.body;
+                        return digestDeclaration;
                     });
             });
     }
@@ -608,17 +553,30 @@ class DeclarationHandler {
 
                 return Promise.resolve()
                     .then(() => {
-                        // Make sure we have Common tenant for use-pointers
+                        if (!context.request.isPerApp) {
+                            return Promise.resolve();
+                        }
+
+                        return this.getFilteredDeclaration(context)
+                            .then((allConfig) => {
+                                const tenant = context.request.perAppInfo.tenant;
+                                if (allConfig[tenant]) {
+                                    d = perAppUtil.mergePreviousTenant(d, allConfig, tenant);
+                                }
+                                return allConfig;
+                            });
+                    }).then((filteredDecl) => {
                         if (d.Common || !isCommonNeeded(d)) {
                             return Promise.resolve();
                         }
-                        return this.getFilteredDeclaration(context)
+
+                        // Make sure we have Common tenant for use-pointers
+                        return (filteredDecl ? Promise.resolve(filteredDecl) : this.getFilteredDeclaration(context))
                             .then((allConfig) => {
                                 if (allConfig.Common) {
                                     d.Common = allConfig.Common;
                                     baseDecl.Common = util.simpleCopy(allConfig.Common);
                                 }
-                                return Promise.resolve();
                             });
                     })
                     .then(() => context.host.parser.digest(context, d, {
