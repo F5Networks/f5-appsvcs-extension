@@ -636,11 +636,6 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
     }
 
     appList.forEach((appId) => {
-        if ((context.request.isPerApp && (context.request.perAppInfo.apps.length > 0
-            && context.request.perAppInfo.apps.indexOf(appId) === -1)) || !tenantDecl[appId].enable) {
-            return;
-        }
-
         const appPromiseFunc = () => Promise.resolve()
             .then(() => mapAs3.translate.Application(context, tenantId, appId))
             .then((mcpObj) => {
@@ -1263,43 +1258,6 @@ const pathReferenceLinks = function (context, referredList, tenantId, partitionC
 };
 
 /**
- * Returns a subset of the config array, based on the perAppInfo.apps
- *
- * @param {object} perAppInfo - holds target tenant and apps array
- * @param {array} config - an array of relevant BIG-IP objects
- */
-const getFilteredPerAppConfig = function (perAppInfo, config) {
-    const filteredConfig = [];
-    config.forEach((c) => {
-        switch (c.kind) {
-        case 'tm:auth:partition:partitionstate':
-            if (c.fullPath === perAppInfo.tenant) {
-                filteredConfig.push(c);
-            }
-            break;
-        case 'tm:sys:folder:folderstate':
-            if (perAppInfo.apps.indexOf(c.name) !== -1) {
-                // applications are sys:folders, so the name should be accurate
-                filteredConfig.push(c);
-            }
-            break;
-        case 'tm:ltm:virtual-address:virtual-addressstate':
-        case 'tm:ltm:node:nodestate':
-            // virtual addresses & nodes are saved at the root tenant, and so do NOT have a subPath to compare
-            // TODO: check metadata here
-            filteredConfig.push(c);
-            break;
-        default:
-            if (perAppInfo.apps.indexOf(c.subPath) !== -1) {
-                // Everything in an application should have a subPath of the application name
-                filteredConfig.push(c);
-            }
-        }
-    });
-    return filteredConfig;
-};
-
-/**
  * Pull the current BIG-IP configuration for a given
  * partition (AS3 tenant).  This uses iControl-REST
  * in two stages. The first stage captures the parent
@@ -1344,10 +1302,6 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
             }
             return getBigipConfig(context, paths.root, tenantId, commonConfig)
                 .then((config) => {
-                    if (context.request.isPerApp && context.request.perAppInfo.apps.length > 0) {
-                        // If no apps are specified, tenant filtering is sufficient
-                        config = getFilteredPerAppConfig(context.request.perAppInfo, config);
-                    }
                     partitionConfig = config || [];
                     return pathReferenceLinks(context, paths.referred, tenantId, partitionConfig);
                 })
@@ -1785,12 +1739,6 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
                 keep = false;
             }
-        }
-        // TODO: remove/modify this when virtual-address metadata is handled
-        // filter out per-app virtual-address Deletes during Post
-        if (context.request.isPerApp && context.request.method === 'Post' && diff.kind === 'D'
-            && diff.lhs.command === 'ltm virtual-address') {
-            keep = false;
         }
         if (keep) {
             finalDiffs.push(diff);
