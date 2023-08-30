@@ -13,7 +13,7 @@ Document Revision History
 
       * - 3.47
         - Updated the documentation for AS3 v3.47.0. This release contains the following changes: |br| * Added support for httpHost conditions in Endpoint policy rules (see :ref:`httpHost<httphost>`), `GitHub Issue 626 <https://github.com/F5Networks/f5-appsvcs-extension/issues/626>`_  |br| * Added client-accepted as an event when using a policy action type **forward** in an Endpoint policy  (see |apf| in the Schema Reference for usage) |br| * Added support for specifying the type of SSL signature hash in the TLS client and server classes (see :ref:`SSL signature hash<sslsign>`), `GitHub Issue 701 <https://github.com/F5Networks/f5-appsvcs-extension/issues/701>`_  |br| |br| Issues Resolved: |br| * sourceAddress property ignored on non-internal virtuals |br| * Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object' |br| * Not able to remove pool member's metadata from declaration |br| * Not able to modify **autopopulate** on FQDN pool members |br| * Adding new pool with updated monitor failed at posting |br| * Declaration can fail when switching from redirect to no-redirect with route domain
-        - 9--23
+        - 9-12-23
 
 
       * - 3.46

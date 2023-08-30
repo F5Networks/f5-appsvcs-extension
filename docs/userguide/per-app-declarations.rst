@@ -1,7 +1,7 @@
 Per-Application Declarations
 ============================
 
-BIG-IP AS3 3.46 introduces a *per-application* deployment model, which enables declarations to include only applications, leaving other applications in a tenant unaltered.
+BIG-IP AS3 3.47 introduces a *per-application* deployment model, which enables AS3 declarations to include only applications, leaving other applications in a tenant unaltered.
 
 In previous releases, BIG-IP AS3 only supported a tenant-based model. This meant posting a declaration with a tenant and, by default, AS3 would not modify other tenants. In this case, all applications had to be included in the tenant; if you posted a declaration that did not include existing applications in that tenant, AS3 deleted them. 
 
@@ -41,7 +41,7 @@ There are two API paths you can use for GET requests to per-application declarat
 
 For example, ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` retrieves all applications.
 
-``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications/applicationName`` retrieves the **applicatoinName** application only.
+``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications/applicationName`` retrieves the **applicationName** application only.
 
 
 

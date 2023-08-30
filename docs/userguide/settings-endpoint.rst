@@ -43,6 +43,8 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **webhook** |br| *Requires BIG-IP AS3 3.45 or later*.  URL to post results to. 
 
+- **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later*.  
+
 
 .. |br| raw:: html
 
