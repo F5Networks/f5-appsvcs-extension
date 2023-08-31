@@ -52,6 +52,7 @@ describe('settingsHandler', () => {
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
+        localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
         localStorageDataGroup.setItem('webhook', '');
         Config.injectSettings(localStorageDataGroup);
@@ -142,6 +143,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             });
@@ -160,6 +162,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: true,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             });
@@ -178,6 +181,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             });
@@ -200,6 +204,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: true,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             });
@@ -218,6 +223,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: 'https://www.example.com'
             });
@@ -320,6 +326,7 @@ describe('settingsHandler', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             });
