@@ -41,9 +41,13 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **serviceDiscoveryEnabled** |br| A boolean that controls if Service Discovery features are enabled (the default is **false**).  See :ref:`Service Discovery examples<sd-examples>`.
 
-- **webhook** |br| *Requires BIG-IP AS3 3.45 or later*.  URL to post results to. 
+- **webhook** |br| *Requires BIG-IP AS3 3.45 or later*  URL to post results to. 
 
-- **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later*.  
+- **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later*  <<<<<>>>>>
+
+- **betaOptions** |br| *Requires BIG-IP AS3 3.47 or later* A boolean that controls whether beta options are enabled or disabled.  Currently, there is only one option, **perAppDeploymentAllowed**. See :doc:`per-app-declarations` for more information.
+
+
 
 
 .. |br| raw:: html

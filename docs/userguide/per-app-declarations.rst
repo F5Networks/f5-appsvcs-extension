@@ -1,11 +1,29 @@
-Per-Application Declarations
-============================
+Per-Application Declarations - Beta
+===================================
 
-BIG-IP AS3 3.47 introduces a *per-application* deployment model, which enables AS3 declarations to include only applications, leaving other applications in a tenant unaltered.
+BIG-IP AS3 3.47 introduces a **beta** feature for a *per-application* deployment model, which enables AS3 declarations to include only applications, leaving other applications in a tenant unaltered.  If you have feedback on this beta feature, please open a GitHub issue at https://github.com/F5Networks/f5-appsvcs-extension/issues.
 
 In previous releases, BIG-IP AS3 only supported a tenant-based model. This meant posting a declaration with a tenant and, by default, AS3 would not modify other tenants. In this case, all applications had to be included in the tenant; if you posted a declaration that did not include existing applications in that tenant, AS3 deleted them. 
 
 Similar to the tenant-based model, the per-application deployment model allows you post a declaration that contains an application in a tenant and have AS3 leave the other applications in that tenant untouched.
+
+<mostly for orchestration stuff - how exactly?>
+
+
+Enabling the per-application feature
+------------------------------------
+The first task is to enable this beta feature using the new **betaOptions** property on the **/settings** endpoint. For more information about the settings endpoint, see :doc:`settings-endpoint`.  Currently, the only setting available in betaOptions is **perAppDeploymentAllowed**.
+
+To enable per-application deployments, send a POST to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings`` with the following request body:
+
+.. code-block:: json
+
+   betaOptions: {
+      perAppDeploymentAllowed: true
+   }
+
+
+To see the current settings, or verify the per-application feature is enabled, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.
 
 
 Using a per-application declaration
@@ -27,7 +45,9 @@ The following is an example per-application declaration (note the lack of the Te
 POSTing a per-application
 `````````````````````````
 
-The URI path for POSTing a per-application declaration is ``/appsvcs/declare/<tenant>/applications``.  For example, you could send the example declaration to: ``POST HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` 
+The URI path for POSTing a per-application declaration is ``/appsvcs/declare/<tenant>/applications``.  
+
+For example, you could send the example declaration to: ``POST HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` 
 
 
 
@@ -39,12 +59,18 @@ There are two API paths you can use for GET requests to per-application declarat
 - ``/appsvcs/declare/<tenant>/applications`` <br> 
 - ``/appsvcs/declare/<tenant>/applications/[<application>]
 
-For example, ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` retrieves all applications.
+For example:
+
+ ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` retrieves all applications.
 
 ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications/applicationName`` retrieves the **applicationName** application only.
 
+You can also send a GET request to the /declare endpoint, and the entire declaration is returned.
 
 
+
+Deleting a per-application declaration
+``````````````````````````````````````
 
 
 
