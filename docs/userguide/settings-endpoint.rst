@@ -6,7 +6,7 @@ To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS
 
 - **Check current settings** |br| Using a GET request returns the current configuration settings and their values. |br| To check the current setting status, send a GET request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``. When the request is successful, you will receive a response like:
 
-   .. code-block:: json
+  .. code-block:: json
       
        {
           "asyncTaskStorage": "data-group",
@@ -19,7 +19,7 @@ To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS
 
 - **Change current settings** |br| Using a POST request allows you to change the current settings by sending a declaration with updated settings in the request body. |br| To change a current setting, send a POST request to ``HTTPS://<BIG-IP IP address>/mgmt/shared/appsvcs/settings``.  For example, to enable burst handling, POST the following declaration body: 
 
-   .. code-block:: json
+  .. code-block:: json
 
        {
            "burstHandlingEnabled": true
@@ -29,6 +29,8 @@ To use the **/settings** endpoint, you can send a POST or GET request to ``HTTPS
 BIG-IP AS3 should now be running with the burst handling feature enabled.
 
  
+Available options for the settings endpoint
+-------------------------------------------
 The **/settings** endpoint supports the following (see |apiset| in the API Reference for more information (click to expand **body** on that page)):
 
 - **asyncTaskStorage** |br| Controls where asynchronous tasks are stored. Existing tasks are not transferred when the storage type is changed. Storing tasks in a data group persists the data between restarts, but puts more pressure on the control plane.  Options are **data-group** (default) and **memory**.
@@ -58,18 +60,20 @@ Use this setting if you are receiving a **Too many open files** error in restjav
 
 In addition to setting **serializeFileUploads** to **true** on the /settings endpoint, we recommend the following:
 
-- Increase the timeouts in the following DB variables. F5 recommends setting these variables to 600.  See :ref:`Best practices<restapi>` for information on increasing these timeouts. 
-   - icrd.timeout
-   - restnoded.timeout
-   - restjavad.timeout
+- Increase the timeouts in the following DB variables. F5 recommends setting these variables to 600.  See :ref:`Best Practices<restapi>` for information on increasing these timeouts. 
 
-- Increase memory using these DB variables (see :ref:`<restjavadmem>` )
-   - provision.extramb
-   - restjavad.useextramb
+  - icrd.timeout
+  - restnoded.timeout
+  - restjavad.timeout
+
+- Increase memory using these DB variables (see :ref:`Best Practices<restjavadmem>` for information  )
+
+  - provision.extramb
+  - restjavad.useextramb
 
 - Do not use the **trace** property in the Controls class
 - Use the settings endpoint to set **asyncTaskStorage** to **memory**
-- Use async requests (use the query parameter **?async=true**. See |api| for information on the POST query parameters).
+- Use async requests (use the query parameter **?async=true**. See the |api| for information on the POST query parameters).
 
 
 .. |br| raw:: html
