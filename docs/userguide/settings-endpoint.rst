@@ -41,13 +41,35 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **serviceDiscoveryEnabled** |br| A boolean that controls if Service Discovery features are enabled (the default is **false**).  See :ref:`Service Discovery examples<sd-examples>`.
 
-- **webhook** |br| *Requires BIG-IP AS3 3.45 or later*  URL to post results to. 
+- **webhook** |br| *Requires BIG-IP AS3 3.45 or later* - URL to post results to. 
 
-- **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later*  <<<<<>>>>>
+- **betaOptions** |br| *Requires BIG-IP AS3 3.47 or later* - A boolean that controls whether beta options are enabled or disabled.  Currently, there is only one option, **perAppDeploymentAllowed**. See :doc:`per-app-declarations` for more information.
 
-- **betaOptions** |br| *Requires BIG-IP AS3 3.47 or later* A boolean that controls whether beta options are enabled or disabled.  Currently, there is only one option, **perAppDeploymentAllowed**. See :doc:`per-app-declarations` for more information.
+- **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later* - When uploading files to the BIG-IP, this setting enables uploading in serial rather than parallel. See the following section for more information.
 
 
+.. _serialize:
+
+Using serializeFileUploads to upload a large number of certificates
+-------------------------------------------------------------------
+You can use the **serializeFileUploads** setting when you have a large number of files, like SSL/TLS certificates, you need to upload to the BIG-IP system using AS3. 
+
+Use this setting if you are receiving a **Too many open files** error in restjavad when attempting to upload a very large number of files.
+
+In addition to setting **serializeFileUploads** to **true** on the /settings endpoint, we recommend the following:
+
+- Increase the timeouts in the following DB variables. F5 recommends setting these variables to 600.  See :ref:`Best practices<restapi>` for information on increasing these timeouts. 
+   - icrd.timeout
+   - restnoded.timeout
+   - restjavad.timeout
+
+- Increase memory using these DB variables (see :ref:`<restjavadmem>` )
+   - provision.extramb
+   - restjavad.useextramb
+
+- Do not use the **trace** property in the Controls class
+- Use the settings endpoint to set **asyncTaskStorage** to **memory**
+- Use async requests (use the query parameter **?async=true**. See |api| for information on the POST query parameters).
 
 
 .. |br| raw:: html
@@ -58,4 +80,6 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/apidocs.html#tag/Settings" target="_blank">Settings</a>
 
-   
+.. |api| raw:: html
+
+   <a href="../refguide/apidocs.html" target="_blank">API documentation</a>
