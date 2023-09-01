@@ -522,7 +522,7 @@ class DeclarationHandler {
                 }
 
                 // if DELETE, update controls object from the saved declaration
-                if (currentTask.action === 'remove') {
+                if (currentTask.action === 'remove' && !context.request.isPerApp) {
                     // Update ADC controls
                     util.updateControlsWithDecl(currentTask, prevDecl.controls);
                     log.updateGlobalSettings(currentTask);
@@ -542,7 +542,7 @@ class DeclarationHandler {
                 return schemaOverlay.applyOverlay(context, decl);
             })
             .then((d) => {
-                if (currentTask.action === 'remove') {
+                if (currentTask.action === 'remove' && !context.request.isPerApp) {
                     return Promise.resolve();
                 }
 
@@ -562,10 +562,14 @@ class DeclarationHandler {
                                 const tenant = context.request.perAppInfo.tenant;
                                 if (allConfig[tenant]) {
                                     d = perAppUtil.mergePreviousTenant(d, allConfig, tenant);
+                                    if (currentTask.action === 'remove') {
+                                        perAppUtil.deleteAppsFromTenant(d, context.request.perAppInfo);
+                                    }
                                 }
                                 return allConfig;
                             });
-                    }).then((filteredDecl) => {
+                    })
+                    .then((filteredDecl) => {
                         if (d.Common || !isCommonNeeded(d)) {
                             return Promise.resolve();
                         }
@@ -598,8 +602,9 @@ class DeclarationHandler {
             .then(() => {
                 // Nodelist is acquired by a call to util.getNodelist in adcParser.
                 // However, in the case of 'remove' we do not run parser.digest
-                // and nodelist needs to be updated in case of external modifications
-                if (currentTask.action === 'remove') {
+                // and nodelist needs to be updated in case of external modifications.
+                // Except for per-app which is done previously
+                if (currentTask.action === 'remove' && !context.request.isPerApp) {
                     return util.getNodelist(context);
                 }
                 return context.host.parser.nodelist;
@@ -725,6 +730,10 @@ class DeclarationHandler {
                         }
                     } else if (context.request.perAppInfo && newDecl[key]) {
                         newDecl[key] = Object.assign(newDecl[key], util.simpleCopy(baseDecl[key]));
+                        if (currentTask.action === 'remove') {
+                            // remove specific application from declaration, so that datagroup is updated properly
+                            perAppUtil.deleteAppsFromTenant(newDecl, context.request.perAppInfo);
+                        }
                     } else {
                         newDecl[key] = util.simpleCopy(baseDecl[key]);
                     }
