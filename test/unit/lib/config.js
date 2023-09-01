@@ -56,6 +56,7 @@ describe('config', () => {
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
+        localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
         localStorageDataGroup.setItem('webhook', '');
 
@@ -69,6 +70,7 @@ describe('config', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             }));
@@ -82,6 +84,7 @@ describe('config', () => {
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
+        localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
         localStorageDataGroup.setItem('webhook', '');
         const newSettings = {
@@ -92,6 +95,7 @@ describe('config', () => {
             burstHandlingEnabled: true,
             performanceTracingEnabled: true,
             performanceTracingEndpoint: 'http://192.168.0.1:14268/api/traces',
+            serializeFileUploads: true,
             serviceDiscoveryEnabled: false,
             webhook: 'https://www.example.com'
         };
@@ -124,6 +128,7 @@ describe('config', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             }))
@@ -135,6 +140,7 @@ describe('config', () => {
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
+                serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
                 webhook: ''
             }));

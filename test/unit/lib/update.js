@@ -25,6 +25,7 @@ const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const secureVault = require('@f5devcentral/atg-shared-utilities').secureVault;
 const Context = require('../../../src/lib/context/context');
 const update = require('../../../src/lib/update');
+const config = require('../../../src/lib/config');
 const log = require('../../../src/lib/log');
 
 chai.use(chaiAsPromised);
@@ -35,6 +36,9 @@ describe('update', () => {
     beforeEach(() => {
         context = Context.build();
         context.tasks.push({ protocol: 'http', urlPrefix: 'http://localhost:8100' });
+        sinon.stub(config, 'getAllSettings').resolves({
+            serializeFileUploads: false
+        });
     });
 
     afterEach(() => {
@@ -450,6 +454,52 @@ describe('update', () => {
                         }
                     );
                 });
+        });
+
+        it('should serialize file uploads if the setting says to', () => {
+            config.getAllSettings.restore();
+            sinon.stub(config, 'getAllSettings').resolves({
+                serializeFileUploads: true
+            });
+
+            sinon.stub(promiseUtil, 'series').resolves();
+            sinon.stub(Promise, 'all').rejects();
+
+            const updates = {
+                script: '',
+                whitelistFiles: [],
+                iControlCalls: [
+                    {}
+                ]
+            };
+            const diff = {};
+            nockWhitelist();
+            nockCliScript();
+
+            return assert.isFulfilled(update.submit(context, updates, diff));
+        });
+
+        it('should not serialize file uploads if the setting says not to', () => {
+            config.getAllSettings.restore();
+            sinon.stub(config, 'getAllSettings').resolves({
+                serializeFileUploads: false
+            });
+
+            sinon.stub(promiseUtil, 'series').rejects();
+            sinon.stub(Promise, 'all').resolves();
+
+            const updates = {
+                script: '',
+                whitelistFiles: [],
+                iControlCalls: [
+                    {}
+                ]
+            };
+            const diff = {};
+            nockWhitelist();
+            nockCliScript();
+
+            return assert.isFulfilled(update.submit(context, updates, diff));
         });
     });
 });

@@ -47,6 +47,12 @@
             "type": "string",
             "default": ""
         },
+        "serializeFileUploads": {
+            "title": "Serialize File Uploads",
+            "description": "When uploading files to the BIG-IP, do so in serial rather than parallel. Use this setting if you have lots of files (like certificates) in your declaration and are running into a 'Too many open files' error in restjavad.",
+            "type": "boolean",
+            "default": false
+        },
         "serviceDiscoveryEnabled": {
             "title": "Service Discovery Enabled",
             "description": "A boolean that controls if Service Discovery features are enabled",

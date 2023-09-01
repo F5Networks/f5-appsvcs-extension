@@ -122,6 +122,31 @@ describe('settings-schema.json', () => {
         });
     });
 
+    describe('serializeFileUploads', () => {
+        describe('valid', () => {
+            it('should use the default value of false', () => {
+                const data = {};
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should accept a value of true', () => {
+                const data = {
+                    serializeFileUploads: true
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('invalid', () => {
+            it('should error if not true or false', () => {
+                const data = {
+                    serializeFileUploads: 'monkey'
+                };
+                assert.strictEqual(validate(data), false);
+            });
+        });
+    });
+
     describe('serviceDiscoveryEnabled', () => {
         describe('valid', () => {
             it('should use the default value of true', () => {

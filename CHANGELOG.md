@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.47.0
 
 ### Added
+- AUTOTOOL-3971: Added option to serialize file uploads for dealing with lots of certificates in a declaration
 - AUTOTOOL-3915: ([GitHub Issue 701](https://github.com/F5Networks/f5-appsvcs-extension/issues/701)): configuration of "SSL sign hash" parameter in TLS_server and TLS_Client
 - AUTOTOOL-3929: client-accepted event to the Policy_Action_Forward class for the Endpoint_Policy class
 - AUTOTOOL-3911: ([GitHub Issue 626](https://github.com/F5Networks/f5-appsvcs-extension/issues/626)): Support for http host condition in Endpoint_Policy

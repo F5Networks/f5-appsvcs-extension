@@ -21,6 +21,7 @@ const asmUtil = require('./util/asmUtil');
 const util = require('./util/util');
 const log = require('./log');
 const authHeaderUtil = require('./util/authHeaderUtil');
+const Config = require('./config');
 
 /**
  * return a promise to ensure AS3 cli script file
@@ -186,8 +187,13 @@ class Update {
     }; */
 
         let time;
+        let settings;
         let scriptFailure = null;
         return Promise.resolve()
+            .then(() => Config.getAllSettings())
+            .then((allSettings) => {
+                settings = util.simpleCopy(allSettings);
+            })
             .then(() => {
                 log.debug('getting whitelist');
                 return util.iControlRequest(context, whitelistOptions);
@@ -204,6 +210,10 @@ class Update {
             .then(() => {
                 log.debug('executing pre-script iControl calls');
                 time = new Date();
+                if (settings.serializeFileUploads) {
+                    const promiseFuncs = updates.iControlCalls.map((c) => () => executeIControlCall(context, c));
+                    return promiseUtil.series(promiseFuncs);
+                }
                 return Promise.all(updates.iControlCalls.map(
                     (c) => executeIControlCall(context, c)
                 ));
