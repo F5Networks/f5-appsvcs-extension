@@ -179,7 +179,7 @@ You can find historical files on GitHub by using the **Branch** drop-down, click
 .. _iamaccess:
 
 I cannot tell the difference between policyIAM and profileAccess objects in BIG-IP AS3
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 **policyIAM** and **profileAccess** both refer to the same BIG-IP APM object: an APM Access profile. While you can use either object as a part of your Service_HTTP or Service_HTTPS class, we recommend using policyIAM in your declarations to refer to an APM Access profile, as it more accurately adheres to industry-standard terminology.
 
 For information on the APM Access profile, see |portaldocs|.  
