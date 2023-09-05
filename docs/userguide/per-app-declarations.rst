@@ -9,6 +9,8 @@ Similar to the tenant-based model, the per-application deployment model allows y
 
 <mostly for orchestration stuff - how exactly?>
 
+<should they be turning it back off after they are done, or any harm in leaving it on while doing normal, non-per-app stuff>
+
 
 Enabling the per-application feature
 ------------------------------------
