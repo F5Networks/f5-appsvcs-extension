@@ -224,6 +224,17 @@ describe('serviceAddress', function () {
         let Shared;
         let serviceApp;
 
+        before('activate perAppDeploymentAllowed', () => postDeclaration(
+            {
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                }
+            },
+            undefined,
+            '?async=false',
+            '/mgmt/shared/appsvcs/settings'
+        ));
+
         beforeEach(() => {
             Shared = {
                 class: 'Application',

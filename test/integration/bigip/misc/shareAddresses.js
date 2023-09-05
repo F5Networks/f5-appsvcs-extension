@@ -376,6 +376,17 @@ describe('shareAddresses', function () {
     describe('per-app', () => {
         let appDecl;
 
+        before('activate perAppDeploymentAllowed', () => postDeclaration(
+            {
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                }
+            },
+            undefined,
+            '?async=false',
+            '/mgmt/shared/appsvcs/settings'
+        ));
+
         beforeEach(() => {
             appDecl = {
                 class: 'Application',
