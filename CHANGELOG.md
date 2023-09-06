@@ -1,6 +1,17 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.46.1
+
+### Added
+
+### Fixed
+
+### Changed
+- Promoted to LTS
+
+### Removed
+
 ## 3.46.0
 
 ### Added
