@@ -1,7 +1,7 @@
 .. _best-practice: 
 
 BIG-IP AS3 Best Practices
-========================
+=========================
 This page contains best practices for using BIG-IP AS3 as well as a brief architectural overview.  
 This page is also on DevCentral, where there may be more frequent updates and user interaction, see https://community.f5.com/t5/technical-articles/as3-best-practice/ta-p/287466.
 
