@@ -1,11 +1,11 @@
 Per-Application Declarations - Beta
 ===================================
 
-BIG-IP AS3 3.47 introduces a **beta** feature for a *per-application* deployment model, which enables AS3 declarations to include only applications, leaving other applications in a tenant unaltered. This can greatly simplify updating the BIG-IP AS3 configuration (especially when the initial declaration is very large with many applications), and ease automated deployments.
+BIG-IP AS3 3.47 introduces a **beta** feature for a *per-application* deployment model, which enables AS3 declarations to include only some tenant applications, leaving other applications in a tenant unaltered. This can greatly simplify updating the BIG-IP AS3 configuration (especially when the initial declaration is very large with many applications), and ease automated deployments.
 
-In previous releases, BIG-IP AS3 only supported a tenant-based model. This meant all applications had to be included in the tenant; if you posted a declaration that did not include existing applications in that tenant, AS3 deleted them. With the per-application deployment model, you send a request to a new endpoint, which includes the tenant as a part of the URI. This allows you post a declaration that contains only an application, and AS3 leaves the other applications in the tenant untouched.  
+In previous releases, BIG-IP AS3 only supported a tenant-based model. This meant all applications had to be included in the tenant; if you posted a declaration that did not include existing applications in that tenant, AS3 deleted them. With the per-application deployment model, you send a request to a new endpoint, which includes the tenant as a part of the URI. This allows you post a declaration that contains only one or more applications, and AS3 leaves the other applications in the tenant untouched.  
 
-.. NOTE:: The source of truth for the BIG-IP configuration remains the declaration you initially sent to the /declare endpoint.  This feature allows you to update this initial declaration without resending the entire declaration, similar to the PATCH method.
+.. NOTE:: The source of truth for the BIG-IP configuration remains the entire declaration.  This feature allows you to update this declaration without resending the entire declaration, similar to the PATCH method.  |br| You can use this per-application functionality together with traditional AS3 declarations, as long as you keep in mind when you post a traditional (non-per-application) declaration, it is the source of truth and configures the tenant according to the objects contained in that declaration.
 
 If you have feedback on this beta feature, please open a GitHub issue at https://github.com/F5Networks/f5-appsvcs-extension/issues
 
@@ -60,7 +60,7 @@ Using GET to view applications
 There are two API paths you can use for GET requests to per-application declarations:
 
 - ``/appsvcs/declare/<tenant>/applications`` <br> 
-- ``/appsvcs/declare/<tenant>/applications/[<application>]
+- ``/appsvcs/declare/<tenant>/applications/[<application>]``
 
 For example:
 
