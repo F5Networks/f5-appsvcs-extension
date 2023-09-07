@@ -20,7 +20,7 @@ const sinon = require('sinon');
 const nock = require('nock');
 const AJV = require('ajv');
 const assert = require('assert');
-const secureVault = require('@f5devcentral/atg-shared-utilities').secureVault;
+const crypto = require('crypto');
 const SecretTag = require('../../../../src/lib/tag').SecretTag;
 const Context = require('../../../../src/lib/context/context');
 const DEVICE_TYPES = require('../../../../src/lib/constants').DEVICE_TYPES;
@@ -223,7 +223,39 @@ describe('SecretTag', () => {
         });
 
         it('should encrypt secret on BIG-IP', () => {
-            const secureVaultStub = sinon.stub(secureVault, 'encrypt').resolves('$M$dG$Nd0rDcsTyKsm7XPWlf3yuw==');
+            let postRequestRadiusServer;
+            let postRequestBash;
+
+            sinon.stub(crypto, 'randomBytes').returns('Fes8yssC');
+
+            nock('https://localhost:8100')
+                .post('/mgmt/tm/ltm/auth/radius-server/')
+                .reply(200, (uri, requestBody) => {
+                    postRequestRadiusServer = requestBody;
+                    return {
+                        kind: 'tm:ltm:auth:radius-server:radius-serverstate',
+                        name: '__as3_Delete-Me-Fes8yssC',
+                        partition: 'Common',
+                        fullPath: '/Common/__as3_Delete-Me-Fes8yssC',
+                        generation: 177,
+                        selfLink: 'https://localhost/mgmt/tm/ltm/auth/radius-server/~Common~__as3_Delete-Me-Fes8yssC?ver=15.1.0',
+                        port: 1812,
+                        secret: '$M$dG$Nd0rDcsTyKsm7XPWlf3yuw==',
+                        server: '__as3',
+                        timeout: 3
+                    };
+                });
+
+            nock('https://localhost:8100')
+                .post('/mgmt/tm/util/bash')
+                .reply(200, (uri, requestBody) => {
+                    postRequestBash = requestBody;
+                    return '{"kind":"tm:util:bash:runstate","command":"run","utilCmdArgs":"-c \\"tmsh -a list auth radius-server __as3_Delete-Me-Fes8yssC secret\\"","commandResult":"auth radius-server __as3_Delete-Me-Fes8yssC {\\n    secret $M$dG$Nd0rDcsTyKsm7XPWlf3yuw==\\n}\\n"}';
+                });
+
+            nock('https://localhost:8100')
+                .delete('/mgmt/tm/ltm/auth/radius-server/__as3_Delete-Me-Fes8yssC')
+                .reply(200);
 
             return assertProcessSecrets(
                 [
@@ -243,33 +275,15 @@ describe('SecretTag', () => {
                     }
                 ]
             ).then(() => {
-                assert.strictEqual(secureVaultStub.args[0][0], 'as3Secret');
-            });
-        });
-
-        it('should error if SecureVault fails to encrypt secret', () => {
-            sinon.stub(secureVault, 'encrypt').rejects(new Error('Encryption failed! Failed to retrieve secret'));
-            let rejected = false;
-
-            return SecretTag.process(context, declaration, [
-                {
-                    data: {
-                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0',
-                        ciphertext: 'YXMzU2VjcmV0'
-                    },
-                    instancePath: 'my/data/path'
-                }
-            ]).catch((err) => {
-                rejected = true;
-                assert.ok(err instanceof AJV.ValidationError);
-                assert.deepStrictEqual(err.errors, [{
-                    dataPath: 'my/data/path',
-                    keyword: 'f5PostProcess(secret)',
-                    params: {},
-                    message: 'Encryption failed! Failed to retrieve secret'
-                }]);
-            }).then(() => {
-                assert.ok(rejected, 'should have rejected');
+                assert.deepStrictEqual(postRequestRadiusServer, {
+                    name: '__as3_Delete-Me-Fes8yssC',
+                    secret: 'as3Secret',
+                    server: '__as3'
+                });
+                assert.deepStrictEqual(postRequestBash, {
+                    command: 'run',
+                    utilCmdArgs: '-c "tmsh -a list auth radius-server __as3_Delete-Me-Fes8yssC secret"'
+                });
             });
         });
     });

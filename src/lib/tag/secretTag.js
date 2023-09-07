@@ -17,7 +17,7 @@
 'use strict';
 
 const AJV = require('ajv');
-const secureVault = require('@f5devcentral/atg-shared-utilities').secureVault;
+const crypto = require('crypto');
 const util = require('../util/util');
 const log = require('../log');
 const DEVICE_TYPES = require('../constants').DEVICE_TYPES;
@@ -88,13 +88,6 @@ function replaceCipher(data, secret, JOSE) {
 }
 
 function encryptSecret(context, secret, dataPath) {
-    const myerror = {
-        dataPath: dataPath || 'unknown path',
-        keyword: 'f5PostProcess(secret)',
-        params: {},
-        message: ''
-    };
-
     // when 'mySchema' === true, want to bind secret to config object
     if (!secret
         || !Object.prototype.hasOwnProperty.call(secret, 'protected')
@@ -109,7 +102,12 @@ function encryptSecret(context, secret, dataPath) {
     try {
         JOSE = JSON.parse(joseString);
     } catch (e) {
-        myerror.message = `Error parsing 'protected' property: ${e.message}`;
+        const myerror = {
+            dataPath: dataPath || 'unknown path',
+            keyword: 'f5PostProcess(secret)',
+            params: {},
+            message: `Error parsing 'protected' property: ${e.message}`
+        };
         throw new AJV.ValidationError([myerror]);
     }
     if (!Object.prototype.hasOwnProperty.call(JOSE, 'enc') || (JOSE.enc !== 'none')) {
@@ -142,16 +140,64 @@ function encryptSecret(context, secret, dataPath) {
             });
         // end of handling for BIG-IQ
     }
-
+    // BIG-IP does not yet offer a straightforward API
+    // to create a SecureVault cryptogram.  We use a
+    // workaround:  create a new RADIUS server component,
+    // setting the RADIUS secret to S.  TMOS will encrypt
+    // S to SecureVault immediately and iControl REST
+    // will give us back the SV cryptogram ($M$foo).
+    // We then delete the bogus RADIUS server.
     JOSE.enc = 'f5sv';
 
-    return secureVault.encrypt(plainTextSecret)
-        .then((response) => {
-            replaceCipher(secret, response, JOSE);
+    const baseUrl = '/mgmt/tm/ltm/auth/radius-server/';
+    const radiusName = `__as3_Delete-Me-${crypto.randomBytes(6)
+        .toString('base64')
+        .replace(/[+]/g, '-')
+        .replace(/\x2f/g, '_')}`;
+
+    const postOptions = {
+        path: baseUrl,
+        method: 'POST',
+        send: JSON.stringify({
+            name: radiusName,
+            secret: plainTextSecret,
+            server: '__as3'
+        })
+    };
+
+    const delOptions = {
+        path: (baseUrl + radiusName),
+        method: 'DELETE',
+        crude: true
+    };
+
+    return util.iControlRequest(context, postOptions)
+        .then((radius) => {
+            const tmshCmd = `tmsh -a list auth radius-server ${radiusName} secret`;
+            const promise = util.executeBashCommand(context, tmshCmd)
+                .then((result) => {
+                    radius.secret = result.split('\n')[1].trim().split(' ', 2)[1];
+                    replaceCipher(secret, radius.secret, JOSE);
+                })
+                .then(() => radius);
+            return promise;
+        })
+        .then((radius) => {
+            if ((typeof radius.secret !== 'string') || (radius.secret.indexOf('$M$') !== 0)) {
+                // log problem but leave declaration alone
+                log.error('f5PostProcess(secret): encryption failed');
+                return Promise.resolve();
+            }
+            return util.iControlRequest(context, delOptions);
         })
         .catch((e) => {
-            myerror.message = e.message;
-            throw new AJV.ValidationError([myerror]);
+            // clean up any leftover component (discard async result here)
+            util.iControlRequest(context, delOptions)
+                .then(() => {})
+                .catch((e1) => {
+                    log.error(`Error occured in secret encryption: ${e1.message}`);
+                });
+            throw e;
         });
 }
 
