@@ -723,59 +723,10 @@ describe('per-app API testing (__smoke)', function () {
                         ]
                     );
                 })
-                .then(() => {
-                    const options = {
-                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app1?async=true',
-                        logResponse: true,
-                        sendDelete: true
-                    };
-                    return deleteDeclaration(undefined, options);
-                }) // DELETE specific application
-                .then((results) => { // Confirm no change
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
-                    assert.deepStrictEqual(
-                        results.results,
-                        [
-                            {
-                                code: 200,
-                                message: 'success',
-                                host: 'localhost',
-                                tenant: 'tenant1'
-                            }
-                        ]
-                    );
-                })
-                .then(() => assert.isFulfilled(
-                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications/app1')
-                ))
-                .then((results) => {
-                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
-                    assert.deepStrictEqual(results, {
-                        app1: {
-                            class: 'Application',
-                            template: 'generic',
-                            testItem: {
-                                class: 'Service_TCP',
-                                remark: 'description',
-                                virtualPort: 123,
-                                virtualAddresses: [
-                                    '1.1.1.12'
-                                ],
-                                persistenceMethods: [
-                                    'source-address'
-                                ]
-                            }
-                        }
-                    });
-                })
                 .then(() => assert.isFulfilled(
                     getPath('/mgmt/shared/appsvcs/declare/tenant1/applications')
                 ))
                 .then((results) => {
-                    // TODO: This should be a 404, but until data-groups are handled this is a little messed up
                     assert.deepStrictEqual(results, {
                         app1: {
                             class: 'Application',
@@ -1073,6 +1024,450 @@ describe('per-app API testing (__smoke)', function () {
                             }
                         ]
                     );
+                });
+        });
+    });
+
+    describe('DELETE', () => {
+        afterEach(() => deleteDeclaration());
+
+        it('should handle DELETE only delete targeted app via the applications endpoint', () => {
+            const declaration1 = {
+                app1: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.11'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                },
+                app2: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.12'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                }
+            };
+
+            const declaration2 = {
+                app3: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.13'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                }
+            };
+
+            return Promise.resolve()
+                .then(() => postDeclaration(declaration1, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => postDeclaration(declaration2, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant2/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant2'
+                            }
+                        ]
+                    );
+                })
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications/app1?async=true',
+                        logResponse: true,
+                        sendDelete: true
+                    };
+                    return deleteDeclaration(undefined, options);
+                }) // DELETE specific application
+                .then((results) => {
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications/app1')
+                ))
+                .then((results) => {
+                    assert.strictEqual(results.code, 404);
+                    assert.deepStrictEqual(
+                        results.message,
+                        'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"specified Application \'app1\' not found in \'tenant1\'"}'
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant1/applications')
+                ))
+                .then((results) => {
+                    assert.deepStrictEqual(results, {
+                        app2: {
+                            class: 'Application',
+                            template: 'generic',
+                            testItem: {
+                                class: 'Service_TCP',
+                                remark: 'description',
+                                virtualPort: 123,
+                                virtualAddresses: [
+                                    '192.0.2.12'
+                                ],
+                                persistenceMethods: [
+                                    'source-address'
+                                ]
+                            }
+                        }
+                    });
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
+                    assert.strictEqual(typeof results.id, 'string');
+                    delete results.controls.archiveTimestamp;
+                    delete results.id;
+
+                    assert.deepStrictEqual(results, {
+                        class: 'ADC',
+                        controls: {},
+                        schemaVersion: '3.0.0',
+                        updateMode: 'selective',
+                        tenant1: {
+                            class: 'Tenant',
+                            app2: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+                        },
+                        tenant2: {
+                            class: 'Tenant',
+                            app3: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.13'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+                        }
+                    });
+                })
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/appsvcs/declare/tenant2/applications/app3?async=true',
+                        logResponse: true,
+                        sendDelete: true
+                    };
+                    return deleteDeclaration(undefined, options);
+                }) // DELETE specific application
+                .then((results) => {
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant2'
+                            }
+                        ]
+                    );
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/shared/appsvcs/declare/tenant2')
+                ))
+                .then((results) => {
+                    assert.strictEqual(results.code, 404);
+                    assert.deepStrictEqual(
+                        results.message,
+                        'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"specified Tenant(s) \'tenant2\' not found in declaration"}'
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
+                    assert.strictEqual(typeof results.id, 'string');
+                    delete results.controls.archiveTimestamp;
+                    delete results.id;
+
+                    assert.deepStrictEqual(results, {
+                        class: 'ADC',
+                        controls: {},
+                        schemaVersion: '3.0.0',
+                        updateMode: 'selective',
+                        tenant1: {
+                            class: 'Tenant',
+                            app2: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+                        }
+                    });
+                });
+        });
+
+        it('should fail to delete anything if a application is NOT specified', () => {
+            const declaration1 = {
+                app1: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.11'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                },
+                app2: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.12'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                }
+            };
+
+            const declaration2 = {
+                app3: {
+                    class: 'Application',
+                    template: 'generic',
+                    testItem: {
+                        class: 'Service_TCP',
+                        remark: 'description',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            '192.0.2.13'
+                        ],
+                        persistenceMethods: [
+                            'source-address'
+                        ]
+                    }
+                }
+            };
+
+            return Promise.resolve()
+                .then(() => postDeclaration(declaration1, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant1'
+                            }
+                        ]
+                    );
+                })
+                .then(() => postDeclaration(declaration2, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant2/applications'))
+                .then((results) => { // Confirm results
+                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
+                    assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].lineCount;
+                    delete results.results[0].runTime;
+                    assert.deepStrictEqual(
+                        results.results,
+                        [
+                            {
+                                code: 200,
+                                message: 'success',
+                                host: 'localhost',
+                                tenant: 'tenant2'
+                            }
+                        ]
+                    );
+                })
+                .then(() => {
+                    const options = {
+                        path: '/mgmt/shared/appsvcs/declare/tenant1/applications?async=true',
+                        logResponse: true,
+                        sendDelete: true
+                    };
+                    return assert.isRejected(
+                        deleteDeclaration(undefined, options),
+                        /Received unexpected 400 status code: {"code":400,"message":"Bad Request: Invalid path"}/,
+                        'per-app DELETE without application is unsupported and should error'
+                    );
+                })
+                .then(() => assert.isFulfilled(
+                    // Confirm BIG-IP is still configured
+                    getPath('/mgmt/shared/appsvcs/declare')
+                ))
+                .then((results) => {
+                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
+                    assert.strictEqual(typeof results.id, 'string');
+                    delete results.controls.archiveTimestamp;
+                    delete results.id;
+
+                    assert.deepStrictEqual(results, {
+                        class: 'ADC',
+                        controls: {},
+                        schemaVersion: '3.0.0',
+                        updateMode: 'selective',
+                        tenant1: {
+                            class: 'Tenant',
+                            app1: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.11'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            },
+                            app2: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.12'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+                        },
+                        tenant2: {
+                            class: 'Tenant',
+                            app3: {
+                                class: 'Application',
+                                template: 'generic',
+                                testItem: {
+                                    class: 'Service_TCP',
+                                    remark: 'description',
+                                    virtualPort: 123,
+                                    virtualAddresses: [
+                                        '192.0.2.13'
+                                    ],
+                                    persistenceMethods: [
+                                        'source-address'
+                                    ]
+                                }
+                            }
+                        }
+                    });
                 });
         });
     });

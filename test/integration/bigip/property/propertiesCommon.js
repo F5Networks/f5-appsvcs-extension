@@ -675,6 +675,7 @@ function postBigipItems(items, useTransaction) {
  * @param {object} [options] - options for function
  * @param {boolean} [options.logResponse] - whether or not to log the response from the delete operation
  * @param {boolean} [options.sendDelete] - whether or not to send request as a DELETE or POST
+ * @param {boolean} [options.path] - custom path to send DELETE request to
  */
 function deleteDeclaration(tenant, options) {
     logEvent('delete Declaration');

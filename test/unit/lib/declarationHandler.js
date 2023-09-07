@@ -308,6 +308,7 @@ describe('DeclarationHandler', () => {
                 it('should handle a single application', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: [],
                         tenant: 'secondTenant'
@@ -341,6 +342,7 @@ describe('DeclarationHandler', () => {
                 it('should handle multiple applications', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: [],
                         tenant: 'firstTenant'
@@ -374,6 +376,7 @@ describe('DeclarationHandler', () => {
                 it('should handle declarations with multiple applications but targetting a specific application', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/Application';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: ['Application'],
                         tenant: 'firstTenant'
@@ -407,6 +410,7 @@ describe('DeclarationHandler', () => {
                 it('should return 404 status code for missing tenant', () => {
                     context.tasks[0].showAge = 1;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/someTenant/applications';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: [],
                         tenant: 'someTenant'
@@ -428,6 +432,7 @@ describe('DeclarationHandler', () => {
                 it('should return 404 status code for missing application in tenant declaration', () => {
                     context.tasks[0].showAge = 1;
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/otherApplication';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: ['otherApplication'],
                         tenant: 'firstTenant'
@@ -450,6 +455,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].showAge = 1;
                     context.tasks[0].targetHost = 'localhost';
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: ['App1'],
                         tenant: 'firstTenant'
@@ -470,6 +476,7 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].showAge = 0;
                     context.tasks[0].targetHost = 'localhost';
                     context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                    context.request.isPerApp = true;
                     context.request.perAppInfo = {
                         apps: ['App1'],
                         tenant: 'firstTenant'
@@ -1696,6 +1703,7 @@ describe('DeclarationHandler', () => {
                         }
                     }
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     apps: [],
                     tenant: 'otherTenant'
@@ -1738,6 +1746,7 @@ describe('DeclarationHandler', () => {
                         }
                     }
                 };
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     apps: ['app'],
                     tenant: 'firstTenant'
@@ -1801,6 +1810,7 @@ describe('DeclarationHandler', () => {
                     }
                 };
                 context.request.method = 'Post';
+                context.request.isPerApp = true;
                 context.request.perAppInfo = {
                     apps: ['newApp'],
                     tenant: 'secondTenant'
@@ -1863,6 +1873,57 @@ describe('DeclarationHandler', () => {
                                         }
                                     }
                                 },
+                                updateMode: 'selective'
+                            }
+                        );
+                    });
+            });
+
+            it('should delete application from declaration', () => {
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                context.tasks[0].action = 'remove';
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'randomGibberish',
+                    updateMode: 'complete'
+                };
+                context.request.method = 'Remove';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['App1'],
+                    tenant: 'firstTenant'
+                };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'firstTenant',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        delete result.body.declaration.controls;
+                        assert.deepStrictEqual(
+                            result.body.declaration,
+                            {
+                                class: 'ADC',
+                                firstTenant: {
+                                    class: 'Tenant',
+                                    Application: {
+                                        class: 'Application'
+                                    },
+                                    controls: {
+                                        class: 'Controls'
+                                    }
+                                },
+                                id: 'randomGibberish',
+                                schemaVersion: '3.0.0',
                                 updateMode: 'selective'
                             }
                         );

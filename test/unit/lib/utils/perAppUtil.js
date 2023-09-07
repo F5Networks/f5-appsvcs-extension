@@ -945,4 +945,125 @@ describe('perAppUtil', () => {
             );
         });
     });
+
+    describe('deleteAppsFromTenant', () => {
+        let perTenDecl;
+        let perAppInfo;
+
+        beforeEach(() => {
+            perTenDecl = {
+                class: 'ADC',
+                tenantOne: {
+                    class: 'Tenant',
+                    appOne: {
+                        class: 'Application'
+                    },
+                    appTwo: {
+                        class: 'Application'
+                    }
+                }
+            };
+
+            perAppInfo = {
+                tenant: 'tenantOne',
+                apps: ['appOne']
+                // Note: DELETEs only have 1 apps, and do NOT have a decl
+            };
+        });
+
+        it('should error if no perTenantDecl is provided', () => {
+            assert.throws(
+                () => perAppUtil.deleteAppsFromTenant(undefined, perAppInfo),
+                /Declaration must already be converted to per-tenant ADC class/,
+                'A missing perTenantDecl should error with "Declaration must already be converted to per-tenant ADC class"'
+            );
+        });
+
+        it('should error if the ADC class is missing from the declaration', () => {
+            delete perTenDecl.class;
+
+            assert.throws(
+                () => perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo),
+                /Declaration must already be converted to per-tenant ADC class/,
+                'Should error if the ADC class is missing'
+            );
+        });
+
+        it('should delete nothing if no perAppInfo is provided', () => {
+            perAppUtil.deleteAppsFromTenant(perTenDecl, undefined);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should delete nothing if the tenant is missing from the declaration', () => {
+            perAppInfo.tenant = 'otherTenant';
+
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should delete nothing if the apps do not exist in the declaration', () => {
+            perAppInfo.apps = ['otherApp'];
+
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should remove the apps value from the perTenDecl', () => {
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+    });
 });

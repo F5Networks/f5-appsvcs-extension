@@ -165,10 +165,23 @@ const verifyResourcesExist = (perTenantDeclaration, perAppInfo) => {
     }; // success
 };
 
+const deleteAppsFromTenant = (perTenantDeclaration, perAppInfo) => {
+    if ((perTenantDeclaration || {}).class !== 'ADC') {
+        throw new Error('Declaration must already be converted to per-tenant ADC class');
+    }
+
+    // Note: by design, only 1 application should be deleted at a time
+    // a DELETE to the applications endpoint should fail
+    if (perAppInfo && perAppInfo.apps && perAppInfo.apps.length === 1 && perTenantDeclaration[perAppInfo.tenant]) {
+        delete perTenantDeclaration[perAppInfo.tenant][perAppInfo.apps[0]];
+    }
+};
+
 module.exports = {
     convertToPerApp,
     convertToPerTenant,
     isPerAppPath,
     mergePreviousTenant,
-    verifyResourcesExist
+    verifyResourcesExist,
+    deleteAppsFromTenant
 };
