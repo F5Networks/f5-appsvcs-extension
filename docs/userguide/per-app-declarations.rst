@@ -79,11 +79,15 @@ To delete a specific application, you can send a DELETE request to ``/appsvcs/de
 
 You must specify the application(s) you want to delete as a part of the URI.  If you delete all of the applications in a tenant, AS3 deletes the tenant as well.
 
+For example, to delete the **Application1** application from the previous example: ``DELETE HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications/Application1``
+
+|
 
 Additional per-application declarations
 ---------------------------------------
 
 The following are additional example declarations for per-application deployments.
+
 
 Per-Application example with multiple applications in the declaration
 `````````````````````````````````````````````````````````````````````
