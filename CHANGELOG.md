@@ -22,6 +22,17 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Removed
 
+## 3.46.1
+
+### Added
+
+### Fixed
+
+### Changed
+- Promoted to LTS
+
+### Removed
+
 ## 3.46.0
 
 ### Added
