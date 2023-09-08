@@ -64,7 +64,7 @@ There are two API paths you can use for GET requests to per-application declarat
 
 For example:
 
- ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` retrieves all applications in ExampleTenant.
+``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications`` retrieves all applications in ExampleTenant.
 
 ``GET HTTPS://192.0.2.10/mgmt/shared/appsvcs/declare/ExampleTenant/applications/applicationName`` retrieves the **applicationName** application only in ExampleTenant.
 
