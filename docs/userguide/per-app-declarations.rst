@@ -1,3 +1,5 @@
+.. _perapp:
+
 Per-Application Declarations - Beta
 ===================================
 
