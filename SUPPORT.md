@@ -4,7 +4,7 @@ Maintenance and F5 Technical Support of this F5 code is provided only if the
 software (i) is unmodified; and (ii) has been marked as F5 Supported in
 SOL80012344, (https://support.f5.com/csp/article/K80012344).
 
-Support will only be provided to customers who have an existing BIG-IP support contract associated with a valid BIG-IP serial number. 
+Support will only be provided to customers who have an existing BIG-IP support contract associated with a valid BIG-IP serial number.
 For information about support policies, see http://www.f5.com/about/guidelines-policies/ and http://askf5.com.
 
 
@@ -19,9 +19,9 @@ Currently supported versions (the next LTS release, 3.46.1, will release on 9/12
 
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
-| AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
-| AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
 | AS 3.46.0        | Feature       |  24-Jul-2023        | 24-Oct-2023     |
+| AS 3.46.1        | LTS           |  12-Sep-2023        | 12-Sep-2024     |
+| AS 3.47.0        | Feature       |  12-Sep-2023        | 12-Dec-2023     |
 
 
 Versions no longer supported:
@@ -83,10 +83,11 @@ Versions no longer supported:
 | AS 3.42.0        | Feature       |  12-Jan-2023        | 12-Apr-2023     |
 | AS 3.43.0        | Feature       |  09-Feb-2023        | 09-May-2023     |
 | AS 3.44.0        | Feature       |  27-Mar-2022        | 27-Jun-2023     |
+| AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
+| AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
 
-\* Fix for updated Docker Container packaging only  
+\* Fix for updated Docker Container packaging only
 \*\* Update for the schema description for Pool minimumMonitors
 
 
-See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release. 
-
+See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release.

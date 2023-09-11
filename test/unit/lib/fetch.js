@@ -1043,224 +1043,6 @@ describe('fetch', () => {
                 });
         });
 
-        // TODO: remove this unit test, when virtual-address per-app meta-data handling is complete
-        it('should remove virtual-address deletes when hanlding a per-app POST', () => {
-            context.request = {
-                method: 'Post',
-                isPerApp: true,
-                perAppInfo: {
-                    tenant: 'tenant1',
-                    decl: {}, // Abbreviated for testing
-                    apps: ['app1']
-                }
-            };
-            const currentConfig = {
-                '/tenant1/':
-                {
-                    command: 'auth partition',
-                    properties: { 'default-route-domain': 0 },
-                    ignore: []
-                },
-                '/tenant1/app1/testItem':
-                {
-                    command: 'ltm virtual',
-                    properties:
-                    {
-                        enabled: true,
-                        'address-status': 'yes',
-                        'auto-lasthop': 'default',
-                        'connection-limit': 0,
-                        'rate-limit': 'disabled',
-                        description: '"description"',
-                        destination: '/tenant1/192.0.2.200:123',
-                        'ip-protocol': 'tcp',
-                        'last-hop-pool': 'none',
-                        mask: '255.255.255.255',
-                        mirror: 'disabled',
-                        persist: {
-                            '/Common/source_addr': {
-                                default: 'yes'
-                            }
-                        },
-                        policies: {},
-                        profiles: {},
-                        'service-down-immediate-action': 'none',
-                        source: '0.0.0.0/0',
-                        'source-address-translation': {
-                            type: 'automap'
-                        },
-                        rules: {},
-                        'security-log-profiles': {},
-                        'source-port': 'preserve',
-                        'translate-address': 'enabled',
-                        'translate-port': 'enabled',
-                        nat64: 'disabled',
-                        vlans: {},
-                        'vlans-disabled': ' ',
-                        metadata: {},
-                        'clone-pools': {},
-                        'throughput-capacity': 'infinite'
-                    },
-                    ignore: []
-                },
-                '/tenant1/Service_Address-192.0.2.200':
-                {
-                    command: 'ltm virtual-address',
-                    properties:
-                    {
-                        address: '192.0.2.200',
-                        arp: 'enabled',
-                        'icmp-echo': 'enabled',
-                        mask: '255.255.255.255',
-                        'route-advertisement': 'disabled',
-                        spanning: 'disabled',
-                        'traffic-group': 'default'
-                    },
-                    ignore: []
-                },
-                '/tenant1/Service_Address-192.0.2.1':
-                {
-                    command: 'ltm virtual-address',
-                    properties:
-                    {
-                        address: '192.0.2.1',
-                        arp: 'enabled',
-                        'icmp-echo': 'enabled',
-                        mask: '255.255.255.255',
-                        'route-advertisement': 'disabled',
-                        spanning: 'disabled',
-                        'traffic-group': 'default'
-                    },
-                    ignore: []
-                },
-                '/tenant1/app1/': {
-                    command: 'sys folder', properties: {}, ignore: []
-                }
-            };
-            const desiredConfig = {
-                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
-                '/tenant1/Service_Address-192.0.2.100':
-                {
-                    command: 'ltm virtual-address',
-                    properties:
-                    {
-                        address: '192.0.2.100',
-                        arp: 'enabled',
-                        'icmp-echo': 'enabled',
-                        mask: '255.255.255.255',
-                        'route-advertisement': 'disabled',
-                        spanning: 'disabled',
-                        'traffic-group': 'default'
-                    },
-                    ignore: []
-                },
-                '/tenant1/app1/testItem':
-                {
-                    command: 'ltm virtual',
-                    properties:
-                    {
-                        enabled: true,
-                        'address-status': 'yes',
-                        'auto-lasthop': 'default',
-                        'connection-limit': 0,
-                        'rate-limit': 'disabled',
-                        description: '"description"',
-                        destination: '/tenant1/192.0.2.100:123',
-                        'ip-protocol': 'tcp',
-                        'last-hop-pool': 'none',
-                        mask: '255.255.255.255',
-                        mirror: 'disabled',
-                        persist: {
-                            '/Common/source_addr': {
-                                default: 'yes'
-                            }
-                        },
-                        policies: {},
-                        profiles: {},
-                        'service-down-immediate-action': 'none',
-                        source: '0.0.0.0/0',
-                        'source-address-translation': {
-                            type: 'automap'
-                        },
-                        rules: {},
-                        'security-log-profiles': {},
-                        'source-port': 'preserve',
-                        'translate-address': 'enabled',
-                        'translate-port': 'enabled',
-                        nat64: 'disabled',
-                        vlans: {},
-                        'vlans-disabled': ' ',
-                        metadata: {},
-                        'clone-pools': {},
-                        'throughput-capacity': 'infinite'
-                    },
-                    ignore: []
-                },
-                '/tenant1/':
-                {
-                    command: 'auth partition',
-                    properties: { 'default-route-domain': 0 },
-                    ignore: []
-                }
-            };
-            const commonConfig = {
-                nodeList: [
-                    {
-                        fullPath: '/tenant1/192.0.2.10',
-                        partition: 'tenant1',
-                        ephemeral: false,
-                        metadata: undefined,
-                        commonNode: false,
-                        domain: '',
-                        key: '192.0.2.10'
-                    },
-                    {
-                        fullPath: '/tenant1/192.0.2.20',
-                        partition: 'tenant1',
-                        ephemeral: false,
-                        metadata: undefined,
-                        commonNode: false,
-                        domain: '',
-                        key: '192.0.2.20'
-                    }],
-                virtualAddressList: []
-            };
-            return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
-                .catch(() => {
-                    assert.fail('Promise should not reject');
-                })
-                .then((results) => {
-                    // Should be empty if attempting to Delete
-                    assert.strictEqual(results.length, 2);
-                    assert.deepStrictEqual(results,
-                        [
-                            {
-                                kind: 'E',
-                                path: ['/tenant1/app1/testItem', 'properties', 'destination'],
-                                lhs: '/tenant1/192.0.2.200:123',
-                                rhs: '/tenant1/192.0.2.100:123'
-                            },
-                            {
-                                kind: 'N',
-                                path: ['/tenant1/Service_Address-192.0.2.100'],
-                                rhs: {
-                                    command: 'ltm virtual-address',
-                                    properties: {
-                                        address: '192.0.2.100',
-                                        arp: 'enabled',
-                                        'icmp-echo': 'enabled',
-                                        mask: '255.255.255.255',
-                                        'route-advertisement': 'disabled',
-                                        spanning: 'disabled',
-                                        'traffic-group': 'default'
-                                    },
-                                    ignore: []
-                                }
-                            }
-                        ]);
-                });
-        });
-
         describe('iRule order', () => {
             it('should return a diff when iRule order changes', () => {
                 const currentConfig = {
@@ -4323,6 +4105,95 @@ describe('fetch', () => {
             );
         });
 
+        it('should remove member in pre-trans when we have to update a member', () => {
+            const desiredConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'enabled',
+                            name: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'enabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/Tenant/my.example.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            autopopulate: 'disabled',
+                            tmName: 'my.example.com'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Application/myPool',
+                        'properties',
+                        'members',
+                        '/Tenant/my.example.com:80',
+                        'fqdn',
+                        'autopopulate'
+                    ],
+                    lhs: 'disabled',
+                    rhs: 'enabled',
+                    tags: ['tmsh']
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            assert.strictEqual(
+                result.script,
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}\ntmsh::begin_transaction\ntmsh::delete ltm pool /Tenant/Application/myPool\ntmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate enabled \\} metadata none \\} \\} metadata none\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Tenant/Application/myPool members add \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate disabled \\} metadata none \\} \\}\n}}\n}'
+            );
+        });
+
         describe('security firewall', () => {
             it('should properly setup preTrans, trans, and rollback during a delete', () => {
                 const desiredConfig = {};
@@ -4975,6 +4846,150 @@ describe('fetch', () => {
                         'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm virtual /portList/Application/tcpService\n\ntmsh::delete ltm virtual-address /portList/any6\ntmsh::commit_transaction\ntmsh::delete sys folder /portList/Application/\n\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
                     );
                 });
+            });
+        });
+
+        describe('redirect handling', () => {
+            it('should delete redirect virtuals outside the transaction when there is a non-0 route-domain destination', () => {
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/Application/tcpService-Redirect-': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:80'
+                        }
+                    },
+                    '/Tenant/192.0.2.1%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1%1'
+                        }
+                    },
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/Application/tcpService-Redirect-'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {}
+                        },
+                        command: 'ltm virtual'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\ntmsh::delete ltm virtual /Tenant/Application/tcpService-Redirect-\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
+            });
+
+            it('should not delete the virtual address when we are changing the destination and deleting the redirect virtual', () => {
+                const desiredConfig = {
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    },
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/192.0.2.2%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.2%1'
+                        }
+                    }
+                };
+                const currentConfig = {
+                    '/Tenant/Application/tcpService': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:443'
+                        }
+                    },
+                    '/Tenant/Application/tcpService-Redirect-': {
+                        command: 'ltm virtual',
+                        properties: {
+                            destination: '/Tenant/192.0.2.1%1:80'
+                        }
+                    },
+                    '/Tenant/192.0.2.1%1:443': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1%1'
+                        }
+                    },
+                    '/Tenant/Application/': {
+                        command: 'sys folder',
+                        properties: {}
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/Application/tcpService-Redirect-'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                destination: '/Tenant/192.0.2.1%1:80",'
+                            }
+                        },
+                        command: 'ltm virtual',
+                        lhsCommand: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Tenant/192.0.2.1%1:443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '192.0.2.1%1'
+                            }
+                        },
+                        command: 'ltm virtual-address',
+                        lhsCommand: 'ltm virtual-address'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Tenant/192.0.2.2%1:443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '192.0.2.2%1'
+                            }
+                        },
+                        command: 'ltm virtual-address',
+                        rhsCommand: 'ltm virtual-address'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::begin_transaction\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n\ntmsh::create ltm virtual-address /Tenant/192.0.2.2%1:443 address 192.0.2.2%1\ntmsh::commit_transaction\n\ntmsh::delete ltm virtual /Tenant/Application/tcpService-Redirect-\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
             });
         });
 
@@ -7265,65 +7280,6 @@ describe('fetch', () => {
                 };
             });
 
-            it('should pull just the application in tenant when application is specified', () => {
-                const tenantId = 'My_tenant';
-                const appId = 'My_app';
-                const poolId = 'My_pool';
-                context.target.tmosVersion = '14.1.0';
-                context.control = {
-                    host: 'localhost'
-                };
-                context.request.isPerApp = true;
-                context.request.perAppInfo = {
-                    tenant: tenantId,
-                    apps: [appId]
-                };
-                const declaration = {
-                    [tenantId]: {
-                        class: 'Tenant',
-                        enable: true,
-                        [appId]: {
-                            class: 'Application',
-                            template: 'generic',
-                            [poolId]: {
-                                class: 'Pool',
-                                loadBalancingMode: 'round-robin',
-                                minimumMembersActive: 1,
-                                reselectTries: 0,
-                                serviceDownAction: 'none',
-                                slowRampTime: 10,
-                                minimumMonitors: 1
-                            },
-                            enable: true
-                        },
-                        appOther: {
-                            class: 'Application',
-                            template: 'generic',
-                            poolOther: {
-                                class: 'Pool',
-                                loadBalancingMode: 'round-robin',
-                                minimumMembersActive: 1,
-                                reselectTries: 0,
-                                serviceDownAction: 'none',
-                                slowRampTime: 10,
-                                minimumMonitors: 1
-                            },
-                            enable: true
-                        }
-                    }
-                };
-
-                return fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
-                    .then((desiredConfig) => {
-                        assert.strictEqual(Object.keys(desiredConfig[`/${tenantId}/`]).length, 3, 'should only have 3 entries in the desired config');
-                        assert.strictEqual(desiredConfig['/My_tenant/'].command, 'auth partition');
-                        assert.strictEqual(desiredConfig['/My_tenant/My_app/'].command, 'sys folder');
-                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].command, 'ltm pool');
-                        assert.strictEqual(desiredConfig['/My_tenant/My_app/My_pool'].properties['load-balancing-mode'], 'round-robin');
-                        assert.strictEqual(typeof desiredConfig['/My_tenant/appOther/'], 'undefined'); // Should NOT include unspecified app
-                    });
-            });
-
             it('should pull the application in tenant when application is NOT specified', () => {
                 const tenantId = 'My_tenant';
                 const appId = 'My_app';
@@ -7548,35 +7504,6 @@ describe('fetch', () => {
                     .then((results) => {
                         assert.deepStrictEqual(results, {});
                         assert.strictEqual(isOneOfProvisionedStub.called, false, 'isOneOfProvisioned should NOT have been called');
-                    });
-            });
-
-            it('should filter out any applications not in the declaration', () => {
-                tenantId = 'tenant1';
-
-                context.request.isPerApp = true;
-                context.request.perAppInfo = {
-                    tenant: tenantId,
-                    apps: ['app1']
-                };
-                return Promise.resolve()
-                    .then(() => fetch.getTenantConfig(context, tenantId, commonConfig))
-                    .then((results) => {
-                        assert.deepStrictEqual(
-                            results,
-                            {
-                                '/tenant1/': {
-                                    command: 'auth partition',
-                                    properties: { 'default-route-domain': 0 },
-                                    ignore: []
-                                },
-                                '/tenant1/app1/': { command: 'sys folder', properties: {}, ignore: [] },
-                                '/tenant1/app1/pool1': {
-                                    command: 'ltm pool', properties: { members: {}, metadata: {} }, ignore: []
-                                }
-                            }
-                        );
-                        assert.strictEqual(isOneOfProvisionedStub.called, true, 'isOneOfProvisioned should have been called at least once');
                     });
             });
 
@@ -7944,6 +7871,247 @@ describe('fetch', () => {
                         '}'
                     ];
                     assert.deepStrictEqual(actualCmds, expCmds);
+                });
+        });
+
+        it('should add pool with updated monitor', () => {
+            const desiredConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon1': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:*',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon2': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:9631',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon3': {
+                    command: 'ltm monitor radius',
+                    properties: {
+                        destination: '*:*',
+                        interval: 30
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Common/10.70.61.10:9021': {
+                                minimumMonitors: 1,
+                                monitor: { '/tenant/app/tenant_mon2': {} }
+                            },
+                            '/Common/10.70.61.11:9021': {
+                                minimumMonitors: 1,
+                                monitor: { default: {} }
+                            },
+                            '/Common/10.70.61.9:9021': {
+                                minimumMonitors: 1,
+                                monitor: {
+                                    '/Common/gateway_icmp': {}
+                                }
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon1': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool1': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Common/10.70.61.10:9021': {}
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon2': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: []
+                }
+            };
+
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    lhs: '*:*',
+                    path: ['/tenant/app/tenant_mon2', 'properties', 'destination'],
+                    rhs: '*:9631'
+                },
+                {
+                    kind: 'D',
+                    lhs: {},
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', '/tenant/app/tenant_mon2']
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', 'default'],
+                    rhs: {}
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool1'],
+                    rhs: {
+                        command: 'ltm pool',
+                        ignore: [],
+                        properties: {
+                            members: {
+                                '/Common/10.70.61.10:9021': {}
+                            },
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/Common/gateway_icmp': {},
+                                '/tenant/app/tenant_mon2': {}
+                            }
+                        }
+                    }
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+                });
+        });
+
+        it('should handle wildcard monitors on Service Discovery pools (which have no members property)', () => {
+            const desiredConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon1': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:911',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon2': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:119',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon3': {
+                    command: 'ltm monitor radius',
+                    properties: {
+                        destination: '*:*',
+                        interval: 30
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon1': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: ['members']
+                }
+            };
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/app/tenant_mon1',
+                        'properties',
+                        'destination'
+                    ],
+                    lhs: '*:*',
+                    rhs: '*:911'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/app/tenant_mon2',
+                        'properties',
+                        'destination'
+                    ],
+                    lhs: '*:*',
+                    rhs: '*:119'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/tenant_pool',
+                        'properties',
+                        'monitor',
+                        '/tenant/app/tenant_mon1'
+                    ],
+                    rhs: {}
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+
+                    // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConf, currConf, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none members none',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon1',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon1 destination *:911 interval 10',
+                            'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
+                            'tmsh::delete ltm pool /tenant/app/tenant_pool',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
                 });
         });
     });

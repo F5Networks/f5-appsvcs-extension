@@ -17,6 +17,7 @@
 'use strict';
 
 const uuid = require('uuid');
+const STATUS_CODES = require('../constants').STATUS_CODES;
 
 /**
  * Takes a per-app declaration from requestContext and returns a per-tenant conversion
@@ -80,9 +81,18 @@ const convertToPerApp = (perTenDeclaration, perAppInfo) => {
     }
 
     const perAppDecl = {};
-    perAppInfo.apps.forEach((app) => {
-        perAppDecl[app] = perTenDeclaration[perAppInfo.tenant][app];
-    });
+    if (perAppInfo.apps.length === 0) {
+        // If the apps array is empty, we want all apps in tenant
+        Object.keys(perTenDeclaration[perAppInfo.tenant]).forEach((app) => {
+            if (perTenDeclaration[perAppInfo.tenant][app].class === 'Application') {
+                perAppDecl[app] = perTenDeclaration[perAppInfo.tenant][app];
+            }
+        });
+    } else {
+        perAppInfo.apps.forEach((app) => {
+            perAppDecl[app] = perTenDeclaration[perAppInfo.tenant][app];
+        });
+    }
 
     return perAppDecl;
 };
@@ -99,8 +109,79 @@ const isPerAppPath = (path) => {
     return true;
 };
 
+/**
+ * Takes a per-tenant declaration and merges any additional tenant data from the previously saved declaration.
+ * Objects in the per-tenant declaration will take precedence and not be overwritten by matching objects in the
+ * previously saved declaration.
+ *
+ * @param {object} perTenantDeclaration - Per-tenant declaration to have data merged into
+ * @param {object} prevDeclaration - Previously saved declaration to have data merged from
+ * @param {object} tenantName - Tenant name for use in the merging process
+ * @returns {object} Updated per-tenant declaration that includes merged tenant data
+ */
+const mergePreviousTenant = (perTenantDeclaration, prevDeclaration, tenantName) => {
+    if ((perTenantDeclaration || {}).class !== 'ADC') {
+        throw new Error('Declaration must already be converted to per-tenant ADC class');
+    }
+
+    if ((prevDeclaration || {}).class !== 'ADC') {
+        throw new Error('Saved declaration must be ADC class to merge into per-tenant declaration');
+    }
+
+    const sourceTenant = (prevDeclaration[tenantName] || {});
+    const targetTenant = perTenantDeclaration[tenantName];
+
+    perTenantDeclaration[tenantName] = Object.assign({}, sourceTenant, targetTenant);
+
+    return perTenantDeclaration;
+};
+
+/**
+ * Takes a per-tenant declaration and checks for specified per-app resources.
+ *
+ * @param {object} perTenantDeclaration - Per-tenant declaration to search for resources in
+ * @param {object} perAppInfo - Per-app info that includes requested resources
+ * @returns {object} StatusCode and optional message response
+ */
+const verifyResourcesExist = (perTenantDeclaration, perAppInfo) => {
+    if (typeof perTenantDeclaration[perAppInfo.tenant] === 'undefined') {
+        return {
+            statusCode: STATUS_CODES.NOT_FOUND,
+            message: (`specified tenant '${perAppInfo.tenant}' not found in declaration`)
+        };
+    }
+
+    // Only 1 error message can be returned at a time, so return the first
+    const missingApp = perAppInfo.apps.find((app) => typeof perTenantDeclaration[perAppInfo.tenant][app] === 'undefined');
+    if (missingApp) {
+        return {
+            statusCode: STATUS_CODES.NOT_FOUND,
+            message: (`specified Application '${missingApp}' not found in '${perAppInfo.tenant}'`)
+        };
+    }
+
+    return {
+        statusCode: STATUS_CODES.OK
+    }; // success
+};
+
+const deleteAppsFromTenant = (perTenantDeclaration, perAppInfo) => {
+    if ((perTenantDeclaration || {}).class !== 'ADC') {
+        throw new Error('Declaration must already be converted to per-tenant ADC class');
+    }
+
+    // Note: by design, only 1 application should be deleted at a time
+    // a DELETE to the applications endpoint should fail
+    if (perAppInfo && perAppInfo.apps && perAppInfo.apps.length === 1 && perTenantDeclaration[perAppInfo.tenant]) {
+        delete perTenantDeclaration[perAppInfo.tenant][perAppInfo.apps[0]];
+    }
+};
+
 module.exports = {
     convertToPerApp,
     convertToPerTenant,
-    isPerAppPath
+    isPerAppPath,
+    mergePreviousTenant,
+    verifyResourcesExist,
+    deleteAppsFromTenant
 };

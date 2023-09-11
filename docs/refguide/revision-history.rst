@@ -11,8 +11,13 @@ Document Revision History
         - Description
         - Date
 
+      * - 3.47
+        - Updated the documentation for AS3 v3.47.0. This release contains the following changes: |br| * Added support for httpHost conditions in Endpoint policy rules (see :ref:`httpHost<httphost>`) |br| * Added client-accepted as an event when using a policy action type **forward** in an Endpoint policy  (see |apf| in the Schema Reference for usage) |br| |br| Issues Resolved: |br| * sourceAddress property ignored on non-internal virtuals |br| * Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object' |br| * Not able to remove pool member's metadata from declaration |br| * Adding new pool with updated monitor failed at posting
+        - 7-24-23
+
+
       * - 3.46
-        - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| *  |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fixed issue with running a DELETE after a dry-run on BIG-IQ |br| * SNAT_Pool handling in /Common/Shared, `GitHub Issue 727 <https://github.com/F5Networks/f5-appsvcs-extension/issues/727>`_ |br| * Fixed idempotency issue with a Pool's minimumMonitors
+        - Updated the documentation for AS3 v3.46.0. This release contains the following changes: |br| * Added support for using address and port lists in a virtual service (see :ref:`Address and Port lists<portlist>`), `GitHub Issue 269 <https://github.com/F5Networks/f5-appsvcs-extension/issues/269>`_ |br| * Added support for disabling bot defense profiles in an endpoint policy (see :ref:`Enabling or Disabling a bot defense profile<disablebd>`) |br| * Added support for metadata on pools and pool members (see :ref:`Metadata for pools<poolmeta>`) |br| * Added support for using a string to specify a route domain in a SOCKS profile (see the updated :ref:`SOCKS profile<socks>` example) |br| * Added support for using **expand** in WAF policies (see :ref:`WAF policy expand example<expand>`) |br| * Added a troubleshooting entry for Changes Pending returned on dry-runs (see :ref:`Troubleshooting<pending>`) |br| * Added members to the Prober Pool in the GSLB example declaration (see :ref:`GSLB example<gslbex>`) |br| * Renamed the primary branch in the GitHub repository for AS3 to **main** |br| |br| Issues Resolved: |br| * Handling of line continuation character in iRule, `GitHub Issue 704 <https://github.com/F5Networks/f5-appsvcs-extension/issues/704>`_ |br| * Updated list of services for Protocol_Inspection_Profile |br| * Fixed issue with running a DELETE after a dry-run on BIG-IQ |br| * SNAT_Pool handling in /Common/Shared, `GitHub Issue 727 <https://github.com/F5Networks/f5-appsvcs-extension/issues/727>`_ |br| * Fixed idempotency issue with a Pool's minimumMonitors |br| * Updated list of services for Protocol_Inspection_Profile |br| * GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]", `GitHub Issue 715 <https://github.com/F5Networks/f5-appsvcs-extension/issues/715>`_ 
         - 7-24-23
 
       * - Unreleased (documentation updates)
@@ -361,6 +366,10 @@ Document Revision History
 .. |apfs| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-action-forward-select" target="_blank">Policy_Action_Forward_Select</a>
+
+.. |apf| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-action-forward" target="_blank">Policy_Action_Forward</a>
 
 .. |tlss| raw:: html
 

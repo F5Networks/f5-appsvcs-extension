@@ -533,7 +533,7 @@ describe('perAppUtil', () => {
 
             const perAppInfo = {
                 tenant: 'exampleTenant',
-                apps: ['exApp', 'otherApp']
+                apps: []
             };
 
             const result = perAppUtil.convertToPerApp(decl, perAppInfo);
@@ -733,6 +733,337 @@ describe('perAppUtil', () => {
         it('should return false if the path has multiple applications', () => {
             const result = perAppUtil.isPerAppPath('/shared/appsvcs/declare/tenant1/applications/app1,app2');
             return assert.strictEqual(result, false);
+        });
+    });
+
+    describe('mergePreviousTenant', () => {
+        it('should throw error if declaration is not per-tenant ADC class', () => {
+            const perTenantDecl = undefined;
+            const previousDecl = { class: 'ADC' };
+            assert.throws(
+                () => perAppUtil.mergePreviousTenant(perTenantDecl, previousDecl),
+                /Declaration must already be converted to per-tenant ADC class/
+            );
+        });
+
+        it('should throw error if previous per-tenant declaration is not ADC class', () => {
+            const perTenantDecl = { class: 'ADC' };
+            const previousDecl = undefined;
+            assert.throws(
+                () => perAppUtil.mergePreviousTenant(perTenantDecl, previousDecl),
+                /Saved declaration must be ADC class to merge into per-tenant declaration/
+            );
+        });
+
+        it('should return declaration if no previous tenant to merge', () => {
+            const perTenantDecl = {
+                class: 'ADC',
+                targetTenant: {
+                    class: 'Tenant',
+                    targetApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const previousDecl = {
+                class: 'ADC',
+                otherTenant: {
+                    class: 'Tenant',
+                    otherApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const results = perAppUtil.mergePreviousTenant(perTenantDecl, previousDecl, 'targetTenant');
+            assert.deepStrictEqual(
+                results,
+                {
+                    class: 'ADC',
+                    targetTenant: {
+                        class: 'Tenant',
+                        targetApplication: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should return declaration with previous tenant merged', () => {
+            const perTenantDecl = {
+                class: 'ADC',
+                targetTenant: {
+                    class: 'Tenant',
+                    targetApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const previousDecl = {
+                class: 'ADC',
+                targetTenant: {
+                    class: 'Tenant',
+                    otherApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const results = perAppUtil.mergePreviousTenant(perTenantDecl, previousDecl, 'targetTenant');
+            assert.deepStrictEqual(
+                results,
+                {
+                    class: 'ADC',
+                    targetTenant: {
+                        class: 'Tenant',
+                        targetApplication: {
+                            class: 'Application'
+                        },
+                        otherApplication: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should prioritize apps in declaration over same apps from previous tenant', () => {
+            const perTenantDecl = {
+                class: 'ADC',
+                targetTenant: {
+                    class: 'Tenant',
+                    targetApplication: {
+                        class: 'Application',
+                        serviceHTTPOne: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.30'
+                            ]
+                        }
+                    }
+                }
+            };
+            const previousDecl = {
+                class: 'ADC',
+                targetTenant: {
+                    class: 'Tenant',
+                    targetApplication: {
+                        class: 'Application',
+                        serviceAddress: {
+                            class: 'Service_Address',
+                            virtualAddress: '192.0.2.10'
+                        }
+                    },
+                    otherApplication: {
+                        class: 'Application'
+                    }
+                }
+            };
+            const results = perAppUtil.mergePreviousTenant(perTenantDecl, previousDecl, 'targetTenant');
+            assert.deepStrictEqual(
+                results,
+                {
+                    class: 'ADC',
+                    targetTenant: {
+                        class: 'Tenant',
+                        targetApplication: {
+                            class: 'Application',
+                            serviceHTTPOne: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '192.0.2.30'
+                                ]
+                            }
+                        },
+                        otherApplication: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('verifyResourcesExist', () => {
+        let declaration;
+
+        beforeEach(() => {
+            declaration = {
+                class: 'ADC',
+                tenantOne: {
+                    class: 'Tenant',
+                    appOne: {
+                        class: 'Application'
+                    },
+                    appTwo: {
+                        class: 'Application'
+                    }
+                }
+            };
+        });
+
+        it('should return 404 error response if tenant not found', () => {
+            const perAppInfo = {
+                tenant: 'otherTenant',
+                apps: []
+            };
+            const results = perAppUtil.verifyResourcesExist(declaration, perAppInfo);
+            assert.deepStrictEqual(
+                results,
+                {
+                    statusCode: 404,
+                    message: 'specified tenant \'otherTenant\' not found in declaration'
+                }
+            );
+        });
+
+        it('should return 404 error response if application not found', () => {
+            const perAppInfo = {
+                tenant: 'tenantOne',
+                apps: ['appOne', 'otherApp']
+            };
+            const results = perAppUtil.verifyResourcesExist(declaration, perAppInfo);
+            assert.deepStrictEqual(
+                results,
+                {
+                    statusCode: 404,
+                    message: 'specified Application \'otherApp\' not found in \'tenantOne\''
+                }
+            );
+        });
+
+        it('should return 200 response with declaration if valid', () => {
+            const perAppInfo = {
+                tenant: 'tenantOne',
+                apps: ['appOne', 'appTwo']
+            };
+            const results = perAppUtil.verifyResourcesExist(declaration, perAppInfo);
+            assert.deepStrictEqual(
+                results,
+                {
+                    statusCode: 200
+                }
+            );
+        });
+    });
+
+    describe('deleteAppsFromTenant', () => {
+        let perTenDecl;
+        let perAppInfo;
+
+        beforeEach(() => {
+            perTenDecl = {
+                class: 'ADC',
+                tenantOne: {
+                    class: 'Tenant',
+                    appOne: {
+                        class: 'Application'
+                    },
+                    appTwo: {
+                        class: 'Application'
+                    }
+                }
+            };
+
+            perAppInfo = {
+                tenant: 'tenantOne',
+                apps: ['appOne']
+                // Note: DELETEs only have 1 apps, and do NOT have a decl
+            };
+        });
+
+        it('should error if no perTenantDecl is provided', () => {
+            assert.throws(
+                () => perAppUtil.deleteAppsFromTenant(undefined, perAppInfo),
+                /Declaration must already be converted to per-tenant ADC class/,
+                'A missing perTenantDecl should error with "Declaration must already be converted to per-tenant ADC class"'
+            );
+        });
+
+        it('should error if the ADC class is missing from the declaration', () => {
+            delete perTenDecl.class;
+
+            assert.throws(
+                () => perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo),
+                /Declaration must already be converted to per-tenant ADC class/,
+                'Should error if the ADC class is missing'
+            );
+        });
+
+        it('should delete nothing if no perAppInfo is provided', () => {
+            perAppUtil.deleteAppsFromTenant(perTenDecl, undefined);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should delete nothing if the tenant is missing from the declaration', () => {
+            perAppInfo.tenant = 'otherTenant';
+
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should delete nothing if the apps do not exist in the declaration', () => {
+            perAppInfo.apps = ['otherApp'];
+
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepStrictEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appOne: {
+                            class: 'Application'
+                        },
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should remove the apps value from the perTenDecl', () => {
+            perAppUtil.deleteAppsFromTenant(perTenDecl, perAppInfo);
+            assert.deepEqual(
+                perTenDecl,
+                {
+                    class: 'ADC',
+                    tenantOne: {
+                        class: 'Tenant',
+                        appTwo: {
+                            class: 'Application'
+                        }
+                    }
+                }
+            );
         });
     });
 });

@@ -29,6 +29,7 @@ const defaults = {
     burstHandlingEnabled: false,
     performanceTracingEnabled: false,
     performanceTracingEndpoint: '',
+    serializeFileUploads: false,
     serviceDiscoveryEnabled: true,
     webhook: ''
 };

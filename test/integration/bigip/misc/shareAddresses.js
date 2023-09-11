@@ -36,6 +36,8 @@ const {
 describe('shareAddresses', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
+    afterEach(() => deleteDeclaration());
+
     const baseDecl = {
         class: 'ADC',
         schemaVersion: '3.0.0'
@@ -72,8 +74,7 @@ describe('shareAddresses', function () {
             .then(() => postDeclaration(declaration2), { declarationIndex: 1 })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should be able to post two tenants in one declaration', () => {
@@ -96,8 +97,7 @@ describe('shareAddresses', function () {
                 assert.strictEqual(response.results[0].message, 'no change');
                 // Now that the shared address is available, it should successfully make tenant2
                 assert.strictEqual(response.results[1].code, 200);
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should create two tenants, delete one, and the BIG-IP retain the shared addresses', () => {
@@ -141,8 +141,7 @@ describe('shareAddresses', function () {
                     true,
                     'Service_Address for 10.10.0.1 was deleted and should not have been'
                 );
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should be able to create a single tenant with two apps that share the same address', () => {
@@ -166,8 +165,7 @@ describe('shareAddresses', function () {
             .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should move the declaration from a private tenant to Common', () => {
@@ -233,8 +231,7 @@ describe('shareAddresses', function () {
 
                 assert.strictEqual(found111, true, 'Service_Address for 10.10.0.111 was not found');
                 assert.strictEqual(found1, true, 'Service_Address for 10.10.0.1 was not found');
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should fail if the virtual addresses are used as shared but shareAddresses is false', () => {
@@ -261,8 +258,7 @@ describe('shareAddresses', function () {
                 assert.strictEqual(response.results[0].code, 422);
                 assert.match(response.results[0].response,
                     /Invalid Virtual Address, the IP address 10.10.0.111 already exists./);
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should allow for redirect server with shared addresses', () => {
@@ -321,8 +317,7 @@ describe('shareAddresses', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'no change');
-            })
-            .then(() => deleteDeclaration());
+            });
     });
 
     it('should delete virtual addresses that are no longer in use', () => {
@@ -376,5 +371,76 @@ describe('shareAddresses', function () {
             .then((response) => {
                 assert.strictEqual(response.items ? response.items.length : 0, 0);
             });
+    });
+
+    describe('per-app', () => {
+        let appDecl;
+
+        before('activate perAppDeploymentAllowed', () => postDeclaration(
+            {
+                betaOptions: {
+                    perAppDeploymentAllowed: true
+                }
+            },
+            undefined,
+            '?async=false',
+            '/mgmt/shared/appsvcs/settings'
+        ));
+
+        beforeEach(() => {
+            appDecl = {
+                class: 'Application',
+                template: 'generic',
+                Service: {
+                    class: 'Service_Generic',
+                    virtualAddresses: [
+                        '192.0.2.10',
+                        '192.0.2.11'
+                    ],
+                    virtualPort: 8080,
+                    shareAddresses: false
+                }
+            };
+        });
+
+        it('should be able to create two apps that share the same address', () => {
+            const perAppPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
+            const appOne = simpleCopy(appDecl);
+            const appTwo = simpleCopy(appDecl);
+            appTwo.Service.virtualPort = 8081;
+            const appThree = {
+                class: 'Application',
+                template: 'generic',
+                httpMonitor: {
+                    class: 'Monitor',
+                    monitorType: 'http'
+                }
+            };
+
+            return Promise.resolve()
+                .then(() => postDeclaration(
+                    { appOne, appTwo, appThree },
+                    { declarationIndex: 0 },
+                    undefined,
+                    perAppPath
+                ))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address?$filter=partition%20eq%20Tenant'))
+                .then((response) => {
+                    assert.strictEqual(response.items.length, 2, 'two virtual-addresses should exist in Tenant');
+                    response.items.forEach((item) => {
+                        assert.strictEqual(item.fullPath, `/Tenant/${item.name}`, 'virtual-address should exist at Tenant level');
+                    });
+                })
+                // Virtual-addresses should be removed from /Tenant once associated apps are removed
+                .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/appOne?async=true`, sendDelete: true }))
+                .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/appTwo?async=true`, sendDelete: true }))
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address?$filter=partition%20eq%20Tenant'))
+                .then((response) => {
+                    assert.strictEqual(response.items.length, 0, 'virtual-addresses should be removed from Tenant');
+                });
+        });
     });
 });

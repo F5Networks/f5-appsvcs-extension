@@ -16,7 +16,7 @@
             "wafPolicy": {
                 "class": "WAF_Policy",
                 "policy": {
-                    "base64": "ewogICJwb2xpY3kiOiB7CiAgICAibmFtZSI6ICJBcHBQb2xpY3kwMSIsCiAgICAiZGVzY3JpcHRpb24iOiAiZW1iZWRkZWQgV0FGIFBvbGljeSIsCiAgICAidGVtcGxhdGUiOiB7CiAgICAgICJuYW1lIjogIlBPTElDWV9URU1QTEFURV9SQVBJRF9ERVBMT1lNRU5UIgogICAgfSwKICAgICJvcGVuLWFwaS1maWxlcyI6IFsKICAgICAgewogICAgICAgICJsaW5rIjogImh0dHBzOi8vZXhhbXBsZS5jb20vZmlsZXMvYEFgL29wZW5hcGkueWFtbCIKICAgICAgfQogICAgXQogIH0KfQo="
+                    "text": "{\n  \"policy\": {\n    \"name\": \"AppPolicy01\",\n    \"description\": \"embedded WAF Policy\",\n    \"template\": {\n      \"name\": \"POLICY_TEMPLATE_RAPID_DEPLOYMENT\"\n    },\n    \"open-api-files\": [\n      {\n        \"link\": \"https:\/\/example.com\/files\/`A`\/openapi.yaml\"\n      }\n    ]\n  }\n}\n"
                 },
                 "expand": [
                     "/policy/open-api-files/0/link"

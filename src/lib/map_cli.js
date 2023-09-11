@@ -720,17 +720,28 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         mapExternalMonitor(diff, targetConfig, currentConfig);
         break;
     case 'ltm node':
-        // It is best to update metadata with a modify
         if (diff.kind === 'E') {
             // Copy config to avoid modifying objects outside the scope of this function
             const configCopy = util.simpleCopy(targetConfig);
-            if (configCopy.fqdn) {
-                delete configCopy.fqdn;
+
+            if (diff.path.indexOf('fqdn') !== -1) {
+                targetConfig.fqdn.name = targetConfig.fqdn.tmName;
+                delete targetConfig.fqdn.tmName;
+
+                // Can't modify fqdn - need to delete and recreate
+                commandObj.preTrans.push(`tmsh::delete ltm node ${diff.path[0]}`);
+                commandObj.commands = [`tmsh::create ltm node ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
+            } else {
+                // It is best to update metadata with a modify
+                if (configCopy.fqdn) {
+                    delete configCopy.fqdn;
+                }
+                if (configCopy.address) {
+                    delete configCopy.address;
+                }
+                commandObj.commands = [`tmsh::modify ltm node ${diff.path[0]}${stringify(diff.rhsCommand, configCopy, escapeQuote)}`];
             }
-            if (configCopy.address) {
-                delete configCopy.address;
-            }
-            commandObj.commands = [`tmsh::modify ltm node ${diff.path[0]}${stringify(diff.rhsCommand, configCopy, escapeQuote)}`];
+
             return commandObj;
         }
 
@@ -758,12 +769,24 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 targetConfig.members[member] = pushMonitors(targetConfig.members[member]);
             });
         }
-        if (diff.kind === 'D' && diff.path.find((p) => p === 'members')) {
-            const memberName = diff.path[diff.path.indexOf('members') + 1];
-            const currentMember = pushMonitors(currentConfig[diff.path[0]].properties.members[memberName]);
-            commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${memberName}" \\}`];
-            commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} members add \\{ ${memberName} \\{${stringify(diff.rhsCommand, currentMember, true)} \\} \\}`);
-            return commandObj;
+        if (diff.kind === 'D' || diff.kind === 'E') {
+            if (diff.path.find((p) => p === 'members')) {
+                const memberName = diff.path[diff.path.indexOf('members') + 1];
+                const currentMember = pushMonitors(currentConfig[diff.path[0]].properties.members[memberName]);
+                if (diff.path.find((p) => p === 'metadata')) {
+                    commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members modify \\{ ${memberName} \\{ metadata delete \\{ ${diff.path.pop()} \\} \\} \\}`];
+                } else {
+                    commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${memberName}" \\}`];
+                    commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} members add \\{ ${memberName} \\{${stringify(diff.rhsCommand, currentMember, true)} \\} \\}`);
+                }
+
+                // For edits, we also need to re-create the pool
+                if (diff.kind === 'E') {
+                    commandObj.commands.push(`${instruction} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`);
+                }
+
+                return commandObj;
+            }
         }
         break;
     case 'ltm policy':

@@ -310,6 +310,67 @@ describe('map_cli', () => {
             );
         });
 
+        it('ltm pool member modification', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/Tenant/Application/myPool',
+                    'properties',
+                    'members',
+                    '/Tenant/my.example.com:80',
+                    'fqdn',
+                    'autopopulate'
+                ],
+                lhs: 'enabled',
+                rhs: 'disabled',
+                tags: [
+                    'tmsh'
+                ],
+                command: 'ltm pool',
+                rhsCommand: 'ltm pool'
+            };
+
+            const targetConfig = {
+                members: {
+                    '/Tenant/my.example.com:80': {
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        metadata: {}
+                    }
+                },
+                metadata: {}
+            };
+
+            const currentConfig = {
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                fqdn: {
+                                    autopopulate: 'enabled'
+                                },
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+
+            const output = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.strictEqual(
+                output.commands[0],
+                'tmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}'
+            );
+            assert.strictEqual(
+                output.commands[1],
+                'tmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ fqdn \\{ autopopulate disabled \\} metadata none \\} \\} metadata none'
+            );
+        });
+
         it('ltm pool member rollback', () => {
             const diff = {
                 kind: 'D',
@@ -352,6 +413,50 @@ describe('map_cli', () => {
                 [
                     'tmsh::modify ltm pool tenant/app/pool members add \\{ /tenant/192.0.2.0:80 \\{ metadata replace-all-with \\{ source \\{ value declaration \\} \\} ratio 1 rate-limit disabled \\} \\}'
                 ]
+            );
+        });
+
+        it('ltm pool member metadata delete', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/Generic_Ten/Generic_App/generic_Pool',
+                    'properties',
+                    'members',
+                    '/Generic_Ten/10.0.0.1:80',
+                    'metadata',
+                    'example1'
+                ],
+                rhsCommand: 'ltm pool'
+            };
+            const targetConfig = {
+                members: {
+                    '/Generic_Ten/10.0.0.1:80': {}
+                }
+            };
+            const currentConfig = {
+                '/Generic_Ten/Generic_App/generic_Pool': {
+                    properties: {
+                        members: {
+                            '/Generic_Ten/10.0.0.1:80': {}
+                        },
+                        metadata: {
+                            example: {
+                                value: 'foo',
+                                persist: true
+                            },
+                            example1: {
+                                value: 123,
+                                persist: false
+                            }
+                        }
+                    }
+                }
+            };
+            const output = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.strictEqual(
+                output.commands[0],
+                'tmsh::modify ltm pool /Generic_Ten/Generic_App/generic_Pool members modify \\{ /Generic_Ten/10.0.0.1:80 \\{ metadata delete \\{ example1 \\} \\} \\}'
             );
         });
 
@@ -1211,6 +1316,77 @@ describe('map_cli', () => {
             delete config.address;
             config.fqdn = {};
             assert.deepStrictEqual(result.commands, [command]);
+        });
+
+        it('should return a delete and create for the ltm node if with fqdn and the diff.kind is E', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/Tenant/myPool.example.com',
+                    'properties',
+                    'fqdn',
+                    'autopopulate'
+                ],
+                tags: [
+                    'tmsh'
+                ],
+                rhs: 'enabled',
+                lhs: 'disabled',
+                command: 'ltm node',
+                lhsCommand: 'ltm node',
+                rhsCommand: 'ltm node'
+            };
+
+            const config = {
+                fqdn: {
+                    autopopulate: 'enabled'
+                },
+                metadata: {
+                    fqdnPrefix: {
+                        value: 'none'
+                    }
+                }
+            };
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            const expectedCommand = 'tmsh::create ltm node /Tenant/myPool.example.com fqdn \\{ autopopulate enabled \\} metadata replace-all-with \\{ fqdnPrefix \\{ value none \\} \\}';
+            const expectedPreTrans = 'tmsh::delete ltm node /Tenant/myPool.example.com';
+
+            assert.deepStrictEqual(result.commands, [expectedCommand]);
+            assert.deepStrictEqual(result.preTrans, [expectedPreTrans]);
+        });
+
+        it('should return a create for the ltm node if with fqdn', () => {
+            const diff = {
+                kind: 'N',
+                path: [
+                    '/Tenant/myPool.example.com'
+                ],
+                tags: [
+                    'tmsh'
+                ],
+                command: 'ltm node',
+                lhsCommand: 'ltm node',
+                rhsCommand: 'ltm node'
+            };
+
+            const config = {
+                fqdn: {
+                    autopopulate: 'disabled',
+                    tmName: 'pool.example.com'
+                },
+                metadata: {
+                    fqdnPrefix: {
+                        value: 'none'
+                    }
+                }
+            };
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            const expectedCommand = 'tmsh::create ltm node /Tenant/myPool.example.com fqdn \\{ autopopulate disabled name pool.example.com \\} metadata replace-all-with \\{ fqdnPrefix \\{ value none \\} \\}';
+
+            assert.deepStrictEqual(result.commands, [expectedCommand]);
+            assert.deepStrictEqual(result.preTrans, []);
         });
 
         it('should return a command object for handling ltm pool monitors', () => {

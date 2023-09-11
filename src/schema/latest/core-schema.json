@@ -30,7 +30,7 @@
             "description": "Version of ADC Declaration schema this declaration uses",
             "type": "string",
             "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
-            "enum": [ "3.46.0", "3.45.0", "3.44.0", "3.43.0", "3.42.0", "3.41.0", "3.40.0", "3.39.0", "3.38.0", "3.37.0", "3.36.0", "3.35.0", "3.34.0", "3.33.0", "3.32.0", "3.31.0", "3.30.0", "3.29.0", "3.28.0", "3.27.0", "3.26.0", "3.25.0", "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0", "3.17.0", "3.16.0", "3.15.0", "3.14.0", "3.13.0", "3.12.0", "3.11.0", "3.10.0", "3.9.0", "3.8.0", "3.7.0", "3.6.0", "3.5.0", "3.4.0", "3.3.0", "3.2.0", "3.1.0", "3.0.0" ]
+            "enum": [ "3.47.0", "3.46.0", "3.45.0", "3.44.0", "3.43.0", "3.42.0", "3.41.0", "3.40.0", "3.39.0", "3.38.0", "3.37.0", "3.36.0", "3.35.0", "3.34.0", "3.33.0", "3.32.0", "3.31.0", "3.30.0", "3.29.0", "3.28.0", "3.27.0", "3.26.0", "3.25.0", "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0", "3.17.0", "3.16.0", "3.15.0", "3.14.0", "3.13.0", "3.12.0", "3.11.0", "3.10.0", "3.9.0", "3.8.0", "3.7.0", "3.6.0", "3.5.0", "3.4.0", "3.3.0", "3.2.0", "3.1.0", "3.0.0" ]
         },
         "id": {
             "title": "Declaration ID",
@@ -1763,7 +1763,7 @@
 
                 "virtualAddresses": {
                     "title": "Virtual addresses",
-                    "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. If you do this, you cannot also include the sourceAddress property. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
                     "oneOf": [
                         {
                             "type": "array",
@@ -1834,7 +1834,7 @@
                 },
                 "sourceAddress": {
                     "title": "Source address",
-                    "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+                    "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual. If you also include the virtualAddresses property, those addresses cannot include the accept-from-subnet field.",
                     "oneOf": [
                         {
                             "type": "string",
@@ -2414,6 +2414,29 @@
                     },
                     "then": {
                         "required": [ "virtualAddresses" ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties" : {
+                            "virtualAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "minItems": 2,
+                                    "maxItems": 2
+                                }
+                            }
+                        },
+                        "required": [ "virtualAddresses" ]
+                    },
+                    "then": {
+                        "not": {
+                            "properties": {
+                                "sourceAddress": {}
+                            },
+                            "required": [ "sourceAddress" ]
+                        }
                     }
                 },
                 { "$ref": "#/definitions/Include" }
@@ -5958,6 +5981,18 @@
                         }
                     ],
                     "default": "indefinite"
+                },
+                "sslSignHash": {
+                    "title": "SSL Sign Hash",
+                    "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "sha1",
+                        "sha256",
+                        "sha384"
+                    ],
+                    "default": "any"
                 }
             },
             "additionalProperties": false,
@@ -6397,6 +6432,18 @@
                         }
                     ],
                     "default": "indefinite"
+                },
+                "sslSignHash": {
+                    "title": "SSL Sign Hash",
+                    "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "sha1",
+                        "sha256",
+                        "sha384"
+                    ],
+                    "default": "any"
                 }
             },
             "allOf": [

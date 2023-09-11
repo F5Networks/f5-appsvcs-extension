@@ -213,6 +213,11 @@ describe('TLS_Client', function () {
                 name: 'renegotiateSize',
                 inputValue: [undefined, 100, undefined],
                 expectedValue: ['indefinite', '100', 'indefinite']
+            },
+            {
+                name: 'sslSignHash',
+                inputValue: [undefined, 'sha256', undefined],
+                expectedValue: ['any', 'sha256', 'any']
             }
         ];
 

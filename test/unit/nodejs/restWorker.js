@@ -179,7 +179,17 @@ describe('restWorker', () => {
                 path: '/shared/appsvcs/declare/exampleTenant/application/App1'
             },
             {
+                name: 'multiple tenants used in per-app path',
+                path: '/shared/appsvcs/declare/exampleTenant,otherTenant/applications'
+            },
+            {
+                name: 'multiple applications used in per-app path',
+                method: 'Post',
+                path: '/shared/appsvcs/declare/exampleTenant/applications/App1,App2'
+            },
+            {
                 name: 'extra value added to the end of the path after application name',
+                method: 'Post',
                 path: '/shared/appsvcs/declare/exampleTenant/applications/App1/somethingElse'
             },
             {

@@ -349,6 +349,75 @@ describe('def-ltm-policy-schema.json', () => {
         });
     });
 
+    describe('Policy_Condition', () => {
+        describe('Policy_Condition_HTTP_Host', () => {
+            beforeEach(() => {
+                data.Tenant.Application.test1.rules = [
+                    {
+                        name: 'testConditions',
+                        conditions: []
+                    }
+                ];
+            });
+
+            describe('valid', () => {
+                it('should validate with all', () => {
+                    data.Tenant.Application.test1.rules[0].conditions.push(
+                        {
+                            type: 'httpHost',
+                            all: {
+                                values: ['test.com'],
+                                operand: 'contains'
+                            }
+                        }
+                    );
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate with host', () => {
+                    data.Tenant.Application.test1.rules[0].conditions.push(
+                        {
+                            type: 'httpHost',
+                            host: {
+                                values: ['test.com'],
+                                operand: 'ends-with'
+                            }
+                        }
+                    );
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate with port', () => {
+                    data.Tenant.Application.test1.rules[0].conditions.push(
+                        {
+                            type: 'httpHost',
+                            port: {
+                                values: [8080],
+                                operand: 'equals'
+                            }
+                        }
+                    );
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+            });
+
+            describe('invalid', () => {
+                it('should invalidate invalid comparison name', () => {
+                    data.Tenant.Application.test1.rules[0].conditions.push(
+                        {
+                            type: 'httpHost',
+                            invalid: {
+                                values: ['test.com'],
+                                operand: 'ends-with'
+                            }
+                        }
+                    );
+                    assert.strictEqual(validate(data), false);
+                });
+            });
+        });
+    });
+
     describe('Policy_Action', () => {
         describe('Policy_Action_Bot_Defense', () => {
             beforeEach(() => {

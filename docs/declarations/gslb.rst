@@ -60,8 +60,8 @@ This example shows how you use F5s Global Server Load Balancing (GSLB) features 
 
 .. NOTE:: GSLB Pool members reference GSLB virtual servers by name. GSLB virtual servers are given a name based on their order in the list of GSLB virtual servers. The first GSLB virtual server is named **0**, the second is **1**, and the third is **2**. Starting BIG-IP AS3 3.21, GSLB virtual servers can be given a user defined name that overrides the default name.
 
-**New in BIG-IP AS3 3.37** |br|
-BIG-IP AS3 3.37 and later adds the following new properties:
+**New in BIG-IP AS3** |br|
+The following list describes changes to this example since it was published:
 
 .. list-table::
       :widths: 25 25 200
@@ -71,6 +71,10 @@ BIG-IP AS3 3.37 and later adds the following new properties:
         - Property
         - Description
 
+      * - 3.46
+        - 
+        - Added members to the Prober pool in the example declaration. This did not change the functionality of the example. Prober pools are created in /Common.
+      
       * - 3.37
         - **ratio**
         - Adds the ability to set a ratio for the pool when using the ratio load balancing method. This ratio allows you to distribute requests among several resources based on a priority level or weight assigned to each resource. For example, you could use ratio to send twice as many connections to a fast, new server, and half as many connections to an older, slower server.  See |gslbdp|.

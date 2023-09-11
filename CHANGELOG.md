@@ -1,6 +1,38 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.47.0
+
+### Added
+- AUTOTOOL-3971: Added option to serialize file uploads for dealing with lots of certificates in a declaration
+- AUTOTOOL-3728: Add functionality for per-app deployments (beta)
+- AUTOTOOL-3915: ([GitHub Issue 701](https://github.com/F5Networks/f5-appsvcs-extension/issues/701)): configuration of "SSL sign hash" parameter in TLS_server and TLS_Client
+- AUTOTOOL-3929: client-accepted event to the Policy_Action_Forward class for the Endpoint_Policy class
+- AUTOTOOL-3911: ([GitHub Issue 626](https://github.com/F5Networks/f5-appsvcs-extension/issues/626)): Support for http host condition in Endpoint_Policy
+
+### Fixed
+- AUTOTOOL-3915: sourceAddress property ignored on non-internal virtuals
+- AUTOTOOL-3945: Switching to wildcard monitor with Service Discovery causes 'Cannot convert undefined or null to object'
+- AUTOTOOL-3948: Not able to remove pool member's metadata from declaration
+- AUTOTOOL-3882: Not able to modify `autopopulate` on FQDN pool members
+- AUTOTOOL-3930: Adding new pool with updated monitor failed at posting
+- AUTOTOOL-3925: Declaration can fail when switching from redirect to no-redirect with route domain
+
+### Changed
+
+### Removed
+
+## 3.46.1
+
+### Added
+
+### Fixed
+
+### Changed
+- Promoted to LTS
+
+### Removed
+
 ## 3.46.0
 
 ### Added
@@ -19,6 +51,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3884: Fix idempotency issue with a Pool's minimumMonitors
 - AUTOTOOL-3810:  ([GitHub Issue 715](https://github.com/F5Networks/f5-appsvcs-extension/issues/715)): GSLB_Prober_Pool members referred to with "use": "/Common/Shared/[name]"
 - AUTOTOOL-3879: AS3 declaration fails on save config from v3.35.0 onwards
+- AUTOTOOL-3886: ([GitHub Issue 730](https://github.com/F5Networks/f5-appsvcs-extension/issues/730)): Empty lines are stripped of base64 encoded iRule
 
 ### Changed
 - Updated to Service Discovery 1.14.0-1

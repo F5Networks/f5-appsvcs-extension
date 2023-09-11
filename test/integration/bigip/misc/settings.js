@@ -54,6 +54,7 @@ describe('settings (__smoke)', function () {
         burstHandlingEnabled: false,
         performanceTracingEnabled: false,
         performanceTracingEndpoint: '',
+        serializeFileUploads: false,
         serviceDiscoveryEnabled: true,
         webhook: ''
     };
@@ -66,11 +67,12 @@ describe('settings (__smoke)', function () {
         const declaration = {
             asyncTaskStorage: 'memory',
             betaOptions: {
-                perAppDeploymentAllowed: false
+                perAppDeploymentAllowed: true
             },
             burstHandlingEnabled: true,
             performanceTracingEnabled: false, // need to leave false because jaeger-client not installed
             performanceTracingEndpoint: 'http://196.168.0.1/api/traces',
+            serializeFileUploads: true,
             serviceDiscoveryEnabled: false,
             webhook: 'https://www.example.com'
         };
