@@ -439,7 +439,7 @@ describe('shareAddresses', function () {
                 .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/appTwo?async=true`, sendDelete: true }))
                 .then(() => getPath('/mgmt/tm/ltm/virtual-address?$filter=partition%20eq%20Tenant'))
                 .then((response) => {
-                    assert.strictEqual(response.items.length, 0, 'virtual-addresses should be removed from Tenant');
+                    assert.strictEqual((response.items || []).length, 0, 'virtual-addresses should be removed from Tenant');
                 });
         });
     });
