@@ -144,11 +144,15 @@ const completeRequestMultiStatus = function (restOperation, results, format) {
 const completeRequest = function (restOperation, result, perAppInfo) {
     formatResult(result);
 
-    const body = util.simpleCopy(result.body);
+    let body = util.simpleCopy(result.body);
 
-    if (perAppInfo && restOperation.method === 'Post' && !body.errors) {
-        // ONLY transform non-error per-app Post declarations
-        body.declaration = perAppUtil.convertToPerApp(body.declaration, perAppInfo);
+    // ONLY transform non-error per-app declarations
+    if (perAppInfo && body && !body.errors) {
+        if (restOperation.method === 'Post') {
+            body.declaration = perAppUtil.convertToPerApp(body.declaration, perAppInfo);
+        } else if (restOperation.method === 'Get') {
+            body = perAppUtil.convertToPerApp(body, perAppInfo);
+        }
     }
 
     restOperation.setStatusCode(result.code);

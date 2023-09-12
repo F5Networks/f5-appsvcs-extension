@@ -111,9 +111,8 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = '/shared/appsvcs/declare';
                     context.tasks[0].tenantsInPath = ['firstTenant'];
 
-                    const declarationProvider = new DeclarationProvider();
                     sinon.stub(context.host.parser, 'digest').resolves();
-                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                    sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                         class: 'ADC',
                         schemaVersion: '3.0.0',
                         id: 'PATCH_Sample',
@@ -121,7 +120,6 @@ describe('DeclarationHandler', () => {
                         updateMode: 'selective',
                         controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
                     });
-                    handler.declarationProvider = declarationProvider;
 
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
@@ -260,9 +258,8 @@ describe('DeclarationHandler', () => {
                     context.tasks[0].fullPath = '/shared/appsvcs/declare';
                     context.tasks[0].tenantsInPath = ['newtenant'];
 
-                    const declarationProvider = new DeclarationProvider();
                     sinon.stub(context.host.parser, 'digest').resolves();
-                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                    sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                         class: 'ADC',
                         schemaVersion: '3.0.0',
                         id: 'PATCH_Sample',
@@ -270,7 +267,6 @@ describe('DeclarationHandler', () => {
                         updateMode: 'selective',
                         controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
                     });
-                    handler.declarationProvider = declarationProvider;
 
                     return handler.getFilteredDeclaration(context, true)
                         .then((response) => {
@@ -289,14 +285,12 @@ describe('DeclarationHandler', () => {
             });
 
             describe('per-app', () => {
-                let declarationProvider;
                 beforeEach(() => {
-                    declarationProvider = new DeclarationProvider();
                     sinon.stub(context.host.parser, 'digest').resolves();
-                    sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+                    sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                         class: 'ADC',
                         schemaVersion: '3.0.0',
-                        id: 'PATCH_Sample',
+                        id: 'per-app',
                         firstTenant: {
                             class: 'Tenant',
                             Application: { class: 'Application' },
@@ -307,6 +301,8 @@ describe('DeclarationHandler', () => {
                         updateMode: 'selective',
                         controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
                     });
+                    context.request.method = 'Get';
+                    context.request.isPerApp = true;
                 });
 
                 it('should handle a single application', () => {
@@ -318,13 +314,26 @@ describe('DeclarationHandler', () => {
                         tenant: 'secondTenant'
                     };
 
-                    handler.declarationProvider = declarationProvider;
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
                             assert.deepEqual(
                                 response,
                                 {
-                                    App2: { class: 'Application' }
+                                    class: 'ADC',
+                                    schemaVersion: '3.0.0',
+                                    id: 'per-app',
+                                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' },
+                                    updateMode: 'selective',
+                                    firstTenant: {
+                                        class: 'Tenant',
+                                        controls: { class: 'Controls' },
+                                        Application: { class: 'Application' },
+                                        App1: { class: 'Application' }
+                                    },
+                                    secondTenant: {
+                                        class: 'Tenant',
+                                        App2: { class: 'Application' }
+                                    }
                                 }
                             );
                         });
@@ -339,14 +348,26 @@ describe('DeclarationHandler', () => {
                         tenant: 'firstTenant'
                     };
 
-                    handler.declarationProvider = declarationProvider;
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
                             assert.deepEqual(
                                 response,
                                 {
-                                    Application: { class: 'Application' },
-                                    App1: { class: 'Application' }
+                                    class: 'ADC',
+                                    schemaVersion: '3.0.0',
+                                    id: 'per-app',
+                                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' },
+                                    updateMode: 'selective',
+                                    firstTenant: {
+                                        class: 'Tenant',
+                                        controls: { class: 'Controls' },
+                                        Application: { class: 'Application' },
+                                        App1: { class: 'Application' }
+                                    },
+                                    secondTenant: {
+                                        class: 'Tenant',
+                                        App2: { class: 'Application' }
+                                    }
                                 }
                             );
                         });
@@ -361,13 +382,26 @@ describe('DeclarationHandler', () => {
                         tenant: 'firstTenant'
                     };
 
-                    handler.declarationProvider = declarationProvider;
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
                             assert.deepEqual(
                                 response,
                                 {
-                                    Application: { class: 'Application' }
+                                    class: 'ADC',
+                                    schemaVersion: '3.0.0',
+                                    id: 'per-app',
+                                    controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' },
+                                    updateMode: 'selective',
+                                    firstTenant: {
+                                        class: 'Tenant',
+                                        controls: { class: 'Controls' },
+                                        Application: { class: 'Application' },
+                                        App1: { class: 'Application' }
+                                    },
+                                    secondTenant: {
+                                        class: 'Tenant',
+                                        App2: { class: 'Application' }
+                                    }
                                 }
                             );
                         });
@@ -382,7 +416,6 @@ describe('DeclarationHandler', () => {
                         tenant: 'someTenant'
                     };
 
-                    handler.declarationProvider = declarationProvider;
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
                             assert.deepEqual(
@@ -405,7 +438,6 @@ describe('DeclarationHandler', () => {
                         tenant: 'firstTenant'
                     };
 
-                    handler.declarationProvider = declarationProvider;
                     return handler.getFilteredDeclaration(context)
                         .then((response) => {
                             assert.deepEqual(
@@ -428,6 +460,7 @@ describe('DeclarationHandler', () => {
                         apps: ['App1'],
                         tenant: 'firstTenant'
                     };
+                    handler.declarationProvider.getBigipDeclaration.restore();
 
                     nock('http://localhost:8100')
                         .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
@@ -448,6 +481,7 @@ describe('DeclarationHandler', () => {
                         apps: ['App1'],
                         tenant: 'firstTenant'
                     };
+                    handler.declarationProvider.getBigipDeclaration.restore();
 
                     nock('http://localhost:8100')
                         .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
@@ -704,8 +738,7 @@ describe('DeclarationHandler', () => {
             acquireMutexLockStub = sinon.stub(mutex, 'acquireMutexLock').resolves();
             releaseMutexLockStub = sinon.stub(mutex, 'releaseMutexLock').resolves();
 
-            const declarationProvider = new DeclarationProvider();
-            sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+            sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                 metadata: {},
                 declaration: {}
             });
@@ -716,7 +749,6 @@ describe('DeclarationHandler', () => {
             });
 
             parser = new As3Parser();
-            handler.declarationProvider = declarationProvider;
 
             parser = new As3Parser();
             sinon.stub(parser, 'digest').resolves('1');
@@ -1069,10 +1101,9 @@ describe('DeclarationHandler', () => {
         });
 
         it('should NOT have the tenant in the decl if optimisticLockKeys fail to match previous declaration', () => {
-            const declarationProvider = new DeclarationProvider();
             handler.declarationProvider.getBigipDeclaration.restore();
             // Return previous declaration
-            sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+            sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                 metadata: {},
                 declaration: {
                     schemaVersion: '3.14.0',
@@ -1090,7 +1121,6 @@ describe('DeclarationHandler', () => {
                     }
                 }
             });
-            handler.declarationProvider = declarationProvider;
             context.tasks[0].declaration = {
                 schemaVersion: '3.14.0',
                 class: 'ADC',
@@ -1604,49 +1634,72 @@ describe('DeclarationHandler', () => {
         });
 
         describe('per-app', () => {
-            let declarationProvider;
-
             beforeEach(() => {
-                declarationProvider = new DeclarationProvider();
-                sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
-                    class: 'ADC',
-                    schemaVersion: '3.0.0',
-                    id: 'PATCH_Sample',
-                    firstTenant: {
-                        class: 'Tenant',
-                        Application: { class: 'Application' },
-                        App1: { class: 'Application' },
-                        controls: { class: 'Controls' }
-                    },
-                    secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
-                    updateMode: 'selective'
+                handler.declarationProvider.getBigipDeclaration.restore();
+                sinon.stub(handler.declarationProvider, 'getBigipDeclaration').callsFake((cxt, age, includeMetadata) => {
+                    const declaration = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'per-app',
+                        firstTenant: {
+                            class: 'Tenant',
+                            Application: { class: 'Application' },
+                            App1: { class: 'Application' },
+                            controls: { class: 'Controls' }
+                        },
+                        secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
+                        Common: {
+                            class: 'Tenant',
+                            Shared: {
+                                class: 'Application',
+                                serviceAddress: {
+                                    class: 'Service_Address',
+                                    virtualAddress: '192.0.2.10'
+                                }
+                            }
+                        },
+                        updateMode: 'selective'
+                    };
+                    if (includeMetadata) {
+                        return Promise.resolve({
+                            metadata: {},
+                            declaration
+                        });
+                    }
+                    return Promise.resolve(declaration);
                 });
+                handler.getFilteredDeclaration.restore();
+                context.tasks[0].showAge = 0;
+                context.request.isPerApp = true;
             });
 
             it('should not error if isPerApp && tenant does not already exist in the BIG-IP', () => {
-                context.tasks[0].showAge = 0;
                 context.tasks[0].fullPath = 'shared/appsvcs/declare/otherTenant/applications';
                 context.tasks[0].declaration = {
-                    Application1: {
-                        class: 'Application',
-                        service: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: [
-                                '192.0.2.1'
-                            ],
-                            appPool: 'pool'
-                        },
-                        appPool: {
-                            class: 'Pool',
-                            members: [
-                                {
-                                    servicePort: 80,
-                                    serverAddresses: [
-                                        '192.0.2.10',
-                                        '192.0.2.20'
-                                    ]
-                                }
-                            ]
+                    class: 'ADC',
+                    otherTenant: {
+                        class: 'Tenant',
+                        Application1: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                appPool: 'pool'
+                            },
+                            appPool: {
+                                class: 'Pool',
+                                members: [
+                                    {
+                                        servicePort: 80,
+                                        serverAddresses: [
+                                            '192.0.2.10',
+                                            '192.0.2.20'
+                                        ]
+                                    }
+                                ]
+                            }
                         }
                     }
                 };
@@ -1673,6 +1726,207 @@ describe('DeclarationHandler', () => {
                         assert.strictEqual(result.body.results[0].code, 200);
                         assert.strictEqual(result.body.results[0].message, 'success');
                         assert.strictEqual(result.errorMessage, undefined);
+                    });
+            });
+
+            it('should continue to store other apps in the tenant not specified in declaration', () => {
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications';
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    firstTenant: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [
+                                    '192.0.2.1'
+                                ]
+                            }
+                        }
+                    }
+                };
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['app'],
+                    tenant: 'firstTenant'
+                };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'firstTenant',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        assert.deepStrictEqual(
+                            result.body.declaration.firstTenant,
+                            {
+                                App1: {
+                                    class: 'Application'
+                                },
+                                Application: {
+                                    class: 'Application'
+                                },
+                                app: {
+                                    class: 'Application',
+                                    service: {
+                                        class: 'Service_HTTP',
+                                        virtualAddresses: [
+                                            '192.0.2.1'
+                                        ]
+                                    }
+                                },
+                                class: 'Tenant',
+                                controls: {
+                                    class: 'Controls'
+                                }
+                            }
+                        );
+                    });
+            });
+
+            it('should merge stored tenant data with tenant in declaration', () => {
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    secondTenant: {
+                        class: 'Tenant',
+                        newApp: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [{
+                                    use: '/Common/Shared/192.0.2.10'
+                                }]
+                            }
+                        }
+                    }
+                };
+                context.request.method = 'Post';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['newApp'],
+                    tenant: 'secondTenant'
+                };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'Common',
+                        runTime: 956
+                    },
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'secondTenant',
+                        runTime: 956
+                    },
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'Common',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        delete result.body.declaration.controls;
+                        assert.deepStrictEqual(
+                            result.body.declaration,
+                            {
+                                class: 'ADC',
+                                Common: {
+                                    class: 'Tenant',
+                                    Shared: {
+                                        class: 'Application',
+                                        serviceAddress: {
+                                            class: 'Service_Address',
+                                            virtualAddress: '192.0.2.10'
+                                        }
+                                    }
+                                },
+                                secondTenant: {
+                                    class: 'Tenant',
+                                    App2: { class: 'Application' },
+                                    newApp: {
+                                        class: 'Application',
+                                        service: {
+                                            class: 'Service_HTTP',
+                                            virtualAddresses: [{
+                                                use: '/Common/Shared/192.0.2.10'
+                                            }]
+                                        }
+                                    }
+                                },
+                                updateMode: 'selective'
+                            }
+                        );
+                    });
+            });
+
+            it('should delete application from declaration', () => {
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
+                context.tasks[0].action = 'remove';
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'randomGibberish',
+                    updateMode: 'complete'
+                };
+                context.request.method = 'Remove';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['App1'],
+                    tenant: 'firstTenant'
+                };
+
+                sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'firstTenant',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then((result) => {
+                        delete result.body.declaration.controls;
+                        assert.deepStrictEqual(
+                            result.body.declaration,
+                            {
+                                class: 'ADC',
+                                firstTenant: {
+                                    class: 'Tenant',
+                                    Application: {
+                                        class: 'Application'
+                                    },
+                                    controls: {
+                                        class: 'Controls'
+                                    }
+                                },
+                                id: 'randomGibberish',
+                                schemaVersion: '3.0.0',
+                                updateMode: 'selective'
+                            }
+                        );
                     });
             });
         });
@@ -1870,9 +2124,8 @@ describe('DeclarationHandler', () => {
                 tenantsInPath: ['newtenant']
             };
 
-            const declarationProvider = new DeclarationProvider();
             sinon.stub(context.host.parser, 'digest').resolves();
-            sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+            sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                 class: 'ADC',
                 schemaVersion: '3.0.0',
                 id: 'PATCH_Sample',
@@ -1880,7 +2133,6 @@ describe('DeclarationHandler', () => {
                 updateMode: 'selective',
                 controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
             });
-            handler.declarationProvider = declarationProvider;
 
             let updatedConfig = {};
             sinon.stub(handler, 'handleCreateUpdateOrDelete').callsFake((ctx) => {
@@ -1929,9 +2181,8 @@ describe('DeclarationHandler', () => {
                 tenantsInPath: ['newtenant']
             };
 
-            const declarationProvider = new DeclarationProvider();
             sinon.stub(context.host.parser, 'digest').resolves();
-            sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+            sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                 class: 'ADC',
                 schemaVersion: '3.0.0',
                 id: 'PATCH_Sample',
@@ -1939,7 +2190,6 @@ describe('DeclarationHandler', () => {
                 updateMode: 'selective',
                 controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
             });
-            handler.declarationProvider = declarationProvider;
 
             let updatedConfig = {};
             sinon.stub(handler, 'handleCreateUpdateOrDelete').callsFake((ctx) => {
@@ -1983,9 +2233,8 @@ describe('DeclarationHandler', () => {
                 tenantsInPath: ['newtenant']
             };
 
-            const declarationProvider = new DeclarationProvider();
             sinon.stub(context.host.parser, 'digest').resolves();
-            sinon.stub(declarationProvider, 'getBigipDeclaration').resolves({
+            sinon.stub(handler.declarationProvider, 'getBigipDeclaration').resolves({
                 class: 'ADC',
                 schemaVersion: '3.0.0',
                 id: 'PATCH_Sample',
@@ -1993,7 +2242,6 @@ describe('DeclarationHandler', () => {
                 updateMode: 'selective',
                 controls: { archiveTimestamp: '2022-11-03T18:41:51.996Z' }
             });
-            handler.declarationProvider = declarationProvider;
 
             let updatedConfig = {};
             sinon.stub(handler, 'handleCreateUpdateOrDelete').callsFake((ctx) => {

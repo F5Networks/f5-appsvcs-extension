@@ -483,4 +483,28 @@ describe('Service_TCP', function () {
         ];
         return assertClass('Service_TCP', properties, options);
     });
+
+    it('should build a virtual server with a shared source address', function () {
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [8080],
+                expectedValue: ['8080'],
+                extractFunction: (o) => o.destination.split(':')[1]
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['1.1.1.10'], ['1.1.1.11'], ['1.1.1.10']],
+                expectedValue: ['/TEST_Service_TCP/1.1.1.10', '/TEST_Service_TCP/1.1.1.11', '/TEST_Service_TCP/1.1.1.10'],
+                extractFunction: (o) => o.destination.split(':')[0]
+            },
+            {
+                name: 'sourceAddress',
+                inputValue: [undefined, '192.0.2.0/24', undefined],
+                expectedValue: ['0.0.0.0/0', '192.0.2.0/24', '0.0.0.0/0'],
+                extractFunction: (o) => o.source
+            }
+        ];
+        return assertClass('Service_TCP', properties);
+    });
 });

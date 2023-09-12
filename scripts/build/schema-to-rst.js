@@ -208,7 +208,7 @@ Object.assign(defs, as3Defs);
 let rstBody = '.. _schema-reference:\n\n';
 rstBody += 'Appendix A: Schema Reference\n';
 rstBody += '============================\n';
-rstBody += 'This page is a reference for the objects you can use in your Declarations for AS3. For more information on BIG-IP objects and terminology, see the BIG-IP documentation at https://support.f5.com/csp/home.\n\n';
+rstBody += 'This page is a reference for the objects you can use in your Declarations for AS3. For more information on BIG-IP objects and terminology, see the BIG-IP documentation at https://my.f5.com/manage/s/.\n\n';
 
 // fill in monitors from the ref
 defs.Pool_Member.properties.monitors.items = defs.Basic_Monitor.then.enum;

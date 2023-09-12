@@ -661,6 +661,12 @@ describe('DeclareHandler', () => {
                 });
 
                 it('should support GET request to per-app endpoint', () => {
+                    config.getAllSettings.restore();
+                    sinon.stub(config, 'getAllSettings').resolves({
+                        betaOptions: {
+                            perAppDeploymentAllowed: true
+                        }
+                    });
                     context.request = {
                         subPath: 'Tenant1/applications',
                         method: 'Get',
@@ -1118,6 +1124,12 @@ describe('DeclareHandler', () => {
                 });
 
                 it('should handle verifying if the per-app declaration is valid', () => {
+                    config.getAllSettings.restore();
+                    sinon.stub(config, 'getAllSettings').resolves({
+                        betaOptions: {
+                            perAppDeploymentAllowed: true
+                        }
+                    });
                     sinon.stub(As3Parser.prototype, 'digest').resolves({});
                     context.request.isPerApp = true;
                     context.request.perAppInfo = {
@@ -1192,7 +1204,29 @@ describe('DeclareHandler', () => {
                         });
                 });
 
+                it('shoud error if per-app not allowed', () => {
+                    config.getAllSettings.restore();
+                    sinon.stub(config, 'getAllSettings').resolves({
+                        betaOptions: {
+                            perAppDeploymentAllowed: false
+                        }
+                    });
+                    context.request.isPerApp = true;
+                    const expectedCode = STATUS_CODES.BAD_REQUEST;
+                    const expectedResult = {
+                        code: 400,
+                        message: 'Error: Per-application is a beta feature that must be enabled in settings for this request'
+                    };
+                    return assertResultAndRestComplete(context, restOp, expectedResult, expectedCode);
+                });
+
                 it('should error if the per-app declaration is a per-tenant declaration', () => {
+                    config.getAllSettings.restore();
+                    sinon.stub(config, 'getAllSettings').resolves({
+                        betaOptions: {
+                            perAppDeploymentAllowed: true
+                        }
+                    });
                     sinon.stub(As3Parser.prototype, 'digest').rejects({
                         status: 422,
                         message: 'declaration is invalid',
@@ -1263,6 +1297,12 @@ describe('DeclareHandler', () => {
                 });
 
                 it('should error if the per-app declaration fails validation - such as string instead of integer', () => {
+                    config.getAllSettings.restore();
+                    sinon.stub(config, 'getAllSettings').resolves({
+                        betaOptions: {
+                            perAppDeploymentAllowed: true
+                        }
+                    });
                     sinon.stub(As3Parser.prototype, 'digest').rejects({
                         status: 422,
                         message: 'declaration is invalid',

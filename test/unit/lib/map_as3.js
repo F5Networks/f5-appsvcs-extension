@@ -213,6 +213,40 @@ describe('map_as3', () => {
             const conditions = [
                 {
                     input: {
+                        type: 'httpHost',
+                        event: 'proxy-request',
+                        all: {
+                            operand: 'contains',
+                            datagroup: { bigip: '/Common/hostnames' }
+                        }
+                    },
+                    expected: 'http-host proxy-request all contains datagroup /Common/hostnames case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpHost',
+                        event: 'request',
+                        host: {
+                            operand: 'ends-with',
+                            values: ['test.com', 'example.com']
+                        },
+                        caseSensitive: true
+                    },
+                    expected: 'http-host request host ends-with values { test.com example.com } case-sensitive'
+                },
+                {
+                    input: {
+                        type: 'httpHost',
+                        event: 'proxy-connect',
+                        port: {
+                            operand: 'equals',
+                            values: [8080, 8443]
+                        }
+                    },
+                    expected: 'http-host proxy-connect port equals values { 8080 8443 } case-insensitive'
+                },
+                {
+                    input: {
                         type: 'httpUri',
                         event: 'request',
                         host: {
@@ -1904,7 +1938,7 @@ describe('map_as3', () => {
                 };
                 const results = translate[ruleClass.name](defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepStrictEqual(
-                    results.configs[0].properties['api-anonymous'], 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock seconds].  Request headers were [HTTP::header names]. Method was [HTTP::method]"\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" "/xyz/"} [HTTP::uri]]\n    }\n}'
+                    results.configs[0].properties['api-anonymous'], 'when HTTP_REQUEST {\n    log local0. "[IP::client_addr] requested [HTTP::uri] at [clock seconds].  Request headers were [HTTP::header names]. Method was [HTTP::method]"\n\n    if { [HTTP::uri] starts_with "/abc/" } {\n        HTTP::uri [string map {"/abc/" "/xyz/"} [HTTP::uri]]\n    }\n}'
                 );
             });
 
@@ -3033,11 +3067,19 @@ describe('map_as3', () => {
             });
         });
 
-        describe('sourceAddress list', () => {
+        describe('sourceAddress', () => {
+            it('should map sourceAddress', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                item.sourceAddress = '192.0.2.10/32';
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                console.log(JSON.stringify(virtual, null, 4));
+                assert.strictEqual(virtual.source, '192.0.2.10/32');
+            });
+
             it('should map sourceAddress list to traffic matching criteria', () => {
                 const fullContext = Object.assign({}, defaultContext, context);
                 fullContext.target.tmosVersion = '14.1';
-                item.virtualType = 'internal';
                 item.sourceAddress = {
                     use: 'sourceAddressList'
                 };

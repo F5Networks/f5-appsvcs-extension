@@ -191,9 +191,8 @@ const createIRule = function createIRule(config) {
         config.properties['api-anonymous'] = config.properties['api-anonymous']
             .trim()
             .replace(/\r\n/g, '\n') // unix-style line endings
-            .replace(/\s+\n/g, '\n') // trim whitespace on every line
-            .replace(/\\\n[ \t]+/g, '') // remove continuation characters
-            .replace(/\n\n/g, '\n \n'); // preserve double newlines
+            .replace(/[ \t]+\n/g, '\n') // trim whitespace on every line
+            .replace(/\\\n[ \t]+/g, ''); // remove continuation characters
     }
     return { configs: [config] };
 };
@@ -357,20 +356,34 @@ const updateTlsOptions = function (item, context) {
 };
 
 const isInternal = function (item) {
-    return typeof item.virtualType !== 'undefined' && item.virtualType === 'internal';
+    return item.virtualType === 'internal';
 };
 
 const updatePropsIfInternal = function (item) {
     if (isInternal(item)) {
-        const sourceType = typeof item.sourceAddress;
         item.internal = {};
+
         // internal virtuals allow a source address but destination is
         // always 0.0.0.0 with a port of 'any'
         item.destination = '0.0.0.0:any';
-        item.virtualAddresses = sourceType === 'undefined' || sourceType === 'object' ? ['0.0.0.0'] : [['0.0.0.0', item.sourceAddress]];
+        item.virtualAddresses = ['0.0.0.0'];
 
         // ICAP should only be on internal virtuals
         item = profile(item, 'profileICAP');
+    }
+    return item;
+};
+
+const updatePropsForSourceAddress = function (item) {
+    // 'object' sourceAddress (that is, pointers to address lists) are handled elsewhere
+    if (typeof item.sourceAddress === 'string') {
+        item.virtualAddresses = item.virtualAddresses.map((virtualAddress) => {
+            if (!Array.isArray(virtualAddress)) {
+                return [virtualAddress, item.sourceAddress];
+            }
+            return virtualAddress;
+        });
+        delete item.sourceAddress;
     }
     return item;
 };
@@ -2243,6 +2256,8 @@ const translate = {
 
         item.adminState = item.adminState === 'enable';
 
+        item = updatePropsForSourceAddress(item);
+
         // support for vlans-disabled, vlans-enabled
         if (item.allowVlans) {
             item.vlans = item.allowVlans;
@@ -2900,7 +2915,7 @@ const translate = {
         }
 
         let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration).configs;
-        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}-Redirect-`, redirectDef, declaration).configs);
+        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration).configs);
         return { configs };
     },
 

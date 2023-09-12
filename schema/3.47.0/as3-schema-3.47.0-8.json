@@ -53,6 +53,7 @@
           "type": "string",
           "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
           "enum": [
+            "3.47.0",
             "3.46.0",
             "3.45.0",
             "3.44.0",
@@ -3934,7 +3935,7 @@
         },
         "virtualAddresses": {
           "title": "Virtual addresses",
-          "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+          "description": "Accepts either an array or a reference to an Address_List which contains destination addresses to which this virtual will listen. To accept connections only from certain subnet(s), replace IP address in the provided array with array [IP-address, accept-from-subnet]. If you do this, you cannot also include the sourceAddress property. IP address in the provided array can also be replaced by a reference to a Service_Address. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
           "oneOf": [
             {
               "type": "array",
@@ -4015,7 +4016,7 @@
         },
         "sourceAddress": {
           "title": "Source address",
-          "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual.",
+          "description": "Accepts either a string or a reference to an Address_List which contains source addresses from which this virtual will listen. A reference to an Address_List is only supported on BIG-IP 14.1 and later. If an Address_List is provided, BIG-IP AS3 will create a traffic-matching-criteria for the virtual. If you also include the virtualAddresses property, those addresses cannot include the accept-from-subnet field.",
           "oneOf": [
             {
               "type": "string",
@@ -4690,6 +4691,33 @@
             "required": [
               "virtualAddresses"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "virtualAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              }
+            },
+            "required": [
+              "virtualAddresses"
+            ]
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "sourceAddress": {}
+              },
+              "required": [
+                "sourceAddress"
+              ]
+            }
           }
         },
         {
@@ -8907,6 +8935,18 @@
             }
           ],
           "default": "indefinite"
+        },
+        "sslSignHash": {
+          "title": "SSL Sign Hash",
+          "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+          "type": "string",
+          "enum": [
+            "any",
+            "sha1",
+            "sha256",
+            "sha384"
+          ],
+          "default": "any"
         }
       },
       "additionalProperties": false,
@@ -9421,6 +9461,18 @@
             }
           ],
           "default": "indefinite"
+        },
+        "sslSignHash": {
+          "title": "SSL Sign Hash",
+          "description": "Specifies SSL sign hash algorithm which is used to sign and verify SSL Server Key Exchange and Certificate Verify messages for the specified SSL profiles.",
+          "type": "string",
+          "enum": [
+            "any",
+            "sha1",
+            "sha256",
+            "sha384"
+          ],
+          "default": "any"
         }
       },
       "allOf": [
@@ -22987,6 +23039,7 @@
               "type": "string",
               "description": "When to run this event in the request-response cycle",
               "enum": [
+                "client-accepted",
                 "ssl-client-hello",
                 "request"
               ],
@@ -23780,13 +23833,14 @@
           "description": "Selects the LTM policy condition this object describes",
           "type": "string",
           "enum": [
+            "geoip",
+            "httpCookie",
             "httpHeader",
+            "httpHost",
             "httpMethod",
             "httpUri",
-            "httpCookie",
             "sslExtension",
-            "tcp",
-            "geoip"
+            "tcp"
           ]
         }
       },
@@ -23813,6 +23867,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Condition_HTTP_Header"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "httpHost"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Condition_HTTP_Host"
           }
         },
         {
@@ -24173,6 +24239,79 @@
               "required": [
                 "all",
                 "name"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Policy_Condition_HTTP_Host": {
+      "description": "Match against an HTTP request's Host header",
+      "type": "object",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "event": {
+              "description": "When to evaluate this condition in the request-response cycle",
+              "type": "string",
+              "enum": [
+                "proxy-request",
+                "request",
+                "proxy-connect"
+              ],
+              "default": "proxy-request"
+            }
+          }
+        },
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "all": {
+                  "description": "Match against the full string of the Host header",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Compare_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "all"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "host": {
+                  "description": "Match against the host of the Host header",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Compare_String"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "host"
+              ]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "port": {
+                  "description": "Match against the port of the Host header",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Policy_Compare_Number"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "port"
               ]
             }
           ]
@@ -31418,11 +31557,7 @@
           "$ref": "#/definitions/Remark"
         },
         "captureFilter": {
-          "allOf": [
-            {
-              "$ref": "#/definitions/Capture_Filter"
-            }
-          ],
+          "$ref": "#/definitions/Capture_Filter",
           "default": {}
         },
         "collectGeo": {
@@ -32870,7 +33005,8 @@
           "minProperties": 1,
           "maxProperties": 1
         }
-      ]
+      ],
+      "errorMessage": "must be a string or an object with a single property of 'text', 'base64', 'url', or 'copyFrom'. Example formats: 'your_string', { \"text\": \"your_string\" }, { \"base64\": \"base64_value\" }, { \"url\": \"your_url\" }, or { \"copyFrom\": \"pointer_value\" }"
     },
     "HTTP_Acceleration_Profile": {
       "title": "HTTP acceleration profile",
@@ -32915,7 +33051,7 @@
           "default": true
         },
         "maximumAge": {
-          "description": "How long the system will consider the cached content will be valid",
+          "description": "How long (in seconds) the system will consider the cached content valid",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -32929,7 +33065,7 @@
           "default": 10000
         },
         "maximumObjectSize": {
-          "description": "The largest object that the system will cache",
+          "description": "The largest object (in bytes) that the system will cache",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
@@ -32937,24 +33073,20 @@
         },
         "metadataMaxSize": {
           "default": 25,
-          "description": "The maximum size of the metadata cache",
+          "description": "The maximum size (in megabytes) of the metadata cache",
           "maximum": 4294967295,
           "minimum": 0,
           "type": "integer"
         },
         "minimumObjectSize": {
-          "description": "The smallest object that the system will cache",
+          "description": "The smallest object (in bytes) that the system will cache",
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295,
           "default": 500
         },
         "parentProfile": {
-          "allOf": [
-            {
-              "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile"
-            }
-          ],
+          "$ref": "#/definitions/Pointer_HTTP_Acceleration_Profile",
           "default": {
             "bigip": "/Common/webacceleration"
           },

@@ -47,10 +47,7 @@ describe('settings-schema.json', () => {
                         perAppDeploymentAllowed: true
                     }
                 };
-
-                // Temporarily disabled while per-app is developed
-                // assert.ok(validate(data), getErrorString(validate));
-                assert.strictEqual(validate(data), false, 'Restricts to false during development');
+                assert.ok(validate(data), getErrorString(validate));
             });
         });
 
@@ -119,6 +116,31 @@ describe('settings-schema.json', () => {
             it('should error if non-schema values are provided', () => {
                 const data = {
                     asyncTaskStorage: 'monkey'
+                };
+                assert.strictEqual(validate(data), false);
+            });
+        });
+    });
+
+    describe('serializeFileUploads', () => {
+        describe('valid', () => {
+            it('should use the default value of false', () => {
+                const data = {};
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should accept a value of true', () => {
+                const data = {
+                    serializeFileUploads: true
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('invalid', () => {
+            it('should error if not true or false', () => {
+                const data = {
+                    serializeFileUploads: 'monkey'
                 };
                 assert.strictEqual(validate(data), false);
             });

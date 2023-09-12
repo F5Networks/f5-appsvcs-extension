@@ -63,6 +63,11 @@ class DeclareHandler {
         return Config.getAllSettings()
             .then((settingsResponse) => {
                 settings = settingsResponse;
+                if (context.request.isPerApp && !settings.betaOptions.perAppDeploymentAllowed) {
+                    const e = new Error('Per-application is a beta feature that must be enabled in settings for this request');
+                    e.betaOptions = true;
+                    throw e;
+                }
                 return getInitialControls(context, settings);
             })
             .then((controls) => {
@@ -780,6 +785,10 @@ function reportError(context, error) {
         const cancelRecord = context.host.asyncHandler.records
             .find((record) => record.name === context.tasks[0].asyncUuid);
         cancelRecord.status = 'cancelled';
+    } else if (error.betaOptions) {
+        message = `Error: ${error.message}`;
+        log.error(`ERROR: ${error.message}`);
+        code = STATUS_CODES.BAD_REQUEST;
     } else {
         message = `An unexpected error occurred. See logs for details. Error: ${error.message}`;
         log.error(`ERROR: ${error.message} : ${error.stack}`);

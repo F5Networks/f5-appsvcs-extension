@@ -860,6 +860,49 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
+.. _httphost:
+
+Using the httpHost condition in an Endpoint policy rule
+````````````````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for httpHost conditions is available in 3.47 and later.
+
+In this example, we show how you can use the **httpHost** condition in your Endpoint policy rules. This allows you to match the host of an HTTP request, proxy request, or proxy connect.
+
+The options for **httpHost** are:
+
+- **host** - Matches the host name.
+- **port** - Matches the port number.
+- **all** - Matches the full host header string.
+
+For more information on LTM Endpoint Policies, see |ltmpol| in the BIG-IP documentation.
+
+Also see |hhost| in the Schema Reference.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **Tenant**.
+- An Application named **Application**.
+- A virtual server named **http_host_service**
+- An HTTP profile named **httpProfile** 
+- A Data Group named **hostnames**
+- An Endpoint policy named **http_host_policy** that contains three rules that use the different options for the **httpHost** condition.
+
+.. literalinclude:: ../../examples/declarations/example-endpoint-policy-http-host-condition.json
+    :language: json
+
+:ref:`Back to top<app-sec-examples>`
+
+|
+
+
+
+
+
+.. |hhost| raw:: html
+
+   <a href="https://automation-toolchain.pages.gitswarm.f5net.com/f5-appsvcs-extension/public-docs/refguide/declaration-purpose-function.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
 
 .. |stringexpand| raw:: html
 

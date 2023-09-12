@@ -2097,6 +2097,176 @@ describe('map_mcp', () => {
         });
 
         describe('tm:ltm:policy:policystate', () => {
+            it("should return ltm 'http-host' policy", () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'myPolicy',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/myPolicy',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy?ver=16.1.2',
+                    description: 'My Test Policy',
+                    requires: [
+                        'http',
+                        'http-explicit',
+                        'http-connect'
+                    ],
+                    status: 'published',
+                    strategy: '/Common/first-match',
+                    strategyReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy-strategy/~Common~first-match?ver=16.1.2'
+                    },
+                    references: {},
+                    rulesReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules?ver=16.1.2',
+                        isSubcollection: true,
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'rule1',
+                                fullPath: 'rule1',
+                                selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule1?ver=16.1.2',
+                                ordinal: 0,
+                                conditionsReference: {
+                                    link: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule1/conditions?ver=16.1.2',
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule1/conditions/0?ver=16.1.2',
+                                            all: true,
+                                            caseInsensitive: true,
+                                            contains: true,
+                                            datagroup: '/Common/hostnames',
+                                            datagroupReference: {
+                                                link: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~hostnames?ver=16.1.2'
+                                            },
+                                            external: true,
+                                            httpHost: true,
+                                            index: 0,
+                                            present: true,
+                                            proxyRequest: true,
+                                            remote: true
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'rule2',
+                                fullPath: 'rule2',
+                                selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule2?ver=16.1.2',
+                                ordinal: 0,
+                                conditionsReference: {
+                                    link: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule2/conditions?ver=16.1.2',
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule2/conditions/0?ver=16.1.2',
+                                            caseSensitive: true,
+                                            endsWith: true,
+                                            external: true,
+                                            host: true,
+                                            httpHost: true,
+                                            index: 0,
+                                            present: true,
+                                            remote: true,
+                                            request: true,
+                                            values: [
+                                                'test.com',
+                                                'example.com'
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'rule3',
+                                fullPath: 'rule3',
+                                selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule3?ver=16.1.2',
+                                ordinal: 0,
+                                conditionsReference: {
+                                    link: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule3/conditions?ver=16.1.2',
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~Tenant~Application~myPolicy/rules/rule3/conditions/0?ver=16.1.2',
+                                            caseInsensitive: true,
+                                            equals: true,
+                                            external: true,
+                                            httpHost: true,
+                                            index: 0,
+                                            port: true,
+                                            present: true,
+                                            proxyConnect: true,
+                                            remote: true,
+                                            values: [
+                                                '8080',
+                                                '8443'
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results,
+                    [
+                        {
+                            path: '/Tenant/Application/myPolicy',
+                            command: 'ltm policy',
+                            properties: {
+                                description: '"My Test Policy"',
+                                rules: {
+                                    rule1: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-host proxy-request all contains datagroup /Common/hostnames case-insensitive'
+                                            }
+                                        },
+                                        actions: {}
+                                    },
+                                    rule2: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-host request host ends-with values { test.com example.com } case-sensitive'
+                                            }
+                                        },
+                                        actions: {}
+                                    },
+                                    rule3: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-host proxy-connect port equals values { 8080 8443 } case-insensitive'
+                                            }
+                                        },
+                                        actions: {}
+                                    }
+                                },
+                                strategy: '/Common/first-match'
+                            },
+                            ignore: []
+                        }
+                    ]
+                );
+            });
+
             it("should return ltm 'bot-defense' policy", () => {
                 const obj = {
                     kind: 'tm:ltm:policy:policystate',

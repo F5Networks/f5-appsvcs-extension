@@ -72,5 +72,6 @@ module.exports = {
     defaultPort: 8100,
     externalMonitorFile: 'mExternalMonitor',
     encryptedDeclLocation: '/var/config/rest/iapps/f5-appsvcs/encryptedDeclaration',
-    encryptedDeclCounter: '/var/config/rest/iapps/f5-appsvcs/declRetryAttempts'
+    encryptedDeclCounter: '/var/config/rest/iapps/f5-appsvcs/declRetryAttempts',
+    redirectSuffix: '-Redirect-'
 };

@@ -37,6 +37,9 @@ const iRules = {
     },
     withLeadingComments: {
         base64: 'IyB0aGlzIGlzIGEgdGVzdCBjb21tZW50CndoZW4gSFRUUF9SRVFVRVNUIHsKICAgICAgICBIVFRQOjpoZWFkZXIgcmVwbGFjZSBYLVJlYWxtIHN0YW5kYXJkCn0='
+    },
+    withEmptyLine: {
+        base64: 'd2hlbiBIVFRQX1JFUVVFU1QgcHJpb3JpdHkgNTAwIHsKICAgICMgdGhpcyBjb21tZW50IHNob3VsZCBiZSBzZXBhcmF0ZWQgYnkgYW4gZW1wdHkgbGluZSBmcm9tIHRoZSBiZWxvdyBjb21tZW50CgogICAgIyB0aGlzIGNvbW1lbnQgc2hvdWxkIGJlIHNlcGFyYXRlZCBieSBhbiBlbXB0eSBsaW5lIGZyb20gdGhlIGFib3ZlIGNvbW1lbnQKfQ'
     }
 };
 
@@ -61,7 +64,6 @@ const getPlainStringFromB64 = function (b64) {
     let str = Buffer.from(b64, 'base64').toString('ascii');
     // iControl strips some extra chars
     str = JSON.stringify(str.replace(/\r/g, '')
-        .replace(/\n \n/g, '\n')
         .replace(/ \n/g, '\n'));
     return str;
 };
@@ -101,6 +103,19 @@ describe('iRule', function () {
                 name: 'iRule',
                 inputValue: [iRules.withLeadingComments],
                 expectedValue: [getPlainStringFromB64(iRules.withLeadingComments.base64)],
+                extractFunction: extractFunctions.iRuleValue
+            }
+        ];
+
+        return assertClass('iRule', properties);
+    });
+
+    it('created with correct text value from base64 with empty lines', () => {
+        const properties = [
+            {
+                name: 'iRule',
+                inputValue: [iRules.withEmptyLine],
+                expectedValue: [getPlainStringFromB64(iRules.withEmptyLine.base64)],
                 extractFunction: extractFunctions.iRuleValue
             }
         ];

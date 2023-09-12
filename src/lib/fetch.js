@@ -636,11 +636,6 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
     }
 
     appList.forEach((appId) => {
-        if ((context.request.isPerApp && (context.request.perAppInfo.apps.length > 0
-            && context.request.perAppInfo.apps.indexOf(appId) === -1)) || !tenantDecl[appId].enable) {
-            return;
-        }
-
         const appPromiseFunc = () => Promise.resolve()
             .then(() => mapAs3.translate.Application(context, tenantId, appId))
             .then((mcpObj) => {
@@ -1263,43 +1258,6 @@ const pathReferenceLinks = function (context, referredList, tenantId, partitionC
 };
 
 /**
- * Returns a subset of the config array, based on the perAppInfo.apps
- *
- * @param {object} perAppInfo - holds target tenant and apps array
- * @param {array} config - an array of relevant BIG-IP objects
- */
-const getFilteredPerAppConfig = function (perAppInfo, config) {
-    const filteredConfig = [];
-    config.forEach((c) => {
-        switch (c.kind) {
-        case 'tm:auth:partition:partitionstate':
-            if (c.fullPath === perAppInfo.tenant) {
-                filteredConfig.push(c);
-            }
-            break;
-        case 'tm:sys:folder:folderstate':
-            if (perAppInfo.apps.indexOf(c.name) !== -1) {
-                // applications are sys:folders, so the name should be accurate
-                filteredConfig.push(c);
-            }
-            break;
-        case 'tm:ltm:virtual-address:virtual-addressstate':
-        case 'tm:ltm:node:nodestate':
-            // virtual addresses & nodes are saved at the root tenant, and so do NOT have a subPath to compare
-            // TODO: check metadata here
-            filteredConfig.push(c);
-            break;
-        default:
-            if (perAppInfo.apps.indexOf(c.subPath) !== -1) {
-                // Everything in an application should have a subPath of the application name
-                filteredConfig.push(c);
-            }
-        }
-    });
-    return filteredConfig;
-};
-
-/**
  * Pull the current BIG-IP configuration for a given
  * partition (AS3 tenant).  This uses iControl-REST
  * in two stages. The first stage captures the parent
@@ -1344,10 +1302,6 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
             }
             return getBigipConfig(context, paths.root, tenantId, commonConfig)
                 .then((config) => {
-                    if (context.request.isPerApp && context.request.perAppInfo.apps.length > 0) {
-                        // If no apps are specified, tenant filtering is sufficient
-                        config = getFilteredPerAppConfig(context.request.perAppInfo, config);
-                    }
                     partitionConfig = config || [];
                     return pathReferenceLinks(context, paths.referred, tenantId, partitionConfig);
                 })
@@ -1543,14 +1497,14 @@ const updateWildcardMonitorDiffs = function (monKey, currentConf, desiredConf, c
             if (key !== monKey) {
                 const desiredConfItem = desiredConf[key];
                 const currentConfItem = currentConf[key];
-                if (desiredConfItem.command.startsWith('ltm pool') && desiredConfItem.properties.monitor) {
+                if (desiredConfItem.command.startsWith('ltm pool') && desiredConfItem.properties.monitor && currentConfItem) {
                     const poolMonitors = Object.keys(desiredConfItem.properties.monitor);
                     if (poolMonitors.length === 1 && poolMonitors[0] === monKey) {
                         currentConfItem.properties.monitor = 'none';
                     } else {
                         delete currentConfItem.properties.monitor[monKey];
                     }
-                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members);
+                    const poolMembersKeys = Object.keys(desiredConfItem.properties.members || {});
                     poolMembersKeys.forEach((pmKey) => {
                         const poolMember = desiredConfItem.properties.members[pmKey];
                         if (poolMember.monitor) {
@@ -1786,12 +1740,6 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
                 keep = false;
             }
         }
-        // TODO: remove/modify this when virtual-address metadata is handled
-        // filter out per-app virtual-address Deletes during Post
-        if (context.request.isPerApp && context.request.method === 'Post' && diff.kind === 'D'
-            && diff.lhs.command === 'ltm virtual-address') {
-            keep = false;
-        }
         if (keep) {
             finalDiffs.push(diff);
         }
@@ -1839,6 +1787,34 @@ const getRollback = function () {
 
 const getFinale = function () {
     return ['}}', '}'];
+};
+
+/**
+ * Determines if a virtual's destination matches a virtualAddress
+ *
+ * @param {String} destination - Full virtual server destination (has tenant and port). Might be an address or name.
+ * @param {String} virtualAddress - virtualAddress address property (does not have port)
+ * @param {String} virtualAddressName - Full name of the virtualAddress (has tenant)
+ */
+const doesDestinationMatchVirtualAddress = function (destination, virtualAddress, virtualAddressName) {
+    const lastDot = destination.lastIndexOf('.');
+    const lastColon = destination.lastIndexOf(':');
+    const portIndex = lastDot > lastColon ? lastDot : lastColon;
+
+    const destinationWithoutPort = destination.substring(0, portIndex);
+    const destinationWithoutTenantOrPort = destinationWithoutPort.startsWith('/') ? destinationWithoutPort.split('/')[2] : destinationWithoutPort;
+    let destinationAddress = destinationWithoutTenantOrPort;
+    if (destinationAddress.startsWith('any6')) {
+        destinationAddress = destinationAddress.replace('any6', '::');
+    } else if (destinationAddress.startsWith('any')) {
+        destinationAddress = destinationAddress.replace('any', '0.0.0.0');
+    }
+
+    if (ipUtil.isIPv4(destinationAddress) || ipUtil.isIPv6(destinationAddress)) {
+        return destinationWithoutTenantOrPort === virtualAddress;
+    }
+
+    return destinationWithoutPort === virtualAddressName;
 };
 
 const updateWildcardMonitorCommands = function (trans) {
@@ -1901,12 +1877,30 @@ const updateWildcardMonitorCommands = function (trans) {
     return updatedTrans;
 };
 
-// To handle traffic-matching-criteria, we have to do things outside the transaction
-// However we can't know during that processing if traffic-matching-criteria was involved
-// so we need to move things back into the transaction here if necessary
-const updatePostTransVirtuals = function (trans, postTrans, destinationsDeletedInTrans) {
+/**
+ * Keeps deleted virtuals and virtual-addresses together in either the transaction
+ * or post-transaction commands. Updates the trans and postTrans arrays that are passed in.
+ *
+ * @param {String[]} trans - The list of commands in the transaction. May be modified by this function.
+ * @param {String[]} postTrans - The list of post-transaction commands. May be modified by this function.
+ * @param {String[]} virtualAddresses - The list of destinations from deleted virtuals that match virtual-addresses
+ * @param {Object} redirectVirtualsDeletedInTrans - The names of the redirect virtuals deleted in trans
+ *
+ * @returns {undefined}
+ */
+const updatePostTransVirtuals = function (
+    trans,
+    postTrans,
+    destinationsDeletedInTrans,
+    redirectVirtualsDeletedInTrans,
+    currentConfig
+) {
     const deleteVirtualAddressPrefix = 'tmsh::delete ltm virtual-address';
     const createVirtualAddressPrefix = 'tmsh::create ltm virtual-address';
+
+    // To handle traffic-matching-criteria, we have to do things outside the transaction
+    // However we can't know during that processing if traffic-matching-criteria was involved
+    // so we need to move things back into the transaction here if necessary.
     postTrans.forEach((commandList) => {
         if (Array.isArray(commandList)) {
             for (let i = commandList.length - 1; i >= 0; i -= 1) {
@@ -1940,6 +1934,75 @@ const updatePostTransVirtuals = function (trans, postTrans, destinationsDeletedI
             }
         }
     });
+
+    // Also, in AUTOTOOL-3925, we found that if you are deleting a redirect virtual that has
+    // a non-0 route-domain destination, but not deleting the non-redirect virtual, then the
+    // redirect has to be deleted post-trans so that MCP does not auto delete the virtual-address.
+    // At some point we'll run into a conflict where the TMC code above wants the commands in the transaction
+    // but the redirect code below wants the commands in post-transaction. Not sure what we can do about this
+    // besides getting the MCP transaction bugs fixed.
+    if (redirectVirtualsDeletedInTrans) {
+        // if redirect is not recreated and it's destination (from currentConfig) contains %
+        //   loop through virtual-addresses in current config to see if the address of one matches the destination
+        const deleteVirtualPrefix = 'tmsh::delete ltm virtual '; // trailing space so we don't pick up virtual-address
+
+        const virtualCommandsToMove = [];
+        const virtualAddressCommandsToDelete = [];
+
+        const isRecreate = function (commandPrefix) {
+            const createCommand = commandPrefix.replace('tmsh::delete', 'tmsh::create');
+            return trans.find((transCommand) => transCommand.startsWith(createCommand));
+        };
+
+        redirectVirtualsDeletedInTrans.forEach((redirectVirtualName) => {
+            if (!isRecreate(`${deleteVirtualPrefix} ${redirectVirtualName}`)) {
+                const redirectVirtual = currentConfig[redirectVirtualName];
+                if (redirectVirtual) {
+                    const destination = redirectVirtual.properties.destination;
+                    if (destination && destination.indexOf('%') > 0) {
+                        Object.keys(currentConfig).forEach((configName) => {
+                            if (currentConfig[configName].command === 'ltm virtual-address') {
+                                if (doesDestinationMatchVirtualAddress(
+                                    destination,
+                                    currentConfig[configName].properties.address,
+                                    configName
+                                )) {
+                                    virtualCommandsToMove.push(`${deleteVirtualPrefix}${redirectVirtualName}`);
+
+                                    if (!isRecreate(`${deleteVirtualAddressPrefix} ${configName.replace('Service_Address-', '')}`)) {
+                                        virtualAddressCommandsToDelete.push(`${deleteVirtualAddressPrefix} ${configName.replace('Service_Address-', '')}`);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+
+        virtualCommandsToMove.forEach((itemToMove) => {
+            for (let i = trans.length - 1; i >= 0; i -= 1) {
+                const command = trans[i];
+                if (command === itemToMove) {
+                    arrayUtil.insertBeforeOrAtEnd(
+                        postTrans,
+                        'delete sys folder',
+                        command,
+                        'inc'
+                    );
+                    trans.splice(i, 1);
+                }
+            }
+        });
+
+        // Virtual address will be auto-deleted when the virtual is deleted, so just remove that command.
+        for (let i = trans.length - 1; i >= 0; i -= 1) {
+            const command = trans[i];
+            if (virtualAddressCommandsToDelete.indexOf(command) > -1) {
+                trans.splice(i, 1);
+            }
+        }
+    }
 };
 
 // Finds lists in pre-trans that reference lists created in trans
@@ -2036,34 +2099,6 @@ const updatePortAndAddressLists = function (trans, preTrans, rollback) {
     // Now that all traffic-matching-criteria commands have bee moved to pre-trans, look
     // for references from lists to lists
     checkTransactionReferences(trans, preTrans, rollback);
-};
-
-/**
- * Determines if a virtual's destination matches a virtualAddress
- *
- * @param {String} destination - Full virtual server destination (has tenant and port). Might be an address or name.
- * @param {String} virtualAddress - virtualAddress address property (does not have port)
- * @param {String} virtualAddressName - Full name of the virtualAddress (had tenant)
- */
-const doesDestinationMatchVirtualAddress = function (destination, virtualAddress, virtualAddressName) {
-    const lastDot = destination.lastIndexOf('.');
-    const lastColon = destination.lastIndexOf(':');
-    const portIndex = lastDot > lastColon ? lastDot : lastColon;
-
-    const destinationWithoutPort = destination.substring(0, portIndex);
-    const destinationWithoutTenantOrPort = destinationWithoutPort.split('/')[2];
-    let destinationAddress = destinationWithoutTenantOrPort;
-    if (destinationAddress.startsWith('any6')) {
-        destinationAddress = destinationAddress.replace('any6', '::');
-    } else if (destinationAddress.startsWith('any')) {
-        destinationAddress = destinationAddress.replace('any', '0.0.0.0');
-    }
-
-    if (ipUtil.isIPv4(destinationAddress) || ipUtil.isIPv6(destinationAddress)) {
-        return destinationWithoutTenantOrPort === virtualAddress;
-    }
-
-    return destinationWithoutPort === virtualAddressName;
 };
 
 /**
@@ -2173,6 +2208,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     }
 
     const destinationsDeletedInTrans = [];
+    const redirectVirtualsDeletedInTrans = [];
 
     configDiff.forEach((diff) => {
         const partition = diff.path[0].split('/')[1];
@@ -2430,13 +2466,30 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             }
                         });
                         trans.push(commands.join('\n'));
+                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1) {
+                        // This is a command to modify the pool to delete members just like we have with the
+                        // delete code below.
+                        const commands = diffUpdates.commands.split('\n');
+                        commands.forEach((command) => {
+                            if (command.startsWith('tmsh::modify')) {
+                                arrayUtil.insertBeforeOrAtBeginning(
+                                    preTrans,
+                                    'delete ltm node',
+                                    command,
+                                    'inc'
+                                );
+                            } else {
+                                trans.push(command);
+                            }
+                        });
                     } else {
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);
                     }
                 // handle delete
                 } else if (diffUpdates.commands.includes('delete ltm virtual ')) {
-                    const virtualConfig = currentConfig[diff.path[0]];
+                    const virtualName = diff.path[0];
+                    const virtualConfig = currentConfig[virtualName];
                     const tmc = util.getDeepValue(virtualConfig, 'properties.traffic-matching-criteria');
                     if (tmc) {
                         // handle deleting Service (required for traffic-matching-criteria)
@@ -2469,6 +2522,9 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             if (name) {
                                 const nameWithoutTenant = name.split('/')[2];
                                 destinationsDeletedInTrans.push(nameWithoutTenant.replace('Service_Address-', ''));
+                            }
+                            if (virtualName.endsWith(constants.redirectSuffix)) {
+                                redirectVirtualsDeletedInTrans.push(virtualName);
                             }
                         }
                     }
@@ -2598,7 +2654,13 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
 
     trans = updateWildcardMonitorCommands(trans);
     updatePortAndAddressLists(trans, preTrans, rollback);
-    updatePostTransVirtuals(trans, postTrans, destinationsDeletedInTrans);
+    updatePostTransVirtuals(
+        trans,
+        postTrans,
+        destinationsDeletedInTrans,
+        redirectVirtualsDeletedInTrans,
+        currentConfig
+    );
 
     updates.script = preamble.concat(preTrans, trans, commit);
     if (preTrans2.length > 0) {
