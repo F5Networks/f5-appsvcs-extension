@@ -740,4 +740,4 @@ docs_to_production:
     - aws s3 sync docs/_build/html s3://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest
     - aws s3 cp versions.json s3://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/versions.json
     # create invalidation to clear cloudfront cache
-    # - aws cloudfront create-invalidation --distribution-id $AWS_DIST --paths /products/extensions/f5-appsvcs-extension/latest
+    - aws cloudfront create-invalidation --distribution-id $AWS_DIST --paths /products/extensions/f5-appsvcs-extension/latest
