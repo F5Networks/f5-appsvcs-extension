@@ -66,7 +66,7 @@ In addition to setting **serializeFileUploads** to **true** on the /settings end
   - restnoded.timeout
   - restjavad.timeout
 
-- Increase memory using these DB variables (see :ref:`Best Practices<restjavadmem>` for information  )
+- Increase memory using these DB variables (see :ref:`Best Practices<restjavadmem>` for information). Note that these variables have changed for some versions of BIG-IP, see `K000133258: Sys DB restjavad.useextramb has been removed after upgrade <https://my.f5.com/manage/s/article/K000133258 >`_.
 
   - provision.extramb
   - restjavad.useextramb
