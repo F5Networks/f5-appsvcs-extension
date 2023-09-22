@@ -8,6 +8,8 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 
 ### Changed
+- Updated to Service Discovery 1.16.0-1
+  - Update packages to latest available versions
 
 ### Removed
 

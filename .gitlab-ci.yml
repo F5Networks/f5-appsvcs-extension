@@ -81,7 +81,7 @@ update_autotool_deps:
   rules:
     - if: '$UPDATE_DEPS =~ /true/i'
   needs: []
-  image: $DOCKER_URL/node:14
+  image: $DOCKER_URL/node:20
   variables:
     UPDATE_BRANCH_NAME: update_autotool_deps
   script:
