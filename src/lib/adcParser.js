@@ -347,12 +347,16 @@ function as3Digest(declaration) {
     let getVirtualAddresses = Promise.resolve([]);
     let getAccessProfileList = Promise.resolve([]);
     let getAddressListList = Promise.resolve([]);
+    let getSnatTranslationList = Promise.resolve([]);
     if (!declaration.scratch && !this.options.isPerApp) {
         // per-app validation does NOT require this
         getNodelist = util.getNodelist(this.context);
         getVirtualAddresses = util.getVirtualAddressList(this.context, 'Common');
         getAccessProfileList = util.getAccessProfileList(this.context);
         getAddressListList = util.getAddressListList(this.context, 'Common');
+    }
+    if (!declaration.scratch) {
+        getSnatTranslationList = util.getSnatTranslationList(this.context, 'Common');
     }
 
     this.postProcess = [];
@@ -367,6 +371,8 @@ function as3Digest(declaration) {
         .then((accessProfileList) => { this.accessProfileList = accessProfileList; })
         .then(() => getAddressListList)
         .then((addressListList) => { this.addressListList = addressListList; })
+        .then(() => getSnatTranslationList)
+        .then((snatTranslationList) => { this.snatTranslationList = snatTranslationList; })
         .then(() => Config.getAllSettings())
         .then((settings) => { this.settings = settings; })
         .then(() => validate.call(this, declaration))

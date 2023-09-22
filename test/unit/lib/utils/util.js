@@ -1817,6 +1817,180 @@ describe('util', () => {
         });
     });
 
+    describe('.getSnatPoolList', () => {
+        beforeEach(() => {
+            context.tasks = [
+                {
+                    urlPrefix: 'http://admin@localhost:8100'
+                }
+            ];
+            context.control = {
+                targetPort: 8100,
+                port: 8100,
+                basicAuth: 'HeresSomeBasicAuth',
+                targetContext: {
+                    tokens: {
+                        'X-F5-Auth-Token': 'validtoken'
+                    }
+                }
+            };
+        });
+
+        it('should error when no context is provided', () => {
+            assert.isRejected(
+                util.getSnatPoolList(),
+                'argument context required'
+            );
+        });
+
+        it('should return empty array if no snat pool objects exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snatpool?$select=fullPath,partition,members')
+                .reply(
+                    200,
+                    {
+                        items: []
+                    }
+                );
+
+            return assert.becomes(
+                util.getSnatPoolList(context),
+                []
+            );
+        });
+
+        it('should return snat pool objects that exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snatpool?$select=fullPath,partition,members')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                partition: 'Common',
+                                fullPath: '/Common/snatpool1',
+                                members: [
+                                    '192.0.2.10',
+                                    '192.0.2.11'
+                                ]
+                            },
+                            {
+                                partition: 'Tenant',
+                                fullPath: '/Tenant/Application/snatpool2',
+                                members: [
+                                    '192.0.2.110',
+                                    '192.0.2.111'
+                                ]
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getSnatPoolList(context),
+                [
+                    {
+                        partition: 'Common',
+                        fullPath: '/Common/snatpool1',
+                        members: [
+                            '192.0.2.10',
+                            '192.0.2.11'
+                        ]
+                    },
+                    {
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/snatpool2',
+                        members: [
+                            '192.0.2.110',
+                            '192.0.2.111'
+                        ]
+                    }
+                ]
+            );
+        });
+    });
+
+    describe('.getSnatTranslationList', () => {
+        beforeEach(() => {
+            context.tasks = [
+                {
+                    urlPrefix: 'http://admin@localhost:8100'
+                }
+            ];
+            context.control = {
+                targetPort: 8100,
+                port: 8100,
+                basicAuth: 'HeresSomeBasicAuth',
+                targetContext: {
+                    tokens: {
+                        'X-F5-Auth-Token': 'validtoken'
+                    }
+                }
+            };
+        });
+
+        it('should error when no context is provided', () => {
+            assert.isRejected(
+                util.getSnatTranslationList(),
+                'argument context required'
+            );
+        });
+
+        it('should return empty array if no snat translation objects exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snat-translation?$select=fullPath,partition,address')
+                .reply(
+                    200,
+                    {
+                        items: []
+                    }
+                );
+
+            return assert.becomes(
+                util.getSnatTranslationList(context),
+                []
+            );
+        });
+
+        it('should return snat pool objects that exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snat-translation?$select=fullPath,partition,address')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                partition: 'Common',
+                                fullPath: '/Common/192.0.2.10',
+                                address: '192.0.2.10'
+                            },
+                            {
+                                partition: 'Tenant',
+                                fullPath: '/Tenant/Application/192.0.2.11',
+                                address: '192.0.2.11'
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getSnatTranslationList(context),
+                [
+                    {
+                        partition: 'Common',
+                        fullPath: '/Common/192.0.2.10',
+                        address: '192.0.2.10'
+                    },
+                    {
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/192.0.2.11',
+                        address: '192.0.2.11'
+                    }
+                ]
+            );
+        });
+    });
+
     describe('.isOneOfProvisioned', () => {
         it('should throw an error if targetContext is not provided', () => {
             assert.throws(() => util.isOneOfProvisioned(), 'targetContext was not supplied');

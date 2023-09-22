@@ -138,14 +138,17 @@ const tenantList = function (declaration, perAppInfo) {
 };
 
 /**
- * Currently just handles replacing certificate references, but
- * this can be expanded later if there is additional post processing
- * needed.
+ * Updates desired config for some custom business logic.
+ *   - Replaces certificate names that have .crt with .key
+ *   - Checks for domain name aliases
+ *   - Looks for duplicate snat translations.
+ * Can be modified for post processing requirements
  *
  * @param {object} config
- * @param {array} postProcessing Array of changes to make
+ * @param {object[]} postProcessing - Array of changes to make
+ * @param {object[]} commonSnatTranslations - Array of objects describing existing snat translations in Common
  */
-const desiredConfigPostProcessing = function (config, postProcessing) {
+const desiredConfigPostProcessing = function (config, postProcessing, commonSnatTranslations) {
     // In some cases (Monitor clientCertificates, for example) we have a cert but not a key. However
     // TMOS needs there to be a key property. If the user did not specify a key, we'll have to fake it. Check
     // here to see if any postProcessing updates have an oldString that end in '.key'
@@ -189,10 +192,18 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
         }
     });
 
-    // remove overlap to find snat pool addresses that BIGIP will create snat translations for if we do not
-    snatTranslationAddresses.forEach((tChange) => {
-        snatPoolAddresses.forEach((pChange) => {
+    snatPoolAddresses.forEach((pChange) => {
+        // remove overlap to find snat pool addresses that BIGIP will create snat translations for if we do not
+        // so that we don't overwrite when we create the default translations below
+        snatTranslationAddresses.forEach((tChange) => {
             if (tChange.name === pChange.name && tChange.snatTranslationAddress === pChange.snatPoolAddress) {
+                snatPoolAddresses.delete(pChange);
+            }
+        });
+
+        // Don't create anything we already have an match for in /Common
+        (commonSnatTranslations || []).forEach((commonSnatTrans) => {
+            if (pChange.snatPoolAddress === commonSnatTrans.address) {
                 snatPoolAddresses.delete(pChange);
             }
         });
@@ -679,7 +690,8 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
             if (context.request.postProcessing.length > 0) {
                 context.request.postProcessing = desiredConfigPostProcessing(
                     desiredConfig,
-                    context.request.postProcessing
+                    context.request.postProcessing,
+                    commonConfig.snatTranslationList
                 );
             }
             updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
@@ -1578,6 +1590,33 @@ const addRenameCase = function (diff) {
     return newDiff.concat(createObjs);
 };
 
+// Finds snat-translations that are referenced by a snatpool that we are not deleting
+const filterReferencedSnatTranslations = function (context, diffs) {
+    let filteredDiffs = util.simpleCopy(diffs);
+
+    const isReferencedSnatTranslation = function (diff, referencedMembers) {
+        return diff.kind === 'D'
+            && diff.lhs.command === 'ltm snat-translation'
+            && referencedMembers.indexOf(diff.path[0]) !== -1;
+    };
+
+    return Promise.resolve()
+        .then(() => util.getSnatPoolList(context))
+        .then((remainingPools) => {
+            const referencedMembers = [];
+            remainingPools.forEach((snatPool) => {
+                snatPool.members.forEach((member) => {
+                    referencedMembers.push(member);
+                });
+            });
+            return referencedMembers;
+        })
+        .then((referencedMembers) => {
+            filteredDiffs = filteredDiffs.filter((diff) => !isReferencedSnatTranslation(diff, referencedMembers));
+            return filteredDiffs;
+        });
+};
+
 const getDiff = function (context, currentConfig, desiredConfig, commonConfig, tenantId, uncheckedDiff) {
     const prefilter = function (objPath, objKey) {
         if ((objPath.length === 1 && objKey === 'ignore')
@@ -1717,6 +1756,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     });
 
     let finalDiffs = [];
+    let filterSnatTranslations = false;
     const initialDiffs = deepDiff(currentConfig, desiredConfig, prefilter) || [];
     const pathCounts = initialDiffs.reduce((counts, diff) => {
         const path = diff.path[0];
@@ -1735,6 +1775,10 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             keep = false;
         }
         if (tenantId === 'Common' && diff.kind === 'D' && diff.lhs.command === 'ltm snat-translation') {
+            // if we are deleting any snat translations, make a note so we can make sure we're not going to
+            // delete something that is still referenced (for example, something that was not created by AS3)
+            filterSnatTranslations = true;
+
             // if the translation address matches a deleting snat pool then let the BIGIP auto delete it
             if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
                 keep = false;
@@ -1755,6 +1799,15 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     });
 
     return preserveDiscoveredNodes(context, finalDiffs, currentConfig)
+        .then(() => {
+            if (filterSnatTranslations) {
+                return filterReferencedSnatTranslations(context, finalDiffs);
+            }
+            return finalDiffs;
+        })
+        .then((filteredDiffs) => {
+            finalDiffs = filteredDiffs;
+        })
         .then(() => {
             finalDiffs = addRenameCase(finalDiffs);
         })

@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'
 
 ### Changed
 - Updated to Service Discovery 1.16.0-1
