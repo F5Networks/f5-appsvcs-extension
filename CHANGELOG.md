@@ -7,6 +7,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'
+- AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt 
 
 ### Changed
 - Updated to Service Discovery 1.16.0-1

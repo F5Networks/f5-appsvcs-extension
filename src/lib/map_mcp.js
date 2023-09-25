@@ -1087,10 +1087,7 @@ const translate = {
 
         obj.profiles = (obj.profilesReference || {}).items || [];
         obj.policies = (obj.policiesReference || {}).items || [];
-
-        if (obj.destination.includes('0.0.0.0')) {
-            obj.destination = obj.destination.replace('0.0.0.0', 'any');
-        }
+        obj.destination = obj.destination.replace('/0.0.0.0', '/any');
 
         if (obj.internal === true) {
             obj.internal = {};

@@ -3103,6 +3103,19 @@ describe('map_mcp', () => {
                 assert.strictEqual(properties.destination, undefined);
                 assert.strictEqual(properties.source, undefined);
             });
+
+            it('should handle 0.0.0.0 in destination', () => {
+                const obj = {
+                    kind: 'tm:ltm:virtual:virtualstate',
+                    name: 'vs',
+                    partition: 'Tenant0.0.0.0',
+                    subPath: 'app0',
+                    fullPath: '/Tenant0.0.0.0/app0/vs',
+                    destination: '/Tenant0.0.0.0/0.0.0.0:443'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert(results[0].properties.destination, '/Tenant0.0.0.0/any:443');
+            });
         });
     });
 
