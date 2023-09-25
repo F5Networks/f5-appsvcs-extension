@@ -2605,6 +2605,109 @@ describe('fetch', () => {
             });
         });
 
+        describe('snat-translations', () => {
+            let currentConfig;
+            let desiredConfig;
+            let expectedDiffs;
+
+            beforeEach(() => {
+                currentConfig = {
+                    '/Common/192.0.2.10': {
+                        command: 'ltm snat-translation',
+                        ignore: [],
+                        properties: {
+                            address: '192.0.2.10'
+                        }
+                    }
+                };
+                desiredConfig = {
+                    '/Common/Shared/mySnatPool': {
+                        command: 'ltm snatpool',
+                        ignore: [],
+                        properties: {
+                            members: {
+                                '/Common/192.0.2.100': {}
+                            }
+                        }
+                    },
+                    '/Common/192.0.2.100': {
+                        command: 'ltm snat-translation',
+                        ignore: [],
+                        properties: {
+                            address: '192.0.2.100'
+                        }
+                    }
+                };
+
+                expectedDiffs = [
+                    {
+                        kind: 'N',
+                        path: ['/Common/192.0.2.100'],
+                        rhs: {
+                            command: 'ltm snat-translation',
+                            ignore: [],
+                            properties: {
+                                address: '192.0.2.100'
+                            }
+                        }
+                    },
+                    {
+                        kind: 'N',
+                        path: ['/Common/Shared/mySnatPool'],
+                        rhs: {
+                            command: 'ltm snatpool',
+                            ignore: [],
+                            properties: {
+                                members: {
+                                    '/Common/192.0.2.100': {}
+                                }
+                            }
+                        }
+                    }
+                ];
+            });
+
+            it('should not delete referenced snat-translations', () => {
+                sinon.stub(util, 'getSnatPoolList').resolves(
+                    [
+                        {
+                            fullPath: '/Common/Shared/mySnatPool',
+                            partition: '/Common',
+                            members: ['/Common/192.0.2.10']
+                        }
+                    ]
+                );
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, 'Common')
+                    .then((diff) => {
+                        assert.deepStrictEqual(diff.map((d) => Object.assign({}, d)), expectedDiffs);
+                    });
+            });
+
+            it('should delete non-referenced snat-translations', () => {
+                expectedDiffs.unshift(
+                    {
+                        kind: 'D',
+                        lhs: {
+                            command: 'ltm snat-translation',
+                            ignore: [],
+                            properties: {
+                                address: '192.0.2.10'
+                            }
+                        },
+                        path: [
+                            '/Common/192.0.2.10'
+                        ]
+                    }
+                );
+
+                return fetch.getDiff(context, currentConfig, desiredConfig, { nodeList: [] }, 'Common')
+                    .then((diff) => {
+                        assert.deepStrictEqual(diff.map((d) => Object.assign({}, d)), expectedDiffs);
+                    });
+            });
+        });
+
         it('should remove iControl_post when in currentConfig', () => {
             const currentConfig = {
                 '/tenant/app/item': {
@@ -6715,64 +6818,109 @@ describe('fetch', () => {
                 });
         });
 
-        it('should process snat translations with snat pools', () => {
-            context.target.tmosVersion = '14.1.0';
-            context.control = {
-                host: 'localhost'
-            };
-            const declaration = {
-                class: 'ADC',
-                schemaVersion: '3.9.0',
-                id: 'Pool',
-                Tenant: {
-                    class: 'Tenant',
-                    Application: {
-                        class: 'Application',
-                        template: 'generic',
-                        snatPool: {
-                            class: 'SNAT_Pool',
-                            snatAddresses: [
-                                '2001:db8:0000:0000:0000:0000:0000:0001',
-                                '2001:db8:0000:0000:0000:0000:0000:0002'
-                            ]
+        describe('snat translations', () => {
+            it('should process snat translations with snat pools', () => {
+                const declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.9.0',
+                    id: 'Pool',
+                    Tenant: {
+                        class: 'Tenant',
+                        Application: {
+                            class: 'Application',
+                            template: 'generic',
+                            snatPool: {
+                                class: 'SNAT_Pool',
+                                snatAddresses: [
+                                    '2001:db8:0000:0000:0000:0000:0000:0001',
+                                    '2001:db8:0000:0000:0000:0000:0000:0002'
+                                ]
+                            },
+                            snatTranslation: {
+                                class: 'SNAT_Translation',
+                                address: '2001:db8:0000:0000:0000:0000:0000:0002',
+                                connectionLimit: 10000
+                            },
+                            enable: true
                         },
-                        snatTranslation: {
-                            class: 'SNAT_Translation',
-                            address: '2001:db8:0000:0000:0000:0000:0000:0002',
-                            connectionLimit: 10000
-                        },
-                        enable: true
+                        enable: true,
+                        defaultRouteDomain: 0,
+                        optimisticLockKey: ''
                     },
-                    enable: true,
-                    defaultRouteDomain: 0,
-                    optimisticLockKey: ''
-                },
-                updateMode: 'selective'
-            };
+                    updateMode: 'selective'
+                };
 
-            return fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig)
-                .then((desiredConfig) => {
-                    assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
-                    assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
-                        '/Tenant/2001:db8::1': {},
-                        '/Tenant/2001:db8::2': {}
+                return fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
+                        assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
+                            '/Tenant/2001:db8::1': {},
+                            '/Tenant/2001:db8::2': {}
+                        });
+
+                        // auto generated snat-translation
+                        let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
+                        assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                        assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
+                        assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
+
+                        // specified snat-translation
+                        snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
+                        assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
+                        assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
+                        assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+
+                        // snat-related items should no longer remain in context.request.postProcessing array
+                        assert.isEmpty(context.request.postProcessing);
                     });
+            });
 
-                    // auto generated snat-translation
-                    let snatTranslation = desiredConfig['/Tenant/2001:db8::1'];
-                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::1');
-                    assert.strictEqual(snatTranslation.properties['connection-limit'], 0);
+            it('should not recreate snat-translations that are in common', () => {
+                commonConfig.snatTranslationList = [
+                    {
+                        partition: 'Common',
+                        address: '192.0.2.10'
+                    }
+                ];
 
-                    // specified snat-translation
-                    snatTranslation = desiredConfig['/Tenant/2001:db8::2'];
-                    assert.strictEqual(snatTranslation.command, 'ltm snat-translation');
-                    assert.strictEqual(snatTranslation.properties.address, '2001:db8::2');
-                    assert.strictEqual(snatTranslation.properties['connection-limit'], 10000);
+                const declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.9.0',
+                    id: 'Pool',
+                    Tenant: {
+                        class: 'Tenant',
+                        Application: {
+                            class: 'Application',
+                            template: 'generic',
+                            snatPool: {
+                                class: 'SNAT_Pool',
+                                snatAddresses: [
+                                    '192.0.2.10',
+                                    '2001:db8:0000:0000:0000:0000:0000:0001',
+                                    '2001:db8:0000:0000:0000:0000:0000:0002'
+                                ]
+                            },
+                            enable: true
+                        },
+                        enable: true,
+                        defaultRouteDomain: 0,
+                        optimisticLockKey: ''
+                    },
+                    updateMode: 'selective'
+                };
 
-                    // snat-related items should no longer remain in context.request.postProcessing array
-                    assert.isEmpty(context.request.postProcessing);
-                });
+                return fetch.getDesiredConfig(context, 'Tenant', declaration, commonConfig)
+                    .then((desiredConfig) => {
+                        assert.strictEqual(desiredConfig['/Tenant/Application/snatPool'].command, 'ltm snatpool');
+                        assert.deepStrictEqual(desiredConfig['/Tenant/Application/snatPool'].properties.members, {
+                            '/Tenant/192.0.2.10': {},
+                            '/Tenant/2001:db8::1': {},
+                            '/Tenant/2001:db8::2': {}
+                        });
+
+                        assert.strictEqual(desiredConfig['/Tenant/192.0.2.10'], undefined);
+                    });
+            });
         });
 
         describe('.updateDesiredForCommonNodes', () => {

@@ -2064,7 +2064,7 @@ describe('map_mcp', () => {
         });
 
         describe('tm:ltm:cipher:rule:rulestate', () => {
-            it('should return ltm cupher rule', () => {
+            it('should return ltm cipher rule', () => {
                 const obj = {
                     kind: 'tm:ltm:cipher:rule:rulestate',
                     description: 'The item description',
@@ -3103,95 +3103,148 @@ describe('map_mcp', () => {
                 assert.strictEqual(properties.destination, undefined);
                 assert.strictEqual(properties.source, undefined);
             });
-        });
-    });
 
-    describe('tm:ltm:snat-translation:snat-translationstate', () => {
-        it('should return ltm profile snat-translation with mostly default values', () => {
-            const obj = {
-                kind: 'tm:ltm:snat-translation:snat-translationstate',
-                name: '10.10.21.21',
-                partition: 'Common',
-                fullPath: '/Common/10.10.21.21',
-                generation: 44780,
-                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Common~10.10.21.21?ver=17.0.0',
-                address: '10.10.21.21',
-                arp: 'enabled',
-                connectionLimit: 4294967295,
-                enabled: true,
-                inheritedTrafficGroup: 'true',
-                ipIdleTimeout: 'indefinite',
-                tcpIdleTimeout: 'indefinite',
-                trafficGroup: '/Common/traffic-group-1',
-                trafficGroupReference: {
-                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
-                },
-                udpIdleTimeout: 'indefinite',
-                unit: 1
-            };
-            const results = translate[obj.kind](defaultContext, obj);
-            assert.deepStrictEqual(
-                results[0],
-                {
-                    path: '/Common/10.10.21.21',
-                    command: 'ltm snat-translation',
-                    properties: {
-                        address: '10.10.21.21',
-                        arp: 'enabled',
-                        'connection-limit': 4294967295,
-                        enabled: {},
-                        'ip-idle-timeout': 'indefinite',
-                        'tcp-idle-timeout': 'indefinite',
-                        'traffic-group': 'default',
-                        'udp-idle-timeout': 'indefinite'
-                    },
-                    ignore: []
-                }
-            );
+            it('should handle 0.0.0.0 in destination', () => {
+                const obj = {
+                    kind: 'tm:ltm:virtual:virtualstate',
+                    name: 'vs',
+                    partition: 'Tenant0.0.0.0',
+                    subPath: 'app0',
+                    fullPath: '/Tenant0.0.0.0/app0/vs',
+                    destination: '/Tenant0.0.0.0/0.0.0.0:443'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert(results[0].properties.destination, '/Tenant0.0.0.0/any:443');
+            });
         });
 
-        it('should return ipv6 ltm profile with more customized values', () => {
-            const obj = {
-                kind: 'tm:ltm:snat-translation:snat-translationstate',
-                name: '2001:db8::1',
-                partition: 'Tenant',
-                subPath: 'Application',
-                fullPath: '/Tenant/Application/2001:db8::1',
-                generation: 48870,
-                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Tenant~Application~2001:db8::1?ver=17.0.0',
-                address: '2001:db8::1',
-                arp: 'enabled',
-                connectionLimit: 0,
-                disabled: true,
-                inheritedTrafficGroup: 'false',
-                ipIdleTimeout: '3000',
-                tcpIdleTimeout: '1000',
-                trafficGroup: '/Common/traffic-group-1',
-                trafficGroupReference: {
-                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
-                },
-                udpIdleTimeout: '2000',
-                unit: 1
-            };
-            const results = translate[obj.kind](defaultContext, obj);
-            assert.deepStrictEqual(
-                results[0],
-                {
-                    path: '/Tenant/Application/2001:db8::1',
-                    command: 'ltm snat-translation',
-                    properties: {
-                        address: '2001:db8::1',
-                        arp: 'enabled',
-                        'connection-limit': 0,
-                        disabled: {},
-                        'ip-idle-timeout': '3000',
-                        'tcp-idle-timeout': '1000',
-                        'traffic-group': '/Common/traffic-group-1',
-                        'udp-idle-timeout': '2000'
+        describe('tm:ltm:data-group:internal:internalstate', () => {
+            it('should handle internal data-group config', () => {
+                const obj = {
+                    kind: 'tm:ltm:data-group:internal:internalstate',
+                    name: 'dataGroup',
+                    partition: 'tenant',
+                    subPath: 'app',
+                    fullPath: '/tenant/app/dataGroup',
+                    type: 'string',
+                    records: [
+                        {
+                            name: 'test.data.group',
+                            data: 'The data;'
+                        },
+                        {
+                            name: 'quotes',
+                            data: 'has \\"quotes\\"'
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        description: 'none',
+                        type: 'string',
+                        records: {
+                            '"test.data.group"': {
+                                data: '"The data\\;"'
+                            },
+                            '"quotes"': {
+                                data: '"has \\"quotes\\""'
+                            }
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:ltm:snat-translation:snat-translationstate', () => {
+            it('should return ltm profile snat-translation with mostly default values', () => {
+                const obj = {
+                    kind: 'tm:ltm:snat-translation:snat-translationstate',
+                    name: '10.10.21.21',
+                    partition: 'Common',
+                    fullPath: '/Common/10.10.21.21',
+                    generation: 44780,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Common~10.10.21.21?ver=17.0.0',
+                    address: '10.10.21.21',
+                    arp: 'enabled',
+                    connectionLimit: 4294967295,
+                    enabled: true,
+                    inheritedTrafficGroup: 'true',
+                    ipIdleTimeout: 'indefinite',
+                    tcpIdleTimeout: 'indefinite',
+                    trafficGroup: '/Common/traffic-group-1',
+                    trafficGroupReference: {
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
                     },
-                    ignore: []
-                }
-            );
+                    udpIdleTimeout: 'indefinite',
+                    unit: 1
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Common/10.10.21.21',
+                        command: 'ltm snat-translation',
+                        properties: {
+                            address: '10.10.21.21',
+                            arp: 'enabled',
+                            'connection-limit': 4294967295,
+                            enabled: {},
+                            'ip-idle-timeout': 'indefinite',
+                            'tcp-idle-timeout': 'indefinite',
+                            'traffic-group': 'default',
+                            'udp-idle-timeout': 'indefinite'
+                        },
+                        ignore: []
+                    }
+                );
+            });
+
+            it('should return ipv6 ltm profile with more customized values', () => {
+                const obj = {
+                    kind: 'tm:ltm:snat-translation:snat-translationstate',
+                    name: '2001:db8::1',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/2001:db8::1',
+                    generation: 48870,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Tenant~Application~2001:db8::1?ver=17.0.0',
+                    address: '2001:db8::1',
+                    arp: 'enabled',
+                    connectionLimit: 0,
+                    disabled: true,
+                    inheritedTrafficGroup: 'false',
+                    ipIdleTimeout: '3000',
+                    tcpIdleTimeout: '1000',
+                    trafficGroup: '/Common/traffic-group-1',
+                    trafficGroupReference: {
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
+                    },
+                    udpIdleTimeout: '2000',
+                    unit: 1
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Tenant/Application/2001:db8::1',
+                        command: 'ltm snat-translation',
+                        properties: {
+                            address: '2001:db8::1',
+                            arp: 'enabled',
+                            'connection-limit': 0,
+                            disabled: {},
+                            'ip-idle-timeout': '3000',
+                            'tcp-idle-timeout': '1000',
+                            'traffic-group': '/Common/traffic-group-1',
+                            'udp-idle-timeout': '2000'
+                        },
+                        ignore: []
+                    }
+                );
+            });
         });
     });
 });

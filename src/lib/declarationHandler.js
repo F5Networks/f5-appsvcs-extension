@@ -614,6 +614,7 @@ class DeclarationHandler {
                 commonConfig.nodeList = commonNodeList;
                 commonConfig.virtualAddressList = context.host.parser.virtualAddressList;
                 commonConfig.addressListList = context.host.parser.addressListList;
+                commonConfig.snatTranslationList = context.host.parser.snatTranslationList;
 
                 let x;
                 declarationFullId = decl.id;

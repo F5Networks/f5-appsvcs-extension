@@ -978,6 +978,90 @@ class Util {
     } // getAccessProfileList()
 
     /**
+     * return a promise to discover all the ltm snatpool
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing snatpools,
+     * or rejects with error.
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getSnatPoolList(context, tenant) {
+        if ((typeof context !== 'object') || (context === null)) {
+            return Promise.reject(new Error('getSnatPoolList(): argument context required'));
+        }
+
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/ltm/snatpool?${filter}$select=fullPath,partition,members`,
+            why: 'query target BIG-IP current ltm snatpool list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                const list = [];
+
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                    || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return list;
+                }
+
+                resp.items.forEach((item) => {
+                    const snatPool = {
+                        fullPath: item.fullPath,
+                        partition: item.partition,
+                        members: item.members || []
+                    };
+
+                    list.push(snatPool);
+                });
+
+                return list;
+            });
+    }
+
+    /**
+     * return a promise to discover all the ltm snat-translation
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing snat-translations,
+     * or rejects with error.
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getSnatTranslationList(context, tenant) {
+        if ((typeof context !== 'object') || (context === null)) {
+            return Promise.reject(new Error('getSnatPoolList(): argument context required'));
+        }
+
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/ltm/snat-translation?${filter}$select=fullPath,partition,address`,
+            why: 'query target BIG-IP current ltm snatpool list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                const list = [];
+
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                        || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return list;
+                }
+
+                resp.items.forEach((item) => {
+                    list.push(this.simpleCopy(item));
+                });
+
+                return list;
+            });
+    }
+
+    /**
      * return a promise to query AS3 version info.
      * Fetches version from a cached variable or
      * /var/config/rest/iapps/f5-appsvcs/version file

@@ -58,6 +58,7 @@ describe('Examples', function () {
         sinon.stub(util, 'getVirtualAddressList').resolves([]);
         sinon.stub(util, 'getAccessProfileList').resolves([]);
         sinon.stub(util, 'getAddressListList').resolves([]);
+        sinon.stub(util, 'getSnatTranslationList').resolves([]);
         sinon.stub(util, 'isOneOfProvisioned').returns(true);
         sinon.stub(util, 'httpRequest').resolves('');
         sinon.stub(util, 'versionLessThan').returns(false);
