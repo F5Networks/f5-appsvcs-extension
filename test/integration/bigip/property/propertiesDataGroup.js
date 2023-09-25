@@ -83,7 +83,7 @@ describe('Data Group', function () {
             },
             {
                 key: 'Rufous',
-                value: 'Selasphorus rufus'
+                value: 'Selasphorus rufus;'
             }
         ]);
         return assertClass('Data_Group', properties);

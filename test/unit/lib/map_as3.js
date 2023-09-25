@@ -3073,7 +3073,6 @@ describe('map_as3', () => {
                 item.sourceAddress = '192.0.2.10/32';
                 const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
                 const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
-                console.log(JSON.stringify(virtual, null, 4));
                 assert.strictEqual(virtual.source, '192.0.2.10/32');
             });
 
@@ -11493,6 +11492,14 @@ describe('map_as3', () => {
                 {
                     key: 2,
                     value: 'value 2'
+                },
+                {
+                    key: 3,
+                    value: 'should escape;'
+                },
+                {
+                    key: 4,
+                    value: 'has "quotes"'
                 }
             ];
             const result = translate.Data_Group(defaultContext, 'tenantId', 'appId', 'itemId', item);
@@ -11511,6 +11518,12 @@ describe('map_as3', () => {
                                 },
                                 '"2"': {
                                     data: '"value 2"'
+                                },
+                                '"3"': {
+                                    data: '"should escape\\;"'
+                                },
+                                '"4"': {
+                                    data: '"has \\"quotes\\""'
                                 }
                             },
                             type: 'integer'

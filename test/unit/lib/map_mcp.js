@@ -3118,6 +3118,46 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:data-group:internal:internalstate', () => {
+            it('should handle internal data-group config', () => {
+                const obj = {
+                    kind: 'tm:ltm:data-group:internal:internalstate',
+                    name: 'dataGroup',
+                    partition: 'tenant',
+                    subPath: 'app',
+                    fullPath: '/tenant/app/dataGroup',
+                    type: 'string',
+                    records: [
+                        {
+                            name: 'test.data.group',
+                            data: 'The data;'
+                        },
+                        {
+                            name: 'quotes',
+                            data: 'has \\"quotes\\"'
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        description: 'none',
+                        type: 'string',
+                        records: {
+                            '"test.data.group"': {
+                                data: '"The data\\;"'
+                            },
+                            '"quotes"': {
+                                data: '"has \\"quotes\\""'
+                            }
+                        }
+                    }
+                );
+            });
+        });
+
         describe('tm:ltm:snat-translation:snat-translationstate', () => {
             it('should return ltm profile snat-translation with mostly default values', () => {
                 const obj = {

@@ -259,7 +259,7 @@ const translate = {
         //  iControl returns different record structure from tmsh
         obj.records = (obj.records || []).map((record) => ({
             name: record.name,
-            data: record.data && record.data !== '' ? `"${record.data}"` : undefined
+            data: record.data && record.data !== '' ? record.data.replace(/\x5c/g, '') : undefined
         }));
         return [normalize.actionableMcp(context, obj, 'ltm data-group internal', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
