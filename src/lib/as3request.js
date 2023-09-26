@@ -101,7 +101,7 @@ class As3Request {
                 request.protocol = 'https';
                 request.urlPrefix = `https://${request.targetHost}:${request.targetPort}`;
                 request.localBigip = false;
-                if (!request.basicAuth && (!request.targetTokens || request.targetTokens === {})) {
+                if (!request.basicAuth && util.isEmptyOrUndefined(request.targetTokens)) {
                     // don't muck with creds
                     const creds = util.base64Encode(`${request.targetUsername}:${request.targetPassphrase}`);
                     request.basicAuth = `Basic ${creds}`;

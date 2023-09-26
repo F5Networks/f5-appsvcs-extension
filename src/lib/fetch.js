@@ -1378,8 +1378,7 @@ const gtmNeedsModifyAliasCommand = function (configDiff, diff) {
 
         const confDiffOrig = configDiff.filter((confDiff) => confDiff.kind === 'D'
             && confDiff.path.length === 1
-            && confDiff.lhs !== undefined
-            && confDiff.lhs !== {}
+            && !util.isEmptyOrUndefined(confDiff.lhs)
             && confDiff.lhs.properties
             && confDiff.lhs.properties.aliases
             && Object.keys(confDiff.lhs.properties.aliases).length > 0
@@ -1398,8 +1397,7 @@ const gtmNeedsModifyAliasCommand = function (configDiff, diff) {
         // alias came from a domain that is either deleted or renamed
         if (existingAlias.length === 0) {
             existingAlias = configDiff.filter((confDiff) => confDiff.kind === 'D'
-                && confDiff.lhs !== undefined
-                && confDiff.lhs !== {}
+                && !util.isEmptyOrUndefined(confDiff.lhs)
                 && confDiff.lhs.properties
                 && confDiff.lhs.properties.aliases
                 && Object.keys(confDiff.lhs.properties.aliases).length > 0

@@ -818,7 +818,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             if (targetConfig['sender-tag-class'] === '' || targetConfig['sender-tag-class'] === 'none') {
                 targetConfig['sender-tag-class'] = 'none';
             }
-        } else if (targetConfig['sender-tag-class'] === {} || !targetConfig['sender-tag-class'] || ['sender-tag-class'] === []) {
+        } else if (util.isEmptyOrUndefined(targetConfig['sender-tag-class'])) {
             targetConfig['sender-tag-class'] = 'none';
         } else {
             const keys = Object.keys(targetConfig['sender-tag-class']);

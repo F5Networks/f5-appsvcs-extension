@@ -8783,6 +8783,78 @@ describe('map_as3', () => {
                 }
             );
         });
+
+        it('should handle OCSP with chainCA', () => {
+            const context = {};
+            const tenantId = 'ten2';
+            const appId = 'exampleApp';
+            const itemId = 'useCert';
+            const item = {
+                class: 'Certificate',
+                certificate: '----exampleCertificate----',
+                chainCA: '----exampleChainCA----',
+                privateKey: '----examplePrivateKey----',
+                issuerCertificate: {
+                    use: '/Common/default.crt'
+                },
+                staplerOCSP: {
+                    use: '/Common/staplerOCSP'
+                }
+            };
+
+            const result = translate.Certificate(context, tenantId, appId, itemId, item);
+            // Check for OCSP related properties for certificate
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/ten2/exampleApp/useCert.crt',
+                    command: 'sys file ssl-cert',
+                    properties: {
+                        'cert-validation-options': {
+                            ocsp: {}
+                        },
+                        'cert-validators': {
+                            '/Common/staplerOCSP': {}
+                        },
+                        checksum: 'SHA1:26:2b6397ca703598ad90e9853527d1b3328e061fd8',
+                        iControl_post: {
+                            ctype: 'application/octet-stream',
+                            method: 'POST',
+                            path: '/mgmt/shared/file-transfer/uploads/_ten2_exampleApp_useCert.crt',
+                            reference: '/ten2/exampleApp/useCert.crt',
+                            send: '----exampleCertificate----',
+                            why: 'upload certificate file'
+                        },
+                        'issuer-cert': '/Common/default.crt',
+                        'source-path': 'file:/var/config/rest/downloads/_ten2_exampleApp_useCert.crt'
+                    },
+                    ignore: []
+                }
+            );
+            // Check that OCSP properties are not in chainCA bundle
+            assert.deepStrictEqual(
+                result.configs[1],
+                {
+                    path: '/ten2/exampleApp/useCert-bundle.crt',
+                    command: 'sys file ssl-cert',
+                    properties: {
+                        'cert-validation-options': {},
+                        'cert-validators': {},
+                        checksum: 'SHA1:22:9077d46c62461a8d7301d3b13797e796456288d5',
+                        iControl_post: {
+                            ctype: 'application/octet-stream',
+                            method: 'POST',
+                            path: '/mgmt/shared/file-transfer/uploads/_ten2_exampleApp_useCert-bundle.crt',
+                            reference: '/ten2/exampleApp/useCert-bundle.crt',
+                            send: '----exampleChainCA----',
+                            why: 'upload chainCA file'
+                        },
+                        'source-path': 'file:/var/config/rest/downloads/_ten2_exampleApp_useCert-bundle.crt'
+                    },
+                    ignore: []
+                }
+            );
+        });
     });
 
     describe('Cipher_Group', () => {
