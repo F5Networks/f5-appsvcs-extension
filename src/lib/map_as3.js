@@ -1460,13 +1460,13 @@ const translate = {
 
         if (item.class === 'Certificate') {
             if (item.staplerOCSP) {
-                item.certValidationOptions = ['ocsp'];
-                item.certValidators = (item.staplerOCSP.bigip) ? [item.staplerOCSP.bigip] : [item.staplerOCSP.use];
+                item['cert-validation-options'] = ['ocsp'];
+                item['cert-validators'] = (item.staplerOCSP.bigip) ? [item.staplerOCSP.bigip] : [item.staplerOCSP.use];
             }
             if (item.issuerCertificate) {
-                item.issuerCert = bigipPath(item, 'issuerCertificate');
-                if (item.issuerCert.indexOf('.crt') !== item.issuerCert.length - 4) {
-                    item.issuerCert = `${item.issuerCert}.crt`;
+                item['issuer-cert'] = bigipPath(item, 'issuerCertificate');
+                if (item['issuer-cert'].indexOf('.crt') !== item['issuer-cert'].length - 4) {
+                    item['issuer-cert'] = `${item['issuer-cert']}.crt`;
                 }
             }
         }
@@ -1516,6 +1516,13 @@ const translate = {
         // The oldString is the name of the ${certificate object}-bundle.crt.
         // The newString is the location on the BIG-IP
         if (item.chainCA) {
+            // In case of chainCA there should be no properties listed in propertiesToDelete
+            const propertiesToDelete = ['cert-validation-options', 'cert-validators', 'issuer-cert'];
+            propertiesToDelete.forEach((prop) => {
+                if (prop in item) {
+                    delete item[prop];
+                }
+            });
             if (typeof item.chainCA === 'string') {
                 upload('ssl-cert', `${path}-bundle.crt`, item, 'chainCA');
             } else if (typeof item.chainCA === 'object' && (item.chainCA.bigip || item.chainCA.use)) {
