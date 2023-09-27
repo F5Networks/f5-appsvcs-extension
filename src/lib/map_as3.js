@@ -2667,8 +2667,8 @@ const translate = {
             }
 
             const regex = /\/::\W/; // destinations have optional %RD and mandatory .PORT
-            if (dst.includes('0.0.0.0')) {
-                dst = dst.replace('0.0.0.0', 'any');
+            if (dst.includes('/0.0.0.0')) {
+                dst = dst.replace('/0.0.0.0', '/any');
             } else if (regex.test(dst)) {
                 dst = dst.replace('::', 'any6');
             }

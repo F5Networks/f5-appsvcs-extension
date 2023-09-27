@@ -10,6 +10,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt 
 - Escaping for data-group records
 - AUTOTOOL-3975: ([GitHub Issue 749](https://github.com/F5Networks/f5-appsvcs-extension/issues/749)): OCSP validator doesn't work with chainCA
+- AUTOTOOL-4029: The destination property of a service in a tenant with a name containing the string '0.0.0.0' is incorrectly set
 
 ### Changed
 - Updated to Service Discovery 1.16.0-1
