@@ -7,7 +7,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'
-- AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt 
+- AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt
 - Escaping for data-group records
 - AUTOTOOL-3975: ([GitHub Issue 749](https://github.com/F5Networks/f5-appsvcs-extension/issues/749)): OCSP validator doesn't work with chainCA
 - AUTOTOOL-4029: The destination property of a service in a tenant with a name containing the string '0.0.0.0' is incorrectly set
@@ -21,6 +21,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.47.0
 
 ### Added
+- AUTOTOOL-3850: Added option for 'controls' in per-app declarations
 - AUTOTOOL-3971: Added option to serialize file uploads for dealing with lots of certificates in a declaration
 - AUTOTOOL-3728: Add functionality for per-app deployments (beta)
 - AUTOTOOL-3915: ([GitHub Issue 701](https://github.com/F5Networks/f5-appsvcs-extension/issues/701)): configuration of "SSL sign hash" parameter in TLS_server and TLS_Client

@@ -560,8 +560,23 @@ class DeclarationHandler {
                         return this.getFilteredDeclaration(context)
                             .then((allConfig) => {
                                 const tenant = context.request.perAppInfo.tenant;
+                                let hasControls = false;
                                 if (allConfig[tenant]) {
+                                    // Even though we probably shouldn't, AS3 has historically allowed the
+                                    // controls object to be named 'controls' without a class property.
+                                    if (context.request.method !== 'Get' && context.request.method !== 'Delete') {
+                                        if (d[tenant].controls || util.getObjectNameWithClassName(d[tenant], 'Controls')) {
+                                            hasControls = true;
+                                        }
+                                    }
                                     d = perAppUtil.mergePreviousTenant(d, allConfig, tenant);
+                                    if (!hasControls) {
+                                        // Since 'controls' are stored with the declaration and we are now merging
+                                        // in the stored declaration, we need to delete controls if they are not in the
+                                        // incoming declaration
+                                        const controlsName = util.getObjectNameWithClassName(d[tenant], 'Controls') || 'controls';
+                                        delete d[tenant][controlsName];
+                                    }
                                     if (currentTask.action === 'remove') {
                                         perAppUtil.deleteAppsFromTenant(d, context.request.perAppInfo);
                                     }

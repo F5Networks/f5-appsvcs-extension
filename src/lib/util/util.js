@@ -1392,6 +1392,10 @@ class Util {
         return obj;
     }
 
+    static getObjectNameWithClassName(declaration, className) {
+        return Object.keys(declaration).find((key) => declaration[key].class === className);
+    }
+
     /**
      * Recursive function to find and replace strings within an
      * object. Modifies the passed in object.
@@ -1680,28 +1684,28 @@ class Util {
      * Update the controls with the declaration.
      *
      * @param {Object} controls - controls from declaration
-     * @param {Object} decl - the declaration's controls
+     * @param {Object} declControls - the declaration's controls
      * @returns {void}
      */
-    static updateControlsWithDecl(controls, decl) {
+    static updateControlsWithDecl(controls, declControls) {
         if (controls.queryParamControls) {
             Object.keys(controls.queryParamControls).forEach((key) => {
                 controls[key] = this.simpleCopy(controls.queryParamControls[key]);
             });
         }
 
-        if (typeof decl === 'object') {
-            Object.keys(decl).forEach((key) => {
+        if (typeof declControls === 'object') {
+            Object.keys(declControls).forEach((key) => {
                 if ((key !== 'class' && !controls.queryParamControls)
                     || (key !== 'class' && !controls.queryParamControls[key])) {
-                    controls[key] = this.simpleCopy(decl[key]);
+                    controls[key] = this.simpleCopy(declControls[key]);
                 }
             });
         }
     }
 
     /**
-     * Update the controls with the declaration.
+     * Normalize profile options
      *
      * @param {Array|string} tmOptions - special handling for options
      * @returns {Object} Objects formatted for tmsh use

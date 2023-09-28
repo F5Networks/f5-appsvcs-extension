@@ -2216,6 +2216,61 @@ describe('util', () => {
         });
     });
 
+    describe('.getObjectNameWithClassName', () => {
+        const testCases = [
+            {
+                testName: 'should return the object name for a given class name',
+                input: {
+                    notTheClass: {
+                        class: 'foo'
+                    },
+                    theClass: {
+                        class: 'pickMe'
+                    }
+                },
+                expectedOutput: 'theClass'
+            },
+            {
+                testName: 'should return undefined if class name not found',
+                input: {
+                    notTheClass: {
+                        class: 'foo'
+                    },
+                    theClass: {
+                        class: 'bar'
+                    }
+                },
+                expectedOutput: undefined
+            },
+            {
+                testName: 'should work for objects that do not have a class',
+                input: {
+                    notTheClass: {
+                        notClass: 'foo'
+                    },
+                    theClass: {
+                        notClass: 'pickMe'
+                    }
+                },
+                expectedOutput: undefined
+            },
+            {
+                testName: 'should work for objects that have non-object properties',
+                input: {
+                    notAnObject: 'i am not an object',
+                    anArray: ['i am an array']
+                },
+                expectedOutput: undefined
+            }
+        ];
+
+        testCases.forEach((testCase) => {
+            it(testCase.testName, () => {
+                assert.strictEqual(util.getObjectNameWithClassName(testCase.input, 'pickMe'), testCase.expectedOutput);
+            });
+        });
+    });
+
     describe('.stringReplace', () => {
         it('should replace strings inside object', () => {
             const obj = {

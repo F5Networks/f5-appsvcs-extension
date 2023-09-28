@@ -17,6 +17,7 @@
 'use strict';
 
 const uuid = require('uuid');
+const util = require('./util');
 const STATUS_CODES = require('../constants').STATUS_CODES;
 
 /**
@@ -51,6 +52,12 @@ const convertToPerTenant = (perAppDeclaration, perAppInfo) => {
     perAppInfo.apps.forEach((app) => {
         perTenantDecl[perAppInfo.tenant][app] = perAppDeclaration[app];
     });
+
+    // Copy in controls if they are there
+    const controlsName = util.getObjectNameWithClassName(perAppDeclaration, 'Controls') || 'controls';
+    if (perAppDeclaration[controlsName]) {
+        perTenantDecl[perAppInfo.tenant][controlsName] = util.simpleCopy(perAppDeclaration[controlsName]);
+    }
 
     return perTenantDecl;
 };

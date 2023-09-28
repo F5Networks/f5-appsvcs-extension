@@ -253,14 +253,25 @@ const setAllProps = (props, propSet, patternPropSet, isPatternPropKey) => {
 /**
  * Method to check if user sent declaration has valid keys/properties
  * @public
- * @param {decl} declaration
- * @returns immediatly with obj that shows if it is valid or not and if so which key failed
+ * @param {oject} context - the context
+ * @param {object} declaration - the declaration
+ * @returns immediately with obj that shows if it is valid or not and if so which key failed
  */
-const isValid = (decl) => {
+const isValid = (context, decl) => {
     const declKeys = setDeclProps(decl, []);
     const results = setAllProps(adcSchema, new Set(), new Set(), false);
     const allKeys = Array.from(results[0]);
     const allPatternPropKeys = Array.from(results[1]);
+
+    if (context.request.method !== 'Get'
+        && context.request.method !== 'Delete'
+        && context.request.isPerApp
+        && context.request.perAppInfo.apps.length === 0) {
+        return {
+            isValid: false,
+            data: 'Per-app declaration must contain at least one application'
+        };
+    }
 
     for (let i = 0; i < declKeys.length; i += 1) {
         if (allKeys.indexOf(declKeys[i]) === -1 && !matchPatternProp(allPatternPropKeys, declKeys[i])) {
@@ -273,10 +284,12 @@ const isValid = (decl) => {
     return { isValid: true };
 };
 
-const validateDeclarationArray = (declarations) => {
+const validateDeclarationArray = (context) => {
     const results = [];
     const targetHostInventory = {};
     const targetInventory = [];
+
+    const declarations = context.tasks;
 
     declarations.forEach((declItem, index) => {
         const targetHost = declItem.targetHost;
@@ -284,7 +297,7 @@ const validateDeclarationArray = (declarations) => {
         if (!targetHostInventory[targetHost]) {
             targetHostInventory[targetHost] = [];
         }
-        const validatorResult = isValid(decl);
+        const validatorResult = isValid(context, decl);
         const declResult = {
             validatorResult,
             hasDuplicate: false
