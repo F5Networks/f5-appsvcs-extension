@@ -3726,7 +3726,9 @@
                         "azure",
                         "consul"
                     ],
-                    "f5serviceDiscovery": true
+                    "f5PostProcess": {
+                        "tag": "serviceDiscovery"
+                    }
                 },
                 "shareNodes": {
                     "description": "If enabled, nodes are created in /Common instead of the tenant's partition",
@@ -3853,8 +3855,11 @@
                     },
                     "else": { "$ref": "#/definitions/Pointer_Address_Discovery" },
                     "default": "static",
-                    "f5serviceDiscovery": {
-                        "exceptions": ["static", "fqdn"]
+                    "f5PostProcess": {
+                        "tag": "serviceDiscovery",
+                        "data": {
+                            "exceptions": ["static", "fqdn"]
+                        }
                     }
                 },
                 "shareNodes": {
