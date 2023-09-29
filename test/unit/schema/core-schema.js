@@ -3266,7 +3266,7 @@ describe('core-schema.json', () => {
                             }
                         }
                     };
-                    assert.strictEqual(validate(data), false, 'external monitors must have a pathmame or script');
+                    assert.strictEqual(validate(data), false, 'external monitors must have a pathname or script');
                     assertErrorString('should have required property \'.pathname\'');
                     assertErrorString('should have required property \'.script\'');
                 });
@@ -3293,7 +3293,7 @@ describe('core-schema.json', () => {
                         }
                     };
                     assert.strictEqual(validate(data), false, 'cannot use pathname and script together');
-                    assertErrorString('should match exactly one schema in oneOf');
+                    assertErrorString('"schemaPath": "#/then/not"');
                 });
 
                 it('should invalidate when environment variables are not strings', () => {
