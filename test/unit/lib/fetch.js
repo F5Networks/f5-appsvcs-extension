@@ -6117,6 +6117,133 @@ describe('fetch', () => {
                 );
             });
         });
+
+        describe('pool deletion', () => {
+            it('should put pool deletes before node deletes', () => {
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/tenant/google.cloud.com': {
+                        command: 'ltm node',
+                        properties: {
+                            fqdn: {
+                                tmName: 'google.cloud.com'
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/tenant/fqdn_app/fqdn_pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            members: {
+                                '/tenant/google.cloud.com:80': {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/tenant/fqdn_app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/'
+                        ],
+                        lhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/google.cloud.com'
+                        ],
+                        lhs: {
+                            command: 'ltm node',
+                            properties: {
+                                fqdn: {
+                                    tmName: 'google.cloud.com'
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm node'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/fqdn_app/fqdn_pool'
+                        ],
+                        lhs: {
+                            command: 'ltm pool',
+                            properties: {
+                                members: {
+                                    '/tenant/google.cloud.com:80': {}
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/fqdn_app/'
+                        ],
+                        lhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.strictEqual(
+                    result.script,
+                    'cli script __appsvcs_update {\nproc script::run {} {\n'
+                    + 'if {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\n'
+                    + 'tmsh::create ltm data-group internal __appsvcs_update type string records none\n}\n'
+                    + 'if { [catch {\ntmsh::begin_transaction\n'
+                    + 'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n'
+                    + 'tmsh::delete ltm pool /tenant/fqdn_app/fqdn_pool\n'
+                    + 'tmsh::delete ltm node /tenant/google.cloud.com\n'
+                    + 'tmsh::commit_transaction\n'
+                    + 'tmsh::delete sys folder /tenant/fqdn_app/\n'
+                    + 'tmsh::delete sys folder /tenant/\n'
+                    + '} err] } {\ncatch { tmsh::cancel_transaction } e\n'
+                    + 'regsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                );
+            });
+        });
     });
 
     describe('.gatherAccessProfileItems', () => {

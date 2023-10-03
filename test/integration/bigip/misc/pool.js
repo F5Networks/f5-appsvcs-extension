@@ -22,6 +22,7 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 
+const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const {
     postDeclaration,
     deleteDeclaration,
@@ -180,6 +181,52 @@ describe('Pool', function () {
             .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool1/'))
             .then((response) => {
                 assert.strictEqual(response.monitor, 'min 1 of { /tenant/app/testMonitor }');
+            });
+    });
+
+    it('should cleanup ephemeral nodes', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.48.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'fqdn',
+                                servicePort: 80,
+                                autoPopulate: true,
+                                hostname: 'f5.com'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => promiseUtil.delay(5000))
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((results) => {
+                const ephemeralNodes = results.items.filter((node) => node.name.includes('_auto_'));
+                return assert.strictEqual(
+                    ephemeralNodes.length > 0,
+                    true
+                );
+            })
+            .then(() => deleteDeclaration())
+            .then(() => promiseUtil.delay(5000))
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((results) => {
+                const ephemeralNodes = results.items.filter((node) => node.name.includes('_auto_'));
+                return assert.strictEqual(
+                    ephemeralNodes.length > 0,
+                    false
+                );
             });
     });
 });
