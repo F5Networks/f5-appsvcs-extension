@@ -212,7 +212,7 @@ describe('Pool', function () {
             .then(() => promiseUtil.delay(5000))
             .then(() => getPath('/mgmt/tm/ltm/node'))
             .then((results) => {
-                const ephemeralNodes = results.items.filter((node) => node.name.includes('_auto_'));
+                const ephemeralNodes = (results.items || []).filter((node) => node.name.includes('_auto_'));
                 return assert.strictEqual(
                     ephemeralNodes.length > 0,
                     true
@@ -222,7 +222,7 @@ describe('Pool', function () {
             .then(() => promiseUtil.delay(5000))
             .then(() => getPath('/mgmt/tm/ltm/node'))
             .then((results) => {
-                const ephemeralNodes = results.items.filter((node) => node.name.includes('_auto_'));
+                const ephemeralNodes = (results.items || []).filter((node) => node.name.includes('_auto_'));
                 return assert.strictEqual(
                     ephemeralNodes.length > 0,
                     false
