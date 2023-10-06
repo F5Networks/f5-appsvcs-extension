@@ -1313,12 +1313,6 @@ const translate = {
         const config = [normalize.actionableMcp(context, obj, 'security log profile', obj.fullPath)];
         const networkFormat = util.getDeepValue(config[0].properties, 'network.undefined.format');
         if (networkFormat && networkFormat.type === 'user-defined') {
-            networkFormat['user-defined'] = util.escapeTcl(networkFormat['user-defined']);
-            // We don't want spaces around the braces in user defined strings. Also, the '\' need
-            // extra escaping
-            networkFormat['user-defined'] = networkFormat['user-defined'].replace(/ \\}/g, '\\\\}');
-            networkFormat['user-defined'] = networkFormat['user-defined'].replace(/ \\{/g, '\\\\{');
-
             delete networkFormat['field-list-delimiter'];
         }
         return config;

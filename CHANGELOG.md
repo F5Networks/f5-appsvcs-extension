@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3975: ([GitHub Issue 749](https://github.com/F5Networks/f5-appsvcs-extension/issues/749)): OCSP validator doesn't work with chainCA
 - AUTOTOOL-4029: The destination property of a service in a tenant with a name containing the string '0.0.0.0' is incorrectly set
 - AUTOTOOL-3995: Ephemeral node not deleted when using batched transaction to delete FQDN template node and LTM pool
+- AUTOTOOL-3968: ([GitHub Issue 747](https://github.com/F5Networks/f5-appsvcs-extension/issues/747)): Allow spaces in Security Log Profile network storageFormat
 
 ### Changed
 - Updated to Service Discovery 1.16.0-1

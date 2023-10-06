@@ -7252,7 +7252,7 @@ describe('map_as3', () => {
             const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             const networkFormat = results.configs[0].properties.network.undefined.format;
             assert.strictEqual(
-                networkFormat['user-defined'], 'foo \\$\\\\{date_time\\\\},\\$\\\\{bigip_hostname\\\\} bar'
+                networkFormat['user-defined'], '"foo \\$\\{date_time\\},\\$\\{bigip_hostname\\} bar"'
             );
             assert.strictEqual(networkFormat['field-list-delimiter'], undefined);
             /* eslint-enable no-template-curly-in-string */
