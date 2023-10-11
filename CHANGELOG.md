@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.48.0
 
 ### Added
+- AUTOTOOL-4024: ([GitHub Issue 755](https://github.com/F5Networks/f5-appsvcs-extension/issues/755)): Support for http-status policy condition in Endpoint_Policy
 
 ### Fixed
 - AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'

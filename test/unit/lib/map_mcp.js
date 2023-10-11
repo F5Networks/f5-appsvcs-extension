@@ -2378,6 +2378,194 @@ describe('map_mcp', () => {
                 );
             });
 
+            it('should handle values that have spaces', () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'test_EP',
+                    partition: 'AS3_Tenant',
+                    subPath: 'AS3_Application',
+                    fullPath: '/AS3_Tenant/AS3_Application/test_EP',
+                    requires: [
+                        'http'
+                    ],
+                    status: 'legacy',
+                    strategy: '/Common/best-match',
+                    references: {},
+                    rulesReference: {
+                        isSubcollection: true,
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'log',
+                                fullPath: 'log',
+                                ordinal: 0,
+                                conditionsReference: {
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            caseInsensitive: true,
+                                            contains: true,
+                                            external: true,
+                                            httpStatus: true,
+                                            index: 0,
+                                            present: true,
+                                            remote: true,
+                                            response: true,
+                                            text: true,
+                                            values: [
+                                                'Unauthorized',
+                                                'Payment Required'
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results,
+                    [
+                        {
+                            path: '/AS3_Tenant/AS3_Application/test_EP',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    log: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-status response text contains values { Unauthorized "Payment Required" } case-insensitive'
+                                            }
+                                        },
+                                        actions: {}
+                                    }
+                                },
+                                strategy: '/Common/best-match'
+                            },
+                            ignore: []
+                        }
+                    ]);
+            });
+
+            it("should return ltm 'http-uri' policy", () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'test_EP',
+                    partition: 'AS3_Tenant',
+                    subPath: 'AS3_Application',
+                    fullPath: '/AS3_Tenant/AS3_Application/test_EP',
+                    requires: [
+                        'http'
+                    ],
+                    status: 'legacy',
+                    strategy: '/Common/best-match',
+                    references: {},
+                    rulesReference: {
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'replace',
+                                fullPath: 'replace',
+                                ordinal: 0,
+                                actionsReference: {
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            code: 0,
+                                            expirySecs: 0,
+                                            httpUri: true,
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            replace: true,
+                                            request: true,
+                                            status: 0,
+                                            timeout: 0,
+                                            value: 'http://127.0.0.1',
+                                            vlanId: 0
+                                        }
+                                    ]
+                                },
+                                conditionsReference: {
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            caseInsensitive: true,
+                                            contains: true,
+                                            datagroup: '/AS3_Tenant/AS3_Application/uriDataGroup',
+                                            external: true,
+                                            host: true,
+                                            httpUri: true,
+                                            index: 0,
+                                            present: true,
+                                            remote: true,
+                                            request: true
+                                        },
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            caseInsensitive: true,
+                                            datagroup: '/AS3_Tenant/AS3_Application/portDataGroup',
+                                            equals: true,
+                                            external: true,
+                                            httpUri: true,
+                                            index: 0,
+                                            port: true,
+                                            present: true,
+                                            remote: true,
+                                            request: true
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results,
+                    [
+                        {
+                            path: '/AS3_Tenant/AS3_Application/test_EP',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    replace: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-uri request host contains datagroup /AS3_Tenant/AS3_Application/uriDataGroup case-insensitive'
+                                            },
+                                            1: {
+                                                policyString: 'http-uri request port equals datagroup /AS3_Tenant/AS3_Application/portDataGroup'
+                                            }
+                                        },
+                                        actions: {
+                                            0: {
+                                                policyString: 'http-uri request replace value http://127.0.0.1'
+                                            }
+                                        }
+                                    }
+                                },
+                                strategy: '/Common/best-match'
+                            },
+                            ignore: []
+                        }
+                    ]
+                );
+            });
+
             it("should return ltm 'bot-defense' policy", () => {
                 const obj = {
                     kind: 'tm:ltm:policy:policystate',

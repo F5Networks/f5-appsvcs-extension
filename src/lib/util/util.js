@@ -61,6 +61,17 @@ class Util {
     }
 
     /**
+     * return a string wrapped in double quotes if it contains space(s)
+     * does not check if already wrapped with double quotes
+     * @public
+     * @param {string} string
+     * @returns {string}
+     */
+    static wrapStringWithSpaces(string) {
+        return (typeof string === 'string' && string.includes(' ') ? `"${string}"` : string);
+    }
+
+    /**
      * convert base64 to a Buffer even on older
      * versions of node.js as found on older TMOS
      *

@@ -260,8 +260,28 @@ describe('def-ltm-policy-schema.json', () => {
                 assert.ok(validate(data), getErrorString(validate));
             });
 
+            it('operand: equals datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'equals',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
             it('operand: does-not-equal', () => {
                 data.Tenant.Application.test1.rules[0].conditions[1].port.operand = 'does-not-equal';
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('operand: does-not-equal datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'does-not-equal',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
                 assert.ok(validate(data), getErrorString(validate));
             });
 
@@ -270,8 +290,28 @@ describe('def-ltm-policy-schema.json', () => {
                 assert.ok(validate(data), getErrorString(validate));
             });
 
+            it('operand: less datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'less',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
             it('operand: greater', () => {
                 data.Tenant.Application.test1.rules[0].conditions[1].port.operand = 'greater';
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('operand: greater datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'greater',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
                 assert.ok(validate(data), getErrorString(validate));
             });
 
@@ -280,8 +320,28 @@ describe('def-ltm-policy-schema.json', () => {
                 assert.ok(validate(data), getErrorString(validate));
             });
 
+            it('operand: less-or-equal datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'less-or-equal',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
             it('operand: greater-or-equal', () => {
                 data.Tenant.Application.test1.rules[0].conditions[1].port.operand = 'greater-or-equal';
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('operand: greater-or-equal datagroup', () => {
+                data.Tenant.Application.test1.rules[0].conditions[1].port = {
+                    operand: 'greater-or-equal',
+                    datagroup: {
+                        use: 'portDataGroup'
+                    }
+                };
                 assert.ok(validate(data), getErrorString(validate));
             });
         });

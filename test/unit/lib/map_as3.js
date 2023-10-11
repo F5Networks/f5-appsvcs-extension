@@ -128,7 +128,7 @@ describe('map_as3', () => {
     });
 
     describe('Endpoint_Policy', () => {
-        it('should handle datagroup', () => {
+        it('should create policy strings', () => {
             defaultContext.target.tmosVersion = '13.1';
             const actions = [
                 {
@@ -244,6 +244,50 @@ describe('map_as3', () => {
                         }
                     },
                     expected: 'http-host proxy-connect port equals values { 8080 8443 } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        all: {
+                            operand: 'is',
+                            values: ['200 OK']
+                        }
+                    },
+                    expected: 'http-status response all equals values { "200 OK" } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        text: {
+                            operand: 'is-not',
+                            values: ['Reset Content', 'Partial Content', 'Multi-Status']
+                        }
+                    },
+                    expected: 'http-status response text not equals values { "Reset Content" "Partial Content" Multi-Status } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        code: {
+                            operand: 'greater-or-equal',
+                            values: [400]
+                        }
+                    },
+                    expected: 'http-status response code greater-or-equal values { 400 }'
+                },
+                {
+                    input: {
+                        type: 'httpUri',
+                        event: 'request',
+                        port: {
+                            operand: 'equals',
+                            datagroup: { bigip: '/Common/ports' }
+                        }
+                    },
+                    expected: 'http-uri request port equals datagroup /Common/ports'
                 },
                 {
                     input: {

@@ -310,6 +310,16 @@ describe('util', () => {
         });
     });
 
+    describe('.wrapStringWithSpaces', () => {
+        it('should wrap a string containing a space', () => {
+            assert.strictEqual(util.wrapStringWithSpaces('wrap me'), '"wrap me"');
+        });
+
+        it('should not wrap a string that does not contain a space', () => {
+            assert.strictEqual(util.wrapStringWithSpaces('dontwrapme'), 'dontwrapme');
+        });
+    });
+
     describe('.fromBase64', () => {
         // TODO currently we do not confirm bad input
         // .fromBase64 does not work in node 4.2
