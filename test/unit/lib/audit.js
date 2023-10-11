@@ -689,6 +689,135 @@ describe('audit', () => {
                         assert.deepStrictEqual(prevDecl, { prevDecl: true });
                     });
             });
+
+            describe('filter config', () => {
+                let desiredConfig;
+                let currentConfig;
+
+                beforeEach(() => {
+                    context.request = {
+                        tracer: new Tracer('test tracer', { enabled: false }),
+                        isPerApp: true,
+                        perAppInfo: {
+                            tenant: 'tenant',
+                            apps: ['Application1']
+                        }
+                    };
+
+                    context.control = {};
+                    context.tasks.push({});
+                    context.target.deviceType = DEVICE_TYPES.BIG_IP;
+
+                    declaration.tenant.controls.traceResponse = true;
+
+                    desiredConfig = {
+                        '/tenant/Application1/': {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        '/tenant/Application1/service': {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                destination: '/tenant/192.0.2.1:80',
+                                pool: '/tenant/Application1/pool'
+                            },
+                            ignore: []
+                        },
+                        '/tenant/Application1/pool': {
+                            command: 'ltm pool',
+                            properties: {
+                                members: {}
+                            },
+                            ignore: []
+                        }
+                    };
+                    currentConfig = {
+                        '/tenant/Application1/': {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        '/tenant/Application1/service': {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                destination: '/tenant/192.0.2.1:80',
+                                pool: '/tenant/Application1/pool'
+                            },
+                            ignore: []
+                        },
+                        '/tenant/Application1/pool': {
+                            command: 'ltm pool',
+                            properties: {
+                                members: {}
+                            },
+                            ignore: []
+                        },
+                        '/myTenant/Application2/': {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        '/myTenant/Application2/service': {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                destination: '/myTenant/192.0.2.3:80',
+                                pool: '/myTenant/Application2/pool'
+                            },
+                            ignore: []
+                        },
+                        '/tenant/Shared/sharedPool': {
+                            command: 'ltm pool',
+                            properties: {
+                                members: {}
+                            },
+                            ignore: []
+                        }
+                    };
+
+                    fetch.getDesiredConfig.restore();
+                    fetch.getTenantConfig.restore();
+
+                    sinon.stub(fetch, 'getDesiredConfig').resolves(desiredConfig);
+                    sinon.stub(fetch, 'getTenantConfig').resolves(currentConfig);
+                });
+
+                it('should filter out apps that are not needed', () => audit.auditTenant(context, 'tenant', declaration, {}, {})
+                    .then(() => {
+                        const desiredString = JSON.stringify(context.log.tenantDesired);
+                        const currentString = JSON.stringify(context.log.tenantCurrent);
+                        assert.notStrictEqual(desiredString.indexOf('Application1'), -1);
+                        assert.notStrictEqual(currentString.indexOf('Application1'), -1);
+                        assert.strictEqual(desiredString.indexOf('Application2'), -1);
+                        assert.strictEqual(currentString.indexOf('Application2'), -1);
+                        assert.strictEqual(currentString.indexOf('Shared'), -1);
+                        assert.deepStrictEqual(context.log.tenantDiff.diff, {});
+                    }));
+
+                it('should leave Shared if needed', () => {
+                    declaration.Application2 = {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.3'
+                            ],
+                            pool: {
+                                use: '/tenant/Shared/sharedPool'
+                            }
+                        }
+                    };
+
+                    return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                        .then(() => {
+                            const currentString = JSON.stringify(context.log.tenantCurrent);
+                            assert.notStrictEqual(currentString.indexOf('Shared'), -1);
+                        });
+                });
+            });
         });
     });
 });

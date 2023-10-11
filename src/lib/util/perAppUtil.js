@@ -118,8 +118,9 @@ const isPerAppPath = (path) => {
 
 /**
  * Takes a per-tenant declaration and merges any additional tenant data from the previously saved declaration.
- * Objects in the per-tenant declaration will take precedence and not be overwritten by matching objects in the
- * previously saved declaration.
+ * Objects in the per-tenant declaration will take precedence and overwrite matching objects in the
+ * previously saved declaration. Only applications that are in the perTenantDeclaration will be merged, as
+ * well as 'Shared' if it is needed.
  *
  * @param {object} perTenantDeclaration - Per-tenant declaration to have data merged into
  * @param {object} prevDeclaration - Previously saved declaration to have data merged from

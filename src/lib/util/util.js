@@ -1403,6 +1403,14 @@ class Util {
         return obj;
     }
 
+    /**
+     * Gets the names of the objects in a declaration that have a given class
+     *
+     * @param {object} declaration - The declaration.
+     * @param {string} className - The name of the class for which we want the objects (for example, 'Application')
+     *
+     * @returns {string[]} The list of object names that have the given class.
+     */
     static getObjectNameWithClassName(declaration, className) {
         return Object.keys(declaration).find((key) => declaration[key].class === className);
     }
