@@ -579,7 +579,7 @@ function processDeclInArray(item, index, context) {
 }
 
 function processRequest(context) {
-    const validatorResults = validator.validateDeclarationArray(context.tasks);
+    const validatorResults = validator.validateDeclarationArray(context);
     return validatorResults.reduce(
         (prev, curr, index) => prev.then(
             (results) => processDeclInArray(curr, index, context)

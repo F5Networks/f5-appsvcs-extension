@@ -2667,8 +2667,8 @@ const translate = {
             }
 
             const regex = /\/::\W/; // destinations have optional %RD and mandatory .PORT
-            if (dst.includes('0.0.0.0')) {
-                dst = dst.replace('0.0.0.0', 'any');
+            if (dst.includes('/0.0.0.0')) {
+                dst = dst.replace('/0.0.0.0', '/any');
             } else if (regex.test(dst)) {
                 dst = dst.replace('::', 'any6');
             }
@@ -3244,12 +3244,8 @@ const translate = {
             if (typeof subProfile[inKey] === 'string') {
                 subProfile[outKey] = {
                     type: 'user-defined',
-                    userDefined: util.escapeTcl(subProfile[inKey])
+                    userDefined: subProfile[inKey]
                 };
-                // We don't want spaces around the braces in user defined strings. Also, the '\' need
-                // extra escaping
-                subProfile[outKey].userDefined = subProfile[outKey].userDefined.replace(/ \\}/g, '\\\\}');
-                subProfile[outKey].userDefined = subProfile[outKey].userDefined.replace(/ \\{/g, '\\\\{');
             } else if (typeof subProfile[inKey] === 'object') {
                 subProfile[outKey] = {
                     type: 'field-list',

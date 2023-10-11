@@ -899,6 +899,11 @@ components:
               serverAddresses:
               - 192.0.2.10
               - 192.0.2.20
+        controls:
+          class: Controls
+          logLevel: debug
+          trace: true
+          traceResponse: true
     declarationApplicationPayloadMulti:
       value:
         application1:
@@ -929,6 +934,11 @@ components:
               serverAddresses:
               - 192.0.2.30
               - 192.0.2.40
+        controls:
+          class: Controls
+          logLevel: debug
+          trace: true
+          traceResponse: true
     declarationApplicationResponse:
       value:
         application1:
@@ -945,6 +955,11 @@ components:
               serverAddresses:
               - 192.0.2.1
               - 192.0.2.2
+        controls:
+          class: Controls
+          logLevel: debug
+          trace: true
+          traceResponse: true
         id: 'autogen_1d77bb4f-cd46-453b-917f-897bd2c278f7'
     declarationApplicationResponseMulti:
       value:
@@ -976,6 +991,11 @@ components:
               serverAddresses:
               - 192.0.2.30
               - 192.0.2.40
+        controls:
+          class: Controls
+          logLevel: debug
+          trace: true
+          traceResponse: true
     settingsDefault:
       value:
         burstHandlingEnabled: false

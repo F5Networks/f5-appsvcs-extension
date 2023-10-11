@@ -26,7 +26,6 @@ const myValidator = require('./validator');
 const util = require('./util/util');
 const PostProcessor = require('./postProcessor');
 const PostValidator = require('./postValidator');
-const Config = require('./config');
 const certUtil = require('./util/certUtil');
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 
@@ -373,8 +372,6 @@ function as3Digest(declaration) {
         .then((addressListList) => { this.addressListList = addressListList; })
         .then(() => getSnatTranslationList)
         .then((snatTranslationList) => { this.snatTranslationList = snatTranslationList; })
-        .then(() => Config.getAllSettings())
-        .then((settings) => { this.settings = settings; })
         .then(() => validate.call(this, declaration))
         .then(() => {
             if (this.options.isPerApp) {

@@ -672,6 +672,9 @@ describe('DeclareHandler', () => {
                         method: 'Get',
                         action: 'retrieve',
                         isPerApp: true,
+                        perAppInfo: {
+                            apps: ['myApp']
+                        },
                         tracer: new Tracer('test tracer', { enabled: false })
                     };
                     context.tasks = [

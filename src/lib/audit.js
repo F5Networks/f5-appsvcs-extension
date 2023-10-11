@@ -266,11 +266,9 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
 
     const tenantControls = util.simpleCopy(context.control);
 
-    if (!context.request.isPerApp) {
-        // Update tenantControls object with any tenant controls from the declaration
-        // PerApp does not support tenant controls, yet
-        util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
-    }
+    // Update tenantControls object with any tenant controls from the declaration
+    util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
+
     log.updateGlobalSettings(tenantControls);
 
     if (typeof tenantControls.fortune !== 'undefined') {

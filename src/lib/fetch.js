@@ -2656,6 +2656,11 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     });
                 } else if (diffUpdates.commands.indexOf('mgmt shared service-discovery rpc') > -1) {
                     preTrans.push(diffUpdates.commands);
+                } else if (diffUpdates.commands.indexOf('delete ltm pool') > -1
+                    && diffUpdates.commands.indexOf('create ltm pool') < 0) {
+                    // Deleting the pool before nodes ensures that FQDN auto generated
+                    // nodes are cleaned up.
+                    arrayUtil.insertBeforeOrAtEnd(trans, 'ltm node', diffUpdates.commands);
                 } else if (!isModifyGtmServer(diffUpdates)) {
                     // put all other delete commands into the cli transaction
                     trans.push(diffUpdates.commands);

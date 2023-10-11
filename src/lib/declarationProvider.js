@@ -494,9 +494,8 @@ class DeclarationProvider {
                     declToReturn = {};
                 }
 
-                const controlsName = Object.keys(declToReturn)
-                    .find((key) => declToReturn[key].class === 'Controls');
-                if (controlsName) {
+                const controlsName = util.getObjectNameWithClassName(declToReturn, 'Controls') || 'controls';
+                if (declToReturn[controlsName]) {
                     const action = util.getDeepValue(declToReturn[controlsName], 'internalUse.action');
                     if (action === 'dry-run') {
                         declToReturn[controlsName].dryRun = true;

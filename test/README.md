@@ -206,3 +206,33 @@ Post to the settings endpoint with
     }
     ```
 1. Once there is some data, go to the kibana UI and add an index pattern of `jaeger-span-*`. See [Kibana Docs](https://www.elastic.co/guide/en/kibana/index.html)
+
+## Resetting cloud credential secrets
+All credentials are in our CI/CD variables.
+
+### Azure
+This is most easily done with the `az` CLI.
+
+Get the ID of our user
+```
+az ad sp list --filter "appId eq '<ARM_CLIENT_ID>'" | jq .[].id
+```
+
+Reset the secret
+```
+az ad sp credential reset --id <the_id>
+```
+
+Update the `ARM_CLIENT_SECRET` value with the password in the output.
+
+### AWS
+This has to be done through a service ticket. Look at our `DISCOVERY_AWS_ID` and submit a ticket to have the associated user's key deleted and recreated.
+
+### GCE
+* Find our user in the Google Cloud console under the `Service Accounts` page.
+* Go to the `KEYS` tab.
+* Click the trash can icon.
+* Click `ADD KEY` and select JSON format.
+* base64 encode the file that is downloaded to your computer.
+* Update the `DISCOVERY_GCE_SECRET` value with the base64 encoded data.
+* Delete the downloaded file.

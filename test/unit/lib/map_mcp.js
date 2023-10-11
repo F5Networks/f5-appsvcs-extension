@@ -283,6 +283,117 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:security:log:profile:profilestate', () => {
+            it('shoud properly escape and quote user-defined network string', () => {
+                defaultContext.target.provisionedModules = ['afm'];
+                const obj = {
+                    kind: 'tm:security:log:profile:profilestate',
+                    partition: 'myTenant',
+                    subPath: 'myApplication',
+                    name: 'network_log_profile',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile?ver=13.1.5',
+                    fullPath: '/myTenant/myApplication/network_log_profile',
+                    networkReference:
+                    {
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile/network?ver=13.1.5',
+                        isSubcollection: true
+                    }
+                };
+                const referenceConfig = [{
+                    kind: 'tm:security:log:profile:network:networkstate',
+                    name: 'undefined',
+                    fullPath: 'undefined',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile/network/undefined?ver=13.1.5',
+                    format: {
+                        fieldListDelimiter: ',',
+                        type: 'user-defined',
+                        userDefined: 'foo ${date_time} ${bigip_hostname},${acl_policy_name}' // eslint-disable-line no-template-curly-in-string
+                    }
+                }];
+                const expected = {
+                    command: 'security log profile',
+                    ignore: [],
+                    path: '/myTenant/myApplication/network_log_profile',
+                    properties: {
+                        classification: {
+                            'log-all-classification-matches': 'disabled'
+                        },
+                        'ip-intelligence': {
+                            'aggregate-rate': 4294967295,
+                            'log-publisher': 'none',
+                            'log-translation-fields': 'disabled'
+                        },
+                        nat: {
+                            'end-inbound-session': 'disabled',
+                            'end-outbound-session': {
+                                action: 'disabled'
+                            },
+                            errors: 'disabled',
+                            format: {
+                                'end-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                errors: {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'quota-exceeded': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                }
+                            },
+                            'log-subscriber-id': 'disabled',
+                            'lsn-legacy-mode': 'disabled',
+                            'quota-exceeded': 'disabled',
+                            'rate-limit': {
+                                'aggregate-rate': 4294967295,
+                                'end-inbound-session': 4294967295,
+                                'end-outbound-session': 4294967295,
+                                errors: 4294967295,
+                                'quota-exceeded': 4294967295,
+                                'start-inbound-session': 4294967295,
+                                'start-outbound-session': 4294967295
+                            },
+                            'start-inbound-session': 'disabled',
+                            'start-outbound-session': {
+                                action: 'disabled'
+                            }
+                        },
+                        network: {
+                            undefined: {
+                                format: {
+                                    type: 'user-defined',
+                                    'user-defined': '"foo \\$\\{date_time\\} \\$\\{bigip_hostname\\},\\$\\{acl_policy_name\\}"' // eslint-disable-line no-template-curly-in-string
+                                }
+                            }
+                        },
+                        'protocol-dns': {},
+                        'protocol-inspection': {
+                            'log-packet': 'disabled'
+                        },
+                        'protocol-sip': {},
+                        'protocol-transfer': {},
+                        'ssh-proxy': {}
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(results[0], expected);
+            });
+        });
+
         describe('tm:security:nat:policy:policystate', () => {
             it('should remove empty translation', () => {
                 const obj = {

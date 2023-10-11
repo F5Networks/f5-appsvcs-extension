@@ -32,7 +32,9 @@
                                         "description": "Selects how server (node) addresses are discovered",
                                         "type": "string",
                                         "enum": [ "event", "aws", "gce", "azure", "consul" ],
-                                        "f5serviceDiscovery": true
+                                        "f5PostProcess": {
+                                            "tag": "serviceDiscovery"
+                                        }
                                     },
                                     "updateInterval": {
                                         "title": "Update interval",

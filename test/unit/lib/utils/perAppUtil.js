@@ -208,6 +208,43 @@ describe('perAppUtil', () => {
                 });
         });
 
+        it('should copy controls object if present', () => {
+            const decl = {
+                controls: {
+                    class: 'Controls',
+                    control1: true
+                },
+                exApp: {
+                    class: 'Application',
+                    template: 'generic'
+                }
+            };
+
+            const perAppInfo = {
+                tenant: 'exampleTenant',
+                apps: ['exApp']
+            };
+
+            const result = perAppUtil.convertToPerTenant(decl, perAppInfo);
+            return assert.deepStrictEqual(result,
+                {
+                    class: 'ADC',
+                    id: 'autogen_new-uuid-xxxx',
+                    schemaVersion: '3.0.0',
+                    exampleTenant: {
+                        class: 'Tenant',
+                        controls: {
+                            class: 'Controls',
+                            control1: true
+                        },
+                        exApp: {
+                            class: 'Application',
+                            template: 'generic'
+                        }
+                    }
+                });
+        });
+
         it('should handle an already converted per-tenant declaration', () => {
             const decl = {
                 class: 'ADC',

@@ -164,11 +164,13 @@ function getApplicationClassNames(schema) {
         'Controls',
         'Constants'
     ];
-    return Object.keys(schema.definitions)
+    const schemaClasses = new Set(Object.keys(schema.definitions)
         .map((key) => schema.definitions[key])
         .filter((def) => def.properties && def.properties.class)
         .map((def) => def.properties.class.const)
-        .filter((name) => skipList.indexOf(name) === -1);
+        .filter((name) => skipList.indexOf(name) === -1));
+
+    return Array.from(schemaClasses);
 }
 
 /**
@@ -245,6 +247,7 @@ function buildSharedSchema() {
         'Analytics_Profile',
         'Analytics_TCP_Profile',
         'Basic_Auth',
+        'Basic_Monitor',
         'Bearer_Token',
         'CA_Bundle',
         'Capture_Filter',
@@ -272,6 +275,24 @@ function buildSharedSchema() {
         'Log_Destination_Splunk',
         'Log_Publisher',
         'L4_Profile',
+        'Monitor',
+        'Monitor_DNS',
+        'Monitor_External',
+        'Monitor_FTP',
+        'Monitor_HTTP',
+        'Monitor_HTTP2',
+        'Monitor_HTTPS',
+        'Monitor_ICMP',
+        'Monitor_Inband',
+        'Monitor_LDAP',
+        'Monitor_MySQL',
+        'Monitor_PostgreSQL',
+        'Monitor_RADIUS',
+        'Monitor_SIP',
+        'Monitor_SMTP',
+        'Monitor_TCP',
+        'Monitor_TCP_Half_Open',
+        'Monitor_UDP',
         'Pointer_BIGIP',
         'Pointer_BIGIP_Or_Use',
         'Pointer_CA_Bundle',

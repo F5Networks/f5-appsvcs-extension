@@ -4041,6 +4041,39 @@ describe('map_as3', () => {
             assertServiceCore(results, expected);
         });
 
+        it('should handle destination property with 0.0.0.0 in Tenant name', () => {
+            const item = {
+                class: 'Service_L4',
+                virtualAddresses: [
+                    '0.0.0.0'
+                ],
+                virtualPort: 443,
+                enable: true
+            };
+
+            const declaration = {
+                class: 'ADC',
+                'T0.0.0.0': {
+                    class: 'Tenant',
+                    defaultRouteDomain: 2,
+                    appId: {
+                        class: 'Application',
+                        itemId: {
+                            class: 'Service_L4',
+                            virtualAddresses: [
+                                '0.0.0.0'
+                            ],
+                            virtualPort: 443
+                        }
+                    }
+                }
+            };
+
+            const results = translate.Service_Core(defaultContext, 'T0.0.0.0', 'appId', 'itemId', item, declaration);
+            assert.strictEqual(results.configs[1].command, 'ltm virtual');
+            assert.strictEqual(results.configs[1].properties.destination, '/T0.0.0.0/any%2:443');
+        });
+
         it('should test that a snatpool is created when snat is set to self', () => {
             const item = {
                 class: 'Service_HTTP',
@@ -7219,7 +7252,7 @@ describe('map_as3', () => {
             const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             const networkFormat = results.configs[0].properties.network.undefined.format;
             assert.strictEqual(
-                networkFormat['user-defined'], 'foo \\$\\\\{date_time\\\\},\\$\\\\{bigip_hostname\\\\} bar'
+                networkFormat['user-defined'], '"foo \\$\\{date_time\\},\\$\\{bigip_hostname\\} bar"'
             );
             assert.strictEqual(networkFormat['field-list-delimiter'], undefined);
             /* eslint-enable no-template-curly-in-string */

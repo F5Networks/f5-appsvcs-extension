@@ -934,11 +934,13 @@ describe('Security_Log_Profile', function () {
                 inputValue: [
                     undefined,
                     '${date_time},${bigip_hostname},${management_ip_address},${src_ip},${src_port},${dest_ip},${dest_port},${translated_src_ip},${translated_dest_ip},${translated_src_port},${translated_dest_port},${date_time},,${protocol},${action}',
+                    'foo ${date_time} ${bigip_hostname},${management_ip_address},${src_ip} bar',
                     undefined
                 ],
                 expectedValue: [
                     undefined,
                     '${date_time},${bigip_hostname},${management_ip_address},${src_ip},${src_port},${dest_ip},${dest_port},${translated_src_ip},${translated_dest_ip},${translated_src_port},${translated_dest_port},${date_time},,${protocol},${action}',
+                    'foo ${date_time} ${bigip_hostname},${management_ip_address},${src_ip} bar',
                     undefined
                 ],
                 extractFunction: (o) => o.network[0].format.userDefined

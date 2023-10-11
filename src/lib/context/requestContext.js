@@ -128,10 +128,8 @@ class RequestContext {
                 // Iterate through all the declarations looking for controls
                 tasks.forEach((task) => {
                     if (task.declaration) {
-                        const controlsName = Object.keys(task.declaration)
-                            .find((key) => task.declaration[key].class === 'Controls');
-
-                        if (controlsName) {
+                        const controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
+                        if (task.declaration[controlsName]) {
                             if (task.declaration[controlsName].internalUse) {
                                 if (task.declaration[controlsName].internalUse.action) {
                                     task.action = task.declaration[controlsName].internalUse.action;
