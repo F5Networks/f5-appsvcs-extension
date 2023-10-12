@@ -15,6 +15,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3995: Ephemeral node not deleted when using batched transaction to delete FQDN template node and LTM pool
 - AUTOTOOL-3968: ([GitHub Issue 747](https://github.com/F5Networks/f5-appsvcs-extension/issues/747)): Allow spaces in Security Log Profile network storageFormat
 - AUTOTOOL-3985: Improve filtering for per-app requests so that apps not in the declaration are not considered in the diffs.
+- AUTOTOOL-1779: ([GitHub Issue 458](https://github.com/F5Networks/f5-appsvcs-extension/issues/458)): Service_Forwarding documentation to reflect valid options
 
 ### Changed
 - Updated to Service Discovery 1.16.0-1
