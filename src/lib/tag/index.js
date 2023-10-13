@@ -30,6 +30,7 @@ const ModuleTag = require('./moduleTag');
 const BigComponentTag = require('./bigComponentTag');
 const ExpandTag = require('./expandTag');
 const ServiceDiscoveryTag = require('./serviceDiscoveryTag');
+const AliasesTag = require('./aliasesTag');
 
 module.exports = {
     LongSecretTag,
@@ -45,5 +46,6 @@ module.exports = {
     ModuleTag,
     BigComponentTag,
     ExpandTag,
-    ServiceDiscoveryTag
+    ServiceDiscoveryTag,
+    AliasesTag
 };

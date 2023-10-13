@@ -120,6 +120,15 @@ describe('def-dos-schema.json', () => {
                             schemaData: ['afm', 'asm']
                         },
                         {
+                            instancePath: '/tenant/application/dosProfile',
+                            parentDataProperty: 'dosProfile',
+                            schemaData: {
+                                allowlist: 'whitelist',
+                                applicationAllowlist: 'applicationWhitelist'
+                            },
+                            tag: 'aliases'
+                        },
+                        {
                             instancePath: '/tenant/application/firewallAddressList',
                             parentDataProperty: 'firewallAddressList',
                             tag: 'modules',

@@ -6854,8 +6854,11 @@
             },
             "additionalProperties": false,
             "required": [ "class" ],
-            "f5aliases": {
-                "synCookieAllowlist": "synCookieWhitelist"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "synCookieAllowlist": "synCookieWhitelist"
+                }
             }
         },
 
