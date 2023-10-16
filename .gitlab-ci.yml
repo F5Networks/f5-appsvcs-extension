@@ -1,13 +1,10 @@
-# AS3 parser is pre-compiled using nodejs and
-# requires node 4.8.0 for compatibility with BIG-IP.
-image: $DOCKER_URL/node:4.8.0
+image: $DOCKER_URL/node:20
 
 stages:
   - update
   - commands
-  - atg-shared-checks
   - schema
-  - lint
+  - atg-shared-checks
   - test
   - build
   - deploy
@@ -74,14 +71,25 @@ include:
 # adds atg-shared-checks stage and jobs
 # adds atg_shared_checks_result job to test stage
   - project: automation-toolchain/atg-shared-templates
-    file: security/base.gitlab-ci.yml
+    file:
+      - compliance/base.gitlab-ci.yml
+      - security/base.gitlab-ci.yml
+
+# Override compliance template job
+check_copyrights:
+  allow_failure: false
+
+# Override compliance template job
+lint:
+  needs:
+    - schema
+  allow_failure: false
 
 update_autotool_deps:
   stage: update
   rules:
     - if: '$UPDATE_DEPS =~ /true/i'
   needs: []
-  image: $DOCKER_URL/node:20
   variables:
     UPDATE_BRANCH_NAME: update_autotool_deps
   script:
@@ -108,17 +116,6 @@ schema:
       - src/schema/latest/adc-schema.json
       - src/schema/latest/as3-schema.json
 
-lint:
-  image: $DOCKER_URL/node:10
-  stage: lint
-  needs:
-    - schema
-  tags:
-    - cm-official-docker-executor
-  script:
-    - npm ci
-    - npm run lint
-
 coverage:
   image: $DOCKER_URL/node:16
   stage: test
@@ -133,18 +130,6 @@ coverage:
     paths:
       - coverage
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
-
-audit:
-  image: $DOCKER_URL/node:lts
-  stage: test
-  needs: []
-  variables:
-    NODE_OPTIONS: "--dns-result-order=ipv4first"
-  allow_failure: true
-  tags:
-    - cm-official-docker-executor
-  script:
-    - npm audit
 
 node:4.6:
   image: $DOCKER_URL/node:12-buster
@@ -229,8 +214,6 @@ build_rpm:
     - npm ci --no-optional
     # build installation package
     - scripts/build/buildRpm.sh "cloud"
-    # ensure latest copyrights
-    - node node_modules/@f5devcentral/atg-shared-utilities-dev/scripts/dev/write-copyright.js -c -p scripts/dev/copyright.txt
   tags:
     - cm-official-docker-executor
   artifacts:
@@ -241,7 +224,6 @@ build_rpm:
       - src/schema/latest/as3-schema.json
 
 create_source:
-  image: $DOCKER_URL/node:10
   stage: post build
   needs:
     - build_rpm
@@ -256,7 +238,6 @@ create_source:
       - dist/*-examples.tar.gz
 
 build_api_docs:
-  image: $DOCKER_URL/node:16
   stage: build
   needs: []
   script:

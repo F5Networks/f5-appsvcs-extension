@@ -27,12 +27,12 @@ Be sure to see the [Support page](SUPPORT.md) in this repo for more details and 
 
 ## Copyright
 
-Copyright 2014-2023 F5 Networks Inc.
+Copyright 2014-2023 F5, Inc.
 
 
 ### F5 Networks Contributor License Agreement
 
-Before you start contributing to any project sponsored by F5 Networks, Inc. (F5) on GitHub, you will need to sign a Contributor License Agreement (CLA).  
+Before you start contributing to any project sponsored by F5, Inc. on GitHub, you will need to sign a Contributor License Agreement (CLA).
 
 If you are signing as an individual, we recommend that you talk to your employer (if applicable) before signing the CLA since some employment agreements may have restrictions on your contributions to other projects. Otherwise by submitting a CLA you represent that you are legally entitled to grant the licenses recited therein.  
 
