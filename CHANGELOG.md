@@ -1,16 +1,21 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
-## 3.46.1
+## 3.46.2
 
 ### Added
 
 ### Fixed
+- AUTOTOOL-4044: Not able to remove pool member's metadata from declaration
+
+### Changed
+
+### Removed
+
+## 3.46.1
 
 ### Changed
 - Promoted to LTS
-
-### Removed
 
 ## 3.46.0
 

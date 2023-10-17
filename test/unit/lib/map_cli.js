@@ -355,6 +355,50 @@ describe('map_cli', () => {
             );
         });
 
+        it('ltm pool member metadata delete', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/Generic_Ten/Generic_App/generic_Pool',
+                    'properties',
+                    'members',
+                    '/Generic_Ten/10.0.0.1:80',
+                    'metadata',
+                    'example1'
+                ],
+                rhsCommand: 'ltm pool'
+            };
+            const targetConfig = {
+                members: {
+                    '/Generic_Ten/10.0.0.1:80': {}
+                }
+            };
+            const currentConfig = {
+                '/Generic_Ten/Generic_App/generic_Pool': {
+                    properties: {
+                        members: {
+                            '/Generic_Ten/10.0.0.1:80': {}
+                        },
+                        metadata: {
+                            example: {
+                                value: 'foo',
+                                persist: true
+                            },
+                            example1: {
+                                value: 123,
+                                persist: false
+                            }
+                        }
+                    }
+                }
+            };
+            const output = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.strictEqual(
+                output.commands[0],
+                'tmsh::modify ltm pool /Generic_Ten/Generic_App/generic_Pool members modify \\{ /Generic_Ten/10.0.0.1:80 \\{ metadata delete \\{ example1 \\} \\} \\}'
+            );
+        });
+
         it('ltm policy modify rules', () => {
             const diff = {
                 kind: 'E',
