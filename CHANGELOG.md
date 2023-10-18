@@ -22,16 +22,15 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Removed
 
-## 3.46.1
-
-### Added
+## 3.46.2
 
 ### Fixed
+- AUTOTOOL-4044: Not able to remove pool member's metadata from declaration
+
+## 3.46.1
 
 ### Changed
 - Promoted to LTS
-
-### Removed
 
 ## 3.46.0
 
