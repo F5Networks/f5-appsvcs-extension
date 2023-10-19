@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,9 +125,11 @@ class DeclarationHandler {
      * exclude non-selected Tenants, other than Common,
      * from a declaration.  SIDE EFFECT: modifies decl
      *
-     * @param {object} decl
-     * @param {array} tenants - empty is okay
+     * @param {object} decl - the declaration
+     * @param {array} tenants - tenants to look for in decl. empty is okay
      * @param {boolean} trackTenants - boolean to determine if declaration came from an array
+     * @param {boolean} ignoreMissingTenant - boolean to indicate whether or not the function should error if
+     *                                        a tenant in the tenants array is missing from the decl
      * @returns {object} - upon success property statusCode is 200
      */
     filterTenantsInDeclaration(decl, tenants, trackTenants, ignoreMissingTenant) {
@@ -178,6 +180,13 @@ class DeclarationHandler {
         return statusCodeOk; // success
     }
 
+    /**
+     * Retrieves stored declaration, filters it for specific tenants, and parses (digests) it
+     *
+     * @param {object} context - The context.
+     * @param {boolean} ignoreMissingTenant - Whether or not the function should error if a tenant in the
+     *                                        current tasks list of desired tenants is not in the declaration.
+     */
     getFilteredDeclaration(context, ignoreMissingTenant) {
         const currentTask = context.tasks[context.currentIndex];
         function extractTenants(decl) {

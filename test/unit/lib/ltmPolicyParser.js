@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,6 +259,21 @@ describe('LTM Policy Parsing', () => {
             );
         });
 
+        it('should handle strings with spaces', () => {
+            const input = {
+                type: 'httpStatus',
+                event: 'response',
+                all: {
+                    operand: 'equals',
+                    value: ['200 OK', 'HAS SPACE', 'NOSPACE']
+                }
+            };
+            assertCondition(
+                input,
+                'http-status response all equals values { "200 OK" "HAS SPACE" NOSPACE } case-insensitive'
+            );
+        });
+
         it('should escape quotes', () => {
             const action = {
                 type: 'http-reply',
@@ -431,10 +446,10 @@ describe('LTM Policy Parsing', () => {
                         contains: true,
                         path: true,
                         caseSensitive: true,
-                        values: ['example.com']
+                        values: ['example.com', 'has spaces']
                     }
                 );
-                assert.strictEqual(result, 'http-uri request path contains values { example.com } case-sensitive');
+                assert.strictEqual(result, 'http-uri request path contains values { example.com "has spaces" } case-sensitive');
             });
 
             it('should convert object to string and correctly handle datagroups', () => {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,17 @@ class Util {
 
     static toCamelCase(string) {
         return string.replace(/-[a-z]/g, (x) => x[1].toUpperCase());
+    }
+
+    /**
+     * return a string wrapped in double quotes if it contains space(s)
+     * does not check if already wrapped with double quotes
+     * @public
+     * @param {string} string
+     * @returns {string}
+     */
+    static wrapStringWithSpaces(string) {
+        return (typeof string === 'string' && string.includes(' ') ? `"${string}"` : string);
     }
 
     /**
@@ -1392,6 +1403,14 @@ class Util {
         return obj;
     }
 
+    /**
+     * Gets the names of the objects in a declaration that have a given class
+     *
+     * @param {object} declaration - The declaration.
+     * @param {string} className - The name of the class for which we want the objects (for example, 'Application')
+     *
+     * @returns {string[]} The list of object names that have the given class.
+     */
     static getObjectNameWithClassName(declaration, className) {
         return Object.keys(declaration).find((key) => declaration[key].class === className);
     }

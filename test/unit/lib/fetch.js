@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -8383,6 +8383,195 @@ describe('fetch', () => {
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
+                });
+        });
+
+        it('should handle wildcard monitors with similar names', () => {
+            currConf = {
+                '/Tenant/Shared/service1_monitor': {
+                    command: 'ltm monitor http',
+                    properties: {
+                        destination: '*:*',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service1_monitor_similar': {
+                    command: 'ltm monitor http',
+                    properties: {
+                        destination: '*:*',
+                        interval: 11
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service1_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/192.0.2.1:80': {
+                                minimumMonitors: 1
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Tenant/Shared/service1_monitor': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service2_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {},
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Tenant/Shared/service1_monitor_similar': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service2': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        destination: '/Tenant/192.0.2.3:80',
+                        mask: '255.255.255.255'
+                    },
+                    ignore: []
+                }
+            };
+
+            const desiredConf = {
+                '/Tenant/Shared/service2': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        destination: '/Tenant/192.0.2.3:80',
+                        mask: '255.255.255.255'
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service2_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/192.0.2.2:80': {
+                                minimumMonitors: 1
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Tenant/Shared/service1_monitor_similar': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service1_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/192.0.2.1:80': {
+                                minimumMonitors: 1
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Tenant/Shared/service1_monitor': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service1_monitor': {
+                    command: 'ltm monitor http',
+                    properties: {
+                        destination: '*:*',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/Tenant/Shared/service1_monitor_similar': {
+                    command: 'ltm monitor http',
+                    properties: {
+                        destination: '*:*',
+                        interval: 20
+                    },
+                    ignore: []
+                }
+            };
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Shared/service1_monitor',
+                        'properties',
+                        'interval'
+                    ],
+                    lhs: 10,
+                    rhs: 20
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Shared/service1_monitor_similar',
+                        'properties',
+                        'interval'
+                    ],
+                    lhs: 11,
+                    rhs: 20
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Tenant/Shared/service2_pool',
+                        'properties',
+                        'members',
+                        '/Tenant/192.0.2.2:80'
+                    ],
+                    rhs: {
+                        minimumMonitors: 1
+                    }
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+
+                    // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConf, currConf, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify ltm pool /Tenant/Shared/service2_pool monitor none members none',
+                            'tmsh::delete ltm monitor http /Tenant/Shared/service1_monitor_similar',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::delete ltm monitor http /Tenant/Shared/service1_monitor',
+                            'tmsh::create ltm monitor http /Tenant/Shared/service1_monitor destination *:* interval 20',
+                            'tmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::create ltm monitor http /Tenant/Shared/service1_monitor_similar destination *:* interval 20',
+                            'tmsh::delete ltm pool /Tenant/Shared/service2_pool',
+                            'tmsh::create ltm pool /Tenant/Shared/service2_pool members replace-all-with \\{ /Tenant/192.0.2.2:80 \\} monitor min 1 of \\{ /Tenant/Shared/service1_monitor_similar \\}',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
                             '}}',
                             '}'
                         ]

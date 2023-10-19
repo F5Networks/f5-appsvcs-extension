@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -307,6 +307,16 @@ describe('util', () => {
 
         it('should make a string into camelCase', () => {
             assert.strictEqual(util.toCamelCase('funky-monkey-moNey'), 'funkyMonkeyMoNey');
+        });
+    });
+
+    describe('.wrapStringWithSpaces', () => {
+        it('should wrap a string containing a space', () => {
+            assert.strictEqual(util.wrapStringWithSpaces('wrap me'), '"wrap me"');
+        });
+
+        it('should not wrap a string that does not contain a space', () => {
+            assert.strictEqual(util.wrapStringWithSpaces('dontwrapme'), 'dontwrapme');
         });
     });
 

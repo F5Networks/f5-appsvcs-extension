@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,6 +138,22 @@ function getValues(property, type) {
 }
 
 function addTable(props, rstBody, defName) {
+    const removePropertyFromDocumentation = {
+        Service_Forwarding: [ // Schema class name
+            'fallbackPersistenceMethod', // Property names
+            'persistenceMethods',
+            'pool',
+            'profileBotDefense',
+            'profileDiameterEndpoint',
+            'profileDNS',
+            'profileIPOther',
+            'profileProtocolInspection',
+            'profileRewrite',
+            'profileTrafficLog',
+            'sourceAddress'
+        ]
+    };
+
     if (Object.keys(props).length > 0) {
         const rstArray = [];
         rstBody += '**Properties:**\n\n';
@@ -151,6 +167,10 @@ function addTable(props, rstBody, defName) {
         Object.keys(props)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .forEach((propName) => {
+                if (removePropertyFromDocumentation[defName]
+                    && removePropertyFromDocumentation[defName].indexOf(propName) !== -1) {
+                    return;
+                }
                 const p = props[propName];
                 let types = getTypes(p);
                 if (types.includes('array<') && types.includes('object') && defName) {
