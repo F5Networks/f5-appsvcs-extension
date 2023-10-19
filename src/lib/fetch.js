@@ -1905,7 +1905,10 @@ const updateWildcardMonitorCommands = function (trans) {
                 const nextCmd = commands[index + 1];
                 const isNextCreate = isDeleteCmd && nextCmd && nextCmd.indexOf(cmd.replace('delete', 'create')) > -1;
                 const monName = cmd.substring(cmd.lastIndexOf(' ') + 1);
-                const matchingPools = poolEntries.filter((p) => p.indexOf(monName) > -1);
+                const matchingPools = poolEntries.filter((poolCmd) => {
+                    const monRegex = new RegExp(`\\s${monName}\\s`);
+                    return monRegex.test(poolCmd);
+                });
                 if (isDeleteCmd && isNextCreate && matchingPools.length) {
                     // separate delete and detach monitor into its own transaction
                     newTransCmds.push(getDetachFromPoolCmds(matchingPools));

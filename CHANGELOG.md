@@ -7,6 +7,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4024: ([GitHub Issue 755](https://github.com/F5Networks/f5-appsvcs-extension/issues/755)): Support for http-status policy condition in Endpoint_Policy
 
 ### Fixed
+- AUTOTOOL-4051: Failure when modifying pools with similar monitor names.
 - AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'
 - AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt
 - Escaping for data-group records
