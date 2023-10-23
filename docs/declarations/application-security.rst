@@ -902,7 +902,7 @@ This declaration creates the following objects on the BIG-IP:
 
 .. |hhost| raw:: html
 
-   <a href="https://automation-toolchain.pages.gitswarm.f5net.com/f5-appsvcs-extension/public-docs/refguide/declaration-purpose-function.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
 
 .. |stringexpand| raw:: html
 
