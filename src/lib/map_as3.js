@@ -1362,6 +1362,12 @@ const translate = {
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
 
+        // For backward compatibillity with older configs we decided to set
+        // first certificate as sniDefault. Unless user decided to explicitly set
+        // this property to another certificate. So we need to check it first.
+        // Schema default for sniDefault property is false.
+        const isSniDefaultSet = item.certificates.find((e) => e.sniDefault);
+
         item.certificates.forEach((obj, index) => {
             const tlsItem = Object.create(item);
 
@@ -1377,7 +1383,12 @@ const translate = {
             genCert(tlsItem, obj.certificate, 'SERVER');
             genCert(tlsItem, obj.proxyCertificate, 'CA');
 
-            tlsItem.sniDefault = obj.sniDefault;
+            // Set sniDefault to first certificate if applicable.
+            if (index === 0) {
+                tlsItem.sniDefault = obj.sniDefault || !isSniDefaultSet;
+            } else {
+                tlsItem.sniDefault = obj.sniDefault;
+            }
             tlsItem.matchToSNI = obj.matchToSNI || 'none';
             tlsItem.mode = obj.enabled;
 

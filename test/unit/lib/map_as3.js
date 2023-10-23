@@ -8373,6 +8373,45 @@ describe('map_as3', () => {
                 assert.strictEqual(profile['renegotiate-size'], 4294967295);
                 assert.strictEqual(profile['renegotiate-max-record-delay'], 4294967295);
             });
+
+            it('should set sniDefault to first certificate', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+            });
         });
 
         describe('TLS Client', () => {

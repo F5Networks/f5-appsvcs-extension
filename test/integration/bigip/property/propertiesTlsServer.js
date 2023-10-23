@@ -126,9 +126,9 @@ describe('TLS_Server', function () {
                     [{ certificate: 'tlsservercert' }]
                 ],
                 expectedValue: [
-                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'false'],
                     [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
-                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'false']
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'true']
                 ],
                 referenceObjects: {
                     tlsservercert: tlsServerRef,
@@ -388,12 +388,12 @@ describe('TLS_Server', function () {
                 inputValue: [[
                     {
                         enabled: false,
-                        certificate: 'webcert1',
-                        sniDefault: true
+                        certificate: 'webcert1'
                     },
                     {
                         matchToSNI: 'www.wheeee.com',
-                        certificate: 'webcert2'
+                        certificate: 'webcert2',
+                        sniDefault: true
                     }
                 ]],
                 expectedValue: [[
@@ -412,7 +412,7 @@ describe('TLS_Server', function () {
                         ],
                         mode: 'disabled',
                         serverName: 'none',
-                        sniDefault: 'true'
+                        sniDefault: 'false'
                     },
                     {
                         name: `${getItemName({ tenantName: `TEST_${testName}` })}-1-`,
@@ -429,7 +429,7 @@ describe('TLS_Server', function () {
                         ],
                         mode: 'enabled',
                         serverName: 'www.wheeee.com',
-                        sniDefault: 'false'
+                        sniDefault: 'true'
                     }
                 ]],
                 referenceObjects: {
