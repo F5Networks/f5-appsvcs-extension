@@ -897,9 +897,6 @@ This declaration creates the following objects on the BIG-IP:
 |
 
 
-
-
-
 .. |hhost| raw:: html
 
    <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
