@@ -910,7 +910,7 @@ This declaration creates the following objects on the BIG-IP:
 - Partition (tenant) named **AS3_Tenant**.
 - An Application named **AS3_Application**.
 - A virtual server named **service** that references an endpoint policy
-- Three Data Groupa named **allDataGroup**, **textDataGroup**, and **codeDataGroup**
+- Three Data Groups named **allDataGroup**, **textDataGroup**, and **codeDataGroup**
 - An Endpoint policy named **test_EP** that contains a rule that includes a number of  **httpStatus** condition examples.
 
 .. literalinclude:: ../../examples/declarations/example-endpoint-policy-http-status-code-condition.json
