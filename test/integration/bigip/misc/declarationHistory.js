@@ -22,6 +22,7 @@ const {
     deleteDeclaration,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
+const declarationUtil = require('../../../../src/lib/util/declarationUtil');
 
 const getNewDeclaration = (tenantName, addresses) => ({
     class: 'ADC',
@@ -51,11 +52,11 @@ const getTenantNames = (declaration) => {
     if (typeof declaration !== 'object') {
         return [];
     }
-    if (declaration.class === 'AS3') {
+    if (declarationUtil.isAS3(declaration)) {
         declaration = declaration.declaration;
     }
     return Object.keys(declaration).filter(
-        (key) => typeof declaration[key] === 'object' && declaration[key].class === 'Tenant'
+        (key) => declarationUtil.isTenant(declaration[key])
     );
 };
 

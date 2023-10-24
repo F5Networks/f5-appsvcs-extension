@@ -18,6 +18,7 @@
 
 const dataGroupUtil = require('./util/dataGroupUtil');
 const util = require('./util/util');
+const declarationUtil = require('./util/declarationUtil');
 const log = require('./log');
 
 // This is a result of refactoring validate.js
@@ -327,10 +328,7 @@ class DeclarationProvider {
         };
 
         Object.keys(decl).forEach((k) => {
-            if ((typeof decl[k] === 'object')
-                        && (decl[k] !== null)
-                        && (Object.prototype.hasOwnProperty.call(decl[k], 'class'))
-                        && (decl[k].class === 'Tenant')) {
+            if (declarationUtil.isTenant(decl[k])) {
                 tenants.push(k);
             }
         });

@@ -20,6 +20,7 @@ const Ajv = require('ajv');
 const fs = require('fs');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const util = require('./util/util');
+const declarationUtil = require('./util/declarationUtil');
 const tmshUtil = require('./util/tmshUtil');
 const constants = require('./constants');
 
@@ -141,7 +142,7 @@ class As3Request {
     // For container, target* properties in AS3 class determines the device to deploy config to
     // For bigiq, target* properties refer to itself, and decl.target determines the device to deploy config to
     wrapWithAS3Class(request, endpoint) {
-        if (request.class === undefined || request.class === 'ADC') {
+        if (request.class === undefined || declarationUtil.isADC(request)) {
             if (endpoint === 'declare') {
                 // patch will automatically be wrapped in patchBody so no need to check here (for now)
                 if (Array.isArray(request)) {

@@ -32,6 +32,7 @@ const fortunes = require('./fortunes.json');
 const mutex = require('./mutex');
 const hash = require('./util/hashUtil');
 const constants = require('./constants');
+const declartionUtil = require('./util/declarationUtil');
 const perAppUtil = require('./util/perAppUtil');
 
 const STATUS_CODES = require('./constants').STATUS_CODES;
@@ -143,9 +144,7 @@ class DeclarationHandler {
         for (let i = 0; i < keys.length; i += 1) {
             const key = keys[i];
             const index = desiredTenants.indexOf(key);
-            if ((typeof decl[key] === 'object')
-                    && (decl[key] !== null)
-                        && (decl[key].class === 'Tenant')) {
+            if (declartionUtil.isTenant(decl[key])) {
                 // found a Tenant
                 if ((index < 0) && (key !== 'Common')) {
                     // but it's not wanted
@@ -197,11 +196,11 @@ class DeclarationHandler {
             let tenants = [];
             Object.keys(decl).forEach((key) => {
                 const value = decl[key];
-                if (value.class && value.class === 'Tenant') {
+                if (declartionUtil.isTenant(value)) {
                     tenants.push(value);
                 } else if (value.age) {
                     tenants.push(value);
-                } else if (value.class && value.class === 'ADC') {
+                } else if (declartionUtil.isADC(value)) {
                     const nestedTenants = extractTenants(value);
                     tenants = tenants.concat(nestedTenants);
                 }
@@ -747,8 +746,7 @@ class DeclarationHandler {
                 // TODO:  should we do anything about that?
 
                 Object.keys(decl).forEach((key) => {
-                    if (typeof decl[key] === 'object' && decl[key] !== null
-                        && decl[key].class === 'Tenant' && Object.keys(decl[key]).length < 2) {
+                    if (declartionUtil.isTenant(decl[key]) && Object.keys(decl[key]).length < 2) {
                         // empty tenant no longer exists on target device
                         if (Object.prototype.hasOwnProperty.call(newDecl, key)) {
                             delete newDecl[key];
@@ -766,8 +764,7 @@ class DeclarationHandler {
 
                 // do any Tenants remain on target?
                 Object.keys(newDecl).forEach((k) => {
-                    if (typeof newDecl[k] === 'object' && newDecl[k] !== null
-                        && newDecl[k].class === 'Tenant') {
+                    if (declartionUtil.isTenant(newDecl[k])) {
                         if (this.checkForTenantDelete(newDecl[k])) {
                             delete newDecl[k]; // belt and suspenders
                         }
@@ -824,9 +821,7 @@ class DeclarationHandler {
                     for (i = 0; i < keys.length; i += 1) {
                         key = keys[i];
                         x = tenants.indexOf(key);
-                        if ((typeof newDecl[key] === 'object')
-                                && (newDecl[key] !== null)
-                                    && (newDecl[key].class === 'Tenant')) {
+                        if (declartionUtil.isTenant(newDecl[key])) {
                             // found a Tenant
                             if (x < 0) { // match not found in tenantsInPath
                                 if (key !== 'Common') {
@@ -853,7 +848,7 @@ class DeclarationHandler {
 
                 // Only return tenants affected (i.e. included in request)
                 Object.keys(newDecl).forEach((tenant) => {
-                    if (newDecl[tenant] && newDecl[tenant].class === 'Tenant') {
+                    if (declartionUtil.isTenant(newDecl[tenant])) {
                         if (!auditResults.find((result) => result.tenant === tenant)) {
                             delete newDecl[tenant];
                         }
@@ -985,7 +980,7 @@ class DeclarationHandler {
         if (typeof jsonPatch === 'object') {
             if (Object.prototype.hasOwnProperty.call(jsonPatch, 'class')) {
                 // This may be from a POST with action = patch
-                if (jsonPatch.class === 'AS3') {
+                if (declartionUtil.isAS3(jsonPatch)) {
                     jsonPatch = currentTask.patchBody;
                 } else {
                     return DeclarationHandler.buildResult(STATUS_CODES.BAD_REQUEST, 'invalid patch body - refer to AS3 docs for correct syntax.');

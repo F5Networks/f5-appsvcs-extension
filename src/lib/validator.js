@@ -19,6 +19,7 @@
 const equal = require('fast-deep-equal');
 
 const adcSchema = require('../schema/latest/adc-schema.json'); // eslint-disable-line
+const declartionUtil = require('./util/declarationUtil');
 
 /**
  * Helper method to find arrays
@@ -304,10 +305,10 @@ const validateDeclarationArray = (context) => {
         };
         if (decl) {
             Object.keys(decl).forEach((declKey) => {
-                const tenant = decl[declKey].class === 'Tenant' ? decl[declKey] : undefined;
+                const tenant = declartionUtil.isTenant(decl[declKey]) ? decl[declKey] : undefined;
                 if (tenant) {
                     const appKeys = Object.keys(tenant).reduce((apps, propName) => {
-                        if (tenant[propName].class === 'Application') {
+                        if (declartionUtil.isApplication(tenant[propName])) {
                             apps.push(propName);
                         }
                         return apps;

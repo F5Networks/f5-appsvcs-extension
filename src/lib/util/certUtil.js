@@ -18,6 +18,8 @@
 
 const forge = require('node-forge');
 
+const declarationUtil = require('./declarationUtil');
+
 // PFX (Personal inFormation eXchange)
 // - version
 // - authSafe: type of data or signed data(pkcs7), usually data
@@ -279,7 +281,7 @@ const checkIfSelfSigned = function (cert) {
 
 const validateCertificates = function (decl, errors) {
     Object.keys(decl).forEach((key) => {
-        if (typeof decl[key] === 'object' && decl[key].class === 'Certificate'
+        if (declarationUtil.isClass(decl[key], 'Certificate')
         && (decl[key].staplerOCSP || decl[key].issuerCertificate)) {
             const selfSigned = checkIfSelfSigned(decl[key].certificate);
             if (selfSigned) {
