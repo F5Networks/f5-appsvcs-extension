@@ -530,7 +530,7 @@ function isConfigForCommonNode(command, name, properties) {
     const fqdnPrefix = util.getDeepValue(properties, 'metadata.fqdnPrefix.value');
     const fqdnName = util.getDeepValue(properties, 'fqdn.tmName');
     return name === `/Common/${properties.address}`
-        || name === `/Common/${fqdnPrefix}${fqdnName}`;
+        || name === `/Common/${fqdnPrefix === 'none' ? '' : fqdnPrefix}${fqdnName}`;
 }
 
 // update metadata for Common virtual addresses.  Allow delete if ref count is going to 0
