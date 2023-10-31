@@ -18,6 +18,7 @@
 
 const uuid = require('uuid');
 const util = require('./util');
+const declarationUtil = require('./declarationUtil');
 const STATUS_CODES = require('../constants').STATUS_CODES;
 
 /**
@@ -34,7 +35,7 @@ const convertToPerTenant = (perAppDeclaration, perAppInfo) => {
         return perAppDeclaration || {};
     }
 
-    if (perAppDeclaration.class === 'ADC' || typeof perAppDeclaration[perAppInfo.tenant] !== 'undefined') {
+    if (declarationUtil.isADC(perAppDeclaration) || typeof perAppDeclaration[perAppInfo.tenant] !== 'undefined') {
         // perAppDeclaration is likely already converted to perTenant
         return perAppDeclaration;
     }
@@ -91,7 +92,7 @@ const convertToPerApp = (perTenDeclaration, perAppInfo) => {
     if (perAppInfo.apps.length === 0) {
         // If the apps array is empty, we want all apps in tenant
         Object.keys(perTenDeclaration[perAppInfo.tenant]).forEach((app) => {
-            if (perTenDeclaration[perAppInfo.tenant][app].class === 'Application') {
+            if (declarationUtil.isApplication(perTenDeclaration[perAppInfo.tenant][app])) {
                 perAppDecl[app] = perTenDeclaration[perAppInfo.tenant][app];
             }
         });

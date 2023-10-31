@@ -27,6 +27,7 @@ const As3Parser = require('../../src/lib/adcParser');
 const Tag = require('../../src/lib/tag');
 const util = require('../../src/lib/util/util');
 const certUtil = require('../../src/lib/util/certUtil');
+const declarationUtil = require('../../src/lib/util/declarationUtil');
 const extractUtil = require('../../src/lib/util/extractUtil');
 const DEVICE_TYPES = require('../../src/lib/constants').DEVICE_TYPES;
 
@@ -90,11 +91,11 @@ describe('Examples', function () {
             );
 
             if (!Array.isArray(example)) {
-                if (example.class === 'AS3') {
+                if (declarationUtil.isAS3(example)) {
                     example = example.declaration;
                 }
 
-                if (example.class === 'ADC') {
+                if (declarationUtil.isADC(example)) {
                     example.id = example.id || 'test';
                 }
 

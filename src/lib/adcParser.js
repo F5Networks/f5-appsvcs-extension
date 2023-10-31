@@ -27,6 +27,7 @@ const util = require('./util/util');
 const PostProcessor = require('./postProcessor');
 const PostValidator = require('./postValidator');
 const certUtil = require('./util/certUtil');
+const declarationUtil = require('./util/declarationUtil');
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 
 class As3Parser {
@@ -139,11 +140,11 @@ class As3Parser {
      * exceed the tmsh max length.
      */
     validatePathLength(declaration) {
-        const tenants = Object.keys(declaration).filter((key) => declaration[key].class
-            && declaration[key].class === 'Tenant');
+        const tenants = Object.keys(declaration).filter((key) => declarationUtil.isTenant(declaration[key]));
         tenants.forEach((tenant) => {
-            const applications = Object.keys(declaration[tenant]).filter((key) => declaration[tenant][key].class
-                && declaration[tenant][key].class === 'Application');
+            const applications = Object.keys(declaration[tenant]).filter((key) => declarationUtil.isApplication(
+                declaration[tenant][key]
+            ));
             applications.forEach((application) => {
                 Object.keys(declaration[tenant][application]).forEach((item) => {
                     const path = `/${tenant}/${application}/${item}`;

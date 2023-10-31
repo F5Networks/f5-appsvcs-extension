@@ -229,4 +229,50 @@ describe('Pool', function () {
                 );
             });
     });
+
+    it('should post shared fqdn nodes in Common', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.48.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'fqdn',
+                                servicePort: 80,
+                                autoPopulate: true,
+                                shareNodes: true,
+                                hostname: 'f5.com'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const expectedReferences = {
+            name: 'references',
+            persist: 'true',
+            value: '1'
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[1].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((response) => {
+                const fqdnNode = (response.items || []).filter((node) => node.name === 'f5.com');
+                assert.strictEqual(fqdnNode.length, 1);
+                assert.strictEqual(fqdnNode[0].fqdn.tmName, 'f5.com');
+                assert.strictEqual(fqdnNode[0].metadata.length, 2);
+                assert.deepStrictEqual(fqdnNode[0].metadata[1], expectedReferences);
+            });
+    });
 });

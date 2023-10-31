@@ -65,6 +65,7 @@ const config = require('../config');
 const util = require('../util/util');
 const As3Request = require('../as3request');
 const Tracer = require('../tracer').Tracer;
+const declarationUtil = require('../util/declarationUtil');
 const tracerUtil = require('../tracer').Util;
 const tracerTags = require('../tracer').Tags;
 const STATUS_CODES = require('../constants').STATUS_CODES;
@@ -322,7 +323,7 @@ function buildInitialContext(restOperation) {
                 } else {
                     // POST apps comes from the declaration
                     Object.keys(context.body).forEach((key) => {
-                        if (context.body[key].class === 'Application') {
+                        if (declarationUtil.isApplication(context.body[key])) {
                             apps.push(key);
                         }
                     });
