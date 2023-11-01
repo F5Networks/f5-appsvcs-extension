@@ -2907,6 +2907,105 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:gtm:pool:naptr:naptrstate', () => {
+            it('should return GSLB_Pool NAPTR with members', () => {
+                const obj = {
+                    kind: 'tm:gtm:pool:naptr:naptrstate',
+                    name: 'naptrPool',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/naptrPool',
+                    generation: 3461,
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool?ver=16.1.2',
+                    alternateMode: 'static-persistence',
+                    description: 'testDescription',
+                    dynamicRatio: 'disabled',
+                    enabled: true,
+                    fallbackMode: 'return-to-dns',
+                    loadBalancingMode: 'round-robin',
+                    manualResume: 'disabled',
+                    maxAnswersReturned: 1,
+                    minMembersUpMode: 'off',
+                    minMembersUpValue: 0,
+                    qosHitRatio: 5,
+                    qosHops: 0,
+                    qosKilobytesSecond: 3,
+                    qosLcs: 30,
+                    qosPacketRate: 1,
+                    qosRtt: 50,
+                    qosTopology: 0,
+                    qosVsCapacity: 0,
+                    qosVsScore: 0,
+                    ttl: 30,
+                    verifyMemberAvailability: 'enabled',
+                    membersReference: {
+                        link: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool/members?ver=16.1.2',
+                        isSubcollection: true
+                    }
+                };
+
+                const referenceConfig = [
+                    {
+                        kind: 'tm:gtm:pool:naptr:members:membersstate',
+                        name: 'example.edu',
+                        fullPath: 'example.edu',
+                        generation: 3461,
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool/members/example.edu?ver=16.1.2',
+                        description: 'memberDescription',
+                        enabled: true,
+                        flags: 'a',
+                        memberOrder: 0,
+                        order: 10,
+                        preference: 10,
+                        ratio: 1,
+                        service: 'sip+d2u'
+                    }
+                ];
+
+                const results = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(results,
+                    [
+                        {
+                            path: '/Tenant/Application/naptrPool',
+                            command: 'gtm pool naptr',
+                            properties: {
+                                description: '"testDescription"',
+                                'dynamic-ratio': 'disabled',
+                                enabled: true,
+                                'load-balancing-mode': 'round-robin',
+                                'alternate-mode': 'static-persistence',
+                                'fallback-mode': 'return-to-dns',
+                                'manual-resume': 'disabled',
+                                ttl: 30,
+                                'verify-member-availability': 'enabled',
+                                'max-answers-returned': 1,
+                                members: {
+                                    '/Common/example.edu': {
+                                        description: '"memberDescription"',
+                                        enabled: true,
+                                        flags: 'a',
+                                        'member-order': 0,
+                                        preference: 10,
+                                        ratio: 1,
+                                        service: 'sip+d2u'
+                                    }
+                                },
+                                'qos-hit-ratio': 5,
+                                'qos-hops': 0,
+                                'qos-kilobytes-second': 3,
+                                'qos-lcs': 30,
+                                'qos-packet-rate': 1,
+                                'qos-rtt': 50,
+                                'qos-topology': 0,
+                                'qos-vs-capacity': 0,
+                                'qos-vs-score': 0
+                            },
+                            ignore: []
+                        }
+                    ]);
+            });
+        });
+
         describe('tm:gtm:pool:cname:cnamestate', () => {
             it('should return GSLB_Pool CNAME', () => {
                 const obj = {

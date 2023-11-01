@@ -1532,6 +1532,10 @@ const translate = {
         obj.maxAnswersReturned = obj.maxAnswersReturned || 1;
         return gslbPool(context, obj, referenceConfig, 'mx');
     },
+    'tm:gtm:pool:naptr:naptrstate': function (context, obj, referenceConfig) {
+        obj.maxAnswersReturned = obj.maxAnswersReturned || 1;
+        return gslbPool(context, obj, referenceConfig, 'naptr');
+    },
     'tm:gtm:prober-pool:prober-poolstate': function (context, obj, referenceConfig) {
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
         obj = pushReferences(

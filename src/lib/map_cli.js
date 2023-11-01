@@ -188,6 +188,7 @@ const prefix = {
     'gtm pool aaaa depends-on': 'replace-all-with',
     'gtm pool cname members': 'replace-all-with',
     'gtm pool mx members': 'replace-all-with',
+    'gtm pool naptr members': 'replace-all-with',
     'gtm prober-pool members': 'replace-all-with',
     'gtm region region-members': 'replace-all-with',
     'gtm server addresses': 'replace-all-with',
@@ -1114,6 +1115,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm pool aaaa':
     case 'gtm pool mx':
     case 'gtm pool cname':
+    case 'gtm pool naptr':
         mapEnabledDisabled(targetConfig);
         Object.keys(targetConfig.members || {}).forEach((memKey) => {
             mapEnabledDisabled(targetConfig.members[memKey]);

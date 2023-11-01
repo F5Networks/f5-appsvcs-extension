@@ -409,6 +409,10 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/pool/naptr",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/prober-pool",
             "modules": ["gtm"]
         },

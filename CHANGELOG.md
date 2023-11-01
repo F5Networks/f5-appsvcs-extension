@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.49.0
 
 ### Added
+- AUTOTOOL-4031: GSLB_Pool with resource record type NAPTR. Only supports flags value of 'a' for members.
 
 ### Fixed
 

@@ -4445,6 +4445,12 @@ const translate = {
                     member.domainName.use = member.domainName.use.replace(/[^/]+$/, domain.domainName);
                 }
                 member.name = bigipPath(member, 'domainName').replace('/Shared', '');
+                // only supports 'a' because the other option 's' requires a SRV wideip which AS3 does not have yet
+                // when we add 's' support should be able to derive the flags value
+                // 'a' has a A or AAAA wideip, 's' has a SRV wideip
+                if (item.resourceRecordType === 'NAPTR') {
+                    member.flags = 'a';
+                }
             });
         }
 
@@ -4488,7 +4494,7 @@ const translate = {
         config.command += ` ${item.resourceRecordType.toLowerCase()}`;
 
         props.any = [
-            'class', 'enabled', 'alternate-mode', 'app-service', 'description', 'ratio', 'fallback-mode',
+            'class', 'dynamic-ratio', 'enabled', 'alternate-mode', 'app-service', 'description', 'ratio', 'fallback-mode',
             'load-balancing-mode', 'manual-resume', 'members', 'metadata', 'qos-hit-ratio',
             'qos-hops', 'qos-kilobytes-second', 'qos-lcs', 'qos-packet-rate', 'qos-rtt',
             'qos-topology', 'qos-vs-capacity', 'qos-vs-score', 'ttl', 'verify-member-availability'
@@ -4501,6 +4507,7 @@ const translate = {
         props.aaaa = props.a;
         props.cname = props.any.concat(['monitors']);
         props.mx = props.any.concat(['max-answers-returned']);
+        props.naptr = props.mx.concat(['flags']);
         Object.keys(config.properties).forEach((key) => {
             if (props[item.resourceRecordType.toLowerCase()].indexOf(key) === -1) {
                 delete config.properties[key];

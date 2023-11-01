@@ -10587,6 +10587,144 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Pool NAPTR', () => {
+        it('should return a correct config using minimum amounts of information', () => {
+            const item = {
+                class: 'GSLB_Pool',
+                resourceRecordType: 'NAPTR'
+            };
+
+            const results = translate.GSLB_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm pool naptr',
+                        ignore: [],
+                        properties: {
+                            members: {},
+                            'qos-hit-ratio': 5,
+                            'qos-hops': 0,
+                            'qos-kilobytes-second': 3,
+                            'qos-lcs': 30,
+                            'qos-packet-rate': 1,
+                            'qos-rtt': 50,
+                            'qos-topology': 0,
+                            'qos-vs-capacity': 0,
+                            'qos-vs-score': 0
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a correct config using full specified information', () => {
+            const item = {
+                class: 'GSLB_Pool',
+                resourceRecordType: 'NAPTR',
+                enabled: false,
+                manualResumeEnabled: true,
+                ttl: 31,
+                dynamicRatioEnabled: true,
+                maxAnswersReturned: 2,
+                verifyMemberEnabled: false,
+                lbModePreferred: 'ratio',
+                lbModeAlternate: 'topology',
+                lbModeFallback: 'static-persistence',
+                members: [
+                    {
+                        service: 'sip+d2u',
+                        domainName: {
+                            use: '/Tenant/Application/testDomain'
+                        },
+                        enabled: true,
+                        order: 10,
+                        preference: 0,
+                        ratio: 1
+                    },
+                    {
+                        service: 'sip',
+                        domainName: {
+                            use: '/Tenant/Application/testDomain2'
+                        },
+                        enabled: false,
+                        order: 11,
+                        preference: 1,
+                        ratio: 2
+                    }
+                ]
+            };
+
+            const declaration = {
+                class: 'ADC',
+                Tenant: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        testDomain: {
+                            class: 'GSLB_Domain',
+                            domainName: 'example.com'
+                        },
+                        testDomain2: {
+                            class: 'GSLB_Domain',
+                            domainName: 'example2.com'
+                        }
+                    }
+                }
+            };
+
+            const results = translate.GSLB_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            return assert.deepStrictEqual(results,
+                {
+                    configs: [
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: 'gtm pool naptr',
+                            properties: {
+                                'alternate-mode': 'topology',
+                                'dynamic-ratio': 'enabled',
+                                enabled: false,
+                                'fallback-mode': 'static-persistence',
+                                'load-balancing-mode': 'ratio',
+                                'manual-resume': 'enabled',
+                                'max-answers-returned': 2,
+                                members: {
+                                    '/Tenant/Application/example.com': {
+                                        enabled: true,
+                                        flags: 'a',
+                                        'member-order': 0,
+                                        preference: 0,
+                                        ratio: 1,
+                                        service: 'sip+d2u'
+                                    },
+                                    '/Tenant/Application/example2.com': {
+                                        enabled: false,
+                                        flags: 'a',
+                                        'member-order': 1,
+                                        preference: 1,
+                                        ratio: 2,
+                                        service: 'sip'
+                                    }
+                                },
+                                'qos-hit-ratio': 5,
+                                'qos-hops': 0,
+                                'qos-kilobytes-second': 3,
+                                'qos-lcs': 30,
+                                'qos-packet-rate': 1,
+                                'qos-rtt': 50,
+                                'qos-topology': 0,
+                                'qos-vs-capacity': 0,
+                                'qos-vs-score': 0,
+                                ttl: 31,
+                                'verify-member-availability': 'disabled'
+                            },
+                            ignore: []
+                        }
+                    ]
+                });
+        });
+    });
+
     describe('GSLB_Prober_Pool', () => {
         it('should return a correct config', () => {
             const item = {

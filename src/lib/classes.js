@@ -119,7 +119,8 @@ module.exports = {
             'gtm pool a',
             'gtm pool aaaa',
             'gtm pool cname',
-            'gtm pool mx'
+            'gtm pool mx',
+            'gtm pool naptr'
         ],
         GSLB_Prober_Pool: 'gtm prober-pool',
         GSLB_Monitor: [

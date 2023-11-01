@@ -16,7 +16,13 @@
                     "title": "Resource Record (RR) Type",
                     "description": "Specifies the type of resource records for this domain",
                     "type": "string",
-                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                    "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
+                },
+                "dynamicRatioEnabled": {
+                    "title": "Dynamic Ratio Enabled",
+                    "description": "Specifies whether the system applies a dynamic ratio to the load balancing algorithms for this pool. When enabled, the system treats QOS scores as ratios, and it uses each server or virtual server in proportion to the ratio determined by the QOS calculation.",
+                    "type": "boolean",
+                    "default": false
                 },
                 "enabled": {
                     "title": "Enabled",
@@ -88,7 +94,14 @@
 
             "allOf": [
                 {
-                    "if": { "properties": { "resourceRecordType": { "const": "MX" } } },
+                    "if": {
+                        "anyOf": [
+                            { "properties": { "resourceRecordType": { "const": "A" } } },
+                            { "properties": { "resourceRecordType": { "const": "AAAA" } } },
+                            { "properties": { "resourceRecordType": { "const": "MX" } } },
+                            { "properties": { "resourceRecordType": { "const": "NAPTR" } } }
+                        ]
+                    },
                     "then": {
                         "properties": {
                             "maxAnswersReturned": {
@@ -98,13 +111,54 @@
                                 "minimum": 1,
                                 "default": 1,
                                 "maximum": 500
-                            },
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "properties": { "resourceRecordType": { "const": "A" } } },
+                            { "properties": { "resourceRecordType": { "const": "AAAA" } } },
+                            { "properties": { "resourceRecordType": { "const": "MX" } } }
+                        ]
+                    },
+                    "then": {
+                        "properties": {
+                            "fallbackIP": {
+                                "title": "Fallback IP",
+                                "description": "Specifies the IP address of the server to which the system directs requests when it cannot use one of its pools to do so. Note that the system uses the fallback IP only if you select a fallback load balancing method",
+                                "type": "string",
+                                "format": "f5ip"
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "MX" } } },
+                    "then": {
+                        "properties": {
                             "members": {
                                 "title": "Members",
                                 "description": "Specifies the members of this pool",
                                 "type": "array",
                                 "items": {
                                     "$ref": "#/definitions/GSLB_Pool_Member_MX"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "resourceRecordType": { "const": "NAPTR" } } },
+                    "then": {
+                        "properties": {
+                            "members": {
+                                "title": "Members",
+                                "description": "Specifies the members of this pool",
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/GSLB_Pool_Member_NAPTR"
                                 }
                             }
                         }
@@ -136,14 +190,6 @@
                     "if": { "properties": { "resourceRecordType": { "const": "A" } } },
                     "then": {
                         "properties": {
-                            "maxAnswersReturned": {
-                                "title": "Maximum Number of Answers Returned",
-                                "description": "Specifies the maximum number of available virtual servers that the system lists in a response",
-                                "type": "integer",
-                                "minimum": 1,
-                                "default": 1,
-                                "maximum": 500
-                            },
                             "members": {
                                 "title": "Members",
                                 "description": "Specifies the members of this pool",
@@ -159,14 +205,6 @@
                     "if": { "properties": { "resourceRecordType": { "const": "AAAA" } } },
                     "then": {
                         "properties": {
-                            "maxAnswersReturned": {
-                                "title": "Maximum Number of Answers Returned",
-                                "description": "Specifies the maximum number of available virtual servers the system lists in a response",
-                                "type": "integer",
-                                "minimum": 1,
-                                "default": 1,
-                                "maximum": 500
-                            },
                             "members": {
                                 "title": "Members",
                                 "description": "Specifies the members of this pool",
@@ -194,12 +232,6 @@
                                 "items": {
                                     "$ref": "#/definitions/Pointer_GSLB_Monitor"
                                 }
-                            },
-                            "fallbackIP": {
-                                "title": "Fallback IP",
-                                "description": "Specifies the IP address of the server to which the system directs requests when it cannot use one of its pools to do so. Note that the system uses the fallback IP only if you select a Fallback load balancing method",
-                                "type": "string",
-                                "format": "f5ip"
                             },
                             "bpsLimit": {
                                 "title": "Maximum Bits Per Second",
@@ -323,7 +355,7 @@
         },
 
         "GSLB_Pool_Member_A": {
-            "title": "GSLB A rrType Pool Member",
+            "title": "GSLB Resource Record Type A Pool Member",
             "description": "Declares member of the GSLB pool",
             "type": "object",
             "properties": {
@@ -343,7 +375,7 @@
                 },
                 "ratio": {
                     "title": "Ratio",
-                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing.",
                     "type": "integer",
                     "default": 1,
                     "minimum": 0,
@@ -378,7 +410,7 @@
         },
 
         "GSLB_Pool_Member_AAAA": {
-            "title": "GSLB AAAA rrType Pool Member",
+            "title": "GSLB Resource Record Type AAAA Pool Member",
             "description": "Declares member of the GSLB pool",
             "type": "object",
             "properties": {
@@ -434,7 +466,7 @@
         },
 
         "GSLB_Pool_Member_CNAME": {
-            "title": "GSLB CNAME rrType Pool Member",
+            "title": "GSLB Resource Record Type CNAME Pool Member",
             "description": "Declares member of the GSLB pool",
             "type": "object",
             "properties": {
@@ -488,7 +520,7 @@
         },
 
         "GSLB_Pool_Member_MX": {
-            "title": "GSLB MX rrType Pool Member",
+            "title": "GSLB Resource Record Type MX Pool Member",
             "description": "Declares member of the GSLB pool",
             "type": "object",
             "properties": {
@@ -531,6 +563,65 @@
             },
             "additionalProperties": false,
             "required": ["domainName"]
+        },
+
+        "GSLB_Pool_Member_NAPTR": {
+            "title": "GSLB Resource Record Type MX Pool Member",
+            "description": "Declares member of the GSLB pool",
+            "type": "object",
+            "properties": {
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "domainName": {
+                    "title": "Domain Name",
+                    "description": "Specifies the domain name for this pool member",
+                    "anyOf": [
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_A"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_AAAA"
+                        }
+                    ]
+                },
+                "enabled": {
+                    "title": "Enabled",
+                    "description": "When true (default), the system can use the pool member and its resources for load balancing requests",
+                    "type": "boolean",
+                    "default": true
+                },
+                "order": {
+                    "title": "Order",
+                    "description": "Specifies the response resource record's order RDATA field value when this member is picked.",
+                    "type": "integer",
+                    "default": 10,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "preference": {
+                    "title": "Preference",
+                    "description": "Specifies the response resource record's preference RDATA field value when this member is picked.",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "ratio": {
+                    "title": "Ratio",
+                    "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing",
+                    "type": "integer",
+                    "default": 1,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
+                "service": {
+                    "title": "Service",
+                    "description": "Specifies the response resource record's service RDATA field value when this member is picked.",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": ["domainName", "service"]
         },
 
         "GSLB_Server": {
