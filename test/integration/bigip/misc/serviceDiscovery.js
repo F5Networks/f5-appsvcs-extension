@@ -488,6 +488,90 @@ describe('Service Discovery', function () {
                 })
                 .finally(() => deregisterConsulNode(options));
         });
+
+        it('should support modifying the adminState of a member', () => {
+            const declaration = createPoolDeclaration([SD.EVENT]);
+            const app = declaration.declaration.TEST_ServiceDiscovery.Application;
+            const poolName = Object.keys(app).find((key) => app[key].class === 'Pool');
+
+            // Default event pool members to 'disable' adminState
+            app[poolName].members[0].adminState = 'disable';
+
+            const nodeDeclaration = [
+                {
+                    id: 'newNode1',
+                    ip: '192.0.2.3',
+                    port: 8070
+                },
+                {
+                    id: 'newNode2',
+                    ip: '192.0.2.4',
+                    port: 8080,
+                    // Test overriding 'disable' adminState with 'offline'
+                    state: 'user-down',
+                    session: 'user-disabled'
+                },
+                {
+                    id: 'newNode3',
+                    ip: '192.0.2.5',
+                    port: 8090,
+                    // Test overriding 'disable' adminState with 'enable'
+                    state: 'user-up',
+                    session: 'user-enabled'
+                }
+            ];
+
+            const sdEventEndpoint = '/mgmt/shared/service-discovery/task/~TEST_ServiceDiscovery'
+            + `~Application~${poolName}/nodes`;
+
+            const poolEndpoint = '/mgmt/tm/ltm/pool/~TEST_ServiceDiscovery'
+                + `~Application~${poolName}/members?$select=fullPath,address,state,session`;
+
+            return postDeclaration(declaration, { declarationIndex: 0 })
+                // Discover nodes in SD
+                .then(() => requestUtil.post({
+                    path: sdEventEndpoint,
+                    body: util.simpleCopy(nodeDeclaration)
+                }))
+                // Verify nodes in SD task response
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result.body.providerOptions.nodeList,
+                        util.simpleCopy(nodeDeclaration),
+                        'Discovered nodes should be added to SD task node list'
+                    );
+                })
+                .then(() => promiseUtil.delay(5000))
+                // Get pool members
+                .then(() => requestUtil.get({ path: poolEndpoint }))
+                // Verify pool members
+                .then((results) => {
+                    assert.deepStrictEqual(
+                        results.body.items,
+                        [
+                            {
+                                address: '192.0.2.3',
+                                fullPath: '/TEST_ServiceDiscovery/newNode1:8070',
+                                session: 'user-disabled',
+                                state: 'unchecked'
+                            },
+                            {
+                                address: '192.0.2.4',
+                                fullPath: '/TEST_ServiceDiscovery/newNode2:8080',
+                                session: 'user-disabled',
+                                state: 'user-down'
+                            },
+                            {
+                                address: '192.0.2.5',
+                                fullPath: '/TEST_ServiceDiscovery/newNode3:8090',
+                                session: 'user-enabled',
+                                state: 'unchecked'
+                            }
+                        ],
+                        `Discovered nodes should be added as pool members on pool ${poolName}`
+                    );
+                });
+        });
     });
 
     describe('Firewall Address List', function () {
@@ -609,7 +693,9 @@ describe('Service Discovery', function () {
                                     dynamicRatio: 1,
                                     ratio: 1,
                                     priorityGroup: 0,
-                                    monitor: 'default'
+                                    monitor: 'default',
+                                    session: 'user-enabled',
+                                    state: 'user-up'
                                 },
                                 requiresNodes: true
                             },
@@ -623,7 +709,9 @@ describe('Service Discovery', function () {
                                     dynamicRatio: 1,
                                     ratio: 1,
                                     priorityGroup: 0,
-                                    monitor: 'default'
+                                    monitor: 'default',
+                                    session: 'user-enabled',
+                                    state: 'user-up'
                                 },
                                 requiresNodes: true
                             }

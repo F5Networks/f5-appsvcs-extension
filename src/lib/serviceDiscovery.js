@@ -74,6 +74,8 @@ function createTaskResource(resource, sdItem) {
             dynamicRatio: member.dynamicRatio,
             ratio: member.ratio,
             priorityGroup: member.priorityGroup,
+            state: member.state,
+            session: member.session,
             monitor
         };
     }
