@@ -8369,13 +8369,15 @@ describe('map_as3', () => {
                     ],
                     renegotiatePeriod: 'indefinite',
                     renegotiateSize: 'indefinite',
-                    renegotiateMaxRecordDelay: 'indefinite'
+                    renegotiateMaxRecordDelay: 'indefinite',
+                    handshakeTimeout: 'indefinite'
                 };
                 const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
                 const profile = results.configs[0].properties;
                 assert.strictEqual(profile['renegotiate-period'], 4294967295);
                 assert.strictEqual(profile['renegotiate-size'], 4294967295);
                 assert.strictEqual(profile['renegotiate-max-record-delay'], 4294967295);
+                assert.strictEqual(profile['handshake-timeout'], 4294967295);
             });
 
             it('should set sniDefault to first certificate', () => {
@@ -8689,7 +8691,8 @@ describe('map_as3', () => {
                 class: 'TLS_Client',
                 authenticationFrequency: '',
                 renegotiatePeriod: 'indefinite',
-                renegotiateSize: 'indefinite'
+                renegotiateSize: 'indefinite',
+                handshakeTimeout: 'indefinite'
             };
             const decl = {
                 class: 'ADC',
@@ -8703,7 +8706,8 @@ describe('map_as3', () => {
                             class: 'TLS_Client',
                             authenticationFrequency: '',
                             renegotiatePeriod: 'indefinite',
-                            renegotiateSize: 'indefinite'
+                            renegotiateSize: 'indefinite',
+                            handshakeTimeout: 'indefinite'
                         }
                     }
                 }
@@ -8712,6 +8716,7 @@ describe('map_as3', () => {
             const profile = results.configs[0].properties;
             assert.strictEqual(profile['renegotiate-period'], 4294967295);
             assert.strictEqual(profile['renegotiate-size'], 4294967295);
+            assert.strictEqual(profile['handshake-timeout'], 4294967295);
         });
     });
 

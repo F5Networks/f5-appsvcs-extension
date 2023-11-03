@@ -617,6 +617,8 @@
     { "id":"crl-file",                      "altId": "crlFile"},
     { "id":"data-0rtt",                     "altId": "dataZeroRoundTripTime", "minVersion": "15.1" },
     { "id":"description",                   "altId": "remark", "quotedString": true },
+    { "id":"handshake-timeout" },
+    { "id":"hostname-whitelist",            "altId": "forwardProxyBypassAllowlist" },
     { "id":"mode",                          "altId": "enabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"options",                       "extend": "array" },
     { "id":"ocsp-stapling",                 "altId": "staplerOCSPEnabled", "truth": "enabled", "falsehood": "disabled" },
@@ -639,7 +641,6 @@
     { "id":"ssl-forward-proxy",             "altId": "forwardProxyEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-forward-proxy-bypass",      "altId": "forwardProxyBypassEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"ssl-sign-hash" },
-    { "id":"hostname-whitelist",            "altId": "forwardProxyBypassAllowlist" },
     { "id":"unclean-shutdown",              "altId": "uncleanShutdownEnabled", "truth": "enabled", "falsehood": "disabled" }
   ],
   "ltm profile client-ssl cert-key-chain": [
@@ -706,6 +707,7 @@
     { "id":"crl-file",                        "altId": "crlFile"},
     { "id":"data-0rtt",                       "altId": "dataZeroRoundTripTime", "truth": "enabled", "falsehood": "disabled", "minVersion": "15.1" },
     { "id":"description",                     "altId": "remark", "quotedString": true },
+    { "id":"handshake-timeout" },
     { "id":"key",                             "default": "none" },
     { "id":"expire-cert-response-control",    "truth": "ignore", "falsehood": "drop", "altId": "ignoreExpired" },
     { "id":"options",                         "extend": "array" },

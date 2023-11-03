@@ -4719,6 +4719,22 @@
                         "sha384"
                     ],
                     "default": "any"
+                },
+                "handshakeTimeout": {
+                    "title": "Handshake Timeout",
+                    "description": "Specifies the handshake timeout in seconds.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": 10
                 }
             },
             "additionalProperties": false,
@@ -5170,6 +5186,22 @@
                         "sha384"
                     ],
                     "default": "any"
+                },
+                "handshakeTimeout": {
+                    "title": "Handshake Timeout",
+                    "description": "Specifies the handshake timeout in seconds.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": 10
                 }
             },
             "allOf": [

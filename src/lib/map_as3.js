@@ -1246,6 +1246,7 @@ const translate = {
 
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+        item.handshakeTimeout = (item.handshakeTimeout === 'indefinite') ? 4294967295 : item.handshakeTimeout;
 
         configs.push(normalize.actionableMcp(context, item, 'ltm profile server-ssl', util.mcpPath(tenantId, appId, itemId)));
 
@@ -1361,6 +1362,7 @@ const translate = {
         item.renegotiateMaxRecordDelay = (item.renegotiateMaxRecordDelay === 'indefinite') ? 4294967295 : item.renegotiateMaxRecordDelay;
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+        item.handshakeTimeout = (item.handshakeTimeout === 'indefinite') ? 4294967295 : item.handshakeTimeout;
 
         // For backward compatibillity with older configs we decided to set
         // first certificate as sniDefault. Unless user decided to explicitly set

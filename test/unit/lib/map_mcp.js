@@ -1908,6 +1908,7 @@ describe('map_mcp', () => {
                 obj.renegotiateMaxRecordDelay = 'indefinite';
                 obj.renegotiatePeriod = 'indefinite';
                 obj.renegotiateSize = 'indefinite';
+                obj.handshakeTimeout = 'indefinite';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -1925,6 +1926,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled-with-anti-replay',
                                 description: 'none',
+                                'handshake-timeout': 4294967295,
                                 options: {},
                                 'renegotiate-max-record-delay': 4294967295,
                                 'renegotiate-period': 4294967295,
@@ -1937,13 +1939,14 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values that are not indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values that are not indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.allowDynamicRecordSizing = 'enabled';
                 obj.data_0rtt = 'enabled-with-anti-replay';
                 obj.renegotiateMaxRecordDelay = '100';
                 obj.renegotiatePeriod = '100';
                 obj.renegotiateSize = '100';
+                obj.handshakeTimeout = '100';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -1961,6 +1964,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled-with-anti-replay',
                                 description: 'none',
+                                'handshake-timeout': 100,
                                 options: {},
                                 'renegotiate-max-record-delay': 100,
                                 'renegotiate-period': 100,
@@ -2031,11 +2035,12 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values of indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values of indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.data_0rtt = 'enabled';
                 obj.renegotiatePeriod = 'indefinite';
                 obj.renegotiateSize = 'indefinite';
+                obj.handshakeTimeout = 'indefinite';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -2053,6 +2058,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled',
                                 description: 'none',
+                                'handshake-timeout': 4294967295,
                                 key: 'none',
                                 options: {},
                                 'renegotiate-period': 4294967295,
@@ -2065,11 +2071,12 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values that are not indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values that are not indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.data_0rtt = 'enabled';
                 obj.renegotiatePeriod = '100';
                 obj.renegotiateSize = '100';
+                obj.handshakeTimeout = '100';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -2087,6 +2094,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled',
                                 description: 'none',
+                                'handshake-timeout': 100,
                                 key: 'none',
                                 options: {},
                                 'renegotiate-period': 100,

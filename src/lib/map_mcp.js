@@ -499,6 +499,9 @@ const translate = {
         if (obj.renegotiateSize) {
             obj.renegotiateSize = (obj.renegotiateSize === 'indefinite') ? 4294967295 : parseInt(obj.renegotiateSize, 10);
         }
+        if (obj.handshakeTimeout) {
+            obj.handshakeTimeout = (obj.handshakeTimeout === 'indefinite') ? 4294967295 : parseInt(obj.handshakeTimeout, 10);
+        }
 
         return profileSSL(context, obj, 'ltm profile client-ssl', '', true);
     },
@@ -622,6 +625,9 @@ const translate = {
         }
         if (obj.renegotiateSize) {
             obj.renegotiateSize = (obj.renegotiateSize === 'indefinite') ? 4294967295 : parseInt(obj.renegotiateSize, 10);
+        }
+        if (obj.handshakeTimeout) {
+            obj.handshakeTimeout = (obj.handshakeTimeout === 'indefinite') ? 4294967295 : parseInt(obj.handshakeTimeout, 10);
         }
 
         const config = profileSSL(context, obj, 'ltm profile server-ssl', '');

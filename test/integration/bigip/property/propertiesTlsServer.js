@@ -336,6 +336,11 @@ describe('TLS_Server', function () {
                 name: 'sslSignHash',
                 inputValue: [undefined, 'sha256', undefined],
                 expectedValue: ['any', 'sha256', 'any']
+            },
+            {
+                name: 'handshakeTimeout',
+                inputValue: [undefined, 1234, undefined],
+                expectedValue: [10, 1234, 10]
             }
         ];
 
