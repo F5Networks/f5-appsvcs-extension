@@ -106,7 +106,7 @@ const hasDuplicate = (decl) => {
         if (arrList.value && arrList.value.length > 0) {
             const arr = arrList.value;
             for (let k = 0; k < arr.length; k += 1) {
-                if (hasDuplicateVals(arr[k])) {
+                if (Array.isArray(arr[k]) && hasDuplicateVals(arr[k])) {
                     dupResult.isDuplicate = true;
                     dupResult.propName = props[len - 1];
                     return dupResult;

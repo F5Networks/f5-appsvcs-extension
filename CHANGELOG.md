@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4059: ([GitHub Issue 756](https://github.com/F5Networks/f5-appsvcs-extension/issues/756)): Add handshakeTimeout to TLS_Server and TLS_Client.
 
 ### Fixed
+- AUTOTOOL-4060: Certain AS3 declarations result in "declaration has duplicate values" errors
 
 ### Changed
 
