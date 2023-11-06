@@ -789,6 +789,18 @@ describe('Monitor', function () {
                 name: 'receiveDown',
                 inputValue: [undefined, 'down', undefined],
                 expectedValue: [undefined, 'down', undefined]
+            },
+            {
+                name: 'targetPort',
+                inputValue: [undefined, 8080, undefined],
+                expectedValue: ['*', '8080', '*'],
+                extractFunction: (o) => o.destination.split(':')[1]
+            },
+            {
+                name: 'targetAddress',
+                inputValue: ['', '100.0.0.100', ''],
+                expectedValue: ['*', '100.0.0.100', '*'],
+                extractFunction: (o) => o.destination.split(':')[0]
             }
         ];
 
