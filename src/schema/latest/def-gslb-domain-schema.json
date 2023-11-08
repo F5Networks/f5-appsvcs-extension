@@ -38,7 +38,7 @@
                     "title": "Resource Record (RR) Type",
                     "description": "Specifies the type of resource records for this domain",
                     "type": "string",
-                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                    "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
                 },
                 "pools": {
                     "title": "Pools",
@@ -102,7 +102,7 @@
                     "title": "Last Resort Pool type",
                     "description": "This is used to specify the type of pool being used for the lastResortPool",
                     "type": "string",
-                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                    "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
                 },
                 "iRules": {
                     "title": "iRules",
@@ -247,6 +247,13 @@
 
         "GSLB_Domain_MX": {
             "description": "Configures GSLB (Global Server Load Balancing) settings for MX domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_Domain_NAPTR": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for NAPTR domain.",
             "allOf": [
                 { "$ref": "#/definitions/GSLB_Domain" }
             ]

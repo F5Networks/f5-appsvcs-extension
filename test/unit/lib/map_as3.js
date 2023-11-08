@@ -9716,6 +9716,7 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
                                 'pool-lb-mode': 'round-robin',
@@ -9754,6 +9755,7 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
                                 'pool-lb-mode': 'round-robin',
@@ -9771,9 +9773,11 @@ describe('map_as3', () => {
             const item = {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
+                description: '"example.edu"',
                 domainName: 'example.edu',
                 enabled: true,
                 poolLbMode: 'round-robin',
+                remark: '"My Remark"',
                 iRules: [
                     '/ten/app/rule1',
                     { use: '/ten/app/rule2' },
@@ -9793,6 +9797,7 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"My Remark"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
                                 'pool-lb-mode': 'round-robin',
@@ -9837,6 +9842,7 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
                                 'pool-lb-mode': 'round-robin',

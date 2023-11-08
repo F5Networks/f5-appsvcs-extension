@@ -1671,6 +1671,9 @@ const translate = {
     'tm:gtm:wideip:mx:mxstate': function (context, obj) {
         return processGtmWideIps(context, obj, 'mx');
     },
+    'tm:gtm:wideip:naptr:naptrstate': function (context, obj) {
+        return processGtmWideIps(context, obj, 'naptr');
+    },
     'tm:gtm:monitor:http:httpstate': function (context, obj) {
         return monitor(context, obj, 'gtm monitor', 'http');
     },

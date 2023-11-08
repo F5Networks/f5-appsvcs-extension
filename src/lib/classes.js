@@ -105,7 +105,8 @@ module.exports = {
             'gtm wideip a',
             'gtm wideip aaaa',
             'gtm wideip cname',
-            'gtm wideip mx'
+            'gtm wideip mx',
+            'gtm wideip naptr'
         ],
         GSLB_iRule: 'gtm rule',
         GSLB_Topology_Region: [

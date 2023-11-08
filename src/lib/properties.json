@@ -2307,22 +2307,24 @@
     { "id":"a",                         "extend": "object" },
     { "id":"aaaa",                      "extend": "object" },
     { "id":"cname",                     "extend": "object" },
-    { "id":"mx",                        "extend": "object" }
+    { "id":"mx",                        "extend": "object" },
+    { "id":"naptr",                     "extend": "object" }
   ],
   "gtm wideip a": [
     { "id":"aliases",                             "extend": "array" },
-    { "id":"enabled" },
+    { "id":"description",                         "altId": "remark", "quotedString": true },
     { "id":"disabled" },
-    { "id":"pool-lb-mode" },
-    { "id":"pools",                               "extend": "objArray" },
-    { "id":"pools-cname",                         "extend": "array" },
-    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"enabled" },
     { "id":"last-resort-pool",                    "default": "" },
     { "id":"persistence",                         "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
-    { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                               "extend": "objArray" },
+    { "id":"pools-cname",                         "extend": "array" },
+    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" },
+    { "id":"ttl-persistence" }
   ],
   "gtm wideip a pools": [
     { "id":"name" },
@@ -2331,18 +2333,19 @@
   ],
   "gtm wideip aaaa": [
     { "id":"aliases",                             "extend": "array" },
-    { "id":"enabled" },
+    { "id":"description",                         "altId": "remark", "quotedString": true },
     { "id":"disabled" },
-    { "id":"pool-lb-mode" },
-    { "id":"pools",                               "extend": "objArray" },
-    { "id":"pools-cname",                         "extend": "array" },
-    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"enabled" },
     { "id":"last-resort-pool",                    "default": "" },
     { "id":"persistence",                         "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
-    { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                               "extend": "objArray" },
+    { "id":"pools-cname",                         "extend": "array" },
+    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" },
+    { "id":"ttl-persistence" }
   ],
   "gtm wideip aaaa pools": [
     { "id":"name" },
@@ -2351,17 +2354,18 @@
   ],
   "gtm wideip cname": [
     { "id":"aliases",                             "extend": "array" },
-    { "id":"enabled" },
+    { "id":"description",                         "altId": "remark", "quotedString": true },
     { "id":"disabled" },
-    { "id":"pool-lb-mode" },
-    { "id":"pools",                               "extend": "objArray" },
-    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"enabled" },
     { "id":"last-resort-pool",                    "default": "" },
     { "id":"persistence",                         "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
-    { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                               "extend": "objArray" },
+    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" },
+    { "id":"ttl-persistence" }
   ],
   "gtm wideip cname pools": [
     { "id":"name" },
@@ -2370,20 +2374,42 @@
   ],
   "gtm wideip mx": [
     { "id":"aliases",                             "extend": "array" },
-    { "id":"enabled" },
+    { "id":"description",                         "altId": "remark", "quotedString": true },
     { "id":"disabled" },
-    { "id":"pool-lb-mode" },
-    { "id":"pools",                               "extend": "objArray" },
-    { "id":"pools-cname",                         "extend": "array" },
-    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"enabled" },
     { "id":"last-resort-pool",                    "default": "" },
     { "id":"persistence",                         "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
     { "id":"persist-cidr-ipv4" },
     { "id":"persist-cidr-ipv6" },
-    { "id":"ttl-persistence" },
-    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" }
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                               "extend": "objArray" },
+    { "id":"pools-cname",                         "extend": "array" },
+    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" },
+    { "id":"ttl-persistence" }
   ],
   "gtm wideip mx pools": [
+    { "id":"name" },
+    { "id":"order" },
+    { "id":"ratio" }
+  ],
+  "gtm wideip naptr": [
+    { "id":"aliases",                             "extend": "array" },
+    { "id":"description",                         "altId": "remark", "quotedString": true },
+    { "id":"disabled" },
+    { "id":"enabled" },
+    { "id":"last-resort-pool",                    "default": "" },
+    { "id":"persistence",                         "truth": "enabled", "falsehood": "disabled", "altId": "persistenceEnabled"},
+    { "id":"persist-cidr-ipv4" },
+    { "id":"persist-cidr-ipv6" },
+    { "id":"pool-lb-mode" },
+    { "id":"pools",                               "extend": "objArray" },
+    { "id":"pools-cname",                         "extend": "array" },
+    { "id":"rules",                               "extend": "array", "altId": "iRules" },
+    { "id":"topology-prefer-edns0-client-subnet", "truth": "enabled", "falsehood": "disabled", "altId": "clientSubnetPreferred", "minVersion": "14.1" },
+    { "id":"ttl-persistence" }
+  ],
+  "gtm wideip naptr pools": [
     { "id":"name" },
     { "id":"order" },
     { "id":"ratio" }

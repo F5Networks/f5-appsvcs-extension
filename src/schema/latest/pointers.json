@@ -270,6 +270,11 @@
         "class": "GSLB_Domain",
         "tmshPath": "gtm wideip mx"
     },
+    "GSLB_Domain_NAPTR": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip naptr"
+    },
     "GSLB_Monitor": {
         "name": "GSLB monitor",
         "class": "GSLB_Monitor",

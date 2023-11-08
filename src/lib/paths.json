@@ -437,6 +437,10 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/wideip/naptr",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/region",
             "modules": ["gtm"]
         },

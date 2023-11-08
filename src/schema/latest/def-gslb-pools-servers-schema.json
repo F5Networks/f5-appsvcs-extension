@@ -504,6 +504,9 @@
                         },
                         {
                             "$ref": "#/definitions/Pointer_GSLB_Domain_MX"
+                        },
+                        {
+                            "$ref": "#/definitions/Pointer_GSLB_Domain_NAPTR"
                         }
                     ]
                 },

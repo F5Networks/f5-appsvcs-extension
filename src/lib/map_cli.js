@@ -212,7 +212,11 @@ const prefix = {
     'gtm wideip mx aliases': 'replace-all-with',
     'gtm wideip mx pools': 'replace-all-with',
     'gtm wideip mx pools-cname': 'replace-all-with',
-    'gtm wideip mx rules': ''
+    'gtm wideip mx rules': '',
+    'gtm wideip naptr aliases': 'replace-all-with',
+    'gtm wideip naptr pools': 'replace-all-with',
+    'gtm wideip naptr pools-cname': 'replace-all-with',
+    'gtm wideip naptr rules': ''
 };
 
 /**
@@ -1031,7 +1035,8 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm wideip a':
     case 'gtm wideip aaaa':
     case 'gtm wideip cname':
-    case 'gtm wideip mx': {
+    case 'gtm wideip mx':
+    case 'gtm wideip naptr': {
         if (util.isEmptyOrUndefined(targetConfig.pools)) {
             targetConfig.pools = 'none';
         }
@@ -1294,7 +1299,8 @@ const tmshDelete = function (context, diff, currentConfig) {
     case 'gtm wideip a':
     case 'gtm wideip aaaa':
     case 'gtm wideip cname':
-    case 'gtm wideip mx': {
+    case 'gtm wideip mx':
+    case 'gtm wideip naptr': {
         const pathSplit = path.split(' ');
         if (pathSplit.length === 2) {
             path = pathSplit[0];
