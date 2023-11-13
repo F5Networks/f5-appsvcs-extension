@@ -1,6 +1,6 @@
 {
   "name": "f5-appsvcs",
-  "version": "3.48.0-8",
+  "version": "3.48.0-10",
   "license": "Apache-2.0",
   "scripts": {
     "build": "./scripts/build/build.sh",
@@ -19,7 +19,7 @@
     "misc": "mocha test/integration/bigip/misc --require test/integration/bigip/property/mochaHooks.js"
   },
   "devDependencies": {
-    "@automation-toolchain/f5-appsvcs-schema": "^0.14.11",
+    "@automation-toolchain/f5-appsvcs-schema": "^0.21.3",
     "@f5devcentral/atg-shared-utilities-dev": "^0.2.14",
     "@f5devcentral/eslint-config-f5-atg": "^0.1.8",
     "@redocly/cli": "^1.2.0",

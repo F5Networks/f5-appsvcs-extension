@@ -359,7 +359,9 @@
     { "id":"ratio" },
     { "id":"priorityGroup" },
     { "id":"monitor",                   "altId": "monitors"},
-    { "id":"minimumMonitors" }
+    { "id":"minimumMonitors" },
+    { "id":"state" },
+    { "id":"session" }
   ],
   "mgmt shared service-discovery task providerOptions": [
     { "id":"nodes",                     "extend": "objArray", "default": null},

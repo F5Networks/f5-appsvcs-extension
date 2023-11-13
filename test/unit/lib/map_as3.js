@@ -598,7 +598,9 @@ describe('map_as3', () => {
                                         priorityGroup: 0,
                                         rateLimit: 'disabled',
                                         ratio: 1,
-                                        servicePort: 8056
+                                        servicePort: 8056,
+                                        session: 'user-enabled',
+                                        state: 'user-up'
                                     }
                                 }
                             },
@@ -619,9 +621,9 @@ describe('map_as3', () => {
                     {
                         command: 'mgmt shared service-discovery task',
                         ignore: [],
-                        path: '/tenantId/~tenantId~a~omefe5oz0TUX9YfsQoXKwM24ljw6vl3coaRFTBjno3D',
+                        path: '/tenantId/~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
                         properties: {
-                            id: '~tenantId~a~omefe5oz0TUX9YfsQoXKwM24ljw6vl3coaRFTBjno3D',
+                            id: '~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
                             metadata: {
                                 configuredBy: 'AS3'
                             },
@@ -639,7 +641,9 @@ describe('map_as3', () => {
                                         priorityGroup: 0,
                                         rateLimit: 'disabled',
                                         ratio: 1,
-                                        servicePort: 8056
+                                        servicePort: 8056,
+                                        session: 'user-enabled',
+                                        state: 'user-up'
                                     }
                                 }
                             },
@@ -10743,7 +10747,7 @@ describe('map_as3', () => {
                             dynamicRatio: 20,
                             ratio: 12,
                             priorityGroup: 1,
-                            adminState: 'enable',
+                            adminState: 'offline',
                             shareNodes: false,
                             monitors: ['https']
                         }
@@ -10756,11 +10760,11 @@ describe('map_as3', () => {
                 {
                     configs: [
                         {
-                            path: '/tenantId/~tenantId~flt22BuK0m8Kx9QPD68woD~I8gIcGp2BE4Srdyzb24HPk3D',
+                            path: '/tenantId/~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
                             command: 'mgmt shared service-discovery task',
                             properties: {
                                 schemaVersion: '1.0.0',
-                                id: '~tenantId~flt22BuK0m8Kx9QPD68woD~I8gIcGp2BE4Srdyzb24HPk3D',
+                                id: '~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
                                 updateInterval: 60,
                                 resources: {
                                     0: {
@@ -10773,7 +10777,9 @@ describe('map_as3', () => {
                                             dynamicRatio: 1,
                                             ratio: 1,
                                             priorityGroup: 0,
-                                            monitor: 'default'
+                                            monitor: 'default',
+                                            session: 'user-enabled',
+                                            state: 'user-up'
                                         }
                                     },
                                     1: {
@@ -10786,7 +10792,9 @@ describe('map_as3', () => {
                                             dynamicRatio: 20,
                                             ratio: 12,
                                             priorityGroup: 1,
-                                            monitor: 'min 1 of \\{ /Common/https \\}'
+                                            monitor: 'min 1 of \\{ /Common/https \\}',
+                                            session: 'user-disabled',
+                                            state: 'user-down'
                                         }
                                     }
                                 },

@@ -680,7 +680,7 @@ describe('Pool', function () {
                             priorityGroup: 4,
                             rateLimit: '100',
                             ratio: 50,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         },
                         {
@@ -700,7 +700,7 @@ describe('Pool', function () {
                             priorityGroup: 5,
                             rateLimit: '101',
                             ratio: 51,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         },
                         {
@@ -720,7 +720,7 @@ describe('Pool', function () {
                             priorityGroup: 5,
                             rateLimit: '101',
                             ratio: 51,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         }
                     ],

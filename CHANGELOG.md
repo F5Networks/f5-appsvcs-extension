@@ -21,8 +21,8 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4003: ([GitHub Issue 754](https://github.com/F5Networks/f5-appsvcs-extension/issues/754)): Can't create FQDN pool with shareNodes: true
 
 ### Changed
-- Updated to Service Discovery 1.16.0-1
-  - Update packages to latest available versions
+- Updated to Service Discovery 1.16.0-2
+  - AUTOTOOL-4052: ([GitHub Issue 759](https://github.com/F5Networks/f5-appsvcs-extension/issues/759)): Support adminState for discovered pool members
 
 ### Removed
 

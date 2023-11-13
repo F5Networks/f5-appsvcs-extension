@@ -217,7 +217,9 @@ describe('serviceDiscovery', () => {
                     rateLimit: 123,
                     dynamicRatio: 10,
                     ratio: 20,
-                    priorityGroup: 1
+                    priorityGroup: 1,
+                    state: 'user-up',
+                    session: 'user-enabled'
                 }
             };
 
@@ -234,6 +236,8 @@ describe('serviceDiscovery', () => {
                         dynamicRatio: 10,
                         ratio: 20,
                         priorityGroup: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
                         monitor: 'default'
                     }
                 }
@@ -248,7 +252,9 @@ describe('serviceDiscovery', () => {
                 rateLimit: 123,
                 dynamicRatio: 10,
                 ratio: 20,
-                priorityGroup: 1
+                priorityGroup: 1,
+                state: 'user-up',
+                session: 'user-enabled'
             };
             const resource = {
                 item: {
@@ -270,6 +276,8 @@ describe('serviceDiscovery', () => {
                         dynamicRatio: 10,
                         ratio: 20,
                         priorityGroup: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
                         monitor: 'default'
                     }
                 }
