@@ -9695,6 +9695,12 @@ describe('map_as3', () => {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
                 domainName: 'example.edu',
+                loadBalancingDecisionLogVerbosity: [
+                    'pool-member-selection',
+                    'pool-member-traversal',
+                    'pool-selection',
+                    'pool-traversal'
+                ],
                 enabled: true,
                 poolLbMode: 'round-robin',
                 pools: [
@@ -9719,6 +9725,12 @@ describe('map_as3', () => {
                                 description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {
+                                    'pool-member-selection': {},
+                                    'pool-member-traversal': {},
+                                    'pool-selection': {},
+                                    'pool-traversal': {}
+                                },
                                 'pool-lb-mode': 'round-robin',
                                 pools: {
                                     '/ten/app/pool2': { order: 1, ratio: 2 },
@@ -9739,6 +9751,7 @@ describe('map_as3', () => {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
                 domainName: 'example.edu',
+                loadBalancingDecisionLogVerbosity: [],
                 enabled: true,
                 poolLbMode: 'round-robin',
                 resourceRecordType: 'AAAA'
@@ -9758,6 +9771,7 @@ describe('map_as3', () => {
                                 description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
@@ -9800,6 +9814,7 @@ describe('map_as3', () => {
                                 description: '"My Remark"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
@@ -9845,6 +9860,7 @@ describe('map_as3', () => {
                                 description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {
                                     '/ten/app/pool2': { order: 1, ratio: 2 },

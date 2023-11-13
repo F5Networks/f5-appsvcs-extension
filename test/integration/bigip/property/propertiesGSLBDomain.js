@@ -25,6 +25,13 @@ const {
 const domainAAAA = {
     description: 'AAAA description',
     domainName: 'test.domainAAAA',
+    loadBalancingDecisionLogVerbosity:
+    [
+        'pool-selection',
+        'pool-traversal',
+        'pool-member-selection',
+        'pool-member-traversal'
+    ],
     resourceRecordType: 'AAAA',
     aliases: ['*test1.aaaa?', '*test2.aaaa', '?test3.aaaa']
 };
@@ -136,6 +143,11 @@ describe('GSLB Domain', function () {
                 inputValue: [undefined, false, undefined],
                 expectedValue: [true, false, true],
                 extractFunction: extractFunctions.enabled
+            },
+            {
+                name: 'loadBalancingDecisionLogVerbosity',
+                inputValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined],
+                expectedValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined]
             },
             {
                 name: 'poolLbMode',

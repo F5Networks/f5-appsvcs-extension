@@ -1037,6 +1037,10 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm wideip cname':
     case 'gtm wideip mx':
     case 'gtm wideip naptr': {
+        if (util.isEmptyOrUndefined(targetConfig['load-balancing-decision-log-verbosity'])) {
+            delete targetConfig['load-balancing-decision-log-verbosity'];
+        }
+
         if (util.isEmptyOrUndefined(targetConfig.pools)) {
             targetConfig.pools = 'none';
         }

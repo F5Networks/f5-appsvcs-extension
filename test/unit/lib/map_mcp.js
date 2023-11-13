@@ -3291,6 +3291,12 @@ describe('map_mcp', () => {
                     enabled: true,
                     fullPath: '/ten/app/example.edu',
                     lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
                     minimalResponse: 'enabled',
                     name: 'example.edu',
                     partition: 'ten',
@@ -3318,6 +3324,12 @@ describe('map_mcp', () => {
                             aliases: {},
                             enabled: true,
                             'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
                             'pool-lb-mode': 'round-robin',
                             pools: {
                                 '/ten/app/pool3': { order: 1, ratio: 3 },
@@ -3337,6 +3349,7 @@ describe('map_mcp', () => {
                     enabled: true,
                     fullPath: '/ten/app/example.edu',
                     lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
                     minimalResponse: 'enabled',
                     name: 'example.edu',
                     partition: 'ten',
@@ -3353,6 +3366,7 @@ describe('map_mcp', () => {
                             aliases: {},
                             enabled: true,
                             'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
                             'pool-lb-mode': 'round-robin',
                             pools: {},
                             'pools-cname': {},

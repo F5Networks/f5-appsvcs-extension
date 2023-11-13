@@ -51,6 +51,12 @@ describe('def-gslb-domain-schema.json', () => {
                             class: 'GSLB_Domain',
                             domainName: 'example.edu',
                             resourceRecordType,
+                            loadBalancingDecisionLogVerbosity: [
+                                'pool-member-selection',
+                                'pool-member-traversal',
+                                'pool-selection',
+                                'pool-traversal'
+                            ],
                             pools: [
                                 {
                                     ratio: 2,

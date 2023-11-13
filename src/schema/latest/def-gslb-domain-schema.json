@@ -104,6 +104,17 @@
                     "type": "string",
                     "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
                 },
+                "loadBalancingDecisionLogVerbosity": {
+                    "title": "Load Balancing Decision Log Verbosity",
+                    "description": "Specifies the amount of detail logged when making load balancing decisions. This is used for debugging purposes only. Performance will be affected if any value is set. Please reset after debugging is finished.",
+                    "type": "array",
+                    "items": {
+                        "title": "Verbosity Selection",
+                        "type": "string",
+                        "enum": [ "pool-selection", "pool-traversal", "pool-member-selection", "pool-member-traversal" ]
+                    },
+                    "uniqueItems": true
+                },
                 "iRules": {
                     "title": "iRules",
                     "description": "List of GSLB iRules for this GSLB Domain (order is significant)",
