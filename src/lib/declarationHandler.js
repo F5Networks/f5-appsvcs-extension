@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ const fortunes = require('./fortunes.json');
 const mutex = require('./mutex');
 const hash = require('./util/hashUtil');
 const constants = require('./constants');
+const declartionUtil = require('./util/declarationUtil');
 const perAppUtil = require('./util/perAppUtil');
 
 const STATUS_CODES = require('./constants').STATUS_CODES;
@@ -125,9 +126,11 @@ class DeclarationHandler {
      * exclude non-selected Tenants, other than Common,
      * from a declaration.  SIDE EFFECT: modifies decl
      *
-     * @param {object} decl
-     * @param {array} tenants - empty is okay
+     * @param {object} decl - the declaration
+     * @param {array} tenants - tenants to look for in decl. empty is okay
      * @param {boolean} trackTenants - boolean to determine if declaration came from an array
+     * @param {boolean} ignoreMissingTenant - boolean to indicate whether or not the function should error if
+     *                                        a tenant in the tenants array is missing from the decl
      * @returns {object} - upon success property statusCode is 200
      */
     filterTenantsInDeclaration(decl, tenants, trackTenants, ignoreMissingTenant) {
@@ -141,9 +144,7 @@ class DeclarationHandler {
         for (let i = 0; i < keys.length; i += 1) {
             const key = keys[i];
             const index = desiredTenants.indexOf(key);
-            if ((typeof decl[key] === 'object')
-                    && (decl[key] !== null)
-                        && (decl[key].class === 'Tenant')) {
+            if (declartionUtil.isTenant(decl[key])) {
                 // found a Tenant
                 if ((index < 0) && (key !== 'Common')) {
                     // but it's not wanted
@@ -178,6 +179,13 @@ class DeclarationHandler {
         return statusCodeOk; // success
     }
 
+    /**
+     * Retrieves stored declaration, filters it for specific tenants, and parses (digests) it
+     *
+     * @param {object} context - The context.
+     * @param {boolean} ignoreMissingTenant - Whether or not the function should error if a tenant in the
+     *                                        current tasks list of desired tenants is not in the declaration.
+     */
     getFilteredDeclaration(context, ignoreMissingTenant) {
         const currentTask = context.tasks[context.currentIndex];
         function extractTenants(decl) {
@@ -188,11 +196,11 @@ class DeclarationHandler {
             let tenants = [];
             Object.keys(decl).forEach((key) => {
                 const value = decl[key];
-                if (value.class && value.class === 'Tenant') {
+                if (declartionUtil.isTenant(value)) {
                     tenants.push(value);
                 } else if (value.age) {
                     tenants.push(value);
-                } else if (value.class && value.class === 'ADC') {
+                } else if (declartionUtil.isADC(value)) {
                     const nestedTenants = extractTenants(value);
                     tenants = tenants.concat(nestedTenants);
                 }
@@ -560,8 +568,23 @@ class DeclarationHandler {
                         return this.getFilteredDeclaration(context)
                             .then((allConfig) => {
                                 const tenant = context.request.perAppInfo.tenant;
+                                let hasControls = false;
                                 if (allConfig[tenant]) {
+                                    // Even though we probably shouldn't, AS3 has historically allowed the
+                                    // controls object to be named 'controls' without a class property.
+                                    if (context.request.method !== 'Get' && context.request.method !== 'Delete') {
+                                        if (d[tenant].controls || util.getObjectNameWithClassName(d[tenant], 'Controls')) {
+                                            hasControls = true;
+                                        }
+                                    }
                                     d = perAppUtil.mergePreviousTenant(d, allConfig, tenant);
+                                    if (!hasControls) {
+                                        // Since 'controls' are stored with the declaration and we are now merging
+                                        // in the stored declaration, we need to delete controls if they are not in the
+                                        // incoming declaration
+                                        const controlsName = util.getObjectNameWithClassName(d[tenant], 'Controls') || 'controls';
+                                        delete d[tenant][controlsName];
+                                    }
                                     if (currentTask.action === 'remove') {
                                         perAppUtil.deleteAppsFromTenant(d, context.request.perAppInfo);
                                     }
@@ -614,6 +637,7 @@ class DeclarationHandler {
                 commonConfig.nodeList = commonNodeList;
                 commonConfig.virtualAddressList = context.host.parser.virtualAddressList;
                 commonConfig.addressListList = context.host.parser.addressListList;
+                commonConfig.snatTranslationList = context.host.parser.snatTranslationList;
 
                 let x;
                 declarationFullId = decl.id;
@@ -722,8 +746,7 @@ class DeclarationHandler {
                 // TODO:  should we do anything about that?
 
                 Object.keys(decl).forEach((key) => {
-                    if (typeof decl[key] === 'object' && decl[key] !== null
-                        && decl[key].class === 'Tenant' && Object.keys(decl[key]).length < 2) {
+                    if (declartionUtil.isTenant(decl[key]) && Object.keys(decl[key]).length < 2) {
                         // empty tenant no longer exists on target device
                         if (Object.prototype.hasOwnProperty.call(newDecl, key)) {
                             delete newDecl[key];
@@ -741,8 +764,7 @@ class DeclarationHandler {
 
                 // do any Tenants remain on target?
                 Object.keys(newDecl).forEach((k) => {
-                    if (typeof newDecl[k] === 'object' && newDecl[k] !== null
-                        && newDecl[k].class === 'Tenant') {
+                    if (declartionUtil.isTenant(newDecl[k])) {
                         if (this.checkForTenantDelete(newDecl[k])) {
                             delete newDecl[k]; // belt and suspenders
                         }
@@ -799,9 +821,7 @@ class DeclarationHandler {
                     for (i = 0; i < keys.length; i += 1) {
                         key = keys[i];
                         x = tenants.indexOf(key);
-                        if ((typeof newDecl[key] === 'object')
-                                && (newDecl[key] !== null)
-                                    && (newDecl[key].class === 'Tenant')) {
+                        if (declartionUtil.isTenant(newDecl[key])) {
                             // found a Tenant
                             if (x < 0) { // match not found in tenantsInPath
                                 if (key !== 'Common') {
@@ -828,7 +848,7 @@ class DeclarationHandler {
 
                 // Only return tenants affected (i.e. included in request)
                 Object.keys(newDecl).forEach((tenant) => {
-                    if (newDecl[tenant] && newDecl[tenant].class === 'Tenant') {
+                    if (declartionUtil.isTenant(newDecl[tenant])) {
                         if (!auditResults.find((result) => result.tenant === tenant)) {
                             delete newDecl[tenant];
                         }
@@ -960,7 +980,7 @@ class DeclarationHandler {
         if (typeof jsonPatch === 'object') {
             if (Object.prototype.hasOwnProperty.call(jsonPatch, 'class')) {
                 // This may be from a POST with action = patch
-                if (jsonPatch.class === 'AS3') {
+                if (declartionUtil.isAS3(jsonPatch)) {
                     jsonPatch = currentTask.patchBody;
                 } else {
                     return DeclarationHandler.buildResult(STATUS_CODES.BAD_REQUEST, 'invalid patch body - refer to AS3 docs for correct syntax.');

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ describe('adcParser', function () {
         sinon.stub(util, 'getVirtualAddressList').resolves([]);
         sinon.stub(util, 'getAccessProfileList').resolves([]);
         sinon.stub(util, 'getAddressListList').resolves([]);
+        sinon.stub(util, 'getSnatTranslationList').resolves([]);
         secretTagSpy = sinon.stub(Tag.SecretTag, 'process').resolves();
         sinon.stub(Tag.LongSecretTag, 'process').resolves();
         sinon.stub(Tag.FetchTag, 'process').resolves();

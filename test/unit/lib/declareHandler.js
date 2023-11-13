@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -672,6 +672,9 @@ describe('DeclareHandler', () => {
                         method: 'Get',
                         action: 'retrieve',
                         isPerApp: true,
+                        perAppInfo: {
+                            apps: ['myApp']
+                        },
                         tracer: new Tracer('test tracer', { enabled: false })
                     };
                     context.tasks = [

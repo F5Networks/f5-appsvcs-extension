@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -287,6 +287,13 @@ describe('Certificate', function () {
                 skipAssert: true
             },
             {
+                name: 'chainCA',
+                inputValue: [
+                    chainCAValue
+                ],
+                skipAssert: true
+            },
+            {
                 name: 'staplerOCSP',
                 inputValue: [
                     undefined,
@@ -309,7 +316,10 @@ describe('Certificate', function () {
                     }
                 },
                 extractFunction: (o) => {
-                    const result = o[0].certValidationOptions ? o[0].certValidationOptions[0] : undefined;
+                    // Since we're adding chainCA to upload, we're going to have a list of 2 objects.
+                    // First one is bundle(shouldn't have OCSP) and second is cert.
+                    // So checking second one for properties.
+                    const result = o[1].certValidationOptions ? o[1].certValidationOptions[0] : undefined;
                     return result;
                 }
             },
@@ -336,8 +346,11 @@ describe('Certificate', function () {
                     }
                 },
                 extractFunction: (o) => {
-                    if (o[0].issuerCert) {
-                        return o[0].issuerCert.split('/').pop();
+                    // Since we're adding chainCA to upload, we're going to have a list of 2 objects.
+                    // First one is bundle(shouldn't have OCSP) and second is cert.
+                    // So checking second one for properties.
+                    if (o[1].issuerCert) {
+                        return o[1].issuerCert.split('/').pop();
                     }
                     return undefined;
                 }

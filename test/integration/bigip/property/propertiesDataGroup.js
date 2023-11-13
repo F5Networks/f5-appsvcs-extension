@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ describe('Data Group', function () {
             },
             {
                 key: 'Rufous',
-                value: 'Selasphorus rufus'
+                value: 'Selasphorus rufus;'
             }
         ]);
         return assertClass('Data_Group', properties);

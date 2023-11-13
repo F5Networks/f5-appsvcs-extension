@@ -545,7 +545,7 @@ Using the HTTP method condition in an Endpoint policy
 `````````````````````````````````````````````````````
 .. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
 
-    Support for the data group condition is available in 3.32 and later.
+    You must be using AS3 3.32 and later for this example.
 
 In this example, we show how you can use the **httpMethod** condition in your Endpoint policy rules. This allows you to match against any HTTP method.  
 
@@ -553,12 +553,7 @@ For more information on LTM Endpoint Policies, see |ltmpol| in the BIG-IP docume
 
 When using **httpMethod**, you must also decide when to evaluate this condition in the request-response cycle. You can specify **request** or **proxy-request**.
 
-**New in BIG-IP AS3 3.32** |br|
-BIG-IP AS3 3.32 introduced support for using data groups, allowing you to reference a data group as the match value for an **httpUri** condition.
-
 See |policycond| and |httpmethod| in the schema reference for more information and BIG-IP AS3 usage.  
-
-.. IMPORTANT:: The example declaration has been updated with the BIG-IP AS3 3.32 release to include the data group HTTP URI condition. If you attempt to use this declaration on a previous version, it will fail. If you are using a version prior to 3.32, remove the lines highlighted in yellow (and the comma in line 44).
 
 This declaration creates the following objects on the BIG-IP:
 
@@ -568,7 +563,7 @@ This declaration creates the following objects on the BIG-IP:
 
 .. literalinclude:: ../../examples/declarations/example-endpoint-policy-http-method-condition.json
     :language: json
-    :emphasize-lines: 45-54
+
 
 :ref:`Back to top<app-sec-examples>`
 
@@ -896,13 +891,40 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
+.. _httpstatus:
 
+Using HTTP Status condition in an Endpoint policy rule
+``````````````````````````````````````````````````````
+.. sidebar:: :fonticon:`fa fa-info-circle fa-lg` Version Notice:
+
+    Support for http-status conditions is available in 3.48 and later.
+
+In this example, we show how you can use the **httpStatus** condition in your Endpoint policy rules. This allows you to match the HTTP status code of an HTTP request and configure the appropriate action.
+
+For more information on LTM Endpoint Policies, see |ltmpol| in the BIG-IP documentation.
+
+Also see |policycond| **Type** in the Schema Reference.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **AS3_Tenant**.
+- An Application named **AS3_Application**.
+- A virtual server named **service** that references an endpoint policy
+- Three Data Groupa named **allDataGroup**, **textDataGroup**, and **codeDataGroup**
+- An Endpoint policy named **test_EP** that contains a rule that includes a number of  **httpStatus** condition examples.
+
+.. literalinclude:: ../../examples/declarations/example-endpoint-policy-http-status-code-condition.json
+    :language: json
+
+:ref:`Back to top<app-sec-examples>`
+
+|
 
 
 
 .. |hhost| raw:: html
 
-   <a href="https://automation-toolchain.pages.gitswarm.f5net.com/f5-appsvcs-extension/public-docs/refguide/declaration-purpose-function.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#policy-condition-http-host" target="_blank">Policy_Condition_HTTP_Host</a>
 
 .. |stringexpand| raw:: html
 

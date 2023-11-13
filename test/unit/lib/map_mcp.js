@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,6 +280,117 @@ describe('map_mcp', () => {
                 ];
                 const result = translate[obj.kind](defaultContext, obj, referenceConfig);
                 assert.deepEqual(result, expected);
+            });
+        });
+
+        describe('tm:security:log:profile:profilestate', () => {
+            it('shoud properly escape and quote user-defined network string', () => {
+                defaultContext.target.provisionedModules = ['afm'];
+                const obj = {
+                    kind: 'tm:security:log:profile:profilestate',
+                    partition: 'myTenant',
+                    subPath: 'myApplication',
+                    name: 'network_log_profile',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile?ver=13.1.5',
+                    fullPath: '/myTenant/myApplication/network_log_profile',
+                    networkReference:
+                    {
+                        link: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile/network?ver=13.1.5',
+                        isSubcollection: true
+                    }
+                };
+                const referenceConfig = [{
+                    kind: 'tm:security:log:profile:network:networkstate',
+                    name: 'undefined',
+                    fullPath: 'undefined',
+                    selfLink: 'https://localhost/mgmt/tm/security/log/profile/~myTenant~myApplication~network_log_profile/network/undefined?ver=13.1.5',
+                    format: {
+                        fieldListDelimiter: ',',
+                        type: 'user-defined',
+                        userDefined: 'foo ${date_time} ${bigip_hostname},${acl_policy_name}' // eslint-disable-line no-template-curly-in-string
+                    }
+                }];
+                const expected = {
+                    command: 'security log profile',
+                    ignore: [],
+                    path: '/myTenant/myApplication/network_log_profile',
+                    properties: {
+                        classification: {
+                            'log-all-classification-matches': 'disabled'
+                        },
+                        'ip-intelligence': {
+                            'aggregate-rate': 4294967295,
+                            'log-publisher': 'none',
+                            'log-translation-fields': 'disabled'
+                        },
+                        nat: {
+                            'end-inbound-session': 'disabled',
+                            'end-outbound-session': {
+                                action: 'disabled'
+                            },
+                            errors: 'disabled',
+                            format: {
+                                'end-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                errors: {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'quota-exceeded': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                }
+                            },
+                            'log-subscriber-id': 'disabled',
+                            'lsn-legacy-mode': 'disabled',
+                            'quota-exceeded': 'disabled',
+                            'rate-limit': {
+                                'aggregate-rate': 4294967295,
+                                'end-inbound-session': 4294967295,
+                                'end-outbound-session': 4294967295,
+                                errors: 4294967295,
+                                'quota-exceeded': 4294967295,
+                                'start-inbound-session': 4294967295,
+                                'start-outbound-session': 4294967295
+                            },
+                            'start-inbound-session': 'disabled',
+                            'start-outbound-session': {
+                                action: 'disabled'
+                            }
+                        },
+                        network: {
+                            undefined: {
+                                format: {
+                                    type: 'user-defined',
+                                    'user-defined': '"foo \\$\\{date_time\\} \\$\\{bigip_hostname\\},\\$\\{acl_policy_name\\}"' // eslint-disable-line no-template-curly-in-string
+                                }
+                            }
+                        },
+                        'protocol-dns': {},
+                        'protocol-inspection': {
+                            'log-packet': 'disabled'
+                        },
+                        'protocol-sip': {},
+                        'protocol-transfer': {},
+                        'ssh-proxy': {}
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(results[0], expected);
             });
         });
 
@@ -2064,7 +2175,7 @@ describe('map_mcp', () => {
         });
 
         describe('tm:ltm:cipher:rule:rulestate', () => {
-            it('should return ltm cupher rule', () => {
+            it('should return ltm cipher rule', () => {
                 const obj = {
                     kind: 'tm:ltm:cipher:rule:rulestate',
                     description: 'The item description',
@@ -2260,6 +2371,194 @@ describe('map_mcp', () => {
                                     }
                                 },
                                 strategy: '/Common/first-match'
+                            },
+                            ignore: []
+                        }
+                    ]
+                );
+            });
+
+            it('should handle values that have spaces', () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'test_EP',
+                    partition: 'AS3_Tenant',
+                    subPath: 'AS3_Application',
+                    fullPath: '/AS3_Tenant/AS3_Application/test_EP',
+                    requires: [
+                        'http'
+                    ],
+                    status: 'legacy',
+                    strategy: '/Common/best-match',
+                    references: {},
+                    rulesReference: {
+                        isSubcollection: true,
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'log',
+                                fullPath: 'log',
+                                ordinal: 0,
+                                conditionsReference: {
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            caseInsensitive: true,
+                                            contains: true,
+                                            external: true,
+                                            httpStatus: true,
+                                            index: 0,
+                                            present: true,
+                                            remote: true,
+                                            response: true,
+                                            text: true,
+                                            values: [
+                                                'Unauthorized',
+                                                'Payment Required'
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results,
+                    [
+                        {
+                            path: '/AS3_Tenant/AS3_Application/test_EP',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    log: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-status response text contains values { Unauthorized "Payment Required" } case-insensitive'
+                                            }
+                                        },
+                                        actions: {}
+                                    }
+                                },
+                                strategy: '/Common/best-match'
+                            },
+                            ignore: []
+                        }
+                    ]);
+            });
+
+            it("should return ltm 'http-uri' policy", () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'test_EP',
+                    partition: 'AS3_Tenant',
+                    subPath: 'AS3_Application',
+                    fullPath: '/AS3_Tenant/AS3_Application/test_EP',
+                    requires: [
+                        'http'
+                    ],
+                    status: 'legacy',
+                    strategy: '/Common/best-match',
+                    references: {},
+                    rulesReference: {
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstate',
+                                name: 'replace',
+                                fullPath: 'replace',
+                                ordinal: 0,
+                                actionsReference: {
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            code: 0,
+                                            expirySecs: 0,
+                                            httpUri: true,
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            replace: true,
+                                            request: true,
+                                            status: 0,
+                                            timeout: 0,
+                                            value: 'http://127.0.0.1',
+                                            vlanId: 0
+                                        }
+                                    ]
+                                },
+                                conditionsReference: {
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            caseInsensitive: true,
+                                            contains: true,
+                                            datagroup: '/AS3_Tenant/AS3_Application/uriDataGroup',
+                                            external: true,
+                                            host: true,
+                                            httpUri: true,
+                                            index: 0,
+                                            present: true,
+                                            remote: true,
+                                            request: true
+                                        },
+                                        {
+                                            kind: 'tm:ltm:policy:rules:conditions:conditionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            caseInsensitive: true,
+                                            datagroup: '/AS3_Tenant/AS3_Application/portDataGroup',
+                                            equals: true,
+                                            external: true,
+                                            httpUri: true,
+                                            index: 0,
+                                            port: true,
+                                            present: true,
+                                            remote: true,
+                                            request: true
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results,
+                    [
+                        {
+                            path: '/AS3_Tenant/AS3_Application/test_EP',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    replace: {
+                                        ordinal: 0,
+                                        conditions: {
+                                            0: {
+                                                policyString: 'http-uri request host contains datagroup /AS3_Tenant/AS3_Application/uriDataGroup case-insensitive'
+                                            },
+                                            1: {
+                                                policyString: 'http-uri request port equals datagroup /AS3_Tenant/AS3_Application/portDataGroup'
+                                            }
+                                        },
+                                        actions: {
+                                            0: {
+                                                policyString: 'http-uri request replace value http://127.0.0.1'
+                                            }
+                                        }
+                                    }
+                                },
+                                strategy: '/Common/best-match'
                             },
                             ignore: []
                         }
@@ -3103,95 +3402,148 @@ describe('map_mcp', () => {
                 assert.strictEqual(properties.destination, undefined);
                 assert.strictEqual(properties.source, undefined);
             });
-        });
-    });
 
-    describe('tm:ltm:snat-translation:snat-translationstate', () => {
-        it('should return ltm profile snat-translation with mostly default values', () => {
-            const obj = {
-                kind: 'tm:ltm:snat-translation:snat-translationstate',
-                name: '10.10.21.21',
-                partition: 'Common',
-                fullPath: '/Common/10.10.21.21',
-                generation: 44780,
-                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Common~10.10.21.21?ver=17.0.0',
-                address: '10.10.21.21',
-                arp: 'enabled',
-                connectionLimit: 4294967295,
-                enabled: true,
-                inheritedTrafficGroup: 'true',
-                ipIdleTimeout: 'indefinite',
-                tcpIdleTimeout: 'indefinite',
-                trafficGroup: '/Common/traffic-group-1',
-                trafficGroupReference: {
-                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
-                },
-                udpIdleTimeout: 'indefinite',
-                unit: 1
-            };
-            const results = translate[obj.kind](defaultContext, obj);
-            assert.deepStrictEqual(
-                results[0],
-                {
-                    path: '/Common/10.10.21.21',
-                    command: 'ltm snat-translation',
-                    properties: {
-                        address: '10.10.21.21',
-                        arp: 'enabled',
-                        'connection-limit': 4294967295,
-                        enabled: {},
-                        'ip-idle-timeout': 'indefinite',
-                        'tcp-idle-timeout': 'indefinite',
-                        'traffic-group': 'default',
-                        'udp-idle-timeout': 'indefinite'
-                    },
-                    ignore: []
-                }
-            );
+            it('should handle 0.0.0.0 in destination', () => {
+                const obj = {
+                    kind: 'tm:ltm:virtual:virtualstate',
+                    name: 'vs',
+                    partition: 'Tenant0.0.0.0',
+                    subPath: 'app0',
+                    fullPath: '/Tenant0.0.0.0/app0/vs',
+                    destination: '/Tenant0.0.0.0/0.0.0.0:443'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert(results[0].properties.destination, '/Tenant0.0.0.0/any:443');
+            });
         });
 
-        it('should return ipv6 ltm profile with more customized values', () => {
-            const obj = {
-                kind: 'tm:ltm:snat-translation:snat-translationstate',
-                name: '2001:db8::1',
-                partition: 'Tenant',
-                subPath: 'Application',
-                fullPath: '/Tenant/Application/2001:db8::1',
-                generation: 48870,
-                selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Tenant~Application~2001:db8::1?ver=17.0.0',
-                address: '2001:db8::1',
-                arp: 'enabled',
-                connectionLimit: 0,
-                disabled: true,
-                inheritedTrafficGroup: 'false',
-                ipIdleTimeout: '3000',
-                tcpIdleTimeout: '1000',
-                trafficGroup: '/Common/traffic-group-1',
-                trafficGroupReference: {
-                    link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
-                },
-                udpIdleTimeout: '2000',
-                unit: 1
-            };
-            const results = translate[obj.kind](defaultContext, obj);
-            assert.deepStrictEqual(
-                results[0],
-                {
-                    path: '/Tenant/Application/2001:db8::1',
-                    command: 'ltm snat-translation',
-                    properties: {
-                        address: '2001:db8::1',
-                        arp: 'enabled',
-                        'connection-limit': 0,
-                        disabled: {},
-                        'ip-idle-timeout': '3000',
-                        'tcp-idle-timeout': '1000',
-                        'traffic-group': '/Common/traffic-group-1',
-                        'udp-idle-timeout': '2000'
+        describe('tm:ltm:data-group:internal:internalstate', () => {
+            it('should handle internal data-group config', () => {
+                const obj = {
+                    kind: 'tm:ltm:data-group:internal:internalstate',
+                    name: 'dataGroup',
+                    partition: 'tenant',
+                    subPath: 'app',
+                    fullPath: '/tenant/app/dataGroup',
+                    type: 'string',
+                    records: [
+                        {
+                            name: 'test.data.group',
+                            data: 'The data;'
+                        },
+                        {
+                            name: 'quotes',
+                            data: 'has \\"quotes\\"'
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        description: 'none',
+                        type: 'string',
+                        records: {
+                            '"test.data.group"': {
+                                data: '"The data\\;"'
+                            },
+                            '"quotes"': {
+                                data: '"has \\"quotes\\""'
+                            }
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:ltm:snat-translation:snat-translationstate', () => {
+            it('should return ltm profile snat-translation with mostly default values', () => {
+                const obj = {
+                    kind: 'tm:ltm:snat-translation:snat-translationstate',
+                    name: '10.10.21.21',
+                    partition: 'Common',
+                    fullPath: '/Common/10.10.21.21',
+                    generation: 44780,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Common~10.10.21.21?ver=17.0.0',
+                    address: '10.10.21.21',
+                    arp: 'enabled',
+                    connectionLimit: 4294967295,
+                    enabled: true,
+                    inheritedTrafficGroup: 'true',
+                    ipIdleTimeout: 'indefinite',
+                    tcpIdleTimeout: 'indefinite',
+                    trafficGroup: '/Common/traffic-group-1',
+                    trafficGroupReference: {
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
                     },
-                    ignore: []
-                }
-            );
+                    udpIdleTimeout: 'indefinite',
+                    unit: 1
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Common/10.10.21.21',
+                        command: 'ltm snat-translation',
+                        properties: {
+                            address: '10.10.21.21',
+                            arp: 'enabled',
+                            'connection-limit': 4294967295,
+                            enabled: {},
+                            'ip-idle-timeout': 'indefinite',
+                            'tcp-idle-timeout': 'indefinite',
+                            'traffic-group': 'default',
+                            'udp-idle-timeout': 'indefinite'
+                        },
+                        ignore: []
+                    }
+                );
+            });
+
+            it('should return ipv6 ltm profile with more customized values', () => {
+                const obj = {
+                    kind: 'tm:ltm:snat-translation:snat-translationstate',
+                    name: '2001:db8::1',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/2001:db8::1',
+                    generation: 48870,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/snat-translation/~Tenant~Application~2001:db8::1?ver=17.0.0',
+                    address: '2001:db8::1',
+                    arp: 'enabled',
+                    connectionLimit: 0,
+                    disabled: true,
+                    inheritedTrafficGroup: 'false',
+                    ipIdleTimeout: '3000',
+                    tcpIdleTimeout: '1000',
+                    trafficGroup: '/Common/traffic-group-1',
+                    trafficGroupReference: {
+                        link: 'https://localhost/mgmt/tm/cm/traffic-group/~Common~traffic-group-1?ver=17.0.0'
+                    },
+                    udpIdleTimeout: '2000',
+                    unit: 1
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Tenant/Application/2001:db8::1',
+                        command: 'ltm snat-translation',
+                        properties: {
+                            address: '2001:db8::1',
+                            arp: 'enabled',
+                            'connection-limit': 0,
+                            disabled: {},
+                            'ip-idle-timeout': '3000',
+                            'tcp-idle-timeout': '1000',
+                            'traffic-group': '/Common/traffic-group-1',
+                            'udp-idle-timeout': '2000'
+                        },
+                        ignore: []
+                    }
+                );
+            });
         });
     });
 });

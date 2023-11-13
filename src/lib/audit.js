@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,6 +239,65 @@ const getPostProcessInfo = function () {
     return postProcessInfo;
 };
 
+const isSharedNeeded = (declaration, tenant) => {
+    let sharedRefRegex = /"Shared\//;
+    const declString = JSON.stringify(declaration);
+
+    if (sharedRefRegex.test(declString)) {
+        return true;
+    }
+
+    sharedRefRegex = new RegExp(`"/${tenant}/Shared/`);
+    if (sharedRefRegex.test(declString)) {
+        return true;
+    }
+
+    return false;
+};
+
+const filterConfigForPerApp = function (context, config, declaration) {
+    const filteredConfig = util.simpleCopy(config);
+
+    if (!context.request.isPerApp) {
+        return filteredConfig;
+    }
+
+    const alwaysNeededCommands = [
+        'auth partition',
+        'ltm node',
+        'ltm virtual-address'
+    ];
+
+    function isNeeded(tenantName, itemName, configItem, requiredApps) {
+        if (alwaysNeededCommands.indexOf(configItem.command) !== -1) {
+            return true;
+        }
+
+        let needed = false;
+        requiredApps.forEach((appName) => {
+            if (itemName.startsWith(`/${tenantName}/${appName}/`)) {
+                needed = true;
+            }
+        });
+
+        return needed;
+    }
+
+    const requiredApps = context.request.perAppInfo.apps.slice();
+    if (isSharedNeeded(declaration, context.request.perAppInfo.tenant)) {
+        requiredApps.push('Shared');
+    }
+
+    const configKeys = Object.keys(filteredConfig);
+    configKeys.forEach((configKey) => {
+        if (!isNeeded(context.request.perAppInfo.tenant, configKey, filteredConfig[configKey], requiredApps)) {
+            delete filteredConfig[configKey];
+        }
+    });
+
+    return filteredConfig;
+};
+
 /**
  * audit specified Tenant
  *
@@ -266,11 +325,9 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
 
     const tenantControls = util.simpleCopy(context.control);
 
-    if (!context.request.isPerApp) {
-        // Update tenantControls object with any tenant controls from the declaration
-        // PerApp does not support tenant controls, yet
-        util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
-    }
+    // Update tenantControls object with any tenant controls from the declaration
+    util.updateControlsWithDecl(tenantControls, declaration[tenantId].controls);
+
     log.updateGlobalSettings(tenantControls);
 
     if (typeof tenantControls.fortune !== 'undefined') {
@@ -345,6 +402,13 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
             () => fetch.getDesiredConfig(context, tenantId, declaration, commonConfig)
         ))
         .then((result) => {
+            if (!context.request.isPerApp) {
+                return result;
+            }
+
+            return filterConfigForPerApp(context, result, declaration);
+        })
+        .then((result) => {
             tenantDesiredConfig = result;
             log.writeTraceFile(tenantId, 'desired', JSON.stringify(result, undefined, 2));
         })
@@ -364,6 +428,13 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
                 `parsing current ${tenantId} config`,
                 () => fetch.getTenantConfig(context, tenantId, commonConfig)
             );
+        })
+        .then((result) => {
+            if (!context.request.isPerApp) {
+                return result;
+            }
+
+            return filterConfigForPerApp(context, result, declaration);
         })
         .then((result) => {
             tenantCurrentConfig = result;

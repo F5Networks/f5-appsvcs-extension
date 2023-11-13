@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,14 +138,17 @@ const tenantList = function (declaration, perAppInfo) {
 };
 
 /**
- * Currently just handles replacing certificate references, but
- * this can be expanded later if there is additional post processing
- * needed.
+ * Updates desired config for some custom business logic.
+ *   - Replaces certificate names that have .crt with .key
+ *   - Checks for domain name aliases
+ *   - Looks for duplicate snat translations.
+ * Can be modified for post processing requirements
  *
  * @param {object} config
- * @param {array} postProcessing Array of changes to make
+ * @param {object[]} postProcessing - Array of changes to make
+ * @param {object[]} commonSnatTranslations - Array of objects describing existing snat translations in Common
  */
-const desiredConfigPostProcessing = function (config, postProcessing) {
+const desiredConfigPostProcessing = function (config, postProcessing, commonSnatTranslations) {
     // In some cases (Monitor clientCertificates, for example) we have a cert but not a key. However
     // TMOS needs there to be a key property. If the user did not specify a key, we'll have to fake it. Check
     // here to see if any postProcessing updates have an oldString that end in '.key'
@@ -189,10 +192,18 @@ const desiredConfigPostProcessing = function (config, postProcessing) {
         }
     });
 
-    // remove overlap to find snat pool addresses that BIGIP will create snat translations for if we do not
-    snatTranslationAddresses.forEach((tChange) => {
-        snatPoolAddresses.forEach((pChange) => {
+    snatPoolAddresses.forEach((pChange) => {
+        // remove overlap to find snat pool addresses that BIGIP will create snat translations for if we do not
+        // so that we don't overwrite when we create the default translations below
+        snatTranslationAddresses.forEach((tChange) => {
             if (tChange.name === pChange.name && tChange.snatTranslationAddress === pChange.snatPoolAddress) {
+                snatPoolAddresses.delete(pChange);
+            }
+        });
+
+        // Don't create anything we already have an match for in /Common
+        (commonSnatTranslations || []).forEach((commonSnatTrans) => {
+            if (pChange.snatPoolAddress === commonSnatTrans.address) {
                 snatPoolAddresses.delete(pChange);
             }
         });
@@ -519,7 +530,7 @@ function isConfigForCommonNode(command, name, properties) {
     const fqdnPrefix = util.getDeepValue(properties, 'metadata.fqdnPrefix.value');
     const fqdnName = util.getDeepValue(properties, 'fqdn.tmName');
     return name === `/Common/${properties.address}`
-        || name === `/Common/${fqdnPrefix}${fqdnName}`;
+        || name === `/Common/${fqdnPrefix === 'none' ? '' : fqdnPrefix}${fqdnName}`;
 }
 
 // update metadata for Common virtual addresses.  Allow delete if ref count is going to 0
@@ -679,7 +690,8 @@ const getDesiredConfig = function (context, tenantId, declaration, commonConfig)
             if (context.request.postProcessing.length > 0) {
                 context.request.postProcessing = desiredConfigPostProcessing(
                     desiredConfig,
-                    context.request.postProcessing
+                    context.request.postProcessing,
+                    commonConfig.snatTranslationList
                 );
             }
             updateDesiredForCommonNodes(desiredConfig, commonConfig.nodeList);
@@ -1366,8 +1378,7 @@ const gtmNeedsModifyAliasCommand = function (configDiff, diff) {
 
         const confDiffOrig = configDiff.filter((confDiff) => confDiff.kind === 'D'
             && confDiff.path.length === 1
-            && confDiff.lhs !== undefined
-            && confDiff.lhs !== {}
+            && !util.isEmptyOrUndefined(confDiff.lhs)
             && confDiff.lhs.properties
             && confDiff.lhs.properties.aliases
             && Object.keys(confDiff.lhs.properties.aliases).length > 0
@@ -1386,8 +1397,7 @@ const gtmNeedsModifyAliasCommand = function (configDiff, diff) {
         // alias came from a domain that is either deleted or renamed
         if (existingAlias.length === 0) {
             existingAlias = configDiff.filter((confDiff) => confDiff.kind === 'D'
-                && confDiff.lhs !== undefined
-                && confDiff.lhs !== {}
+                && !util.isEmptyOrUndefined(confDiff.lhs)
                 && confDiff.lhs.properties
                 && confDiff.lhs.properties.aliases
                 && Object.keys(confDiff.lhs.properties.aliases).length > 0
@@ -1578,6 +1588,33 @@ const addRenameCase = function (diff) {
     return newDiff.concat(createObjs);
 };
 
+// Finds snat-translations that are referenced by a snatpool that we are not deleting
+const filterReferencedSnatTranslations = function (context, diffs) {
+    let filteredDiffs = util.simpleCopy(diffs);
+
+    const isReferencedSnatTranslation = function (diff, referencedMembers) {
+        return diff.kind === 'D'
+            && diff.lhs.command === 'ltm snat-translation'
+            && referencedMembers.indexOf(diff.path[0]) !== -1;
+    };
+
+    return Promise.resolve()
+        .then(() => util.getSnatPoolList(context))
+        .then((remainingPools) => {
+            const referencedMembers = [];
+            remainingPools.forEach((snatPool) => {
+                snatPool.members.forEach((member) => {
+                    referencedMembers.push(member);
+                });
+            });
+            return referencedMembers;
+        })
+        .then((referencedMembers) => {
+            filteredDiffs = filteredDiffs.filter((diff) => !isReferencedSnatTranslation(diff, referencedMembers));
+            return filteredDiffs;
+        });
+};
+
 const getDiff = function (context, currentConfig, desiredConfig, commonConfig, tenantId, uncheckedDiff) {
     const prefilter = function (objPath, objKey) {
         if ((objPath.length === 1 && objKey === 'ignore')
@@ -1717,6 +1754,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     });
 
     let finalDiffs = [];
+    let filterSnatTranslations = false;
     const initialDiffs = deepDiff(currentConfig, desiredConfig, prefilter) || [];
     const pathCounts = initialDiffs.reduce((counts, diff) => {
         const path = diff.path[0];
@@ -1735,6 +1773,10 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             keep = false;
         }
         if (tenantId === 'Common' && diff.kind === 'D' && diff.lhs.command === 'ltm snat-translation') {
+            // if we are deleting any snat translations, make a note so we can make sure we're not going to
+            // delete something that is still referenced (for example, something that was not created by AS3)
+            filterSnatTranslations = true;
+
             // if the translation address matches a deleting snat pool then let the BIGIP auto delete it
             if (snatPoolAddresses.has(`/Common/${diff.lhs.properties.address}`)) {
                 keep = false;
@@ -1755,6 +1797,15 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     });
 
     return preserveDiscoveredNodes(context, finalDiffs, currentConfig)
+        .then(() => {
+            if (filterSnatTranslations) {
+                return filterReferencedSnatTranslations(context, finalDiffs);
+            }
+            return finalDiffs;
+        })
+        .then((filteredDiffs) => {
+            finalDiffs = filteredDiffs;
+        })
         .then(() => {
             finalDiffs = addRenameCase(finalDiffs);
         })
@@ -1854,7 +1905,10 @@ const updateWildcardMonitorCommands = function (trans) {
                 const nextCmd = commands[index + 1];
                 const isNextCreate = isDeleteCmd && nextCmd && nextCmd.indexOf(cmd.replace('delete', 'create')) > -1;
                 const monName = cmd.substring(cmd.lastIndexOf(' ') + 1);
-                const matchingPools = poolEntries.filter((p) => p.indexOf(monName) > -1);
+                const matchingPools = poolEntries.filter((poolCmd) => {
+                    const monRegex = new RegExp(`\\s${monName}\\s`);
+                    return monRegex.test(poolCmd);
+                });
                 if (isDeleteCmd && isNextCreate && matchingPools.length) {
                     // separate delete and detach monitor into its own transaction
                     newTransCmds.push(getDetachFromPoolCmds(matchingPools));
@@ -2605,6 +2659,11 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     });
                 } else if (diffUpdates.commands.indexOf('mgmt shared service-discovery rpc') > -1) {
                     preTrans.push(diffUpdates.commands);
+                } else if (diffUpdates.commands.indexOf('delete ltm pool') > -1
+                    && diffUpdates.commands.indexOf('create ltm pool') < 0) {
+                    // Deleting the pool before nodes ensures that FQDN auto generated
+                    // nodes are cleaned up.
+                    arrayUtil.insertBeforeOrAtEnd(trans, 'ltm node', diffUpdates.commands);
                 } else if (!isModifyGtmServer(diffUpdates)) {
                     // put all other delete commands into the cli transaction
                     trans.push(diffUpdates.commands);

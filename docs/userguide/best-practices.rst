@@ -1,7 +1,7 @@
 .. _best-practice: 
 
 BIG-IP AS3 Best Practices
-========================
+=========================
 This page contains best practices for using BIG-IP AS3 as well as a brief architectural overview.  
 This page is also on DevCentral, where there may be more frequent updates and user interaction, see https://community.f5.com/t5/technical-articles/as3-best-practice/ta-p/287466.
 
@@ -97,6 +97,8 @@ If you experience issues such as a timeout on **restjavad**, it is possible your
 Increase the restjavad memory allocation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The memory size of restjavad can be increased by the following tmsh sys db commands.
+
+.. WARNING:: These commands have changed for some versions of BIG-IP, see `K000133258: Sys DB restjavad.useextramb has been removed after upgrade <https://my.f5.com/manage/s/article/K000133258>`_ for details.
 
 .. IMPORTANT:: Do not provision more than 2400MB of memory for restjavad. For more information, see `K30042148: Restjavad memory provisioning threshold limit <https://support.f5.com/csp/article/K30042148>`_
 

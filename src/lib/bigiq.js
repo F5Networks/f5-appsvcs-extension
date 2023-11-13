@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ const deployTenant = function (context, tenantId, declaration) {
 
 function updatePayloadForDryRun(context, payload) {
     if (context.tasks[context.currentIndex].dryRun) {
-        let controlsClass = Object.keys(payload).find((key) => payload[key].class === 'Controls');
+        let controlsClass = util.getObjectNameWithClassName(payload, 'Controls');
         if (!controlsClass) {
             controlsClass = 'controls';
             payload[controlsClass] = {};
@@ -157,7 +157,7 @@ function updatePayloadForDryRun(context, payload) {
 
 function updatePayloadUserAgent(context, payload) {
     const bigIqVersion = context.target.tmosVersion.match(/^([0-9]+)\.([0-9]+)/)[0];
-    let controlsClass = Object.keys(payload).find((key) => payload[key].class === 'Controls');
+    let controlsClass = util.getObjectNameWithClassName(payload, 'Controls');
 
     if (!controlsClass) {
         controlsClass = 'controls';

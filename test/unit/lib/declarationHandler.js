@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1647,7 +1647,14 @@ describe('DeclarationHandler', () => {
                             App1: { class: 'Application' },
                             controls: { class: 'Controls' }
                         },
-                        secondTenant: { class: 'Tenant', App2: { class: 'Application' } },
+                        secondTenant: {
+                            class: 'Tenant',
+                            controls: {
+                                class: 'Controls',
+                                storedValue: true
+                            },
+                            App2: { class: 'Application' }
+                        },
                         Common: {
                             class: 'Tenant',
                             Shared: {
@@ -1798,6 +1805,10 @@ describe('DeclarationHandler', () => {
                     class: 'ADC',
                     secondTenant: {
                         class: 'Tenant',
+                        controls: {
+                            class: 'Controls',
+                            storedValue: true
+                        },
                         newApp: {
                             class: 'Application',
                             service: {
@@ -1862,6 +1873,10 @@ describe('DeclarationHandler', () => {
                                 },
                                 secondTenant: {
                                     class: 'Tenant',
+                                    controls: {
+                                        class: 'Controls',
+                                        storedValue: true
+                                    },
                                     App2: { class: 'Application' },
                                     newApp: {
                                         class: 'Application',
@@ -1879,6 +1894,64 @@ describe('DeclarationHandler', () => {
                     });
             });
 
+            it('should remove stored controls if they are not in the incoming declaration', () => {
+                context.tasks[0].fullPath = 'shared/appsvcs/declare/secondTenant/applications';
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    secondTenant: {
+                        class: 'Tenant',
+                        newApp: {
+                            class: 'Application',
+                            service: {
+                                class: 'Service_HTTP',
+                                virtualAddresses: [{
+                                    use: '/Common/Shared/192.0.2.10'
+                                }]
+                            }
+                        }
+                    }
+                };
+                context.request.method = 'Post';
+                context.request.isPerApp = true;
+                context.request.perAppInfo = {
+                    apps: ['newApp'],
+                    tenant: 'secondTenant'
+                };
+
+                const auditSpy = sinon.stub(audit, 'allTenants').resolves([
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'Common',
+                        runTime: 956
+                    },
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'secondTenant',
+                        runTime: 956
+                    },
+                    {
+                        code: 200,
+                        message: 'success',
+                        lineCount: 21,
+                        host: 'localhost',
+                        tenant: 'Common',
+                        runTime: 956
+                    }
+                ]);
+
+                return handler.handleCreateUpdateOrDelete(context)
+                    .then(() => {
+                        const declPassedToAudit = auditSpy.args[0][2];
+                        assert.strictEqual(declPassedToAudit.secondTenant.controls, undefined);
+                    });
+            });
+
             it('should delete application from declaration', () => {
                 context.tasks[0].fullPath = 'shared/appsvcs/declare/firstTenant/applications/App1';
                 context.tasks[0].action = 'remove';
@@ -1886,7 +1959,8 @@ describe('DeclarationHandler', () => {
                     class: 'ADC',
                     schemaVersion: '3.0.0',
                     id: 'randomGibberish',
-                    updateMode: 'complete'
+                    updateMode: 'complete',
+                    firstTenant: {}
                 };
                 context.request.method = 'Remove';
                 context.request.isPerApp = true;

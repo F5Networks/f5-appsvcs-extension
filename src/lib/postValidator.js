@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 'use strict';
 
 const util = require('./util/util');
+const declarationUtil = require('./util/declarationUtil');
 const constants = require('./constants');
 
 class postValidator {
@@ -132,10 +133,10 @@ function findItems(declaration, itemName) {
     const decKeys = Object.keys(declaration);
     decKeys.forEach((decKey) => {
         const tenant = declaration[decKey];
-        if (typeof tenant === 'object' && tenant.class === 'Tenant') {
+        if (declarationUtil.isTenant(tenant)) {
             Object.keys(tenant).forEach((tenKey) => {
                 const application = tenant[tenKey];
-                if (typeof application === 'object' && application.class === 'Application') {
+                if (declarationUtil.isApplication(application)) {
                     Object.keys(application).forEach((appKey) => {
                         const item = application[appKey];
                         if (typeof item === 'object' && item.class === itemName) {
@@ -154,11 +155,11 @@ function validatePathLengths(declaration) {
     const decKeys = Object.keys(declaration);
     decKeys.forEach((decKey) => {
         const tenant = declaration[decKey];
-        if (typeof tenant === 'object' && tenant.class === 'Tenant') {
+        if (declarationUtil.isTenant(tenant)) {
             const tenantName = decKey;
             Object.keys(tenant).forEach((tenKey) => {
                 const application = tenant[tenKey];
-                if (typeof application === 'object' && application.class === 'Application') {
+                if (declarationUtil.isApplication(application)) {
                     const applicationName = tenKey;
                     Object.keys(application).forEach((appKey) => {
                         const possibleClass = application[appKey];

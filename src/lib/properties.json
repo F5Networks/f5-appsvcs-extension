@@ -359,7 +359,9 @@
     { "id":"ratio" },
     { "id":"priorityGroup" },
     { "id":"monitor",                   "altId": "monitors"},
-    { "id":"minimumMonitors" }
+    { "id":"minimumMonitors" },
+    { "id":"state" },
+    { "id":"session" }
   ],
   "mgmt shared service-discovery task providerOptions": [
     { "id":"nodes",                     "extend": "objArray", "default": null},
@@ -1626,7 +1628,7 @@
     { "id":"field-list",                "altId": "fields", "extend": "array", "default": null},
     { "id":"field-list-delimiter",      "altId": "delimiter", "default": ","},
     { "id":"type"},
-    { "id":"user-defined"}
+    { "id":"user-defined",              "quotedString": true }
   ],
   "security log profile network filter": [
     { "id":"log-acl-match-accept",     "altId": "logRuleMatchAccepts", "truth": "enabled", "falsehood": "disabled"},

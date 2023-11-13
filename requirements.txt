@@ -6,3 +6,4 @@ sphinxjp.themes.basicstrap
 cloud_sptheme
 sphinx_copybutton
 rst2html
+Jinja2==3.0

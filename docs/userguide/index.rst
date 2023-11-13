@@ -41,6 +41,7 @@ User Guide Index
    settings-endpoint
    burst-handling
    unchecked-mode
+   per-app-declarations
    examples
    logging
    troubleshooting

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 'use strict';
 
 const uuid = require('uuid');
+const util = require('./util');
+const declarationUtil = require('./declarationUtil');
 const STATUS_CODES = require('../constants').STATUS_CODES;
 
 /**
@@ -33,7 +35,7 @@ const convertToPerTenant = (perAppDeclaration, perAppInfo) => {
         return perAppDeclaration || {};
     }
 
-    if (perAppDeclaration.class === 'ADC' || typeof perAppDeclaration[perAppInfo.tenant] !== 'undefined') {
+    if (declarationUtil.isADC(perAppDeclaration) || typeof perAppDeclaration[perAppInfo.tenant] !== 'undefined') {
         // perAppDeclaration is likely already converted to perTenant
         return perAppDeclaration;
     }
@@ -51,6 +53,12 @@ const convertToPerTenant = (perAppDeclaration, perAppInfo) => {
     perAppInfo.apps.forEach((app) => {
         perTenantDecl[perAppInfo.tenant][app] = perAppDeclaration[app];
     });
+
+    // Copy in controls if they are there
+    const controlsName = util.getObjectNameWithClassName(perAppDeclaration, 'Controls') || 'controls';
+    if (perAppDeclaration[controlsName]) {
+        perTenantDecl[perAppInfo.tenant][controlsName] = util.simpleCopy(perAppDeclaration[controlsName]);
+    }
 
     return perTenantDecl;
 };
@@ -84,7 +92,7 @@ const convertToPerApp = (perTenDeclaration, perAppInfo) => {
     if (perAppInfo.apps.length === 0) {
         // If the apps array is empty, we want all apps in tenant
         Object.keys(perTenDeclaration[perAppInfo.tenant]).forEach((app) => {
-            if (perTenDeclaration[perAppInfo.tenant][app].class === 'Application') {
+            if (declarationUtil.isApplication(perTenDeclaration[perAppInfo.tenant][app])) {
                 perAppDecl[app] = perTenDeclaration[perAppInfo.tenant][app];
             }
         });
@@ -111,8 +119,9 @@ const isPerAppPath = (path) => {
 
 /**
  * Takes a per-tenant declaration and merges any additional tenant data from the previously saved declaration.
- * Objects in the per-tenant declaration will take precedence and not be overwritten by matching objects in the
- * previously saved declaration.
+ * Objects in the per-tenant declaration will take precedence and overwrite matching objects in the
+ * previously saved declaration. Only applications that are in the perTenantDeclaration will be merged, as
+ * well as 'Shared' if it is needed.
  *
  * @param {object} perTenantDeclaration - Per-tenant declaration to have data merged into
  * @param {object} prevDeclaration - Previously saved declaration to have data merged from

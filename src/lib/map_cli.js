@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -818,7 +818,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             if (targetConfig['sender-tag-class'] === '' || targetConfig['sender-tag-class'] === 'none') {
                 targetConfig['sender-tag-class'] = 'none';
             }
-        } else if (targetConfig['sender-tag-class'] === {} || !targetConfig['sender-tag-class'] || ['sender-tag-class'] === []) {
+        } else if (util.isEmptyOrUndefined(targetConfig['sender-tag-class'])) {
             targetConfig['sender-tag-class'] = 'none';
         } else {
             const keys = Object.keys(targetConfig['sender-tag-class']);

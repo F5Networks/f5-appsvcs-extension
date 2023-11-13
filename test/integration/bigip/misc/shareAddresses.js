@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -436,10 +436,16 @@ describe('shareAddresses', function () {
                 })
                 // Virtual-addresses should be removed from /Tenant once associated apps are removed
                 .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/appOne?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/appTwo?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 .then(() => getPath('/mgmt/tm/ltm/virtual-address?$filter=partition%20eq%20Tenant'))
                 .then((response) => {
-                    assert.strictEqual(response.items.length, 0, 'virtual-addresses should be removed from Tenant');
+                    assert.strictEqual((response.items || []).length, 0, 'virtual-addresses should be removed from Tenant');
                 });
         });
     });

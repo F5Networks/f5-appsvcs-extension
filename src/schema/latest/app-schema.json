@@ -12,7 +12,8 @@
             "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
             "minLength": 0,
             "maxLength": 255
-        }
+        },
+        "controls": { "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Controls" }
     },
     "additionalProperties": {
         "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Application"
@@ -20,20 +21,5 @@
     "propertyNames": {
         "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
         "maxLength": 190
-    },
-    "allOf": [
-        {
-            "if": {
-                "required": [
-                  "id"
-                ]
-            },
-            "then": {
-                "minProperties": 2
-            },
-            "else": {
-                "minProperties": 1
-            }
-        }
-    ]
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,7 @@ describe('map_as3', () => {
     });
 
     describe('Endpoint_Policy', () => {
-        it('should handle datagroup', () => {
+        it('should create policy strings', () => {
             defaultContext.target.tmosVersion = '13.1';
             const actions = [
                 {
@@ -244,6 +244,50 @@ describe('map_as3', () => {
                         }
                     },
                     expected: 'http-host proxy-connect port equals values { 8080 8443 } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        all: {
+                            operand: 'is',
+                            values: ['200 OK']
+                        }
+                    },
+                    expected: 'http-status response all equals values { "200 OK" } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        text: {
+                            operand: 'is-not',
+                            values: ['Reset Content', 'Partial Content', 'Multi-Status']
+                        }
+                    },
+                    expected: 'http-status response text not equals values { "Reset Content" "Partial Content" Multi-Status } case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'httpStatus',
+                        event: 'response',
+                        code: {
+                            operand: 'greater-or-equal',
+                            values: [400]
+                        }
+                    },
+                    expected: 'http-status response code greater-or-equal values { 400 }'
+                },
+                {
+                    input: {
+                        type: 'httpUri',
+                        event: 'request',
+                        port: {
+                            operand: 'equals',
+                            datagroup: { bigip: '/Common/ports' }
+                        }
+                    },
+                    expected: 'http-uri request port equals datagroup /Common/ports'
                 },
                 {
                     input: {
@@ -554,7 +598,9 @@ describe('map_as3', () => {
                                         priorityGroup: 0,
                                         rateLimit: 'disabled',
                                         ratio: 1,
-                                        servicePort: 8056
+                                        servicePort: 8056,
+                                        session: 'user-enabled',
+                                        state: 'user-up'
                                     }
                                 }
                             },
@@ -575,9 +621,9 @@ describe('map_as3', () => {
                     {
                         command: 'mgmt shared service-discovery task',
                         ignore: [],
-                        path: '/tenantId/~tenantId~a~omefe5oz0TUX9YfsQoXKwM24ljw6vl3coaRFTBjno3D',
+                        path: '/tenantId/~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
                         properties: {
-                            id: '~tenantId~a~omefe5oz0TUX9YfsQoXKwM24ljw6vl3coaRFTBjno3D',
+                            id: '~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
                             metadata: {
                                 configuredBy: 'AS3'
                             },
@@ -595,7 +641,9 @@ describe('map_as3', () => {
                                         priorityGroup: 0,
                                         rateLimit: 'disabled',
                                         ratio: 1,
-                                        servicePort: 8056
+                                        servicePort: 8056,
+                                        session: 'user-enabled',
+                                        state: 'user-up'
                                     }
                                 }
                             },
@@ -3073,7 +3121,6 @@ describe('map_as3', () => {
                 item.sourceAddress = '192.0.2.10/32';
                 const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
                 const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
-                console.log(JSON.stringify(virtual, null, 4));
                 assert.strictEqual(virtual.source, '192.0.2.10/32');
             });
 
@@ -4040,6 +4087,39 @@ describe('map_as3', () => {
             }];
             const results = translate.Service_Core(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             assertServiceCore(results, expected);
+        });
+
+        it('should handle destination property with 0.0.0.0 in Tenant name', () => {
+            const item = {
+                class: 'Service_L4',
+                virtualAddresses: [
+                    '0.0.0.0'
+                ],
+                virtualPort: 443,
+                enable: true
+            };
+
+            const declaration = {
+                class: 'ADC',
+                'T0.0.0.0': {
+                    class: 'Tenant',
+                    defaultRouteDomain: 2,
+                    appId: {
+                        class: 'Application',
+                        itemId: {
+                            class: 'Service_L4',
+                            virtualAddresses: [
+                                '0.0.0.0'
+                            ],
+                            virtualPort: 443
+                        }
+                    }
+                }
+            };
+
+            const results = translate.Service_Core(defaultContext, 'T0.0.0.0', 'appId', 'itemId', item, declaration);
+            assert.strictEqual(results.configs[1].command, 'ltm virtual');
+            assert.strictEqual(results.configs[1].properties.destination, '/T0.0.0.0/any%2:443');
         });
 
         it('should test that a snatpool is created when snat is set to self', () => {
@@ -7220,7 +7300,7 @@ describe('map_as3', () => {
             const results = translate.Security_Log_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             const networkFormat = results.configs[0].properties.network.undefined.format;
             assert.strictEqual(
-                networkFormat['user-defined'], 'foo \\$\\\\{date_time\\\\},\\$\\\\{bigip_hostname\\\\} bar'
+                networkFormat['user-defined'], '"foo \\$\\{date_time\\},\\$\\{bigip_hostname\\} bar"'
             );
             assert.strictEqual(networkFormat['field-list-delimiter'], undefined);
             /* eslint-enable no-template-curly-in-string */
@@ -8297,6 +8377,45 @@ describe('map_as3', () => {
                 assert.strictEqual(profile['renegotiate-size'], 4294967295);
                 assert.strictEqual(profile['renegotiate-max-record-delay'], 4294967295);
             });
+
+            it('should set sniDefault to first certificate', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+            });
         });
 
         describe('TLS Client', () => {
@@ -8762,6 +8881,78 @@ describe('map_as3', () => {
 
             const result = translate.Certificate(context, tenantId, appId, itemId, item);
             return assert.deepStrictEqual(
+                result.configs[1],
+                {
+                    path: '/ten2/exampleApp/useCert-bundle.crt',
+                    command: 'sys file ssl-cert',
+                    properties: {
+                        'cert-validation-options': {},
+                        'cert-validators': {},
+                        checksum: 'SHA1:22:9077d46c62461a8d7301d3b13797e796456288d5',
+                        iControl_post: {
+                            ctype: 'application/octet-stream',
+                            method: 'POST',
+                            path: '/mgmt/shared/file-transfer/uploads/_ten2_exampleApp_useCert-bundle.crt',
+                            reference: '/ten2/exampleApp/useCert-bundle.crt',
+                            send: '----exampleChainCA----',
+                            why: 'upload chainCA file'
+                        },
+                        'source-path': 'file:/var/config/rest/downloads/_ten2_exampleApp_useCert-bundle.crt'
+                    },
+                    ignore: []
+                }
+            );
+        });
+
+        it('should handle OCSP with chainCA', () => {
+            const context = {};
+            const tenantId = 'ten2';
+            const appId = 'exampleApp';
+            const itemId = 'useCert';
+            const item = {
+                class: 'Certificate',
+                certificate: '----exampleCertificate----',
+                chainCA: '----exampleChainCA----',
+                privateKey: '----examplePrivateKey----',
+                issuerCertificate: {
+                    use: '/Common/default.crt'
+                },
+                staplerOCSP: {
+                    use: '/Common/staplerOCSP'
+                }
+            };
+
+            const result = translate.Certificate(context, tenantId, appId, itemId, item);
+            // Check for OCSP related properties for certificate
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/ten2/exampleApp/useCert.crt',
+                    command: 'sys file ssl-cert',
+                    properties: {
+                        'cert-validation-options': {
+                            ocsp: {}
+                        },
+                        'cert-validators': {
+                            '/Common/staplerOCSP': {}
+                        },
+                        checksum: 'SHA1:26:2b6397ca703598ad90e9853527d1b3328e061fd8',
+                        iControl_post: {
+                            ctype: 'application/octet-stream',
+                            method: 'POST',
+                            path: '/mgmt/shared/file-transfer/uploads/_ten2_exampleApp_useCert.crt',
+                            reference: '/ten2/exampleApp/useCert.crt',
+                            send: '----exampleCertificate----',
+                            why: 'upload certificate file'
+                        },
+                        'issuer-cert': '/Common/default.crt',
+                        'source-path': 'file:/var/config/rest/downloads/_ten2_exampleApp_useCert.crt'
+                    },
+                    ignore: []
+                }
+            );
+            // Check that OCSP properties are not in chainCA bundle
+            assert.deepStrictEqual(
                 result.configs[1],
                 {
                     path: '/ten2/exampleApp/useCert-bundle.crt',
@@ -10556,7 +10747,7 @@ describe('map_as3', () => {
                             dynamicRatio: 20,
                             ratio: 12,
                             priorityGroup: 1,
-                            adminState: 'enable',
+                            adminState: 'offline',
                             shareNodes: false,
                             monitors: ['https']
                         }
@@ -10569,11 +10760,11 @@ describe('map_as3', () => {
                 {
                     configs: [
                         {
-                            path: '/tenantId/~tenantId~flt22BuK0m8Kx9QPD68woD~I8gIcGp2BE4Srdyzb24HPk3D',
+                            path: '/tenantId/~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
                             command: 'mgmt shared service-discovery task',
                             properties: {
                                 schemaVersion: '1.0.0',
-                                id: '~tenantId~flt22BuK0m8Kx9QPD68woD~I8gIcGp2BE4Srdyzb24HPk3D',
+                                id: '~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
                                 updateInterval: 60,
                                 resources: {
                                     0: {
@@ -10586,7 +10777,9 @@ describe('map_as3', () => {
                                             dynamicRatio: 1,
                                             ratio: 1,
                                             priorityGroup: 0,
-                                            monitor: 'default'
+                                            monitor: 'default',
+                                            session: 'user-enabled',
+                                            state: 'user-up'
                                         }
                                     },
                                     1: {
@@ -10599,7 +10792,9 @@ describe('map_as3', () => {
                                             dynamicRatio: 20,
                                             ratio: 12,
                                             priorityGroup: 1,
-                                            monitor: 'min 1 of \\{ /Common/https \\}'
+                                            monitor: 'min 1 of \\{ /Common/https \\}',
+                                            session: 'user-disabled',
+                                            state: 'user-down'
                                         }
                                     }
                                 },
@@ -11493,6 +11688,14 @@ describe('map_as3', () => {
                 {
                     key: 2,
                     value: 'value 2'
+                },
+                {
+                    key: 3,
+                    value: 'should escape;'
+                },
+                {
+                    key: 4,
+                    value: 'has "quotes"'
                 }
             ];
             const result = translate.Data_Group(defaultContext, 'tenantId', 'appId', 'itemId', item);
@@ -11511,6 +11714,12 @@ describe('map_as3', () => {
                                 },
                                 '"2"': {
                                     data: '"value 2"'
+                                },
+                                '"3"': {
+                                    data: '"should escape\\;"'
+                                },
+                                '"4"': {
+                                    data: '"has \\"quotes\\""'
                                 }
                             },
                             type: 'integer'

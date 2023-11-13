@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -289,6 +289,30 @@ const conditionTemplates = [
         })
     },
     {
+        type: 'httpStatus',
+        events: ['response'],
+        conditions: [
+            { all: { operand: 'does-not-equal', values: ['200 OK'] } },
+            { text: { operand: 'equals', values: ['Payment Unauthorized'] } },
+            { code: { operand: 'equals', values: [300, 400] } }
+        ].map((c) => {
+            c.normalized = true;
+            return c;
+        })
+    },
+    {
+        type: 'httpStatus',
+        events: ['proxy-response'],
+        conditions: [
+            { all: { operand: 'starts-with', values: ['200 OK'] } },
+            { text: { operand: 'contains', values: ['Payment Unauthorized'] } },
+            { code: { operand: 'does-not-equal', values: [300, 400] } }
+        ].map((c) => {
+            c.normalized = true;
+            return c;
+        })
+    },
+    {
         type: 'httpCookie',
         events: ['request'],
         conditions: [
@@ -454,6 +478,7 @@ describe('Endpoint_Policy', function () {
     it('All SSL Client Hello Rules', () => testEvent('ssl-client-hello'));
     it('ALL Proxy Connect Rules', () => testEvent('proxy-connect'));
     it('ALL Proxy Request Rules', () => testEvent('proxy-request'));
+    it('All Proxy Response Rules', () => testEvent('proxy-response'));
 
     it('All SSL Server Hello Rules', function () {
         return testEvent('ssl-server-hello');

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -680,7 +680,7 @@ describe('Pool', function () {
                             priorityGroup: 4,
                             rateLimit: '100',
                             ratio: 50,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         },
                         {
@@ -700,7 +700,7 @@ describe('Pool', function () {
                             priorityGroup: 5,
                             rateLimit: '101',
                             ratio: 51,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         },
                         {
@@ -720,7 +720,7 @@ describe('Pool', function () {
                             priorityGroup: 5,
                             rateLimit: '101',
                             ratio: 51,
-                            session: 'monitor-enabled',
+                            session: 'user-disabled',
                             state: 'checking'
                         }
                     ],
