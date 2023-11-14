@@ -5,6 +5,6 @@
     "url": "/products/extensions/f5-appsvcs-extension/latest/"
   },
   "otherVersions": [
-    { "name": "3.46.1 (LTS)", "url": "/products/extensions/f5-appsvcs-extension/3.46/"}
+    { "name": "3.46.2 (LTS)", "url": "/products/extensions/f5-appsvcs-extension/3.46/"}
   ]
 }
