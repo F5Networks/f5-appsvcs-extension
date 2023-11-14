@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ const config = require('../config');
 const util = require('../util/util');
 const As3Request = require('../as3request');
 const Tracer = require('../tracer').Tracer;
+const declarationUtil = require('../util/declarationUtil');
 const tracerUtil = require('../tracer').Util;
 const tracerTags = require('../tracer').Tags;
 const STATUS_CODES = require('../constants').STATUS_CODES;
@@ -128,10 +129,8 @@ class RequestContext {
                 // Iterate through all the declarations looking for controls
                 tasks.forEach((task) => {
                     if (task.declaration) {
-                        const controlsName = Object.keys(task.declaration)
-                            .find((key) => task.declaration[key].class === 'Controls');
-
-                        if (controlsName) {
+                        const controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
+                        if (task.declaration[controlsName]) {
                             if (task.declaration[controlsName].internalUse) {
                                 if (task.declaration[controlsName].internalUse.action) {
                                     task.action = task.declaration[controlsName].internalUse.action;
@@ -324,7 +323,7 @@ function buildInitialContext(restOperation) {
                 } else {
                     // POST apps comes from the declaration
                     Object.keys(context.body).forEach((key) => {
-                        if (context.body[key].class === 'Application') {
+                        if (declarationUtil.isApplication(context.body[key])) {
                             apps.push(key);
                         }
                     });

@@ -1,0 +1,17 @@
+{
+    "schemaVersion": "3.43.0",
+    "class": "ADC",
+    "exampleTenant": {
+        "class": "Tenant",
+        "exampleApplication": {
+            "class": "Application",
+            "network_log_profile": {
+                "class": "Security_Log_Profile",
+                "network": {
+                    "logRuleMatchAccepts": true,
+                    "storageFormat": "Example Format ${date_time} ${bigip_hostname} ${acl_policy_name},${acl_policy_type},${acl_rule_name},${action},${context_name},${context_type},${dest_ip},${dest_port},${drop_reason},${protocol},${sa_translation_pool},${sa_translation_type},${src_ip},${src_port},${translated_dest_ip},${translated_dest_port},${translated_ip_protocol},${translated_src_ip},${translated_src_port},${translated_vlan},${vlan}"
+                }
+            }
+        }
+    }
+}

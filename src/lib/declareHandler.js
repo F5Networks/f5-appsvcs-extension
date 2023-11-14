@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ const util = require('./util/util');
 const cloudLibUtils = require('./util/cloudLibUtils');
 const DeclarationHandler = require('./declarationHandler');
 const validator = require('./validator');
+const declarationUtil = require('./util/declarationUtil');
 const restUtil = require('./util/restUtil');
 const Queue = require('./queue');
 const QueueConsumer = require('./queueConsumer');
@@ -157,7 +158,7 @@ function parsePerTenantPath(requestContextCopy, task) {
     if (requestContextCopy.method === 'Post' && task.declaration) {
         // Remove Tenants from the declaration that are not in the URI
         Object.keys(task.declaration).forEach((decl) => {
-            if (task.declaration[decl].class === 'Tenant'
+            if (declarationUtil.isTenant(task.declaration[decl])
                 && requestContextCopy.tenantsInPath.indexOf(decl) < 0) {
                 delete task.declaration[decl];
             }
@@ -212,7 +213,7 @@ function tenantsInDeclMustMatchPath(requestContextCopy, task) {
 
 function isItemNonMatchingTenant(declaration, key, tenantsToMatch) {
     const declItem = declaration[key];
-    if (typeof declItem === 'object' && declItem.class === 'Tenant') {
+    if (declarationUtil.isTenant(declItem)) {
         return !tenantsToMatch.find((tenant) => tenant === key);
     }
     return false;
@@ -579,7 +580,7 @@ function processDeclInArray(item, index, context) {
 }
 
 function processRequest(context) {
-    const validatorResults = validator.validateDeclarationArray(context.tasks);
+    const validatorResults = validator.validateDeclarationArray(context);
     return validatorResults.reduce(
         (prev, curr, index) => prev.then(
             (results) => processDeclInArray(curr, index, context)

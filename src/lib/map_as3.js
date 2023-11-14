@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1362,6 +1362,12 @@ const translate = {
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
 
+        // For backward compatibillity with older configs we decided to set
+        // first certificate as sniDefault. Unless user decided to explicitly set
+        // this property to another certificate. So we need to check it first.
+        // Schema default for sniDefault property is false.
+        const isSniDefaultSet = item.certificates.find((e) => e.sniDefault);
+
         item.certificates.forEach((obj, index) => {
             const tlsItem = Object.create(item);
 
@@ -1377,7 +1383,12 @@ const translate = {
             genCert(tlsItem, obj.certificate, 'SERVER');
             genCert(tlsItem, obj.proxyCertificate, 'CA');
 
-            tlsItem.sniDefault = obj.sniDefault;
+            // Set sniDefault to first certificate if applicable.
+            if (index === 0) {
+                tlsItem.sniDefault = obj.sniDefault || !isSniDefaultSet;
+            } else {
+                tlsItem.sniDefault = obj.sniDefault;
+            }
             tlsItem.matchToSNI = obj.matchToSNI || 'none';
             tlsItem.mode = obj.enabled;
 
@@ -1460,13 +1471,13 @@ const translate = {
 
         if (item.class === 'Certificate') {
             if (item.staplerOCSP) {
-                item.certValidationOptions = ['ocsp'];
-                item.certValidators = (item.staplerOCSP.bigip) ? [item.staplerOCSP.bigip] : [item.staplerOCSP.use];
+                item['cert-validation-options'] = ['ocsp'];
+                item['cert-validators'] = (item.staplerOCSP.bigip) ? [item.staplerOCSP.bigip] : [item.staplerOCSP.use];
             }
             if (item.issuerCertificate) {
-                item.issuerCert = bigipPath(item, 'issuerCertificate');
-                if (item.issuerCert.indexOf('.crt') !== item.issuerCert.length - 4) {
-                    item.issuerCert = `${item.issuerCert}.crt`;
+                item['issuer-cert'] = bigipPath(item, 'issuerCertificate');
+                if (item['issuer-cert'].indexOf('.crt') !== item['issuer-cert'].length - 4) {
+                    item['issuer-cert'] = `${item['issuer-cert']}.crt`;
                 }
             }
         }
@@ -1516,6 +1527,13 @@ const translate = {
         // The oldString is the name of the ${certificate object}-bundle.crt.
         // The newString is the location on the BIG-IP
         if (item.chainCA) {
+            // In case of chainCA there should be no properties listed in propertiesToDelete
+            const propertiesToDelete = ['cert-validation-options', 'cert-validators', 'issuer-cert'];
+            propertiesToDelete.forEach((prop) => {
+                if (prop in item) {
+                    delete item[prop];
+                }
+            });
             if (typeof item.chainCA === 'string') {
                 upload('ssl-cert', `${path}-bundle.crt`, item, 'chainCA');
             } else if (typeof item.chainCA === 'object' && (item.chainCA.bigip || item.chainCA.use)) {
@@ -2660,8 +2678,8 @@ const translate = {
             }
 
             const regex = /\/::\W/; // destinations have optional %RD and mandatory .PORT
-            if (dst.includes('0.0.0.0')) {
-                dst = dst.replace('0.0.0.0', 'any');
+            if (dst.includes('/0.0.0.0')) {
+                dst = dst.replace('/0.0.0.0', '/any');
             } else if (regex.test(dst)) {
                 dst = dst.replace('::', 'any6');
             }
@@ -3237,12 +3255,8 @@ const translate = {
             if (typeof subProfile[inKey] === 'string') {
                 subProfile[outKey] = {
                     type: 'user-defined',
-                    userDefined: util.escapeTcl(subProfile[inKey])
+                    userDefined: subProfile[inKey]
                 };
-                // We don't want spaces around the braces in user defined strings. Also, the '\' need
-                // extra escaping
-                subProfile[outKey].userDefined = subProfile[outKey].userDefined.replace(/ \\}/g, '\\\\}');
-                subProfile[outKey].userDefined = subProfile[outKey].userDefined.replace(/ \\{/g, '\\\\{');
             } else if (typeof subProfile[inKey] === 'object') {
                 subProfile[outKey] = {
                     type: 'field-list',

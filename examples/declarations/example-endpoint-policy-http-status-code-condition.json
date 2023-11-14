@@ -1,0 +1,151 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.48.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "policyEndpoint": {
+                    "use": "test_EP"
+                }
+            },
+            "allDataGroup": {
+                "class": "Data_Group",
+                "label": "HTTP Status All",
+                "storageType": "internal",
+                "name": "HTTP Status All",
+                "keyDataType": "string",
+                "records": [
+                    {
+                        "key": "403 Forbidden"
+                    },
+                    {
+                        "key": "404 Not Found"
+                    }
+                ]
+            },
+            "textDataGroup": {
+                "class": "Data_Group",
+                "label": "HTTP Status Text",
+                "storageType": "internal",
+                "name": "HTTP Status Text",
+                "keyDataType": "string",
+                "records": [
+                    {
+                        "key": "Bad Request"
+                    },
+                    {
+                        "key": "Unauthorized"
+                    }
+                ]
+            },
+            "codeDataGroup": {
+                "class": "Data_Group",
+                "label": "HTTP Status Codes",
+                "storageType": "internal",
+                "name": "HTTP Status Codes",
+                "keyDataType": "integer",
+                "records": [
+                    {
+                        "key": 400
+                    },
+                    {
+                        "key": 500
+                    }
+                ]
+            },
+            "test_EP": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "log",
+                        "actions": [
+                            {
+                                "type": "log",
+                                "event": "response",
+                                "write": {
+                                    "message": "The message",
+                                    "facility": "local1",
+                                    "priority": "warning",
+                                    "ipAddress": "5.6.7.8",
+                                    "port": 123
+                                }
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "all": {
+                                    "operand": "equals",
+                                    "values": [
+                                        "204 No Content",
+                                        "205 Reset Content",
+                                        "206 Partial Content"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "all": {
+                                    "operand": "equals",
+                                    "datagroup": {
+                                        "use": "allDataGroup"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "text": {
+                                    "operand": "contains",
+                                    "values": [
+                                        "Unauthorized",
+                                        "Payment Required"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "text": {
+                                    "operand": "ends-with",
+                                    "datagroup": {
+                                        "use": "textDataGroup"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "code": {
+                                    "operand": "greater",
+                                    "values": [
+                                        500
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "httpStatus",
+                                "event": "response",
+                                "code": {
+                                    "operand": "equals",
+                                    "datagroup": {
+                                        "use": "codeDataGroup"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

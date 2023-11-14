@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,8 @@ function createTaskResource(resource, sdItem) {
             dynamicRatio: member.dynamicRatio,
             ratio: member.ratio,
             priorityGroup: member.priorityGroup,
+            state: member.state,
+            session: member.session,
             monitor
         };
     }

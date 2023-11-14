@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 const dataGroupUtil = require('./util/dataGroupUtil');
 const util = require('./util/util');
+const declarationUtil = require('./util/declarationUtil');
 const log = require('./log');
 
 // This is a result of refactoring validate.js
@@ -327,10 +328,7 @@ class DeclarationProvider {
         };
 
         Object.keys(decl).forEach((k) => {
-            if ((typeof decl[k] === 'object')
-                        && (decl[k] !== null)
-                        && (Object.prototype.hasOwnProperty.call(decl[k], 'class'))
-                        && (decl[k].class === 'Tenant')) {
+            if (declarationUtil.isTenant(decl[k])) {
                 tenants.push(k);
             }
         });
@@ -494,9 +492,8 @@ class DeclarationProvider {
                     declToReturn = {};
                 }
 
-                const controlsName = Object.keys(declToReturn)
-                    .find((key) => declToReturn[key].class === 'Controls');
-                if (controlsName) {
+                const controlsName = util.getObjectNameWithClassName(declToReturn, 'Controls') || 'controls';
+                if (declToReturn[controlsName]) {
                     const action = util.getDeepValue(declToReturn[controlsName], 'internalUse.action');
                     if (action === 'dry-run') {
                         declToReturn[controlsName].dryRun = true;

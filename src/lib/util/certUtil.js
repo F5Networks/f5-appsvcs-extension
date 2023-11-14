@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 'use strict';
 
 const forge = require('node-forge');
+
+const declarationUtil = require('./declarationUtil');
 
 // PFX (Personal inFormation eXchange)
 // - version
@@ -279,7 +281,7 @@ const checkIfSelfSigned = function (cert) {
 
 const validateCertificates = function (decl, errors) {
     Object.keys(decl).forEach((key) => {
-        if (typeof decl[key] === 'object' && decl[key].class === 'Certificate'
+        if (declarationUtil.isClass(decl[key], 'Certificate')
         && (decl[key].staplerOCSP || decl[key].issuerCertificate)) {
             const selfSigned = checkIfSelfSigned(decl[key].certificate);
             if (selfSigned) {

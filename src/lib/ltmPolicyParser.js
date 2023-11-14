@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -216,7 +216,8 @@ function convertAs3ObjectToString(object) {
         } else if (typeof propertyValue === 'number') {
             tokens.push(fromCamelCase(propertyKey), propertyValue);
         } else if (Array.isArray(propertyValue)) {
-            tokens.push(`values { ${propertyValue.join(' ')} }`);
+            const pValue = propertyValue.map((e) => util.wrapStringWithSpaces(e));
+            tokens.push(`values { ${pValue.join(' ')} }`);
         } else if (typeof propertyValue === 'object') {
             tokens.push(fromCamelCase(propertyKey));
             tokens.push(convertAs3ObjectToString(propertyValue));
@@ -242,6 +243,7 @@ function convertObjectToString(object) {
         if (typeof value === 'boolean') {
             value = '';
         } else if (Array.isArray(value)) {
+            value = value.map((e) => util.wrapStringWithSpaces(e));
             value = `{${value.join(' ')}}`;
         } else if (typeof value === 'string') {
             value = util.escapeTcl(value);

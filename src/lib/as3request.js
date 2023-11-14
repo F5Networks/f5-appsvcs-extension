@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ const Ajv = require('ajv');
 const fs = require('fs');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const util = require('./util/util');
+const declarationUtil = require('./util/declarationUtil');
 const tmshUtil = require('./util/tmshUtil');
 const constants = require('./constants');
 
@@ -101,7 +102,7 @@ class As3Request {
                 request.protocol = 'https';
                 request.urlPrefix = `https://${request.targetHost}:${request.targetPort}`;
                 request.localBigip = false;
-                if (!request.basicAuth && (!request.targetTokens || request.targetTokens === {})) {
+                if (!request.basicAuth && util.isEmptyOrUndefined(request.targetTokens)) {
                     // don't muck with creds
                     const creds = util.base64Encode(`${request.targetUsername}:${request.targetPassphrase}`);
                     request.basicAuth = `Basic ${creds}`;
@@ -141,7 +142,7 @@ class As3Request {
     // For container, target* properties in AS3 class determines the device to deploy config to
     // For bigiq, target* properties refer to itself, and decl.target determines the device to deploy config to
     wrapWithAS3Class(request, endpoint) {
-        if (request.class === undefined || request.class === 'ADC') {
+        if (request.class === undefined || declarationUtil.isADC(request)) {
             if (endpoint === 'declare') {
                 // patch will automatically be wrapped in patchBody so no need to check here (for now)
                 if (Array.isArray(request)) {

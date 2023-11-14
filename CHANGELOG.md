@@ -4,16 +4,32 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.48.0
 
 ### Added
+- AUTOTOOL-4024: ([GitHub Issue 755](https://github.com/F5Networks/f5-appsvcs-extension/issues/755)): Support for http-status policy condition in Endpoint_Policy
 
 ### Fixed
+- AUTOTOOL-4051: Failure when modifying pools with similar monitor names.
+- AUTOTOOL-4000: Existing snatpools and snat-translations in /Common cause error 'Snat translation address /Common/\<address\> is still referenced by a snat pool.'
+- AUTOTOOL-3990: Deleting a Service with a virtual address containing a reference to a name containing the string '0.0.0.0' fails to delete on the first attempt
+- Escaping for data-group records
+- AUTOTOOL-3975: ([GitHub Issue 749](https://github.com/F5Networks/f5-appsvcs-extension/issues/749)): OCSP validator doesn't work with chainCA
+- AUTOTOOL-4029: The destination property of a service in a tenant with a name containing the string '0.0.0.0' is incorrectly set
+- AUTOTOOL-3995: Ephemeral node not deleted when using batched transaction to delete FQDN template node and LTM pool
+- AUTOTOOL-3968: ([GitHub Issue 747](https://github.com/F5Networks/f5-appsvcs-extension/issues/747)): Allow spaces in Security Log Profile network storageFormat
+- AUTOTOOL-3985: Improve filtering for per-app requests so that apps not in the declaration are not considered in the diffs.
+- AUTOTOOL-1779: ([GitHub Issue 458](https://github.com/F5Networks/f5-appsvcs-extension/issues/458)): Service_Forwarding documentation to reflect valid options
+- AUTOTOOL-4057: Set sniDefault property to true for the first certificate by default
+- AUTOTOOL-4003: ([GitHub Issue 754](https://github.com/F5Networks/f5-appsvcs-extension/issues/754)): Can't create FQDN pool with shareNodes: true
 
 ### Changed
+- Updated to Service Discovery 1.16.0-2
+  - AUTOTOOL-4052: ([GitHub Issue 759](https://github.com/F5Networks/f5-appsvcs-extension/issues/759)): Support adminState for discovered pool members
 
 ### Removed
 
 ## 3.47.0
 
 ### Added
+- AUTOTOOL-3850: Added option for 'controls' in per-app declarations
 - AUTOTOOL-3971: Added option to serialize file uploads for dealing with lots of certificates in a declaration
 - AUTOTOOL-3728: Add functionality for per-app deployments (beta)
 - AUTOTOOL-3915: ([GitHub Issue 701](https://github.com/F5Networks/f5-appsvcs-extension/issues/701)): configuration of "SSL sign hash" parameter in TLS_server and TLS_Client
@@ -32,16 +48,15 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Removed
 
-## 3.46.1
-
-### Added
+## 3.46.2
 
 ### Fixed
+- AUTOTOOL-4044: Not able to remove pool member's metadata from declaration
+
+## 3.46.1
 
 ### Changed
 - Promoted to LTS
-
-### Removed
 
 ## 3.46.0
 

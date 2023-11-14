@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,17 @@ class Util {
 
     static toCamelCase(string) {
         return string.replace(/-[a-z]/g, (x) => x[1].toUpperCase());
+    }
+
+    /**
+     * return a string wrapped in double quotes if it contains space(s)
+     * does not check if already wrapped with double quotes
+     * @public
+     * @param {string} string
+     * @returns {string}
+     */
+    static wrapStringWithSpaces(string) {
+        return (typeof string === 'string' && string.includes(' ') ? `"${string}"` : string);
     }
 
     /**
@@ -978,6 +989,90 @@ class Util {
     } // getAccessProfileList()
 
     /**
+     * return a promise to discover all the ltm snatpool
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing snatpools,
+     * or rejects with error.
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getSnatPoolList(context, tenant) {
+        if ((typeof context !== 'object') || (context === null)) {
+            return Promise.reject(new Error('getSnatPoolList(): argument context required'));
+        }
+
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/ltm/snatpool?${filter}$select=fullPath,partition,members`,
+            why: 'query target BIG-IP current ltm snatpool list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                const list = [];
+
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                    || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return list;
+                }
+
+                resp.items.forEach((item) => {
+                    const snatPool = {
+                        fullPath: item.fullPath,
+                        partition: item.partition,
+                        members: item.members || []
+                    };
+
+                    list.push(snatPool);
+                });
+
+                return list;
+            });
+    }
+
+    /**
+     * return a promise to discover all the ltm snat-translation
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing snat-translations,
+     * or rejects with error.
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getSnatTranslationList(context, tenant) {
+        if ((typeof context !== 'object') || (context === null)) {
+            return Promise.reject(new Error('getSnatPoolList(): argument context required'));
+        }
+
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/ltm/snat-translation?${filter}$select=fullPath,partition,address`,
+            why: 'query target BIG-IP current ltm snatpool list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                const list = [];
+
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                        || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return list;
+                }
+
+                resp.items.forEach((item) => {
+                    list.push(this.simpleCopy(item));
+                });
+
+                return list;
+            });
+    }
+
+    /**
      * return a promise to query AS3 version info.
      * Fetches version from a cached variable or
      * /var/config/rest/iapps/f5-appsvcs/version file
@@ -1309,6 +1404,18 @@ class Util {
     }
 
     /**
+     * Gets the names of the objects in a declaration that have a given class
+     *
+     * @param {object} declaration - The declaration.
+     * @param {string} className - The name of the class for which we want the objects (for example, 'Application')
+     *
+     * @returns {string[]} The list of object names that have the given class.
+     */
+    static getObjectNameWithClassName(declaration, className) {
+        return Object.keys(declaration).find((key) => declaration[key].class === className);
+    }
+
+    /**
      * Recursive function to find and replace strings within an
      * object. Modifies the passed in object.
      *
@@ -1596,28 +1703,28 @@ class Util {
      * Update the controls with the declaration.
      *
      * @param {Object} controls - controls from declaration
-     * @param {Object} decl - the declaration's controls
+     * @param {Object} declControls - the declaration's controls
      * @returns {void}
      */
-    static updateControlsWithDecl(controls, decl) {
+    static updateControlsWithDecl(controls, declControls) {
         if (controls.queryParamControls) {
             Object.keys(controls.queryParamControls).forEach((key) => {
                 controls[key] = this.simpleCopy(controls.queryParamControls[key]);
             });
         }
 
-        if (typeof decl === 'object') {
-            Object.keys(decl).forEach((key) => {
+        if (typeof declControls === 'object') {
+            Object.keys(declControls).forEach((key) => {
                 if ((key !== 'class' && !controls.queryParamControls)
                     || (key !== 'class' && !controls.queryParamControls[key])) {
-                    controls[key] = this.simpleCopy(decl[key]);
+                    controls[key] = this.simpleCopy(declControls[key]);
                 }
             });
         }
     }
 
     /**
-     * Update the controls with the declaration.
+     * Normalize profile options
      *
      * @param {Array|string} tmOptions - special handling for options
      * @returns {Object} Objects formatted for tmsh use

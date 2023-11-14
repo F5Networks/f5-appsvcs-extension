@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,48 +93,6 @@ const keywords = [
                         }
                         delete data[aliasObj[alias]];
                     });
-                    return true;
-                };
-            }
-        })
-    },
-    {
-        name: 'f5serviceDiscovery',
-        definition: (that) => ({
-            errors: true,
-            metaSchema: {
-                type: ['boolean', 'object'],
-                properties: {
-                    exceptions: {
-                        type: 'array'
-                    }
-                }
-            },
-            compile(schema) {
-                return function f5serviceDiscovery(data, dataPath) {
-                    if (schema.exceptions && schema.exceptions.find((exception) => exception === data)) {
-                        return true;
-                    }
-
-                    if (that.settings && that.settings.serviceDiscoveryEnabled === false) {
-                        const error = new Error(`${dataPath} requires Service Discovery to be enabled`);
-                        error.status = 422;
-                        throw error;
-                    }
-
-                    /*
-                     * Error if SD is not installed and target host is the local machine. This
-                     * protects against the case when a user enables SD in the settings, but has
-                     * not restarted restnoded to install it yet. AS3 will automatically install
-                     * SD on remote machines.
-                     */
-                    if (that.context.host.sdInstalled === false
-                        && that.context.tasks[that.context.currentIndex].resolvedHostIp === '127.0.0.1') {
-                        const error = new Error(`${dataPath} requires Service Discovery to be installed. Service Discovery will be installed the next time AS3 starts up`);
-                        error.status = 422;
-                        throw error;
-                    }
-
                     return true;
                 };
             }

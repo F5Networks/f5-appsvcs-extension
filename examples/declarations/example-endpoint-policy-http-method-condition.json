@@ -1,70 +1,82 @@
 {
   "class": "ADC",
-  "schemaVersion": "3.28.0",
+  "schemaVersion": "3.32.0",
   "id": "Endpoint_Policy",
   "AS3_Tenant": {
-    "class": "Tenant",
-    "AS3_Application": {
-      "class": "Application",
-      "service": {
-        "class": "Service_HTTP",
-        "virtualAddresses": [
-          "1.2.3.4"
-        ],
-        "policyEndpoint": {
-            "use": "test_EP"
-        }
-      },
-      "test_EP": {
-        "class": "Endpoint_Policy",
-        "rules": [
-          {
-            "name": "replace",
-            "actions": [
-              {
-                "type": "httpUri",
-                "event": "request",
-                "replace": {
-                  "value": "http://127.0.0.1"
-                }
+      "class": "Tenant",
+      "AS3_Application": {
+          "class": "Application",
+          "service": {
+              "class": "Service_HTTP",
+              "virtualAddresses": [
+                  "1.2.3.4"
+              ],
+              "policyEndpoint": {
+                  "use": "test_EP"
               }
-            ],
-            "conditions": [
-              {
-                "type": "httpMethod",
-                "event": "request",
-                "all": {
-                  "operand": "equals",
-                  "values": [
-                    "GET",
-                    "POST",
-                    "PATCH"
-                  ]
-                }
-              },
-              {
-                "type": "httpUri",
-                "event": "request",
-                "host": {
-                  "operand": "contains",
-                  "datagroup": {
-                      "bigip": "/Common/aol"
-                  }
-                }
-              }
-            ]
           },
-          {
-            "name": "default",
-            "actions": [
-              {
-                "type": "drop",
-                "event": "request"
-              }
-            ]
+          "uriDataGroup": {
+              "class": "Data_Group",
+              "label": "URI Example",
+              "storageType": "internal",
+              "name": "URI Example",
+              "keyDataType": "string",
+              "records": [
+                  {
+                      "key": "test.com"
+                  }
+              ]
+          },
+          "test_EP": {
+              "class": "Endpoint_Policy",
+              "rules": [
+                  {
+                      "name": "replace",
+                      "actions": [
+                          {
+                              "type": "httpUri",
+                              "event": "request",
+                              "replace": {
+                                  "value": "http://127.0.0.1"
+                              }
+                          }
+                      ],
+                      "conditions": [
+                          {
+                              "type": "httpMethod",
+                              "event": "request",
+                              "all": {
+                                  "operand": "equals",
+                                  "values": [
+                                      "GET",
+                                      "POST",
+                                      "PATCH"
+                                  ]
+                              }
+                          },
+                          {
+                              "type": "httpUri",
+                              "event": "request",
+                              "host": {
+                                  "operand": "contains",
+                                  "datagroup": {
+                                      "use": "uriDataGroup"
+                                  }
+                              }
+                          }
+                      ]
+                  },
+                  {
+                      "name": "default",
+                      "actions": [
+                          {
+                              "type": "drop",
+                              "event": "request"
+                          }
+                      ]
+                  }
+              ]
           }
-        ]
       }
-    }
   }
 }

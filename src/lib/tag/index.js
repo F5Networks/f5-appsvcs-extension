@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ const IncludeTag = require('./includeTag');
 const ModuleTag = require('./moduleTag');
 const BigComponentTag = require('./bigComponentTag');
 const ExpandTag = require('./expandTag');
+const ServiceDiscoveryTag = require('./serviceDiscoveryTag');
 
 module.exports = {
     LongSecretTag,
@@ -43,5 +44,6 @@ module.exports = {
     IncludeTag,
     ModuleTag,
     BigComponentTag,
-    ExpandTag
+    ExpandTag,
+    ServiceDiscoveryTag
 };

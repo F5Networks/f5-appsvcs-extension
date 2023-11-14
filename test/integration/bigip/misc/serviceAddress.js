@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,6 +267,9 @@ describe('serviceAddress', function () {
                 .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Tenant~ServiceAddress'))
                 // Virtual-address should be removed from /Tenant once associated app is removed
                 .then(() => deleteDeclaration(undefined, { path: `${perAppPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 .then(() => assert.isRejected(
                     getPath('/mgmt/tm/ltm/virtual-address/~Tenant~ServiceAddress'),
                     /The requested Virtual Address \(\/Tenant\/ServiceAddress\) was not found/,
@@ -290,6 +293,9 @@ describe('serviceAddress', function () {
                 })
                 // Virtual-address should be removed from /Common/Shared once associated app is removed
                 .then(() => deleteDeclaration(undefined, { path: `${perAppTenantPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 .then(() => assert.isRejected(
                     getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'),
                     /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,

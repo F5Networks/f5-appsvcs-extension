@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,15 +154,6 @@ describe('per-app schema testing', () => {
     });
 
     describe('invalid', () => {
-        it('should be invalid if there is no application', () => {
-            const data = {
-                id: '1234'
-            };
-
-            assert.strictEqual(validate(data), false, 'The declaration should require at least 1 application in it');
-            assertErrorString('should NOT have fewer than 2 properties');
-        });
-
         it('should be invalid per-app declarations are inside an array', () => {
             const data = [
                 {

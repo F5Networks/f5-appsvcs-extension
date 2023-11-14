@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ const myValidator = require('./validator');
 const util = require('./util/util');
 const PostProcessor = require('./postProcessor');
 const PostValidator = require('./postValidator');
-const Config = require('./config');
 const certUtil = require('./util/certUtil');
+const declarationUtil = require('./util/declarationUtil');
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
 
 class As3Parser {
@@ -140,11 +140,11 @@ class As3Parser {
      * exceed the tmsh max length.
      */
     validatePathLength(declaration) {
-        const tenants = Object.keys(declaration).filter((key) => declaration[key].class
-            && declaration[key].class === 'Tenant');
+        const tenants = Object.keys(declaration).filter((key) => declarationUtil.isTenant(declaration[key]));
         tenants.forEach((tenant) => {
-            const applications = Object.keys(declaration[tenant]).filter((key) => declaration[tenant][key].class
-                && declaration[tenant][key].class === 'Application');
+            const applications = Object.keys(declaration[tenant]).filter((key) => declarationUtil.isApplication(
+                declaration[tenant][key]
+            ));
             applications.forEach((application) => {
                 Object.keys(declaration[tenant][application]).forEach((item) => {
                     const path = `/${tenant}/${application}/${item}`;
@@ -347,12 +347,16 @@ function as3Digest(declaration) {
     let getVirtualAddresses = Promise.resolve([]);
     let getAccessProfileList = Promise.resolve([]);
     let getAddressListList = Promise.resolve([]);
+    let getSnatTranslationList = Promise.resolve([]);
     if (!declaration.scratch && !this.options.isPerApp) {
         // per-app validation does NOT require this
         getNodelist = util.getNodelist(this.context);
         getVirtualAddresses = util.getVirtualAddressList(this.context, 'Common');
         getAccessProfileList = util.getAccessProfileList(this.context);
         getAddressListList = util.getAddressListList(this.context, 'Common');
+    }
+    if (!declaration.scratch) {
+        getSnatTranslationList = util.getSnatTranslationList(this.context, 'Common');
     }
 
     this.postProcess = [];
@@ -367,8 +371,8 @@ function as3Digest(declaration) {
         .then((accessProfileList) => { this.accessProfileList = accessProfileList; })
         .then(() => getAddressListList)
         .then((addressListList) => { this.addressListList = addressListList; })
-        .then(() => Config.getAllSettings())
-        .then((settings) => { this.settings = settings; })
+        .then(() => getSnatTranslationList)
+        .then((snatTranslationList) => { this.snatTranslationList = snatTranslationList; })
         .then(() => validate.call(this, declaration))
         .then(() => {
             if (this.options.isPerApp) {

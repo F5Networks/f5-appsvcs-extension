@@ -1075,6 +1075,7 @@
                         "httpHeader",
                         "httpHost",
                         "httpMethod",
+                        "httpStatus",
                         "httpUri",
                         "sslExtension",
                         "tcp"
@@ -1098,6 +1099,10 @@
                 {
                     "if": { "properties": { "type": { "const": "httpMethod" } } },
                     "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Method" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "httpStatus" } } },
+                    "then": { "$ref": "#/definitions/Policy_Condition_HTTP_Status" }
                 },
                 {
                     "if": { "properties": { "type": { "const": "httpCookie" } } },
@@ -1430,6 +1435,67 @@
                                 }
                             },
                             "required": ["port"]
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "Policy_Condition_HTTP_Status": {
+            "description": "Match against an HTTP response's status",
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "event": {
+                            "description": "When to evaluate this condition in the request-response cycle",
+                            "type": "string",
+                            "enum": [
+                                "proxy-response",
+                                "response"
+                            ],
+                            "default": "proxy-response"
+                        }
+                    }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "all": {
+                                    "description": "Match against full HTTP status response includeing both code and text",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["all"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "code": {
+                                    "description": "Match against the numeric HTTP response status code",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_Number" }
+                                    ]
+                                }
+                            },
+                            "required": ["code"]
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "text": {
+                                    "description": "Match against HTTP response status string, e.g. 'Authentication Required'",
+                                    "allOf": [
+                                        { "$ref": "#/definitions/Policy_Compare_String" }
+                                    ]
+                                }
+                            },
+                            "required": ["text"]
                         }
                     ]
                 }
@@ -1791,7 +1857,9 @@
                 },
                 "datagroup": {
                     "description": "Reference to a data-group containing the values",
-                    "$ref": "#/definitions/Datagroup_Value"
+                    "allOf": [{
+                        "$ref": "#/definitions/Datagroup_Value"
+                    }]
                 },
                 "caseSensitive": {
                     "description": "Specifies if the comparison the system should perform with case sensitivity",
@@ -1842,9 +1910,19 @@
                         "type": "integer"
                     },
                     "minItems": 1
+                },
+                "datagroup": {
+                    "description": "Reference to a data-group containing the values",
+                    "allOf": [{
+                        "$ref": "#/definitions/Datagroup_Value"
+                    }]
                 }
             },
-            "required": ["values"],
+            "oneOf": [
+                { "required": [ "values" ] },
+                { "required": [ "datagroup"] }
+            ],
+            "required": [ "operand" ],
             "additionalProperties": false
         },
 
@@ -1871,7 +1949,9 @@
                 },
                 "datagroup": {
                     "description": "Reference to a data-group containing the values",
-                    "$ref": "#/definitions/Datagroup_Value"
+                    "allOf": [{
+                        "$ref": "#/definitions/Datagroup_Value"
+                    }]
                 }
             },
             "oneOf": [

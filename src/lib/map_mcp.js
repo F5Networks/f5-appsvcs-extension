@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5 Networks, Inc.
+ * Copyright 2023 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,7 +259,7 @@ const translate = {
         //  iControl returns different record structure from tmsh
         obj.records = (obj.records || []).map((record) => ({
             name: record.name,
-            data: record.data && record.data !== '' ? `"${record.data}"` : undefined
+            data: record.data && record.data !== '' ? record.data.replace(/\x5c/g, '') : undefined
         }));
         return [normalize.actionableMcp(context, obj, 'ltm data-group internal', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
@@ -1087,10 +1087,7 @@ const translate = {
 
         obj.profiles = (obj.profilesReference || {}).items || [];
         obj.policies = (obj.policiesReference || {}).items || [];
-
-        if (obj.destination.includes('0.0.0.0')) {
-            obj.destination = obj.destination.replace('0.0.0.0', 'any');
-        }
+        obj.destination = obj.destination.replace('/0.0.0.0', '/any');
 
         if (obj.internal === true) {
             obj.internal = {};
@@ -1316,12 +1313,6 @@ const translate = {
         const config = [normalize.actionableMcp(context, obj, 'security log profile', obj.fullPath)];
         const networkFormat = util.getDeepValue(config[0].properties, 'network.undefined.format');
         if (networkFormat && networkFormat.type === 'user-defined') {
-            networkFormat['user-defined'] = util.escapeTcl(networkFormat['user-defined']);
-            // We don't want spaces around the braces in user defined strings. Also, the '\' need
-            // extra escaping
-            networkFormat['user-defined'] = networkFormat['user-defined'].replace(/ \\}/g, '\\\\}');
-            networkFormat['user-defined'] = networkFormat['user-defined'].replace(/ \\{/g, '\\\\{');
-
             delete networkFormat['field-list-delimiter'];
         }
         return config;
