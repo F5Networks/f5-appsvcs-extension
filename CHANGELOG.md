@@ -14,7 +14,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4060: Certain AS3 declarations result in "declaration has duplicate values" errors
 
 ### Changed
-- Updated to Service Discovery 1.17.0-1
+- Updated to Service Discovery 1.17.0-2
   - Package updates
 
 ### Removed

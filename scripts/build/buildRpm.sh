@@ -20,7 +20,7 @@ function set_vars() {
     RELEASE=$(echo $FULL_VERSION | sed 's/[0-9.]*-//')
     VERSION=$(echo $FULL_VERSION | sed 's/-[0-9]*//')
     MAINDIR=$(pwd)
-    DISCOVERY_WORKER_VERSION="1.17.0-1"
+    DISCOVERY_WORKER_VERSION="1.17.0-2"
     DISCOVERY_WORKER_URL="https://${ARTIFACTORY_URL}/artifactory/list/ecosystems-f5-service-discovery-rpm/f5-service-discovery-${DISCOVERY_WORKER_VERSION}.noarch.rpm"
     CLOUDLIBS_VER=$(echo $DISCOVERY_WORKER_VERSION)
 }
