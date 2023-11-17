@@ -774,8 +774,9 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 targetConfig.members[member] = pushMonitors(targetConfig.members[member]);
             });
         }
-        if (diff.kind === 'D' || diff.kind === 'E') {
-            if (diff.path.find((p) => p === 'members')) {
+
+        if (diff.path.find((p) => p === 'members')) {
+            if (diff.kind === 'D' || diff.kind === 'E') {
                 const memberName = diff.path[diff.path.indexOf('members') + 1];
                 const currentMember = pushMonitors(currentConfig[diff.path[0]].properties.members[memberName]);
                 if (diff.path.find((p) => p === 'metadata')) {
@@ -792,7 +793,26 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
 
                 return commandObj;
             }
+
+            if (diff.kind === 'N') {
+                const poolMembers = {
+                    members: {
+                        [diff.path[3]]: util.simpleCopy(targetConfig.members[diff.path[3]])
+                    }
+                };
+                let command = `tmsh::modify ltm pool ${diff.path[0]}${stringify(diff.rhsCommand, poolMembers, escapeQuote)}`;
+                command = command.replace('members replace-all-with', 'members add');
+                commandObj.commands.push(command);
+                return commandObj;
+            }
         }
+
+        // If we are going to fall through to the default command and this is not a new pool
+        // delete the members property because they are handled above
+        if (diff.kind !== 'N' || diff.path.length !== 1) {
+            delete targetConfig.members;
+        }
+
         break;
     case 'ltm policy':
         targetConfig.legacy = '';

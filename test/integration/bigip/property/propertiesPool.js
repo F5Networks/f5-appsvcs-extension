@@ -99,7 +99,33 @@ describe('Pool', function () {
                             minimumMonitors: 1,
                             adminState: 'disable',
                             addressDiscovery: 'static',
-                            serverAddresses: ['2.2.2.2'],
+                            serverAddresses: ['2.2.2.2', '3.3.3.3'],
+                            description: 'Test Description',
+                            routeDomain: 1,
+                            metadata: {
+                                example: {
+                                    value: 'test'
+                                },
+                                example1: {
+                                    value: '123',
+                                    persist: false
+                                }
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            servicePort: 400,
+                            connectionLimit: 1000,
+                            rateLimit: 100,
+                            dynamicRatio: 50,
+                            ratio: 50,
+                            priorityGroup: 4,
+                            monitors: ['http'],
+                            minimumMonitors: 1,
+                            adminState: 'disable',
+                            addressDiscovery: 'static',
+                            serverAddresses: ['3.3.3.3', '4.4.4.4'],
                             description: 'Test Description',
                             routeDomain: 1,
                             metadata: {
@@ -148,7 +174,104 @@ describe('Pool', function () {
                             rateLimit: '100',
                             ratio: 50,
                             session: 'user-disabled',
-                            state: 'checking',
+                            description: 'Test Description'
+                        },
+                        {
+                            address: '3.3.3.3%1',
+                            connectionLimit: 1000,
+                            dynamicRatio: 50,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/3.3.3.3%1:400',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            ],
+                            monitor: 'min 1 of { /Common/http }',
+                            name: '3.3.3.3%1:400',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 4,
+                            rateLimit: '100',
+                            ratio: 50,
+                            session: 'user-disabled',
+                            description: 'Test Description'
+                        }
+                    ],
+                    [
+                        {
+                            address: '3.3.3.3%1',
+                            connectionLimit: 1000,
+                            dynamicRatio: 50,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/3.3.3.3%1:400',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            ],
+                            monitor: 'min 1 of { /Common/http }',
+                            name: '3.3.3.3%1:400',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 4,
+                            rateLimit: '100',
+                            ratio: 50,
+                            session: 'user-disabled',
+                            description: 'Test Description'
+                        },
+                        {
+                            address: '4.4.4.4%1',
+                            connectionLimit: 1000,
+                            dynamicRatio: 50,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/4.4.4.4%1:400',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            ],
+                            monitor: 'min 1 of { /Common/http }',
+                            name: '4.4.4.4%1:400',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 4,
+                            rateLimit: '100',
+                            ratio: 50,
+                            session: 'user-disabled',
                             description: 'Test Description'
                         }
                     ],
@@ -159,6 +282,7 @@ describe('Pool', function () {
                         delete member.kind;
                         delete member.generation;
                         delete member.selfLink;
+                        delete member.state;
                     });
                     return o.members;
                 }

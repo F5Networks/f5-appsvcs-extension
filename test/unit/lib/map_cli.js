@@ -1435,7 +1435,7 @@ describe('map_cli', () => {
 
             const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
             assert.deepStrictEqual(result.preTrans, ['tmsh::modify ltm pool /tenant/application/pool monitor none']);
-            assert.deepStrictEqual(result.commands, ['tmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin members none min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10']);
+            assert.deepStrictEqual(result.commands, ['tmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10']);
             assert.deepStrictEqual(result.rollback, ['tmsh::modify ltm pool /tenant/application/pool monitor min 2 of \\{ /tenant/application/customMonitor /Common/gateway_icmp \\}']);
         });
 

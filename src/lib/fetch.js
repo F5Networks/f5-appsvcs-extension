@@ -1889,8 +1889,8 @@ const updateWildcardMonitorCommands = function (trans) {
     const getDetachFromPoolCmds = function (poolCmds) {
         return poolCmds.map((p) => {
             const pName = p.substring(delPool.length + 1, p.indexOf('\n')).trim();
-            // detach from both pool and poolMember level
-            return `tmsh::modify ltm pool ${pName} monitor none members none`;
+            // detach from pool
+            return `tmsh::modify ltm pool ${pName} monitor none`;
         }).join('\n');
     };
 
@@ -2153,6 +2153,20 @@ const updatePortAndAddressLists = function (trans, preTrans, rollback) {
     // Now that all traffic-matching-criteria commands have bee moved to pre-trans, look
     // for references from lists to lists
     checkTransactionReferences(trans, preTrans, rollback);
+};
+
+/**
+ * Updates pool commands to remove the delete when we are just modifying
+ */
+const updatePools = function (trans) {
+    const deleteLtmPoolPrefix = 'tmsh::delete ltm pool';
+    const modifyLtmPoolPrefix = 'tmsh::modify ltm pool';
+    trans.forEach((transCommand, index) => {
+        if (transCommand.startsWith(deleteLtmPoolPrefix) && transCommand.indexOf(modifyLtmPoolPrefix) !== -1) {
+            const commands = transCommand.split('\n');
+            trans[index] = commands[1];
+        }
+    });
 };
 
 /**
@@ -2520,7 +2534,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             }
                         });
                         trans.push(commands.join('\n'));
-                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1) {
+                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1
+                        && diffUpdates.commands.indexOf('members delete') > -1) {
                         // This is a command to modify the pool to delete members just like we have with the
                         // delete code below.
                         const commands = diffUpdates.commands.split('\n');
@@ -2712,6 +2727,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     });
 
     trans = updateWildcardMonitorCommands(trans);
+    updatePools(trans);
     updatePortAndAddressLists(trans, preTrans, rollback);
     updatePostTransVirtuals(
         trans,

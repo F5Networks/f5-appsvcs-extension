@@ -10,6 +10,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4078: ([GitHub Issue 772](https://github.com/F5Networks/f5-appsvcs-extension/issues/772)): GSLB_Domain load-balancing decision log property
 
 ### Fixed
+- AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool
 - AUTOTOOL-4060: Certain AS3 declarations result in "declaration has duplicate values" errors
 
 ### Changed

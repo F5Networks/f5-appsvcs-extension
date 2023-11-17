@@ -4204,7 +4204,7 @@ describe('fetch', () => {
             const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
             assert.strictEqual(
                 result.script,
-                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /tenant/application/otherPool monitor none\ntmsh::modify ltm pool /tenant/application/pool monitor none\ntmsh::begin_transaction\ntmsh::delete ltm pool /tenant/application/otherPool\ntmsh::create ltm pool /tenant/application/otherPool load-balancing-mode round-robin members none min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10\ntmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm pool /tenant/application/pool\ntmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin members none min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /tenant/application/otherPool monitor min 1 of \\{ /tenant/application/customMonitor \\}\ntmsh::modify ltm pool /tenant/application/pool monitor min 1 of \\{ /Common/tcp /tenant/application/customMonitor \\}\n}}\n}'
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /tenant/application/otherPool monitor none\ntmsh::modify ltm pool /tenant/application/pool monitor none\ntmsh::begin_transaction\ntmsh::delete ltm pool /tenant/application/otherPool\ntmsh::create ltm pool /tenant/application/otherPool load-balancing-mode round-robin min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10\ntmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm pool /tenant/application/pool\ntmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /tenant/application/otherPool monitor min 1 of \\{ /tenant/application/customMonitor \\}\ntmsh::modify ltm pool /tenant/application/pool monitor min 1 of \\{ /Common/tcp /tenant/application/customMonitor \\}\n}}\n}'
             );
         });
 
@@ -8007,7 +8007,7 @@ describe('fetch', () => {
                             'tmsh::modify ltm pool /tenant/app/tenant_pool members delete \\{ "/Common/10.70.61.10:9021" \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
                             'tmsh::begin_transaction',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none members none',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon1',
                             'tmsh::commit_transaction',
                             'tmsh::begin_transaction',
@@ -8015,8 +8015,9 @@ describe('fetch', () => {
                             'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/10.70.61.10:9021 \\}',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
-                            'tmsh::create ltm pool /tenant/app/tenant_pool members replace-all-with \\{ /Common/10.70.61.10:9021 /Common/10.70.61.11:9021 /Common/10.70.61.9:9021 \\{ monitor min 1 of \\{ /Common/gateway_icmp \\} \\} \\} monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::commit_transaction',
                             '} err] } {',
                             'catch { tmsh::cancel_transaction } e',
@@ -8367,7 +8368,7 @@ describe('fetch', () => {
                             'if { [catch {',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
                             'tmsh::begin_transaction',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none members none',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon1',
                             'tmsh::commit_transaction',
                             'tmsh::begin_transaction',
@@ -8557,16 +8558,12 @@ describe('fetch', () => {
                             '}',
                             'if { [catch {',
                             'tmsh::begin_transaction',
-                            'tmsh::modify ltm pool /Tenant/Shared/service2_pool monitor none members none',
-                            'tmsh::delete ltm monitor http /Tenant/Shared/service1_monitor_similar',
-                            'tmsh::commit_transaction',
-                            'tmsh::begin_transaction',
                             'tmsh::delete ltm monitor http /Tenant/Shared/service1_monitor',
                             'tmsh::create ltm monitor http /Tenant/Shared/service1_monitor destination *:* interval 20',
                             'tmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::delete ltm monitor http /Tenant/Shared/service1_monitor_similar',
                             'tmsh::create ltm monitor http /Tenant/Shared/service1_monitor_similar destination *:* interval 20',
-                            'tmsh::delete ltm pool /Tenant/Shared/service2_pool',
-                            'tmsh::create ltm pool /Tenant/Shared/service2_pool members replace-all-with \\{ /Tenant/192.0.2.2:80 \\} monitor min 1 of \\{ /Tenant/Shared/service1_monitor_similar \\}',
+                            'tmsh::modify ltm pool /Tenant/Shared/service2_pool members add \\{ /Tenant/192.0.2.2:80 \\}',
                             'tmsh::commit_transaction',
                             '} err] } {',
                             'catch { tmsh::cancel_transaction } e',
