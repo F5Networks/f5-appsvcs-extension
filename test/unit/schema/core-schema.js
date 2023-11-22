@@ -3532,6 +3532,31 @@ describe('core-schema.json', () => {
                 assert.ok(validate(data), getErrorString(validate));
             });
         });
+
+        describe('Monitor_ICMP', () => {
+            describe('valid', () => {
+                it('should validate with targetPort', () => {
+                    const data = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'declarationId',
+                        theTenant: {
+                            class: 'Tenant',
+                            application: {
+                                class: 'Application',
+                                template: 'generic',
+                                monitor: {
+                                    class: 'Monitor',
+                                    monitorType: 'icmp',
+                                    targetPort: 8080
+                                }
+                            }
+                        }
+                    };
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+            });
+        });
     });
 
     describe('WebSocket_Profile', () => {

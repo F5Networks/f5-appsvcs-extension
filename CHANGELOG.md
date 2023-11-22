@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 - AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool
 - AUTOTOOL-4060: Certain AS3 declarations result in "declaration has duplicate values" errors
+- AUTOTOOL-4088: Schema validation failure when declaring ICMP Monitor with targetPort or any Monitor with additional properties
 
 ### Changed
 - Updated to Service Discovery 1.17.0-2
