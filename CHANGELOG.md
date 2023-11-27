@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4059: ([GitHub Issue 756](https://github.com/F5Networks/f5-appsvcs-extension/issues/756)): Add handshakeTimeout to TLS_Server and TLS_Client.
 - AUTOTOOL-4056: GSLB_Domain with resource record type NAPTR.
 - AUTOTOOL-4078: ([GitHub Issue 772](https://github.com/F5Networks/f5-appsvcs-extension/issues/772)): GSLB_Domain load-balancing decision log property
+- AUTOTOOL-4050: ([GitHub Issue 512](https://github.com/F5Networks/f5-appsvcs-extension/issues/512)): Invalid default setting for request/response chunking (sustain) in HTTP_Profile on TMOS v15.0+
 
 ### Fixed
 - AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool

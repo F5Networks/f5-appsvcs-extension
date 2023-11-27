@@ -1082,6 +1082,11 @@ const translate = {
                     item[prop] = 'sustain';
                 }
             });
+        // before BIG-IP 15.0 the default value of 'sustain' on newer versions did not exist so replace with the
+        // pre 15.0 default value of 'preserve' for requestChunking and 'selective' for responseChunking.
+        } else {
+            item.requestChunking = item.requestChunking === 'sustain' ? 'preserve' : item.requestChunking;
+            item.responseChunking = item.responseChunking === 'sustain' ? 'selective' : item.responseChunking;
         }
 
         configs.push(normalize.actionableMcp(context, item, 'ltm profile http', util.mcpPath(tenantId, appId, itemId)));

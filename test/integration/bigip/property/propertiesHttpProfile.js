@@ -343,6 +343,46 @@ describe('HTTP_Profile', function () {
         return assertHttpProfileClass(properties);
     });
 
+    it('Request and Response Chunking Mappings', () => {
+        // Understanding the mapping --
+        //   on 15.1 preserve and selective from 14.1 do not exist and are mapped to the 15.1 default value of sustain
+        //   on 14.1 requestChunking does not support the 15.1 default value of sustain so it gets mapped to the 14.1
+        //   default value of preserve
+        //   on 14.1 responseChunking does not support the 15.1 default value of sustain so it gets mapped to the 14.1
+        //   default value of selective
+
+        const properties = [];
+        if (util.versionLessThan(getBigIpVersion(), '15.0')) {
+            properties.push(
+                {
+                    name: 'requestChunking',
+                    inputValue: [undefined, 'selective', 'sustain', 'rechunk', undefined],
+                    expectedValue: ['preserve', 'selective', 'preserve', 'rechunk', 'preserve']
+                },
+                {
+                    name: 'responseChunking',
+                    inputValue: [undefined, 'preserve', 'sustain', 'rechunk', undefined],
+                    expectedValue: ['selective', 'preserve', 'selective', 'rechunk', 'selective']
+                }
+            );
+        } else {
+            properties.push(
+                {
+                    name: 'requestChunking',
+                    inputValue: [undefined, 'rechunk', 'preserve', 'rechunk', undefined],
+                    expectedValue: ['sustain', 'rechunk', 'sustain', 'rechunk', 'sustain']
+                },
+                {
+                    name: 'responseChunking',
+                    inputValue: [undefined, 'rechunk', 'selective', 'unchunk', undefined],
+                    expectedValue: ['sustain', 'rechunk', 'sustain', 'unchunk', 'sustain']
+                }
+            );
+        }
+
+        return assertHttpProfileClass(properties);
+    });
+
     it('Deprecated WebSocket Profile', () => {
         const properties = [
             {

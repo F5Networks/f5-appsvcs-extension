@@ -1356,6 +1356,15 @@ describe('map_as3', () => {
             assert.strictEqual(result.configs[0].properties['request-chunking'], 'sustain');
         });
 
+        it('should map "sustain" to "selective" and "preserve" when TMOS version is older than 15.0', () => {
+            item.responseChunking = 'sustain';
+            item.requestChunking = 'sustain';
+            context.target.tmosVersion = '14.1';
+            const result = translate.HTTP_Profile(context, 'tenantId', 'appId', 'itemId', item, 'notNeeed');
+            assert.strictEqual(result.configs[0].properties['response-chunking'], 'selective');
+            assert.strictEqual(result.configs[0].properties['request-chunking'], 'preserve');
+        });
+
         it('should map "allowBlankSpaceAfterHeaderName" when TMOS version is 16.1 or newer', () => {
             item.allowBlankSpaceAfterHeaderName = true;
             context.target.tmosVersion = '16.1';
