@@ -198,7 +198,7 @@ function createDeclarations(as3Class, properties, options) {
     for (let i = 0; i < count; i += 1) {
         const declaration = {
             class: 'ADC',
-            schemaVersion: schema.properties.schemaVersion.enum[0],
+            schemaVersion: schema.properties.schemaVersion.anyOf[1].const,
             id: `${as3Class}`
         };
 

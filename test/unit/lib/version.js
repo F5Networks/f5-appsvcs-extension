@@ -26,7 +26,7 @@ function removePatchVersion(versionString) {
 
 describe('versions', () => {
     it('should match in package.json and the schema', () => {
-        const schemaVersion = removePatchVersion(schema.properties.schemaVersion.enum[0].toString());
+        const schemaVersion = removePatchVersion(schema.properties.schemaVersion.anyOf[1].const);
         const packageVersion = removePatchVersion(packageInfo.version.split('-')[0]);
         assert.equal(schemaVersion, packageVersion);
     });

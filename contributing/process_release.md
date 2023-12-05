@@ -44,7 +44,7 @@
   * Create a new branch off of `develop` like any other development task
   * Update version changes to `package.json` and `package-lock.json`.  The release number of the new version should start at 0 (e.g. 3.10.0-4 would become 3.11.0-0).
   * Update the `info.version` property in `docs/openapi.yaml` to the new AS3 version (e.g. 3.27.0).
-  * Add a new version to the beginning of the schemaVersion enum in `src/schema/latest/core-schema.js` using the preexisting format.
+  * Update the `schemaVersion.anyOf[1].const` property in `src/schema/latest/core-schema.js` using the preexisting format. The `pattern` property should also be updated to allow the new version (e.g. if going from 3.49.0 to 3.50.0, we'll add `|5[0]`).
   * Add a new block to `CHANGELOG.md` with the following content
     ```
     ## <new_version>
@@ -84,7 +84,7 @@ Merge the release branch into `develop` and `main` following the steps below for
 * Update f5-appsvcs-schema with the new AS3 version.
   * Navigate to the f5-appsvcs-schema repository.
   * Create a new branch off of `main`.
-  * Add the current release version to the beginning of the schemaVersion enum in `schemas/core-schema.json` using the preexisting format.
+  * Update the `schemaVersion.anyOf[1].const` property in `schemas/core-schema.json` using the preexisting format. The `pattern` property should also be updated to allow the new version (e.g. if going from 3.49.0 to 3.50.0, we'll add `|5[0]`).
   * Run `npm ci`.
   * Run `npm run compile-schema`. If you don't have the typescript compiler (tsc) installed, you will need to run `npm install -g typescript`.
   * Add and commit your changes, then push your branch.

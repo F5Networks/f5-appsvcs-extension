@@ -18,6 +18,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Changed
 - Updated to Service Discovery 1.17.0-2
   - Package updates
+- AUTOTOOL-3645: ([GitHub 677](https://github.com/F5Networks/f5-appsvcs-extension/issues/677)): Can't use x.x.1 schemaVersion accepted by schema that is x.x.1 codified
 
 ### Removed
 

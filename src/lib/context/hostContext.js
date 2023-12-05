@@ -201,8 +201,9 @@ function initAs3VersionInfo(context) {
     const as3Info = {
         version: versionInfo[0],
         release: versionInfo[1],
-        schemaCurrent: schema.properties.schemaVersion.enum[0],
-        schemaMinimum: schema.properties.schemaVersion.enum.reverse()[0]
+        schemaCurrent: schema.properties.schemaVersion.enum
+            ? schema.properties.schemaVersion.enum[0] : schema.properties.schemaVersion.anyOf[1].const,
+        schemaMinimum: '3.0.0'
     };
     log.warning(`AS3 version: ${as3Info.version}`);
     return as3Info;

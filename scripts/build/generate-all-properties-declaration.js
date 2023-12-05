@@ -52,7 +52,7 @@ function combineDeclarations() {
     const declaration = {
         class: 'ADC',
         updateMode: 'selective',
-        schemaVersion: schema.properties.schemaVersion.enum[0],
+        schemaVersion: schema.properties.schemaVersion.anyOf[1].const,
         id: 'declarationId',
         /* target: {
             hostName: 'theHost',

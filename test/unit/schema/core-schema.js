@@ -75,6 +75,17 @@ describe('core-schema.json', () => {
                 assert.ok(validate(data), getErrorString(validate));
             });
         });
+
+        describe('invalid', () => {
+            it('should invalidate a schemaVersion that does not match the pattern', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.300.123',
+                    id: 'declarationId'
+                };
+                assert.strictEqual(validate(data), false, '/schemaVersion: data "3.300.123" should match pattern "^3[.]([0-9]|[1234][0-9])($|[.][0-9]+$)"');
+            });
+        });
     });
 
     describe('Tenant', () => {
