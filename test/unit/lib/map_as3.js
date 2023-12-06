@@ -9698,6 +9698,98 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Monitor', () => {
+        describe('GSLB HTTPS Monitor', () => {
+            it('should handle default properties of HTTPS monitor', () => {
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should handle all properties of HTTPS monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test HTTPS props',
+                    monitorType: 'https',
+                    clientCertificate: 'webcert',
+                    ciphers: 'DEFAULT:TLS1.2:!SSLv3',
+                    target: '*:*',
+                    interval: 30,
+                    timeout: 120,
+                    probeTimeout: 5,
+                    receive: 'foo',
+                    reverseEnabled: true,
+                    send: 'GET /',
+                    sniServerName: 'test.example.com',
+                    transparent: true
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'webcert.crt',
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test HTTPS props\"',
+                            send: '\"GET /\"',
+                            recv: '\"foo\"',
+                            /* eslint-enable no-useless-escape */
+                            timeout: 120,
+                            cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
+                            destination: '*:*',
+                            interval: 30,
+                            'probe-timeout': 5,
+                            'sni-server-name': 'test.example.com',
+                            reverse: 'enabled',
+                            transparent: 'enabled'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should ignore sniServerName property for <= 16.1', () => {
+                defaultContext.target.tmosVersion = '16.0';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https',
+                    sniServerName: 'test.example.com'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+        });
+    });
+
     describe('GSLB_Domain', () => {
         it('should return a proper wideip AAAA config with pools', () => {
             const item = {

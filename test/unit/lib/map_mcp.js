@@ -3377,6 +3377,84 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:gtm:monitor', () => {
+            describe('tm:gtm:monitor:https:httpsstate', () => {
+                it('should process with default values', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        cert: 'none',
+                        'sni-server-name': 'none'
+                    });
+                });
+
+                it('should process with all values', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor',
+                        remark: 'Test HTTPS props',
+                        clientCertificate: 'webcert',
+                        ciphers: 'DEFAULT:TLS1.2:!SSLv3',
+                        target: '*:*',
+                        interval: 30,
+                        timeout: 120,
+                        probeTimeout: 5,
+                        receive: 'foo',
+                        reverseEnabled: true,
+                        send: 'GET /',
+                        sniServerName: 'test.example.com',
+                        transparent: true
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        cert: 'webcert',
+                        cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
+                        /* eslint-disable no-useless-escape */
+                        description: '\"Test HTTPS props\"',
+                        recv: '\"foo\"',
+                        send: '\"GET /\"',
+                        /* eslint-enable no-useless-escape */
+                        destination: '*:*',
+                        interval: 30,
+                        'probe-timeout': 5,
+                        reverse: 'enabled',
+                        'sni-server-name': 'test.example.com',
+                        timeout: 120,
+                        transparent: 'enabled'
+                    });
+                });
+
+                it('should ignore sniServerName property for <= 16.1', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        cert: 'none'
+                    });
+                });
+            });
+        });
+
         describe('tm:ltm:ifile:ifilestate', () => {
             it('should return iFile', () => {
                 const obj = {

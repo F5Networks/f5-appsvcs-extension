@@ -1,0 +1,28 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.49.0",
+    "id": "GSLB_HTTPS_Monitor_Sample",
+    "Sample_HTTPS_GSLB_Monitor": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "https_example": {
+                "class": "GSLB_Monitor",
+                "clientCertificate": "webcert",
+                "ciphers": "DEFAULT:TLS1.2:!SSLv3",
+                "monitorType": "https",
+                "target": "10.10.0.1:443",
+                "interval": 30,
+                "timeout": 120,
+                "probeTimeout": 5,
+                "send": "GET /",
+                "sniServerName": "test.example.com"
+            },
+            "webcert": {
+                "class": "Certificate",
+                "certificate": {"bigip":"/Common/default.crt"},
+                "privateKey":{"bigip":"/Common/default.key"}
+            }
+        }
+    }
+}

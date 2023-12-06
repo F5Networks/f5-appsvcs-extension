@@ -2296,6 +2296,7 @@
     { "id":"recv",                      "altId": "receive", "quotedString": true },
     { "id":"reverse",                   "altId": "reverseEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"send",                      "quotedString": true },
+    { "id":"sni-server-name",           "minVersion": "16.1" },
     { "id":"timeout" },
     { "id":"transparent",               "truth": "enabled", "falsehood": "disabled"},
     { "id":"iControl_post",             "extend": "object"},

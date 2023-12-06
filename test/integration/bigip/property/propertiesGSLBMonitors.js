@@ -20,8 +20,10 @@ const {
     assertClass,
     assertModuleProvisioned,
     getItemName,
+    getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
+const util = require('../../../../src/lib/util/util');
 const constants = require('../../../../src/lib/constants');
 const oauth = require('../../../common/oauth');
 const { validateEnvVars } = require('../../../common/checkEnv');
@@ -139,6 +141,17 @@ describe('GSLB Monitors', function () {
                 }
             }
         ];
+
+        if (!util.versionLessThan(getBigIpVersion(), '16.1')) {
+            const sniServerName = {
+                name: 'sniServerName',
+                inputValue: [undefined, 'test.example.com', undefined],
+                expectedValue: [undefined, 'test.example.com', undefined],
+                extractFunction: (o) => o.sniServerName
+            };
+            properties.push(sniServerName);
+        }
+
         return assertGSLBMonitorClass(properties);
     });
 

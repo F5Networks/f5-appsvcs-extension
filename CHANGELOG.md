@@ -9,6 +9,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4056: GSLB_Domain with resource record type NAPTR.
 - AUTOTOOL-4078: ([GitHub Issue 772](https://github.com/F5Networks/f5-appsvcs-extension/issues/772)): GSLB_Domain load-balancing decision log property
 - AUTOTOOL-4050: ([GitHub Issue 512](https://github.com/F5Networks/f5-appsvcs-extension/issues/512)): Invalid default setting for request/response chunking (sustain) in HTTP_Profile on TMOS v15.0+
+- AUTOTOOL-4087: ([GitHub Issue 778](https://github.com/F5Networks/f5-appsvcs-extension/issues/778)): Expose SNI for GSLB HTTPS monitor
 
 ### Fixed
 - AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool

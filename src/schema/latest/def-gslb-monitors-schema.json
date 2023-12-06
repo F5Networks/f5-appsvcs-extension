@@ -220,6 +220,15 @@
                                     "required": [ "class" ]
                                 }
                             }
+                        },
+                        "sniServerName": {
+                            "title": "SNI Server Name",
+                            "description": "Server Name Indication (SNI) property for HTTPS monitor",
+                            "type": "string",
+                            "f5PostProcess": {
+                                "tag": "minVersion",
+                                "data": "16.1"
+                            }
                         }
                     }
                 },
