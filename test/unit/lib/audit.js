@@ -21,7 +21,9 @@ const nock = require('nock');
 const sinon = require('sinon');
 const EventEmitter = require('events');
 
+const checkAndDelete = require('@f5devcentral/atg-shared-utilities-dev').checkAndDeleteProperty;
 const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
+
 const audit = require('../../../src/lib/audit');
 const bigiq = require('../../../src/lib/bigiq');
 const fetch = require('../../../src/lib/fetch');
@@ -331,6 +333,7 @@ describe('audit', () => {
             sinon.stub(UpdaterTmsh.prototype, 'update').resolves();
             sinon.stub(promiseUtil, 'series').resolves([]);
             declaration = {
+                id: 'audit_tenant_id',
                 tenant: {
                     controls: {
                         traceResponse: false
@@ -432,6 +435,35 @@ describe('audit', () => {
                     assert.strictEqual(context.request.fortune, false);
                     assert.deepStrictEqual(context.control, {});
                     assert.strictEqual(typeof declaration.tenant.controls.fortune, 'undefined');
+                });
+        });
+
+        it('should return an expected response and verify log is written at info level', () => {
+            context.log = {};
+            context.control = { fortune: false };
+            context.tasks.push({ unchecked: true });
+            context.target.deviceType = DEVICE_TYPES.BIG_IP;
+            context.host.parser = {
+                digest: sinon.stub()
+            };
+            declaration.tenant.controls.fortune = false;
+            const infoSpy = sinon.spy(log, 'info');
+
+            return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                .then((response) => {
+                    assert.strictEqual(context.request.fortune, false);
+                    assert.deepStrictEqual(context.control, {});
+                    const result = checkAndDelete([response], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            message: 'success',
+                            tenant: 'tenant',
+                            declarationId: 'audit_tenant_id'
+                        }
+                    );
+                    assert.strictEqual(infoSpy.callCount, 1);
                 });
         });
 

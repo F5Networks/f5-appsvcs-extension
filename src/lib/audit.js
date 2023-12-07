@@ -499,7 +499,8 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
             response.host = context.target.host;
             response.tenant = tenantId;
             response.runTime = new Date() - startTime;
-            return log.debug(response);
+            response.declarationId = declaration.id;
+            return log.info(response);
         })
         .catch((err) => {
             const response = {};
