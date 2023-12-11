@@ -22,6 +22,8 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 
+const checkAndDelete = require('@f5devcentral/atg-shared-utilities-dev').checkAndDeleteProperty;
+
 const oauth = require('../../../common/oauth');
 
 const {
@@ -133,15 +135,14 @@ describe('Per-app tests', function () {
         return Promise.resolve()
             .then(() => postDeclaration(perTenDecl, { declarationIndex: 0 }))
             .then((results) => {
-                assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                assert.strictEqual(typeof results.results[0].runTime, 'number');
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
                         {
                             code: 200,
+                            declarationId: 'per-app_pools',
                             message: 'success',
                             host: 'localhost',
                             tenant: 'tenant1'
@@ -189,10 +190,10 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app1Decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                assert.strictEqual(typeof results.results[0].runTime, 'number');
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -207,8 +208,9 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app1Decl, { declarationIndex: 2 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                assert.strictEqual(typeof results.results[0].runTime, 'number');
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -263,8 +265,9 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app2Decl, { declarationIndex: 3 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                assert.strictEqual(typeof results.results[0].runTime, 'number');
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -285,10 +288,9 @@ describe('Per-app tests', function () {
                 return deleteDeclaration(undefined, options);
             })
             .then((results) => {
-                assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                assert.strictEqual(typeof results.results[0].runTime, 'number');
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -327,8 +329,10 @@ describe('Per-app tests', function () {
         return Promise.resolve()
             .then(() => postDeclaration(appDecl, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -350,8 +354,9 @@ describe('Per-app tests', function () {
                 return deleteDeclaration(undefined, options);
             })
             .then((results) => {
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -419,8 +424,10 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app1Decl, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -435,8 +442,10 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app2Decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
@@ -451,8 +460,9 @@ describe('Per-app tests', function () {
             })
             .then(() => postDeclaration(app2Decl, { declarationIndex: 2 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
             .then((results) => {
-                delete results.results[0].lineCount;
-                delete results.results[0].runTime;
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     results.results,
                     [
