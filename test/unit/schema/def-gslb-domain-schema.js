@@ -72,7 +72,10 @@ describe('def-gslb-domain-schema.json', () => {
                             persistenceEnabled: true,
                             persistCidrIpv4: 24,
                             persistCidrIpv6: 64,
-                            ttlPersistence: 3601
+                            ttlPersistence: 3601,
+                            failureRcodeResponse: true,
+                            failureRcode: 'refused',
+                            failureRcodeTtl: 1000
 
                         },
                         testPool: {
@@ -321,6 +324,66 @@ describe('def-gslb-domain-schema.json', () => {
                     validate(decl),
                     false,
                     'ttlPersistence should be >= 0'
+                );
+            });
+
+            it('should invalidate failureRcode with integer value', () => {
+                const members = [
+                    {
+                        server: {
+                            use: '/Common/Shared/testServer'
+                        },
+                        virtualServer: '0',
+                        dependsOn: 'none'
+                    }
+                ];
+
+                const decl = buildDeclaration('A', members);
+                decl.theTenant.theApplication.testDomain.failureRcode = 1;
+                assert.strictEqual(
+                    validate(decl),
+                    false,
+                    'failureRcode should be string'
+                );
+            });
+
+            it('should invalidate failureRcodeResponse with integer value', () => {
+                const members = [
+                    {
+                        server: {
+                            use: '/Common/Shared/testServer'
+                        },
+                        virtualServer: '0',
+                        dependsOn: 'none'
+                    }
+                ];
+
+                const decl = buildDeclaration('A', members);
+                decl.theTenant.theApplication.testDomain.failureRcodeResponse = 1;
+                assert.strictEqual(
+                    validate(decl),
+                    false,
+                    'failureRcodeResponse should be boolean'
+                );
+            });
+
+            it('should invalidate failureRcodeTtl with negative value', () => {
+                const members = [
+                    {
+                        server: {
+                            use: '/Common/Shared/testServer'
+                        },
+                        virtualServer: '0',
+                        dependsOn: 'none'
+                    }
+                ];
+
+                const decl = buildDeclaration('A', members);
+                decl.theTenant.theApplication.testDomain.failureRcodeTtl = -1;
+                assert.strictEqual(
+                    validate(decl),
+                    false,
+                    'failureRcodeTtl should be => 0'
                 );
             });
         });

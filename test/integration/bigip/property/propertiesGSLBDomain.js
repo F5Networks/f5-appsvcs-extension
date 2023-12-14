@@ -145,6 +145,24 @@ describe('GSLB Domain', function () {
                 extractFunction: extractFunctions.enabled
             },
             {
+                name: 'failureRcodeResponse',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: extractFunctions.failureRcodeResponse
+            },
+            {
+                name: 'failureRcode',
+                inputValue: [undefined, 'refused', undefined],
+                expectedValue: ['noerror', 'refused', 'noerror'],
+                extractFunction: extractFunctions.failureRcode
+            },
+            {
+                name: 'failureRcodeTtl',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: [0, 1000, 0],
+                extractFunction: extractFunctions.failureRcodeTtl
+            },
+            {
                 name: 'loadBalancingDecisionLogVerbosity',
                 inputValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined],
                 expectedValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined]
@@ -300,6 +318,24 @@ describe('GSLB Domain', function () {
                 inputValue: [domainCNAME.enabled, domainMX.enabled, domainNAPTR.enabled],
                 expectedValue: [domainCNAME.enabled, domainMX.enabled, domainNAPTR.enabled],
                 extractFunction: extractFunctions.enabled
+            },
+            {
+                name: 'failureRcodeResponse',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: extractFunctions.failureRcodeResponse
+            },
+            {
+                name: 'failureRcode',
+                inputValue: [undefined, 'refused', undefined],
+                expectedValue: ['noerror', 'refused', 'noerror'],
+                extractFunction: extractFunctions.failureRcode
+            },
+            {
+                name: 'failureRcodeTtl',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: [0, 1000, 0],
+                extractFunction: extractFunctions.failureRcodeTtl
             },
             {
                 name: 'poolLbMode',

@@ -34,6 +34,26 @@
                     "type": "boolean",
                     "default": true
                 },
+                "failureRcode": {
+                    "title": "Failure RCODE",
+                    "description": "Specifies the DNS RCODE used when failure-rcode-response is enabled",
+                    "type": "string",
+                    "enum": [ "formerr", "noerror", "notimpl", "nxdomain", "refused", "servfail" ],
+                    "default": "noerror"
+                },
+                "failureRcodeResponse": {
+                    "title": "Return Code On Failure",
+                    "description": "Specifies whether RCODE responses are enabled",
+                    "type": "boolean",
+                    "default": false
+                },
+                "failureRcodeTtl": {
+                    "title": "Return Code On Failure's TTL",
+                    "description": "Specifies the negative caching TTL of the SOA for the RCODE response",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
                 "resourceRecordType": {
                     "title": "Resource Record (RR) Type",
                     "description": "Specifies the type of resource records for this domain",
