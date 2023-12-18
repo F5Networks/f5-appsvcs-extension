@@ -9519,7 +9519,7 @@ describe('map_as3', () => {
                         count: 10,
                         database: 'sales',
                         interval: 10,
-                        password: 'sql-password',
+                        password: 'sql-password', // gitleaks:allow
                         recv: 'received something',
                         'recv-column': 2,
                         'recv-row': 3,
@@ -9542,7 +9542,7 @@ describe('map_as3', () => {
                                 description: '"My little db pony"',
                                 destination: '10.11.12.13:3456',
                                 interval: 10,
-                                password: '"sql-password"',
+                                password: '"sql-password"', // gitleaks:allow
                                 recv: '"received something"',
                                 send: '"SELECT * FROM db_name"',
                                 timeout: 81,
