@@ -55,6 +55,11 @@ describe('SNAT_Translation', function () {
                 extractFunction: (o) => o.enabled === true
             },
             {
+                name: 'arpEnabled',
+                inputValue: [undefined, false, undefined],
+                expectedValue: ['enabled', 'disabled', 'enabled']
+            },
+            {
                 name: 'ipIdleTimeout',
                 inputValue: [undefined, 1000, undefined],
                 expectedValue: ['indefinite', 1000, 'indefinite']

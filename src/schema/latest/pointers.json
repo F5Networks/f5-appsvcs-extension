@@ -548,16 +548,6 @@
         ],
         "tmshPath": "ltm virtual"
     },
-    "SNAT_Pool": {
-        "name": "snat pool",
-        "class": "SNAT_Pool",
-        "tmshPath": "ltm snatpool"
-    },
-    "SNAT_Translation": {
-        "name": "snat translation",
-        "class": "SNAT_Translation",
-        "tmshPath": "ltm snat-translation"
-    },
     "SOCKS_Profile": {
         "name": "SOCKS profile",
         "class": "SOCKS_Profile",

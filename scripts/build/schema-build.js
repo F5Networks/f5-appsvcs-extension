@@ -306,6 +306,8 @@ function buildSharedSchema() {
         'Pointer_Log_Destination',
         'Pointer_Log_Publisher',
         'Pointer_Pool',
+        'Pointer_SNAT_Pool',
+        'Pointer_SNAT_Translation',
         'Pointer_SSL_Certificate',
         'Pointer_String',
         'Pointer_Use',
@@ -313,11 +315,14 @@ function buildSharedSchema() {
         'Property_Base64',
         'Property_Passphrase',
         'Property_Text',
+        'Property_Use',
         'Resource_Base64',
         'Resource_Text',
         'Resource_URL',
         'Secret',
         'Secret_Resource_URL',
+        'SNAT_Pool',
+        'SNAT_Translation',
         'UDP_Profile',
         'WebSocket_Profile'
     ];
