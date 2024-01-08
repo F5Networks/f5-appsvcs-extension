@@ -354,7 +354,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-2725: ([GitHub Issue 506](https://github.com/F5Networks/f5-appsvcs-extension/issues/506)): URL fetch of certificates results in corrupted files
 - AUTOTOOL-2878: ([GitHub Issue 530](https://github.com/F5Networks/f5-appsvcs-extension/issues/530)): AS3 Schema issue where it applies incorrect restriction if serverType is undefined
 - AUTOTOOL-3036: Service Discovery secrets are not encrypted on BIG-IQ
-- AUTOTOOL-2980: ([GitHub Issue](https://github.com/F5Networks/f5-appsvcs-extension/issues/553)): AS3 fails with unspecific error when an external data group externalFilePath has an invalid HTTP response code
+- AUTOTOOL-2980: ([GitHub Issue 553](https://github.com/F5Networks/f5-appsvcs-extension/issues/553)): AS3 fails with unspecific error when an external data group externalFilePath has an invalid HTTP response code
 
 ### Changed
 - Updated to Service Discovery 1.10.8-1
