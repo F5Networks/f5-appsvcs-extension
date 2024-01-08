@@ -3945,6 +3945,13 @@ const translate = {
             item.key = cert ? `${cert}.key` : 'none';
         }
 
+        if ((['http', 'https'].indexOf(item.monitorType) >= 0)) {
+            if (Array.isArray(item.receiveStatusCodes)) {
+                item.receiveStatusCodes = item.receiveStatusCodes.join(' ');
+            }
+            item.receiveStatusCodes = item.receiveStatusCodes || 'none';
+        }
+
         if ((['http', 'https', 'tcp', 'udp'].indexOf(item.monitorType) >= 0)) {
             item.send = item.send || 'none';
             item.receive = item.receive || 'none';
@@ -3971,7 +3978,7 @@ const translate = {
         const config = normalize.actionableMcp(context, item, 'gtm monitor', util.mcpPath(tenantId, appId, itemId));
 
         props.any = ['class', 'description', 'destination', 'interval', 'timeout', 'probe-timeout', 'ignore-down-response'];
-        props.http = props.any.concat(['reverse', 'send', 'recv', 'transparent']);
+        props.http = props.any.concat(['reverse', 'send', 'recv', 'recv-status-code', 'transparent']);
         props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props.tcp = props.http;

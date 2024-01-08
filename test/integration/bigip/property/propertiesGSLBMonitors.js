@@ -102,6 +102,16 @@ describe('GSLB Monitors', function () {
                 expectedValue: ['HTTP/1.', 'HTTP', 'HTTP/1.']
             }
         ];
+
+        if (!util.versionLessThan(getBigIpVersion(), '15.1')) {
+            const receiveStatusCodes = {
+                name: 'receiveStatusCodes',
+                inputValue: [undefined, [200, 302], undefined],
+                expectedValue: [undefined, '200 302', undefined]
+            };
+            properties.push(receiveStatusCodes);
+        }
+
         return assertGSLBMonitorClass(properties);
     });
 
@@ -141,6 +151,15 @@ describe('GSLB Monitors', function () {
                 }
             }
         ];
+
+        if (!util.versionLessThan(getBigIpVersion(), '15.1')) {
+            const receiveStatusCodes = {
+                name: 'receiveStatusCodes',
+                inputValue: [undefined, [200], undefined],
+                expectedValue: [undefined, '200', undefined]
+            };
+            properties.push(receiveStatusCodes);
+        }
 
         if (!util.versionLessThan(getBigIpVersion(), '16.1')) {
             const sniServerName = {

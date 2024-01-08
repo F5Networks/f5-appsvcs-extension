@@ -3378,6 +3378,55 @@ describe('map_mcp', () => {
         });
 
         describe('tm:gtm:monitor', () => {
+            describe('tm:gtm:monitor:http:httpstate', () => {
+                it('should return GSLB_Monitor HTTP', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:http:httpstate',
+                        name: 'gslb_monitor_http',
+                        partition: 'Tenant',
+                        subPath: 'Application',
+                        fullPath: '/Tenant/Application/gslb_monitor_http',
+                        generation: 0,
+                        selfLink: 'https://localhost/mgmt/tm/gtm/monitor/http/~Tenant~Application~gslb_monitor_http?ver=15.1.8',
+                        defaultsFrom: '/Common/http',
+                        description: 'my remark',
+                        destination: '192.0.2.20:80',
+                        ignoreDownResponse: 'enabled',
+                        interval: 31,
+                        probeTimeout: 6,
+                        recv: 'My Receive String',
+                        recvStatusCode: '200 302',
+                        reverse: 'enabled',
+                        send: 'GET /www/siterequest/index.html\\r\\n',
+                        timeout: 121,
+                        transparent: 'enabled'
+                    };
+
+                    const results = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(results, [
+                        {
+                            path: '/Tenant/Application/gslb_monitor_http',
+                            command: 'gtm monitor http',
+                            properties: {
+                                description: '"my remark"',
+                                destination: '192.0.2.20:80',
+                                'ignore-down-response': 'enabled',
+                                interval: 31,
+                                'probe-timeout': 6,
+                                recv: '"My Receive String"',
+                                'recv-status-code': '"200 302"',
+                                reverse: 'enabled',
+                                send: '"GET /www/siterequest/index.html\\\\r\\\\n"',
+                                timeout: 121,
+                                transparent: 'enabled'
+                            },
+                            ignore: []
+                        }
+                    ]);
+                });
+            });
+
             describe('tm:gtm:monitor:https:httpsstate', () => {
                 it('should process with default values', () => {
                     defaultContext.target.tmosVersion = '16.1';
@@ -3393,6 +3442,7 @@ describe('map_mcp', () => {
                         recv: 'none',
                         send: 'none',
                         cert: 'none',
+                        'recv-status-code': 'none',
                         'sni-server-name': 'none'
                     });
                 });
@@ -3412,6 +3462,7 @@ describe('map_mcp', () => {
                         timeout: 120,
                         probeTimeout: 5,
                         receive: 'foo',
+                        receiveStatusCodes: '200',
                         reverseEnabled: true,
                         send: 'GET /',
                         sniServerName: 'test.example.com',
@@ -3429,6 +3480,7 @@ describe('map_mcp', () => {
                         destination: '*:*',
                         interval: 30,
                         'probe-timeout': 5,
+                        'recv-status-code': '"200"',
                         reverse: 'enabled',
                         'sni-server-name': 'test.example.com',
                         timeout: 120,
@@ -3436,8 +3488,26 @@ describe('map_mcp', () => {
                     });
                 });
 
-                it('should ignore sniServerName property for <= 16.1', () => {
+                it('should ignore sniServerName property for < 16.1', () => {
                     defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        'recv-status-code': 'none',
+                        send: 'none',
+                        cert: 'none'
+                    });
+                });
+
+                it('should ignore recvStatusCodes property for < 15.1', () => {
+                    defaultContext.target.tmosVersion = '14.1';
                     const obj = {
                         kind: 'tm:gtm:monitor:https:httpsstate',
                         name: 'myMonitor',

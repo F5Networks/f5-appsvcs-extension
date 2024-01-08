@@ -2294,6 +2294,7 @@
     { "id":"probe-interval" },
     { "id":"probe-timeout" },
     { "id":"recv",                      "altId": "receive", "quotedString": true },
+    { "id":"recv-status-code",          "altId": "receiveStatusCodes", "quotedString": true, "minVersion": "15.1" },
     { "id":"reverse",                   "altId": "reverseEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"send",                      "quotedString": true },
     { "id":"sni-server-name",           "minVersion": "16.1" },

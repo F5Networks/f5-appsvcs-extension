@@ -1675,10 +1675,12 @@ const translate = {
         return processGtmWideIps(context, obj, 'naptr');
     },
     'tm:gtm:monitor:http:httpstate': function (context, obj) {
+        obj.recvStatusCode = obj.recvStatusCode ? obj.recvStatusCode : 'none';
         return monitor(context, obj, 'gtm monitor', 'http');
     },
     'tm:gtm:monitor:https:httpsstate': function (context, obj) {
         obj.cert = obj.cert ? obj.cert : 'none';
+        obj.recvStatusCode = obj.recvStatusCode ? obj.recvStatusCode : 'none';
         obj.sniServerName = obj.sniServerName ? obj.sniServerName : 'none';
         return monitor(context, obj, 'gtm monitor', 'https');
     },

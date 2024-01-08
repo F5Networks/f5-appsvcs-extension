@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4087: ([GitHub Issue 778](https://github.com/F5Networks/f5-appsvcs-extension/issues/778)): Expose SNI for GSLB HTTPS monitor
 - AUTOTOOL-4094: Add the declaration id to the restnoded log output upon success and include it in the rest response
 - AUTOTOOL-4092: Expose failureRcode properties for GSLB WideIP
+- AUTOTOOL-4117: ([GitHub Issue 779](https://github.com/F5Networks/f5-appsvcs-extension/issues/779)): GSLB_Monitor HTTP/HTTPS receiveStatusCodes property
 
 ### Fixed
 - AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool

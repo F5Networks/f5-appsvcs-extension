@@ -9734,6 +9734,7 @@ describe('map_as3', () => {
                     timeout: 120,
                     probeTimeout: 5,
                     receive: 'foo',
+                    receiveStatusCodes: [200, 302],
                     reverseEnabled: true,
                     send: 'GET /',
                     sniServerName: 'test.example.com',
@@ -9757,6 +9758,7 @@ describe('map_as3', () => {
                             destination: '*:*',
                             interval: 30,
                             'probe-timeout': 5,
+                            'recv-status-code': '"200 302"',
                             'sni-server-name': 'test.example.com',
                             reverse: 'enabled',
                             transparent: 'enabled'
@@ -9765,7 +9767,30 @@ describe('map_as3', () => {
                     });
             });
 
-            it('should ignore sniServerName property for <= 16.1', () => {
+            it('should ignore recvStatusCode property for < 15.1', () => {
+                defaultContext.target.tmosVersion = '15.0';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https',
+                    recvStatusCode: ['200']
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should ignore sniServerName property for < 16.1', () => {
                 defaultContext.target.tmosVersion = '16.0';
                 const item = {
                     class: 'GSLB_Monitor',
@@ -9782,6 +9807,7 @@ describe('map_as3', () => {
                             cert: 'none',
                             description: 'none',
                             recv: 'none',
+                            'recv-status-code': 'none',
                             send: 'none'
                         },
                         ignore: []

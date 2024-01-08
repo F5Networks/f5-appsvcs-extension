@@ -185,6 +185,20 @@
                         "tag": "expand"
                     }
                 },
+                "receiveStatusCodes": {
+                    "title": "Receive Status Codes",
+                    "description": "Specifies the status codes that the monitor looks for in the returned resource",
+                    "type": "array",
+                    "items": {
+                        "title": "Receive Status Code",
+                        "type": "integer"
+                    },
+                    "uniqueItems": true,
+                    "f5PostProcess": {
+                        "tag": "minVersion",
+                        "data": "15.1"
+                    }
+                },
                 "transparent": {
                     "title": "Transparent",
                     "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
