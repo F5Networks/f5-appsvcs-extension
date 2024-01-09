@@ -538,6 +538,9 @@
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/http-proxy-connect"
+        },
+        {
+            "endpoint": "/mgmt/tm/net/route-domain"
         }
     ],
     "referred": [

@@ -3814,5 +3814,27 @@ describe('map_mcp', () => {
                 );
             });
         });
+
+        describe('tm:net:route-domain:route-domainstate', () => {
+            it('should create tm:net:route-domain:route-domainstate config', () => {
+                const obj = {
+                    kind: 'tm:net:route-domain:route-domainstate',
+                    fullPath: '/Common/100',
+                    fwEnforcedPolicy: '/Common/Shared/firewallPolicy'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'net route-domain',
+                        ignore: [],
+                        path: '/Common/100',
+                        properties: {
+                            'fw-enforced-policy': '/Common/Shared/firewallPolicy'
+                        }
+                    }
+                );
+            });
+        });
     });
 });

@@ -1365,6 +1365,9 @@
     { "id":"ports",                     "extend": "array"},
     { "id":"port-lists",                "extend": "array"}
   ],
+  "net route-domain": [
+    { "id":"fw-enforced-policy" }
+  ],
   "pem reporting format-script": [
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"definition" }

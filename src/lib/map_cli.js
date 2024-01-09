@@ -970,6 +970,9 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             targetConfig.addresses = { '::1:5ee:bad:c0de': {} };
         }
         break;
+    case 'net route-domain':
+        commandObj.commands = [`tmsh::modify net route-domain ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
+        return commandObj;
     case 'asm policy': {
         let file = `/var/config/rest/downloads/${diff.path[0].split('/').pop()}.xml`;
         if (typeof diff.rhs.properties !== 'undefined' && typeof diff.rhs.properties.file !== 'undefined') {
@@ -1360,6 +1363,9 @@ const tmshDelete = function (context, diff, currentConfig) {
     case 'gtm global-settings load-balancing':
         // set things back to default
         commandObj.commands = [`tmsh::modify ${diff.lhsCommand} topology-longest-match yes`];
+        return commandObj;
+    case 'net route-domain':
+        commandObj.commands = [`tmsh::modify net route-domain ${diff.path[0]} fw-enforced-policy none`];
         return commandObj;
     default:
     }

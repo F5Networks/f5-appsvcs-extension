@@ -79,8 +79,12 @@ class RestWorker {
                 this.asyncHandler.updatePending();
             })
             .then(() => {
-                const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
-                return storage.ensureDataGroup();
+                const accessProfileStorage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
+                return accessProfileStorage.ensureDataGroup()
+                    .then(() => {
+                        const routeDomainStorage = new atgStorage.StorageDataGroup('/Common/appsvcs/routeDomains');
+                        return routeDomainStorage.ensureDataGroup();
+                    });
             })
             .then(() => success())
             .catch((e) => {

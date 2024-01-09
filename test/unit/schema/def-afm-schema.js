@@ -461,6 +461,68 @@ describe('def-afm-schema.json', () => {
             });
         });
     });
+
+    describe('Firewall_Policy', () => {
+        const baseDeclaration = {
+            class: 'ADC',
+            schemaVersion: '3.49.0',
+            id: 'declarationId',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    firewallPolicy: {
+                        class: 'Firewall_Policy',
+                        rules: []
+                    }
+                }
+            }
+        };
+
+        describe('valid', () => {
+            it('should validate the minimum properties', () => {
+                const testData = simpleCopy(baseDeclaration);
+                assert.ok(validate(testData), getErrorString(validate));
+            });
+
+            it('should validate with all properties', () => {
+                const testData = simpleCopy(baseDeclaration);
+                testData.Common.Shared.firewallPolicy = {
+                    class: 'Firewall_Policy',
+                    label: 'label',
+                    remark: 'description',
+                    rules: [
+                        {
+                            bigip: '/Common/ruleList'
+                        }
+                    ],
+                    routeDomainEnforcement: [
+                        {
+                            bigip: '/Common/100'
+                        }
+                    ]
+                };
+                assert.ok(validate(testData), getErrorString(validate));
+            });
+        });
+
+        describe('invalid', () => {
+            it('should not allow use pointers for routeDomainEnforcement', () => {
+                const testData = simpleCopy(baseDeclaration);
+                testData.Common.Shared.firewallPolicy = {
+                    class: 'Firewall_Policy',
+                    rules: [],
+                    routeDomainEnforcement: [
+                        {
+                            use: 'rd'
+                        }
+                    ]
+                };
+                assert.strictEqual(validate(testData), false, 'should NOT have additional properties');
+            });
+        });
+    });
 });
 
 function getErrorString() {

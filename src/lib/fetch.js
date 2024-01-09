@@ -797,29 +797,29 @@ function gatherAccessProfileItems(context, partition, config) {
         });
 }
 
-function getCommonAccessProfiles(context) {
-    const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
+function getDataGroupData(context, dataGroupInfo) {
+    const storage = new atgStorage.StorageDataGroup(`/Common/appsvcs/${dataGroupInfo.storageName}`);
     return storage.keys()
         .then((records) => {
-            context.tasks[context.currentIndex].commonAccessProfiles = records;
+            context.tasks[context.currentIndex][dataGroupInfo.name] = records;
         });
 }
 
-function updateCommonAccessProfiles(context, desiredConfig) {
-    const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
-    const desiredAccessProfiles = Object.keys(desiredConfig)
-        .filter((item) => desiredConfig[item].command === 'apm profile access')
-        .map((profile) => profile.split('/').pop());
-    const promises = desiredAccessProfiles.map((key) => () => storage.hasItem(key)
+function updateDataGroup(context, desiredConfig, dataGroupInfo) {
+    const storage = new atgStorage.StorageDataGroup(`/Common/appsvcs/${dataGroupInfo.storageName}`);
+    const desiredItems = Object.keys(desiredConfig)
+        .filter((item) => desiredConfig[item].command === dataGroupInfo.command)
+        .map((filteredItem) => filteredItem.split('/').pop());
+    const promises = desiredItems.map((key) => () => storage.hasItem(key)
         .then((hasItem) => {
             if (hasItem) {
                 return Promise.resolve();
             }
             return storage.setItem(key, '');
         }));
-    context.tasks[context.currentIndex].commonAccessProfiles.forEach((accessProfile) => {
-        if (!desiredAccessProfiles.find((profile) => profile === accessProfile)) {
-            promises.push(() => storage.deleteItem(accessProfile));
+    context.tasks[context.currentIndex][dataGroupInfo.name].forEach((item) => {
+        if (!desiredItems.find((desiredItem) => desiredItem === item)) {
+            promises.push(() => storage.deleteItem(item));
         }
     });
 
@@ -949,6 +949,12 @@ function isAs3Item(context, item, partition, filter) {
     case 'tm:apm:profile:access:accessstate':
         if (context.tasks[context.currentIndex].commonAccessProfiles
             && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+            return true;
+        }
+        break;
+    case 'tm:net:route-domain:route-domainstate':
+        if (context.tasks[context.currentIndex].commonRouteDomains
+            && context.tasks[context.currentIndex].commonRouteDomains.find((rd) => rd === item.name)) {
             return true;
         }
         break;
@@ -2798,6 +2804,6 @@ module.exports = {
     filterAs3Items, // exported for testing,
     updateAddressesWithRouteDomain, // exported for testing
     pathReferenceLinks, // exported for testing
-    getCommonAccessProfiles,
-    updateCommonAccessProfiles
+    getDataGroupData,
+    updateDataGroup
 };

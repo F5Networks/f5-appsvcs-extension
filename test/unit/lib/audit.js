@@ -52,8 +52,8 @@ describe('audit', () => {
             tracer: new Tracer('test tracer', { enabled: false }),
             postProcessing: []
         };
-        sinon.stub(fetch, 'getCommonAccessProfiles').resolves();
-        sinon.stub(fetch, 'updateCommonAccessProfiles').resolves();
+        sinon.stub(fetch, 'getDataGroupData').resolves();
+        sinon.stub(fetch, 'updateDataGroup').resolves();
     });
 
     describe('.handleServiceDiscoveryTasks', () => {

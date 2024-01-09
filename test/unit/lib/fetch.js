@@ -8855,10 +8855,14 @@ describe('fetch', () => {
         });
     });
 
-    describe('getCommonAccessProfiles', () => {
+    describe('getRouteDomainData', () => {
         it('should get Common access profiles', () => {
             sinon.stub(atgStorage.StorageDataGroup.prototype, 'keys').resolves(['accessProfile1', 'accessProfile2']);
-            return fetch.getCommonAccessProfiles(context)
+            const routeDomainInfo = {
+                name: 'commonAccessProfiles',
+                storageName: 'accessProfiles'
+            };
+            return fetch.getDataGroupData(context, routeDomainInfo)
                 .then(() => {
                     assert.deepStrictEqual(
                         context.tasks[context.currentIndex].commonAccessProfiles,
@@ -8868,7 +8872,7 @@ describe('fetch', () => {
         });
     });
 
-    describe('updateCommonAccessProfiles', () => {
+    describe('updateRouteDomain', () => {
         it('should add and remove profiles from data-group', () => {
             const desiredConfig = {
                 '/Common/newAccessProfile1': {
@@ -8904,7 +8908,12 @@ describe('fetch', () => {
                 return Promise.resolve();
             });
             sinon.stub(atgStorage.StorageDataGroup.prototype, 'persist').resolves();
-            return fetch.updateCommonAccessProfiles(context, desiredConfig)
+            const dataGroupInfo = {
+                command: 'apm profile access',
+                name: 'commonAccessProfiles',
+                storageName: 'accessProfiles'
+            };
+            return fetch.updateDataGroup(context, desiredConfig, dataGroupInfo)
                 .then(() => {
                     assert.deepStrictEqual(
                         currentProfiles,

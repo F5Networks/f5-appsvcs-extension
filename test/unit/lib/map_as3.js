@@ -12260,4 +12260,115 @@ describe('map_as3', () => {
             );
         });
     });
+
+    describe('Firewall_Policy', () => {
+        let item;
+
+        beforeEach(() => {
+            item = {
+                class: 'Firewall_Policy',
+                remark: 'firewall policy',
+                rules: [
+                    {
+                        name: 'theRule',
+                        action: 'accept-decisively',
+                        protocol: 'tcp',
+                        loggingEnabled: true
+                    }
+                ]
+            };
+        });
+
+        it('should handle a config that only includes Firewall_Policy', () => {
+            const result = mapAs3.translate.Firewall_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'security firewall policy',
+                        properties: {
+                            description: '"firewall policy"',
+                            rules: {
+                                theRule: {
+                                    action: 'accept-decisively',
+                                    'ip-protocol': 'tcp',
+                                    source: {
+                                        'address-lists': {},
+                                        'port-lists': {},
+                                        vlans: {}
+                                    },
+                                    destination: {
+                                        'address-lists': {},
+                                        'port-lists': {}
+                                    },
+                                    log: 'yes',
+                                    'irule-sample-rate': 1
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
+
+        it('should handle adding a route-domain config when routeDomainEnforcement is provided', () => {
+            item.routeDomainEnforcement = [
+                {
+                    bigip: '/Common/10'
+                },
+                {
+                    bigip: '/Common/100'
+                }
+            ];
+            const result = mapAs3.translate.Firewall_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'security firewall policy',
+                        properties: {
+                            description: '"firewall policy"',
+                            rules: {
+                                theRule: {
+                                    action: 'accept-decisively',
+                                    'ip-protocol': 'tcp',
+                                    source: {
+                                        'address-lists': {},
+                                        'port-lists': {},
+                                        vlans: {}
+                                    },
+                                    destination: {
+                                        'address-lists': {},
+                                        'port-lists': {}
+                                    },
+                                    log: 'yes',
+                                    'irule-sample-rate': 1
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/Common/10',
+                        command: 'net route-domain',
+                        properties: {
+                            'fw-enforced-policy': '/tenantId/appId/itemId'
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/Common/100',
+                        command: 'net route-domain',
+                        properties: {
+                            'fw-enforced-policy': '/tenantId/appId/itemId'
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
+    });
 });

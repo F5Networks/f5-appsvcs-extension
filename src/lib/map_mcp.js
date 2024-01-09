@@ -1192,6 +1192,9 @@ const translate = {
         }
         return [normalize.actionableMcp(context, obj, 'net port-list', obj.fullPath)];
     },
+    'tm:net:route-domain:route-domainstate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'net route-domain', obj.fullPath)];
+    },
     'tm:pem:irule:irulestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'pem irule', obj.fullPath)];
     },

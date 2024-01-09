@@ -3441,6 +3441,8 @@ const translate = {
     },
 
     Firewall_Policy(context, tenantId, appId, itemId, item) {
+        const configs = [];
+
         (item.rules || []).forEach((rule, index) => {
             if (rule.use || rule.bigip) {
                 item.rules[index] = {
@@ -3450,8 +3452,14 @@ const translate = {
             }
         });
         const path = util.mcpPath(tenantId, appId, itemId);
-        const config = [normalize.actionableMcp(context, item, 'security firewall policy', path)];
-        return { configs: config };
+        configs.push(normalize.actionableMcp(context, item, 'security firewall policy', path));
+
+        (item.routeDomainEnforcement || []).forEach((routeDomain) => {
+            const rd = { fwEnforcedPolicy: path };
+            configs.push(normalize.actionableMcp(context, rd, 'net route-domain', routeDomain.bigip));
+        });
+
+        return { configs };
     },
 
     /**

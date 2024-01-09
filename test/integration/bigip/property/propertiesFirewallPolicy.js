@@ -21,16 +21,32 @@ const {
     assertModuleProvisioned,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
+const requestUtil = require('../../../common/requestUtilPromise');
 
 describe('Firewall_Policy', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    function assertFirewallPolicyClass(properties) {
-        return assertClass('Firewall_Policy', properties);
+    function assertFirewallPolicyClass(properties, options) {
+        return assertClass('Firewall_Policy', properties, options);
     }
 
     it('All properties', function () {
         assertModuleProvisioned.call(this, 'afm');
+
+        const options = {
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/net/route-domain',
+                    data: { name: '10' }
+                },
+                {
+                    endpoint: '/mgmt/tm/net/route-domain',
+                    data: { name: '100' }
+                }
+            ],
+            tenantName: 'Common',
+            applicationName: 'Shared'
+        };
 
         const properties = [
             {
@@ -67,8 +83,47 @@ describe('Firewall_Policy', function () {
                     });
                     return rules;
                 }
+            },
+            {
+                name: 'routeDomainEnforcement',
+                inputValue: [
+                    undefined,
+                    [
+                        {
+                            bigip: '/Common/10'
+                        },
+                        {
+                            bigip: '/Common/100'
+                        }
+                    ],
+                    undefined
+                ],
+                expectedValue: [
+                    [],
+                    [
+                        '/Common/10',
+                        '/Common/100'
+                    ],
+                    []
+                ],
+                extractFunction: (o) => {
+                    const requestOptions = {
+                        path: '/mgmt/tm/net/route-domain',
+                        host: process.env.TARGET_HOST || process.env.AS3_HOST
+                    };
+                    return requestUtil.get(requestOptions)
+                        .then((routeDomains) => {
+                            const rds = [];
+                            (routeDomains.body.items || []).forEach((rd) => {
+                                if (rd.fwEnforcedPolicy === o.fullPath) {
+                                    rds.push(rd.fullPath);
+                                }
+                            });
+                            return rds;
+                        });
+                }
             }
         ];
-        return assertFirewallPolicyClass(properties);
+        return assertFirewallPolicyClass(properties, options);
     });
 });
