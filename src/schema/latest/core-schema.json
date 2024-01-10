@@ -32,11 +32,11 @@
             "anyOf": [
                 {
                     "description": "Any version of AS3.",
-                    "pattern": "^3[.]([0-9]|[1234][0-9])($|[.][0-9]+$)"
+                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0])($|[.][0-9]+$)"
                 },
                 {
                     "description": "The current version of AS3.",
-                    "const": "3.49.0"
+                    "const": "3.50.0"
                 }
             ]
         },
