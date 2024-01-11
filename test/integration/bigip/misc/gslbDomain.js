@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,11 @@ describe('GSLB_Domain', function () {
                         class: 'GSLB_Domain',
                         resourceRecordType: 'CNAME',
                         domainName: 'wip.example.com'
+                    },
+                    WIP_NAPTR_domain: {
+                        class: 'GSLB_Domain',
+                        resourceRecordType: 'NAPTR',
+                        domainName: 'wip.example.com'
                     }
                 }
             }
@@ -96,6 +101,10 @@ describe('GSLB_Domain', function () {
                 assert.strictEqual(response.items[0].name, 'wip.example.com');
             })
             .then(() => getPath('/mgmt/tm/gtm/wideip/cname'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].name, 'wip.example.com');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/wideip/naptr'))
             .then((response) => {
                 assert.strictEqual(response.items[0].name, 'wip.example.com');
             })

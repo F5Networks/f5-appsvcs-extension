@@ -34,11 +34,31 @@
                     "type": "boolean",
                     "default": true
                 },
+                "failureRcode": {
+                    "title": "Failure RCODE",
+                    "description": "Specifies the DNS RCODE used when failure-rcode-response is enabled",
+                    "type": "string",
+                    "enum": [ "formerr", "noerror", "notimpl", "nxdomain", "refused", "servfail" ],
+                    "default": "noerror"
+                },
+                "failureRcodeResponse": {
+                    "title": "Return Code On Failure",
+                    "description": "Specifies whether RCODE responses are enabled",
+                    "type": "boolean",
+                    "default": false
+                },
+                "failureRcodeTtl": {
+                    "title": "Return Code On Failure's TTL",
+                    "description": "Specifies the negative caching TTL of the SOA for the RCODE response",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                },
                 "resourceRecordType": {
                     "title": "Resource Record (RR) Type",
                     "description": "Specifies the type of resource records for this domain",
                     "type": "string",
-                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                    "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
                 },
                 "pools": {
                     "title": "Pools",
@@ -102,7 +122,18 @@
                     "title": "Last Resort Pool type",
                     "description": "This is used to specify the type of pool being used for the lastResortPool",
                     "type": "string",
-                    "enum": [ "A", "AAAA", "CNAME", "MX" ]
+                    "enum": [ "A", "AAAA", "CNAME", "MX", "NAPTR" ]
+                },
+                "loadBalancingDecisionLogVerbosity": {
+                    "title": "Load Balancing Decision Log Verbosity",
+                    "description": "Specifies the amount of detail logged when making load balancing decisions. This is used for debugging purposes only. Performance will be affected if any value is set. Please reset after debugging is finished.",
+                    "type": "array",
+                    "items": {
+                        "title": "Verbosity Selection",
+                        "type": "string",
+                        "enum": [ "pool-selection", "pool-traversal", "pool-member-selection", "pool-member-traversal" ]
+                    },
+                    "uniqueItems": true
                 },
                 "iRules": {
                     "title": "iRules",
@@ -247,6 +278,13 @@
 
         "GSLB_Domain_MX": {
             "description": "Configures GSLB (Global Server Load Balancing) settings for MX domain.",
+            "allOf": [
+                { "$ref": "#/definitions/GSLB_Domain" }
+            ]
+        },
+
+        "GSLB_Domain_NAPTR": {
+            "description": "Configures GSLB (Global Server Load Balancing) settings for NAPTR domain.",
             "allOf": [
                 { "$ref": "#/definitions/GSLB_Domain" }
             ]

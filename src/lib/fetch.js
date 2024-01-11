@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -797,29 +797,29 @@ function gatherAccessProfileItems(context, partition, config) {
         });
 }
 
-function getCommonAccessProfiles(context) {
-    const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
+function getDataGroupData(context, dataGroupInfo) {
+    const storage = new atgStorage.StorageDataGroup(`/Common/appsvcs/${dataGroupInfo.storageName}`);
     return storage.keys()
         .then((records) => {
-            context.tasks[context.currentIndex].commonAccessProfiles = records;
+            context.tasks[context.currentIndex][dataGroupInfo.name] = records;
         });
 }
 
-function updateCommonAccessProfiles(context, desiredConfig) {
-    const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
-    const desiredAccessProfiles = Object.keys(desiredConfig)
-        .filter((item) => desiredConfig[item].command === 'apm profile access')
-        .map((profile) => profile.split('/').pop());
-    const promises = desiredAccessProfiles.map((key) => () => storage.hasItem(key)
+function updateDataGroup(context, desiredConfig, dataGroupInfo) {
+    const storage = new atgStorage.StorageDataGroup(`/Common/appsvcs/${dataGroupInfo.storageName}`);
+    const desiredItems = Object.keys(desiredConfig)
+        .filter((item) => desiredConfig[item].command === dataGroupInfo.command)
+        .map((filteredItem) => filteredItem.split('/').pop());
+    const promises = desiredItems.map((key) => () => storage.hasItem(key)
         .then((hasItem) => {
             if (hasItem) {
                 return Promise.resolve();
             }
             return storage.setItem(key, '');
         }));
-    context.tasks[context.currentIndex].commonAccessProfiles.forEach((accessProfile) => {
-        if (!desiredAccessProfiles.find((profile) => profile === accessProfile)) {
-            promises.push(() => storage.deleteItem(accessProfile));
+    context.tasks[context.currentIndex][dataGroupInfo.name].forEach((item) => {
+        if (!desiredItems.find((desiredItem) => desiredItem === item)) {
+            promises.push(() => storage.deleteItem(item));
         }
     });
 
@@ -949,6 +949,12 @@ function isAs3Item(context, item, partition, filter) {
     case 'tm:apm:profile:access:accessstate':
         if (context.tasks[context.currentIndex].commonAccessProfiles
             && context.tasks[context.currentIndex].commonAccessProfiles.find((profile) => profile === item.name)) {
+            return true;
+        }
+        break;
+    case 'tm:net:route-domain:route-domainstate':
+        if (context.tasks[context.currentIndex].commonRouteDomains
+            && context.tasks[context.currentIndex].commonRouteDomains.find((rd) => rd === item.name)) {
             return true;
         }
         break;
@@ -1889,8 +1895,8 @@ const updateWildcardMonitorCommands = function (trans) {
     const getDetachFromPoolCmds = function (poolCmds) {
         return poolCmds.map((p) => {
             const pName = p.substring(delPool.length + 1, p.indexOf('\n')).trim();
-            // detach from both pool and poolMember level
-            return `tmsh::modify ltm pool ${pName} monitor none members none`;
+            // detach from pool
+            return `tmsh::modify ltm pool ${pName} monitor none`;
         }).join('\n');
     };
 
@@ -2153,6 +2159,20 @@ const updatePortAndAddressLists = function (trans, preTrans, rollback) {
     // Now that all traffic-matching-criteria commands have bee moved to pre-trans, look
     // for references from lists to lists
     checkTransactionReferences(trans, preTrans, rollback);
+};
+
+/**
+ * Updates pool commands to remove the delete when we are just modifying
+ */
+const updatePools = function (trans) {
+    const deleteLtmPoolPrefix = 'tmsh::delete ltm pool';
+    const modifyLtmPoolPrefix = 'tmsh::modify ltm pool';
+    trans.forEach((transCommand, index) => {
+        if (transCommand.startsWith(deleteLtmPoolPrefix) && transCommand.indexOf(modifyLtmPoolPrefix) !== -1) {
+            const commands = transCommand.split('\n');
+            trans[index] = commands[1];
+        }
+    });
 };
 
 /**
@@ -2520,7 +2540,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             }
                         });
                         trans.push(commands.join('\n'));
-                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1) {
+                    } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1
+                        && diffUpdates.commands.indexOf('members delete') > -1) {
                         // This is a command to modify the pool to delete members just like we have with the
                         // delete code below.
                         const commands = diffUpdates.commands.split('\n');
@@ -2712,6 +2733,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     });
 
     trans = updateWildcardMonitorCommands(trans);
+    updatePools(trans);
     updatePortAndAddressLists(trans, preTrans, rollback);
     updatePostTransVirtuals(
         trans,
@@ -2782,6 +2804,6 @@ module.exports = {
     filterAs3Items, // exported for testing,
     updateAddressesWithRouteDomain, // exported for testing
     pathReferenceLinks, // exported for testing
-    getCommonAccessProfiles,
-    updateCommonAccessProfiles
+    getDataGroupData,
+    updateDataGroup
 };

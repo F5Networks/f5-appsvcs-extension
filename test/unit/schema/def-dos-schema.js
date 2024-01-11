@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,6 +118,15 @@ describe('def-dos-schema.json', () => {
                             parentDataProperty: 'dosProfile',
                             tag: 'modules',
                             schemaData: ['afm', 'asm']
+                        },
+                        {
+                            instancePath: '/tenant/application/dosProfile',
+                            parentDataProperty: 'dosProfile',
+                            schemaData: {
+                                allowlist: 'whitelist',
+                                applicationAllowlist: 'applicationWhitelist'
+                            },
+                            tag: 'aliases'
                         },
                         {
                             instancePath: '/tenant/application/firewallAddressList',

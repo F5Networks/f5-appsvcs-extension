@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +140,11 @@ describe('GSLB Pool', function () {
     }
 
     const commonProperties = [
+        {
+            name: 'dynamicRatioEnabled',
+            inputValue: [undefined, true, undefined],
+            expectedValue: ['disabled', 'enabled', 'disabled']
+        },
         {
             name: 'enabled',
             inputValue: [undefined, false, undefined],
@@ -484,6 +489,64 @@ describe('GSLB Pool', function () {
                 inputValue: [undefined, true, undefined],
                 expectedValue: [undefined, true, undefined],
                 extractFunction: (o) => extractMemberEnabled(o, 1)
+            }
+        ]);
+
+        return assertGTMPoolClass(properties);
+    });
+
+    it('NAPTR', function () {
+        const properties = commonProperties.concat([
+            {
+                name: 'resourceRecordType',
+                inputValue: ['NAPTR'],
+                skipAssert: true
+            },
+            {
+                name: 'maxAnswersReturned',
+                inputValue: [undefined, 12, undefined],
+                expectedValue: [1, 12, 1]
+            },
+            {
+                name: 'members.0.domainName',
+                inputValue: [undefined, { use: '/Common/Shared/testDomainOne' }, undefined],
+                expectedValue: [undefined, 'example1.edu', undefined],
+                extractFunction: (o) => (o.members[0] ? o.members[0].name : undefined)
+            },
+            {
+                name: 'members.0.preference',
+                inputValue: [undefined, 42, undefined],
+                expectedValue: [undefined, 42, undefined],
+                extractFunction: (o) => (o.members[0] ? o.members[0].preference : undefined)
+            },
+            {
+                name: 'members.0.service',
+                inputValue: [undefined, 'sip+d2u', undefined],
+                expectedValue: [undefined, 'sip+d2u', undefined],
+                extractFunction: (o) => (o.members[0] ? o.members[0].service : undefined)
+            },
+            {
+                name: 'members.0.enabled',
+                inputValue: [undefined, false, undefined],
+                expectedValue: [undefined, false, undefined],
+                extractFunction: (o) => extractMemberEnabled(o, 0)
+            },
+            {
+                name: 'members.1.domainName',
+                inputValue: [undefined, { use: '/Common/Shared/testDomainTwo' }, undefined],
+                skipAssert: true
+            },
+            {
+                name: 'members.1.enabled',
+                inputValue: [undefined, true, undefined],
+                expectedValue: [undefined, true, undefined],
+                extractFunction: (o) => extractMemberEnabled(o, 1)
+            },
+            {
+                name: 'members.1.service',
+                inputValue: [undefined, 'sip', undefined],
+                expectedValue: [undefined, 'sip', undefined],
+                extractFunction: (o) => (o.members[1] ? o.members[1].service : undefined)
             }
         ]);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,45 @@ const validator = require('../../../src/lib/validator');
 
 describe('validator', () => {
     describe('.hasDuplicate', () => {
-        function assertPass(array) {
-            assert.strictEqual(validator.hasDuplicate(array).isDuplicate, false);
+        function assertPass(valueToCheck) {
+            assert.strictEqual(validator.hasDuplicate(valueToCheck).isDuplicate, false);
         }
-        function assertFail(array) {
-            const decl = { members: array };
+
+        function assertFail(valueToCheck) {
+            const decl = { members: valueToCheck };
             assert.strictEqual(validator.hasDuplicate(decl).isDuplicate, true);
         }
+
         it('should pass on an empty array', () => {
             assertPass([]);
         });
+
         it('should pass on an array with no duplicates', () => {
             assertPass(['spam', 'and', 'eggs']);
         });
+
+        it('should pass when using hasDuplicate props as keys in declaration', () => {
+            const decl = {
+                rules: {
+                    class: 'Tenant',
+                    members: {
+                        class: 'Application',
+                        iRules: {
+                            class: 'iRule'
+                        },
+                        certificates: {
+                            class: 'Certificate'
+                        }
+                    }
+                }
+            };
+            assertPass(decl);
+        });
+
         it('should fail with duplicate strings', () => {
             assertFail(['foo', 'foo']);
         });
+
         it('should fail with duplicate objects', () => {
             assertFail([
                 { hello: 'there' },

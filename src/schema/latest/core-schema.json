@@ -29,8 +29,16 @@
             "title": "Schema version",
             "description": "Version of ADC Declaration schema this declaration uses",
             "type": "string",
-            "$comment": "IMPORTANT: In enum array, please put current schema version first, oldest-supported version last.  Keep enum array sorted most-recent-first.",
-            "enum": [ "3.48.0", "3.47.0", "3.46.0", "3.45.0", "3.44.0", "3.43.0", "3.42.0", "3.41.0", "3.40.0", "3.39.0", "3.38.0", "3.37.0", "3.36.0", "3.35.0", "3.34.0", "3.33.0", "3.32.0", "3.31.0", "3.30.0", "3.29.0", "3.28.0", "3.27.0", "3.26.0", "3.25.0", "3.24.0", "3.23.0", "3.22.0", "3.21.0", "3.20.0", "3.19.0", "3.18.0", "3.17.0", "3.16.0", "3.15.0", "3.14.0", "3.13.0", "3.12.0", "3.11.0", "3.10.0", "3.9.0", "3.8.0", "3.7.0", "3.6.0", "3.5.0", "3.4.0", "3.3.0", "3.2.0", "3.1.0", "3.0.0" ]
+            "anyOf": [
+                {
+                    "description": "Any version of AS3.",
+                    "pattern": "^3[.]([0-9]|[1234][0-9])($|[.][0-9]+$)"
+                },
+                {
+                    "description": "The current version of AS3.",
+                    "const": "3.49.0"
+                }
+            ]
         },
         "id": {
             "title": "Declaration ID",
@@ -2549,140 +2557,6 @@
             "additionalProperties": false
         },
 
-
-        "SNAT_Pool": {
-            "title": "SNAT_Pool",
-            "description": "Declares a list of SNAT addresses",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "SNAT_Pool"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-
-                "snatAddresses": {
-                    "title": "SNAT addresses",
-                    "description": "List of SNAT addresses-- may include both IPv4 and IPv6",
-                    "type": "array",
-                    "items": {
-                        "title": "SNAT address",
-                        "type": "string",
-                        "format": "f5ip"
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "class", "snatAddresses" ]
-        },
-
-        "SNAT_Translation": {
-            "title": "SNAT_Translation",
-            "description": "Configures explicit secure network address translation (SNAT) address",
-            "type": "object",
-
-            "properties": {
-                "class": {
-                    "title": "Class",
-                    "type": "string",
-                    "const": "SNAT_Translation"
-                },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-                "address": {
-                    "title": "Address",
-                    "description": "The IP address of the SNAT translation",
-                    "type": "string",
-                    "format": "f5ip"
-                },
-                "adminState": {
-                    "title": "Administration State",
-                    "description": "Specifies the state of the SNAT translation",
-                    "type": "string",
-                    "enum": [
-                        "enable",
-                        "disable"
-                    ],
-                    "default": "enable"
-                },
-                "arpEnabled": {
-                    "title": "Enable ARP",
-                    "description": "Specifies that the NAT sends ARP requests",
-                    "type": "boolean",
-                    "default": true
-                },
-                "ipIdleTimeout": {
-                    "title": "IP Idle Timeout",
-                    "description": "Specifies time in seconds that connections to an IP address initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
-                    "oneOf": [
-                        {
-                            "type": "integer",
-                            "maximum": 4294967295,
-                            "minimum": 1
-                        },
-                        {
-                            "type": "string",
-                            "const": "indefinite"
-                        }
-                    ],
-                    "default": "indefinite"
-                },
-                "maxConnections": {
-                    "title": "Maximum Connections",
-                    "description": "Specifies a limit on the number of connections a translation address must reach before it no longer initiates a connection. A value of 0 indicates the setting is disabled.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 4294967295,
-                    "default": 0
-                },
-                "tcpIdleTimeout": {
-                    "title": "TCP Idle Timeout",
-                    "description": "Specifies time in seconds that TCP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
-                    "oneOf": [
-                        {
-                            "type": "integer",
-                            "maximum": 4294967295,
-                            "minimum": 1
-                        },
-                        {
-                            "type": "string",
-                            "const": "indefinite"
-                        }
-                    ],
-                    "default": "indefinite"
-                },
-                "trafficGroup": {
-                    "title": "Traffic Group",
-                    "description": "Specifies the traffic group which the SNAT_Translation belongs",
-                    "type": "string",
-                    "default": "default"
-                },
-                "udpIdleTimeout": {
-                    "title": "UDP Idle Timeout",
-                    "description": "Specifies time in seconds that UDP connections initiated using a SNAT address are allowed to remain idle before being automatically disconnected. Specifying 'indefinite' prevents the connection from timing out.",
-                    "oneOf": [
-                        {
-                            "type": "integer",
-                            "maximum": 4294967295,
-                            "minimum": 1
-                        },
-                        {
-                            "type": "string",
-                            "const": "indefinite"
-                        }
-                    ],
-                    "default": "indefinite"
-                }
-            },
-            "additionalProperties": false,
-            "required": [ "class", "address" ]
-        },
-
         "WAF_Policy": {
             "title": "WAF_Policy",
             "description": "A Web Application Firewall Policy. Supports both traditional and advanced WAF policies. Advanced WAF policies require TMOS version 16.0 or newer.",
@@ -4719,6 +4593,22 @@
                         "sha384"
                     ],
                     "default": "any"
+                },
+                "handshakeTimeout": {
+                    "title": "Handshake Timeout",
+                    "description": "Specifies the handshake timeout in seconds.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": 10
                 }
             },
             "additionalProperties": false,
@@ -5170,6 +5060,22 @@
                         "sha384"
                     ],
                     "default": "any"
+                },
+                "handshakeTimeout": {
+                    "title": "Handshake Timeout",
+                    "description": "Specifies the handshake timeout in seconds.",
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 4294967295
+                        },
+                        {
+                            "type": "string",
+                            "const": "indefinite"
+                        }
+                    ],
+                    "default": 10
                 }
             },
             "allOf": [
@@ -6822,8 +6728,11 @@
             },
             "additionalProperties": false,
             "required": [ "class" ],
-            "f5aliases": {
-                "synCookieAllowlist": "synCookieWhitelist"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "synCookieAllowlist": "synCookieWhitelist"
+                }
             }
         },
 

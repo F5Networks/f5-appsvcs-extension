@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,8 @@ module.exports = {
             'gtm wideip a',
             'gtm wideip aaaa',
             'gtm wideip cname',
-            'gtm wideip mx'
+            'gtm wideip mx',
+            'gtm wideip naptr'
         ],
         GSLB_iRule: 'gtm rule',
         GSLB_Topology_Region: [
@@ -119,7 +120,8 @@ module.exports = {
             'gtm pool a',
             'gtm pool aaaa',
             'gtm pool cname',
-            'gtm pool mx'
+            'gtm pool mx',
+            'gtm pool naptr'
         ],
         GSLB_Prober_Pool: 'gtm prober-pool',
         GSLB_Monitor: [

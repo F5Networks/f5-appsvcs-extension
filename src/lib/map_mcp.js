@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -499,6 +499,9 @@ const translate = {
         if (obj.renegotiateSize) {
             obj.renegotiateSize = (obj.renegotiateSize === 'indefinite') ? 4294967295 : parseInt(obj.renegotiateSize, 10);
         }
+        if (obj.handshakeTimeout) {
+            obj.handshakeTimeout = (obj.handshakeTimeout === 'indefinite') ? 4294967295 : parseInt(obj.handshakeTimeout, 10);
+        }
 
         return profileSSL(context, obj, 'ltm profile client-ssl', '', true);
     },
@@ -622,6 +625,9 @@ const translate = {
         }
         if (obj.renegotiateSize) {
             obj.renegotiateSize = (obj.renegotiateSize === 'indefinite') ? 4294967295 : parseInt(obj.renegotiateSize, 10);
+        }
+        if (obj.handshakeTimeout) {
+            obj.handshakeTimeout = (obj.handshakeTimeout === 'indefinite') ? 4294967295 : parseInt(obj.handshakeTimeout, 10);
         }
 
         const config = profileSSL(context, obj, 'ltm profile server-ssl', '');
@@ -1186,6 +1192,9 @@ const translate = {
         }
         return [normalize.actionableMcp(context, obj, 'net port-list', obj.fullPath)];
     },
+    'tm:net:route-domain:route-domainstate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'net route-domain', obj.fullPath)];
+    },
     'tm:pem:irule:irulestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'pem irule', obj.fullPath)];
     },
@@ -1532,6 +1541,10 @@ const translate = {
         obj.maxAnswersReturned = obj.maxAnswersReturned || 1;
         return gslbPool(context, obj, referenceConfig, 'mx');
     },
+    'tm:gtm:pool:naptr:naptrstate': function (context, obj, referenceConfig) {
+        obj.maxAnswersReturned = obj.maxAnswersReturned || 1;
+        return gslbPool(context, obj, referenceConfig, 'naptr');
+    },
     'tm:gtm:prober-pool:prober-poolstate': function (context, obj, referenceConfig) {
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
         obj = pushReferences(
@@ -1661,11 +1674,17 @@ const translate = {
     'tm:gtm:wideip:mx:mxstate': function (context, obj) {
         return processGtmWideIps(context, obj, 'mx');
     },
+    'tm:gtm:wideip:naptr:naptrstate': function (context, obj) {
+        return processGtmWideIps(context, obj, 'naptr');
+    },
     'tm:gtm:monitor:http:httpstate': function (context, obj) {
+        obj.recvStatusCode = obj.recvStatusCode ? obj.recvStatusCode : 'none';
         return monitor(context, obj, 'gtm monitor', 'http');
     },
     'tm:gtm:monitor:https:httpsstate': function (context, obj) {
         obj.cert = obj.cert ? obj.cert : 'none';
+        obj.recvStatusCode = obj.recvStatusCode ? obj.recvStatusCode : 'none';
+        obj.sniServerName = obj.sniServerName ? obj.sniServerName : 'none';
         return monitor(context, obj, 'gtm monitor', 'https');
     },
     'tm:gtm:monitor:gateway-icmp:gateway-icmpstate': function (context, obj) {

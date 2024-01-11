@@ -1,6 +1,32 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.49.0
+
+### Added
+- AUTOTOOL-4031: GSLB_Pool with resource record type NAPTR. Only supports flags value of 'a' for members.
+- AUTOTOOL-4059: ([GitHub Issue 756](https://github.com/F5Networks/f5-appsvcs-extension/issues/756)): Add handshakeTimeout to TLS_Server and TLS_Client.
+- AUTOTOOL-4056: GSLB_Domain with resource record type NAPTR.
+- AUTOTOOL-4078: ([GitHub Issue 772](https://github.com/F5Networks/f5-appsvcs-extension/issues/772)): GSLB_Domain load-balancing decision log property
+- AUTOTOOL-4050: ([GitHub Issue 512](https://github.com/F5Networks/f5-appsvcs-extension/issues/512)): Invalid default setting for request/response chunking (sustain) in HTTP_Profile on TMOS v15.0+
+- AUTOTOOL-4087: ([GitHub Issue 778](https://github.com/F5Networks/f5-appsvcs-extension/issues/778)): Expose SNI for GSLB HTTPS monitor
+- AUTOTOOL-4094: Add the declaration id to the restnoded log output upon success and include it in the rest response
+- AUTOTOOL-4092: Expose failureRcode properties for GSLB WideIP
+- AUTOTOOL-4117: ([GitHub Issue 779](https://github.com/F5Networks/f5-appsvcs-extension/issues/779)): GSLB_Monitor HTTP/HTTPS receiveStatusCodes property
+- AUTOTOOL-4111: ([GitHub Issue 321](https://github.com/F5Networks/f5-declarative-onboarding/issues/321)): Add routeDomainEnforcement to Firewall_Policy to allow enforcing the Firewall_Policy on the specified Route Domain's
+
+### Fixed
+- AUTOTOOL-4017: All pool member statuses reset to unknown when new member is added to the pool
+- AUTOTOOL-4060: Certain AS3 declarations result in "declaration has duplicate values" errors
+- AUTOTOOL-4088: Schema validation failure when declaring ICMP Monitor with targetPort or any Monitor with additional properties
+
+### Changed
+- Updated to Service Discovery 1.17.0-2
+  - Package updates
+- AUTOTOOL-3645: ([GitHub 677](https://github.com/F5Networks/f5-appsvcs-extension/issues/677)): Can't use x.x.1 schemaVersion accepted by schema that is x.x.1 codified
+
+### Removed
+
 ## 3.48.0
 
 ### Added
@@ -329,7 +355,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-2725: ([GitHub Issue 506](https://github.com/F5Networks/f5-appsvcs-extension/issues/506)): URL fetch of certificates results in corrupted files
 - AUTOTOOL-2878: ([GitHub Issue 530](https://github.com/F5Networks/f5-appsvcs-extension/issues/530)): AS3 Schema issue where it applies incorrect restriction if serverType is undefined
 - AUTOTOOL-3036: Service Discovery secrets are not encrypted on BIG-IQ
-- AUTOTOOL-2980: ([GitHub Issue](https://github.com/F5Networks/f5-appsvcs-extension/issues/553)): AS3 fails with unspecific error when an external data group externalFilePath has an invalid HTTP response code
+- AUTOTOOL-2980: ([GitHub Issue 553](https://github.com/F5Networks/f5-appsvcs-extension/issues/553)): AS3 fails with unspecific error when an external data group externalFilePath has an invalid HTTP response code
 
 ### Changed
 - Updated to Service Discovery 1.10.8-1

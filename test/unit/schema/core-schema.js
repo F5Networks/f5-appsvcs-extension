@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,17 @@ describe('core-schema.json', () => {
                 };
 
                 assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('invalid', () => {
+            it('should invalidate a schemaVersion that does not match the pattern', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.300.123',
+                    id: 'declarationId'
+                };
+                assert.strictEqual(validate(data), false, '/schemaVersion: data "3.300.123" should match pattern "^3[.]([0-9]|[1234][0-9])($|[.][0-9]+$)"');
             });
         });
     });
@@ -949,6 +960,28 @@ describe('core-schema.json', () => {
                 assert.strictEqual(validate(data), false);
                 assertErrorString('should be equal to one of the allowed values');
             });
+
+            it('should invalidate handshakeTimeout when invalid values are used', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Server',
+                                certificates: [{ certificate: 'webcert' }],
+                                handshakeTimeout: 'invalid'
+                            }
+                        }
+                    }
+                };
+                assert.strictEqual(validate(data), false);
+                assertErrorString('should match exactly one schema in oneOf');
+            });
         });
 
         describe('valid', () => {
@@ -1364,6 +1397,27 @@ describe('core-schema.json', () => {
             };
             assert.ok(validate(data), getErrorString(validate));
         });
+
+        it('should validate when sslSignHash is provided', () => {
+            const data = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declarationId',
+                theTenant: {
+                    class: 'Tenant',
+                    application: {
+                        class: 'Application',
+                        template: 'generic',
+                        tlsserver: {
+                            class: 'TLS_Server',
+                            certificates: [{ certificate: 'webcert' }],
+                            handshakeTimeout: 100
+                        }
+                    }
+                }
+            };
+            assert.ok(validate(data), getErrorString(validate));
+        });
     });
 
     describe('TLS_Client', () => {
@@ -1453,6 +1507,27 @@ describe('core-schema.json', () => {
                 };
                 assert.strictEqual(validate(data), false);
                 assertErrorString('should be equal to one of the allowed values');
+            });
+
+            it('should invalidate handShakeTimeout when invalid values are used', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                handshakeTimeout: 'invalid'
+                            }
+                        }
+                    }
+                };
+                assert.strictEqual(validate(data), false);
+                assertErrorString('should match exactly one schema in oneOf');
             });
         });
 
@@ -1762,6 +1837,26 @@ describe('core-schema.json', () => {
                             tlsserver: {
                                 class: 'TLS_Client',
                                 sslSignHash: 'sha256'
+                            }
+                        }
+                    }
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
+
+            it('should validate when handshakeTimeout is provided', () => {
+                const data = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declarationId',
+                    theTenant: {
+                        class: 'Tenant',
+                        application: {
+                            class: 'Application',
+                            template: 'generic',
+                            tlsserver: {
+                                class: 'TLS_Client',
+                                handshakeTimeout: 100
                             }
                         }
                     }
@@ -3446,6 +3541,31 @@ describe('core-schema.json', () => {
                 };
 
                 assert.ok(validate(data), getErrorString(validate));
+            });
+        });
+
+        describe('Monitor_ICMP', () => {
+            describe('valid', () => {
+                it('should validate with targetPort', () => {
+                    const data = {
+                        class: 'ADC',
+                        schemaVersion: '3.0.0',
+                        id: 'declarationId',
+                        theTenant: {
+                            class: 'Tenant',
+                            application: {
+                                class: 'Application',
+                                template: 'generic',
+                                monitor: {
+                                    class: 'Monitor',
+                                    monitorType: 'icmp',
+                                    targetPort: 8080
+                                }
+                            }
+                        }
+                    };
+                    assert.ok(validate(data), getErrorString(validate));
+                });
             });
         });
     });

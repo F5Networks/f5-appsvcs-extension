@@ -409,6 +409,10 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/pool/naptr",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/prober-pool",
             "modules": ["gtm"]
         },
@@ -430,6 +434,10 @@
         },
         {
             "endpoint": "/mgmt/tm/gtm/wideip/mx",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/wideip/naptr",
             "modules": ["gtm"]
         },
         {
@@ -530,6 +538,9 @@
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/http-proxy-connect"
+        },
+        {
+            "endpoint": "/mgmt/tm/net/route-domain"
         }
     ],
     "referred": [

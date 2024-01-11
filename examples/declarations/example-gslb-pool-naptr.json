@@ -1,0 +1,63 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.49.0",
+    "id": "GSLB_Pool_NAPTR_Sample",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDomain": {
+                "class": "GSLB_Domain",
+                "domainName": "example.com",
+                "resourceRecordType": "A"
+            },
+            "testDomain2": {
+                "class": "GSLB_Domain",
+                "domainName": "example2.com",
+                "resourceRecordType": "AAAA"
+            }
+        }
+    },
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testPool": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "NAPTR",
+                "enabled": false,
+                "manualResumeEnabled": true,
+                "ttl": 31,
+                "dynamicRatioEnabled": true,
+                "maxAnswersReturned": 2,
+                "verifyMemberEnabled": false,
+                "lbModePreferred": "ratio",
+                "lbModeAlternate": "topology",
+                "lbModeFallback": "static-persistence",
+                "members": [
+                    {
+                        "domainName": {
+                            "use": "/Common/Shared/testDomain"
+                        },
+                        "enabled": true,
+                        "service": "sip+d2u",
+                        "preference": 1,
+                        "order": 10,
+                        "ratio": 1
+                    },
+                    {
+                        "domainName": {
+                            "use": "/Common/Shared/testDomain2"
+                        },
+                        "enabled": false,
+                        "service": "sip",
+                        "preference": 2,
+                        "order": 11,
+                        "ratio": 2
+                    }
+                ]
+            }
+        }
+    }
+}
