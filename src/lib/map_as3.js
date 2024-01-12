@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1082,6 +1082,11 @@ const translate = {
                     item[prop] = 'sustain';
                 }
             });
+        // before BIG-IP 15.0 the default value of 'sustain' on newer versions did not exist so replace with the
+        // pre 15.0 default value of 'preserve' for requestChunking and 'selective' for responseChunking.
+        } else {
+            item.requestChunking = item.requestChunking === 'sustain' ? 'preserve' : item.requestChunking;
+            item.responseChunking = item.responseChunking === 'sustain' ? 'selective' : item.responseChunking;
         }
 
         configs.push(normalize.actionableMcp(context, item, 'ltm profile http', util.mcpPath(tenantId, appId, itemId)));
@@ -1246,6 +1251,7 @@ const translate = {
 
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+        item.handshakeTimeout = (item.handshakeTimeout === 'indefinite') ? 4294967295 : item.handshakeTimeout;
 
         configs.push(normalize.actionableMcp(context, item, 'ltm profile server-ssl', util.mcpPath(tenantId, appId, itemId)));
 
@@ -1361,6 +1367,7 @@ const translate = {
         item.renegotiateMaxRecordDelay = (item.renegotiateMaxRecordDelay === 'indefinite') ? 4294967295 : item.renegotiateMaxRecordDelay;
         item.renegotiatePeriod = (item.renegotiatePeriod === 'indefinite') ? 4294967295 : item.renegotiatePeriod;
         item.renegotiateSize = (item.renegotiateSize === 'indefinite') ? 4294967295 : item.renegotiateSize;
+        item.handshakeTimeout = (item.handshakeTimeout === 'indefinite') ? 4294967295 : item.handshakeTimeout;
 
         // For backward compatibillity with older configs we decided to set
         // first certificate as sniDefault. Unless user decided to explicitly set
@@ -3434,6 +3441,8 @@ const translate = {
     },
 
     Firewall_Policy(context, tenantId, appId, itemId, item) {
+        const configs = [];
+
         (item.rules || []).forEach((rule, index) => {
             if (rule.use || rule.bigip) {
                 item.rules[index] = {
@@ -3443,8 +3452,14 @@ const translate = {
             }
         });
         const path = util.mcpPath(tenantId, appId, itemId);
-        const config = [normalize.actionableMcp(context, item, 'security firewall policy', path)];
-        return { configs: config };
+        configs.push(normalize.actionableMcp(context, item, 'security firewall policy', path));
+
+        (item.routeDomainEnforcement || []).forEach((routeDomain) => {
+            const rd = { fwEnforcedPolicy: path };
+            configs.push(normalize.actionableMcp(context, rd, 'net route-domain', routeDomain.bigip));
+        });
+
+        return { configs };
     },
 
     /**
@@ -3938,9 +3953,17 @@ const translate = {
             item.key = cert ? `${cert}.key` : 'none';
         }
 
+        if ((['http', 'https'].indexOf(item.monitorType) >= 0)) {
+            if (Array.isArray(item.receiveStatusCodes)) {
+                item.receiveStatusCodes = item.receiveStatusCodes.join(' ');
+            }
+            item.receiveStatusCodes = item.receiveStatusCodes || 'none';
+        }
+
         if ((['http', 'https', 'tcp', 'udp'].indexOf(item.monitorType) >= 0)) {
             item.send = item.send || 'none';
             item.receive = item.receive || 'none';
+            item.sniServerName = item.sniServerName || 'none';
         }
 
         if (item.monitorType === 'external') {
@@ -3963,8 +3986,8 @@ const translate = {
         const config = normalize.actionableMcp(context, item, 'gtm monitor', util.mcpPath(tenantId, appId, itemId));
 
         props.any = ['class', 'description', 'destination', 'interval', 'timeout', 'probe-timeout', 'ignore-down-response'];
-        props.http = props.any.concat(['reverse', 'send', 'recv', 'transparent']);
-        props.https = props.http.concat(['cipherlist', 'cert']);
+        props.http = props.any.concat(['reverse', 'send', 'recv', 'recv-status-code', 'transparent']);
+        props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
@@ -4445,6 +4468,12 @@ const translate = {
                     member.domainName.use = member.domainName.use.replace(/[^/]+$/, domain.domainName);
                 }
                 member.name = bigipPath(member, 'domainName').replace('/Shared', '');
+                // only supports 'a' because the other option 's' requires a SRV wideip which AS3 does not have yet
+                // when we add 's' support should be able to derive the flags value
+                // 'a' has a A or AAAA wideip, 's' has a SRV wideip
+                if (item.resourceRecordType === 'NAPTR') {
+                    member.flags = 'a';
+                }
             });
         }
 
@@ -4488,7 +4517,7 @@ const translate = {
         config.command += ` ${item.resourceRecordType.toLowerCase()}`;
 
         props.any = [
-            'class', 'enabled', 'alternate-mode', 'app-service', 'description', 'ratio', 'fallback-mode',
+            'class', 'dynamic-ratio', 'enabled', 'alternate-mode', 'app-service', 'description', 'ratio', 'fallback-mode',
             'load-balancing-mode', 'manual-resume', 'members', 'metadata', 'qos-hit-ratio',
             'qos-hops', 'qos-kilobytes-second', 'qos-lcs', 'qos-packet-rate', 'qos-rtt',
             'qos-topology', 'qos-vs-capacity', 'qos-vs-score', 'ttl', 'verify-member-availability'
@@ -4501,6 +4530,7 @@ const translate = {
         props.aaaa = props.a;
         props.cname = props.any.concat(['monitors']);
         props.mx = props.any.concat(['max-answers-returned']);
+        props.naptr = props.mx.concat(['flags']);
         Object.keys(config.properties).forEach((key) => {
             if (props[item.resourceRecordType.toLowerCase()].indexOf(key) === -1) {
                 delete config.properties[key];

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
+
+const checkAndDelete = require('@f5devcentral/atg-shared-utilities-dev').checkAndDeleteProperty;
 
 const {
     getPath,
@@ -154,9 +156,19 @@ describe('API Testing (__smoke)', function () {
                     postDeclaration(declarations[0], { declarationIndex: 0 })
                 ))
                 .then((response) => {
-                    const result = response.results.filter((r) => r.tenant === 'API_AGE_T1')[0];
-                    assert.strictEqual(result.code, 200);
-                    assert.strictEqual(result.message, 'success');
+                    let result = response.results.filter((r) => r.tenant === 'API_AGE_T1')[0];
+                    result = checkAndDelete([result], 'lineCount', 'number')[0];
+                    result = checkAndDelete([result], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            declarationId: 'TEST_TENANTS',
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'API_AGE_T1'
+                        }
+                    );
                 })
                 .then(() => assert.isFulfilled(
                     getPath('/mgmt/shared/appsvcs/declare?age=list')
@@ -169,11 +181,31 @@ describe('API Testing (__smoke)', function () {
                 ))
                 .then((response) => {
                     let result = response.results.filter((r) => r.tenant === 'API_AGE_T1')[0]; // removed tenant
-                    assert.strictEqual(result.code, 200);
-                    assert.strictEqual(result.message, 'success');
+                    result = checkAndDelete([result], 'lineCount', 'number')[0];
+                    result = checkAndDelete([result], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            declarationId: 'TEST_TENANTS',
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'API_AGE_T1'
+                        }
+                    );
                     result = response.results.filter((r) => r.tenant === 'API_AGE_T2')[0]; // added tenant
-                    assert.strictEqual(result.code, 200);
-                    assert.strictEqual(result.message, 'success');
+                    result = checkAndDelete([result], 'lineCount', 'number')[0];
+                    result = checkAndDelete([result], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            declarationId: 'TEST_TENANTS',
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'API_AGE_T2'
+                        }
+                    );
                 })
                 .then(() => assert.isFulfilled(
                     getPath('/mgmt/shared/appsvcs/declare/?age=list') // slash before ? is intentional variation here
@@ -187,11 +219,31 @@ describe('API Testing (__smoke)', function () {
                 ))
                 .then((response) => {
                     let result = response.results.filter((r) => r.tenant === 'API_AGE_T2')[0]; // removed tenant
-                    assert.strictEqual(result.code, 200);
-                    assert.strictEqual(result.message, 'success');
+                    result = checkAndDelete([result], 'lineCount', 'number')[0];
+                    result = checkAndDelete([result], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            declarationId: 'TEST_TENANTS',
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'API_AGE_T2'
+                        }
+                    );
                     result = response.results.filter((r) => r.tenant === 'API_AGE_T3')[0]; // added tenant
-                    assert.strictEqual(result.code, 200);
-                    assert.strictEqual(result.message, 'success');
+                    result = checkAndDelete([result], 'lineCount', 'number')[0];
+                    result = checkAndDelete([result], 'runTime', 'number')[0];
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            code: 200,
+                            declarationId: 'TEST_TENANTS',
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'API_AGE_T3'
+                        }
+                    );
                 })
                 .then(() => assert.isFulfilled(
                     getPath('/mgmt/shared/appsvcs/declare?age=list')
@@ -446,7 +498,7 @@ describe('API Testing (__smoke)', function () {
                 ))
                 .then((response) => {
                     // Removing the timestamp from the response as it changes per declaration
-                    delete response.controls.archiveTimestamp;
+                    response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
 
                     assert.deepStrictEqual(response, {
                         class: 'ADC',
@@ -691,10 +743,10 @@ describe('per-app API testing (__smoke)', function () {
             return Promise.resolve()
                 .then(() => postDeclaration(declaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -709,8 +761,9 @@ describe('per-app API testing (__smoke)', function () {
                 })
                 .then(() => postDeclaration(declaration, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].runTime;
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -749,10 +802,9 @@ describe('per-app API testing (__smoke)', function () {
                     getPath('/mgmt/shared/appsvcs/declare')
                 ))
                 .then((results) => {
-                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
-                    assert.strictEqual(typeof results.id, 'string');
-                    delete results.controls.archiveTimestamp;
-                    delete results.id;
+                    assert.isTrue(results.id.startsWith('autogen_'), `${results.id} should have started with 'autogen_'`);
+                    results.controls = checkAndDelete([results.controls], 'archiveTimestamp', 'string')[0];
+                    results = checkAndDelete([results], 'id', 'string')[0];
 
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
@@ -840,10 +892,10 @@ describe('per-app API testing (__smoke)', function () {
             return Promise.resolve()
                 .then(() => postDeclaration(declaration1, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -858,10 +910,10 @@ describe('per-app API testing (__smoke)', function () {
                 })
                 .then(() => postDeclaration(declaration2, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant2/applications'))
                 .then((results) => { // Confirm results
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -883,10 +935,11 @@ describe('per-app API testing (__smoke)', function () {
                     return deleteDeclaration(undefined, options);
                 }) // DELETE specific application
                 .then((results) => {
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
+                    assert.isTrue((typeof results.results[0].declarationId === 'string' && !Number.isNaN(results.results[0].declarationId)),
+                        `${results.results[0].declarationId} is not a number and it should be`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -935,10 +988,8 @@ describe('per-app API testing (__smoke)', function () {
                     getPath('/mgmt/shared/appsvcs/declare')
                 ))
                 .then((results) => {
-                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
-                    assert.strictEqual(typeof results.id, 'string');
-                    delete results.controls.archiveTimestamp;
-                    delete results.id;
+                    results.controls = checkAndDelete([results.controls], 'archiveTimestamp', 'string')[0];
+                    results = checkAndDelete([results], 'id', 'string')[0];
 
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
@@ -992,10 +1043,11 @@ describe('per-app API testing (__smoke)', function () {
                     return deleteDeclaration(undefined, options);
                 }) // DELETE specific application
                 .then((results) => {
-                    assert.strictEqual(typeof results.results[0].lineCount, 'number');
-                    assert.strictEqual(typeof results.results[0].runTime, 'number');
-                    delete results.results[0].lineCount;
-                    delete results.results[0].runTime;
+                    assert.isTrue((typeof results.results[0].declarationId === 'string' && !Number.isNaN(results.results[0].declarationId)),
+                        `${results.results[0].declarationId} is not a number and it should be`);
+                    results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                    results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                    results.results = checkAndDelete(results.results, 'runTime', 'number');
                     assert.deepStrictEqual(
                         results.results,
                         [
@@ -1022,10 +1074,8 @@ describe('per-app API testing (__smoke)', function () {
                     getPath('/mgmt/shared/appsvcs/declare')
                 ))
                 .then((results) => {
-                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
-                    assert.strictEqual(typeof results.id, 'string');
-                    delete results.controls.archiveTimestamp;
-                    delete results.id;
+                    results.controls = checkAndDelete([results.controls], 'archiveTimestamp', 'string')[0];
+                    results = checkAndDelete([results], 'id', 'string')[0];
 
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
@@ -1054,7 +1104,7 @@ describe('per-app API testing (__smoke)', function () {
                 });
         });
 
-        it('should fail to delete anything if a application is NOT specified', () => {
+        it('should fail to delete anything if an application is NOT specified', () => {
             const declaration1 = {
                 app1: {
                     class: 'Application',
@@ -1109,8 +1159,10 @@ describe('per-app API testing (__smoke)', function () {
             return Promise.resolve()
                 .then(() => postDeclaration(declaration1, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
                 .then((results) => { // Confirm results
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].declarationId;
                     delete results.results[0].lineCount;
                     delete results.results[0].runTime;
                     assert.deepStrictEqual(
@@ -1127,8 +1179,10 @@ describe('per-app API testing (__smoke)', function () {
                 })
                 .then(() => postDeclaration(declaration2, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant2/applications'))
                 .then((results) => { // Confirm results
+                    assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
                     assert.strictEqual(typeof results.results[0].lineCount, 'number');
                     assert.strictEqual(typeof results.results[0].runTime, 'number');
+                    delete results.results[0].declarationId;
                     delete results.results[0].lineCount;
                     delete results.results[0].runTime;
                     assert.deepStrictEqual(
@@ -1160,10 +1214,9 @@ describe('per-app API testing (__smoke)', function () {
                     getPath('/mgmt/shared/appsvcs/declare')
                 ))
                 .then((results) => {
-                    assert.strictEqual(typeof results.controls.archiveTimestamp, 'string');
-                    assert.strictEqual(typeof results.id, 'string');
-                    delete results.controls.archiveTimestamp;
-                    delete results.id;
+                    assert.isTrue(results.id.startsWith('autogen_'), `${results.id} should have started with 'autogen_'`);
+                    results.controls = checkAndDelete([results.controls], 'archiveTimestamp', 'string')[0];
+                    results = checkAndDelete([results], 'id', 'string')[0];
 
                     assert.deepStrictEqual(results, {
                         class: 'ADC',

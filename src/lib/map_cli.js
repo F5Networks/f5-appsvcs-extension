@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,6 +188,7 @@ const prefix = {
     'gtm pool aaaa depends-on': 'replace-all-with',
     'gtm pool cname members': 'replace-all-with',
     'gtm pool mx members': 'replace-all-with',
+    'gtm pool naptr members': 'replace-all-with',
     'gtm prober-pool members': 'replace-all-with',
     'gtm region region-members': 'replace-all-with',
     'gtm server addresses': 'replace-all-with',
@@ -211,7 +212,11 @@ const prefix = {
     'gtm wideip mx aliases': 'replace-all-with',
     'gtm wideip mx pools': 'replace-all-with',
     'gtm wideip mx pools-cname': 'replace-all-with',
-    'gtm wideip mx rules': ''
+    'gtm wideip mx rules': '',
+    'gtm wideip naptr aliases': 'replace-all-with',
+    'gtm wideip naptr pools': 'replace-all-with',
+    'gtm wideip naptr pools-cname': 'replace-all-with',
+    'gtm wideip naptr rules': ''
 };
 
 /**
@@ -769,8 +774,9 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 targetConfig.members[member] = pushMonitors(targetConfig.members[member]);
             });
         }
-        if (diff.kind === 'D' || diff.kind === 'E') {
-            if (diff.path.find((p) => p === 'members')) {
+
+        if (diff.path.find((p) => p === 'members')) {
+            if (diff.kind === 'D' || diff.kind === 'E') {
                 const memberName = diff.path[diff.path.indexOf('members') + 1];
                 const currentMember = pushMonitors(currentConfig[diff.path[0]].properties.members[memberName]);
                 if (diff.path.find((p) => p === 'metadata')) {
@@ -787,7 +793,26 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
 
                 return commandObj;
             }
+
+            if (diff.kind === 'N') {
+                const poolMembers = {
+                    members: {
+                        [diff.path[3]]: util.simpleCopy(targetConfig.members[diff.path[3]])
+                    }
+                };
+                let command = `tmsh::modify ltm pool ${diff.path[0]}${stringify(diff.rhsCommand, poolMembers, escapeQuote)}`;
+                command = command.replace('members replace-all-with', 'members add');
+                commandObj.commands.push(command);
+                return commandObj;
+            }
         }
+
+        // If we are going to fall through to the default command and this is not a new pool
+        // delete the members property because they are handled above
+        if (diff.kind !== 'N' || diff.path.length !== 1) {
+            delete targetConfig.members;
+        }
+
         break;
     case 'ltm policy':
         targetConfig.legacy = '';
@@ -945,6 +970,9 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             targetConfig.addresses = { '::1:5ee:bad:c0de': {} };
         }
         break;
+    case 'net route-domain':
+        commandObj.commands = [`tmsh::modify net route-domain ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
+        return commandObj;
     case 'asm policy': {
         let file = `/var/config/rest/downloads/${diff.path[0].split('/').pop()}.xml`;
         if (typeof diff.rhs.properties !== 'undefined' && typeof diff.rhs.properties.file !== 'undefined') {
@@ -1030,7 +1058,12 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm wideip a':
     case 'gtm wideip aaaa':
     case 'gtm wideip cname':
-    case 'gtm wideip mx': {
+    case 'gtm wideip mx':
+    case 'gtm wideip naptr': {
+        if (util.isEmptyOrUndefined(targetConfig['load-balancing-decision-log-verbosity'])) {
+            delete targetConfig['load-balancing-decision-log-verbosity'];
+        }
+
         if (util.isEmptyOrUndefined(targetConfig.pools)) {
             targetConfig.pools = 'none';
         }
@@ -1114,6 +1147,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm pool aaaa':
     case 'gtm pool mx':
     case 'gtm pool cname':
+    case 'gtm pool naptr':
         mapEnabledDisabled(targetConfig);
         Object.keys(targetConfig.members || {}).forEach((memKey) => {
             mapEnabledDisabled(targetConfig.members[memKey]);
@@ -1292,7 +1326,8 @@ const tmshDelete = function (context, diff, currentConfig) {
     case 'gtm wideip a':
     case 'gtm wideip aaaa':
     case 'gtm wideip cname':
-    case 'gtm wideip mx': {
+    case 'gtm wideip mx':
+    case 'gtm wideip naptr': {
         const pathSplit = path.split(' ');
         if (pathSplit.length === 2) {
             path = pathSplit[0];
@@ -1328,6 +1363,9 @@ const tmshDelete = function (context, diff, currentConfig) {
     case 'gtm global-settings load-balancing':
         // set things back to default
         commandObj.commands = [`tmsh::modify ${diff.lhsCommand} topology-longest-match yes`];
+        return commandObj;
+    case 'net route-domain':
+        commandObj.commands = [`tmsh::modify net route-domain ${diff.path[0]} fw-enforced-policy none`];
         return commandObj;
     default:
     }

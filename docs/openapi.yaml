@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  version: 3.48.0
+  version: 3.49.0
   title: F5 BIG-IP AS3
   description: This reference describes the BIG-IP AS3 API and available endpoints.
 externalDocs:
@@ -316,54 +316,6 @@ paths:
         503:
           $ref: '#/components/responses/503'
   /declare/{tenant}/applications/{application}:
-    put:
-      summary: UNDER DEVELOPMENT - Apply BIG-IP AS3 configuration on a per-application basis
-      tags:
-        - Configuration
-      description: |
-        Use POST to deploy a configuration to a target ADC, or for certain other actions, including *retrieve*.
-        You must supply a request document with each POST.
-        The request document may be a proper request or a ADC-only declaration
-      parameters:
-        - $ref: '#/components/parameters/async'
-        - $ref: '#/components/parameters/controlsDryRun'
-        - $ref: '#/components/parameters/controlsLogLevel'
-        - $ref: '#/components/parameters/controlsTrace'
-        - $ref: '#/components/parameters/controlsTraceResponse'
-        - $ref: '#/components/parameters/controlsUserAgent'
-        - $ref: '#/components/parameters/show'
-        - $ref: '#/components/parameters/showHash'
-        - $ref: '#/components/parameters/tenantForApplication'
-        - $ref: '#/components/parameters/application'
-      requestBody:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  body:
-                    $ref: '#/components/schemas/declaration'
-              examples:
-                singleApplication:
-                  $ref: '#/components/examples/declarationApplicationPayloadSingle'
-      responses:
-        200:
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  results:
-                    type: array
-                    description: The results of the task
-                    items:
-                      $ref: '#/components/schemas/result'
-                  declaration:
-                    $ref: '#/components/schemas/declaration'
-              examples:
-                successResponse:
-                  $ref: '#/components/examples/declarationApplicationResponse'
     get:
       summary: UNDER DEVELOPMENT - Read current BIG-IP AS3 application configuration
       tags:

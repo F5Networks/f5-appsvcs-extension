@@ -270,6 +270,11 @@
         "class": "GSLB_Domain",
         "tmshPath": "gtm wideip mx"
     },
+    "GSLB_Domain_NAPTR": {
+        "name": "GSLB domain",
+        "class": "GSLB_Domain",
+        "tmshPath": "gtm wideip naptr"
+    },
     "GSLB_Monitor": {
         "name": "GSLB monitor",
         "class": "GSLB_Monitor",
@@ -316,7 +321,8 @@
             "gtm pool a",
             "gtm pool aaaa",
             "gtm pool cname",
-            "gtm pool mx"
+            "gtm pool mx",
+            "gtm pool naptr"
         ]
     },
     "GSLB_Prober_Pool": {
@@ -541,16 +547,6 @@
             "Service_Generic"
         ],
         "tmshPath": "ltm virtual"
-    },
-    "SNAT_Pool": {
-        "name": "snat pool",
-        "class": "SNAT_Pool",
-        "tmshPath": "ltm snatpool"
-    },
-    "SNAT_Translation": {
-        "name": "snat translation",
-        "class": "SNAT_Translation",
-        "tmshPath": "ltm snat-translation"
     },
     "SOCKS_Profile": {
         "name": "SOCKS profile",

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,74 +104,6 @@ describe('adcParserKeywords', () => {
                     }
                 ]
             );
-        });
-    });
-
-    describe('f5aliases', () => {
-        let that;
-        let f5aliases;
-
-        beforeEach(() => {
-            const compileData = {
-                aliasOne: 'originalOne',
-                aliasTwo: 'originalTwo'
-            };
-            const context = Context.build();
-            that = { context };
-            f5aliases = keywords.find((keyword) => keyword.name === 'f5aliases')
-                .definition(that).compile(compileData);
-        });
-
-        it('should replace original properties with alias name', () => {
-            const validateData = {
-                originalOne: { subData: 'test' },
-                originalTwo: true
-            };
-            const expected = {
-                aliasOne: { subData: 'test' },
-                aliasTwo: true
-            };
-            assert.strictEqual(f5aliases(validateData), true);
-            assert.deepStrictEqual(validateData, expected);
-        });
-
-        it('should prioritize alias properties and remove originals', () => {
-            const validateData = {
-                originalOne: { oldSubData: 'oldValue' },
-                originalTwo: true,
-                aliasOne: { newSubData: 'newValue' },
-                aliasTwo: false
-            };
-            const expected = {
-                aliasOne: { newSubData: 'newValue' },
-                aliasTwo: false
-            };
-            assert.strictEqual(f5aliases(validateData), true);
-            assert.deepStrictEqual(validateData, expected);
-        });
-
-        it('should do nothing if only alias properties are provided', () => {
-            const validateData = {
-                aliasOne: { newSubData: 'newValue' },
-                aliasTwo: false
-            };
-            const expected = {
-                aliasOne: { newSubData: 'newValue' },
-                aliasTwo: false
-            };
-            assert.strictEqual(f5aliases(validateData), true);
-            assert.deepStrictEqual(validateData, expected);
-        });
-
-        it('should do nothing if neither alias or original properties are provided', () => {
-            const validateData = {
-                foo: 'bar'
-            };
-            const expected = {
-                foo: 'bar'
-            };
-            assert.strictEqual(f5aliases(validateData), true);
-            assert.deepStrictEqual(validateData, expected);
         });
     });
 });

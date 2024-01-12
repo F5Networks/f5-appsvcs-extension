@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,21 @@ const {
 } = require('./propertiesCommon');
 
 const domainAAAA = {
+    description: 'AAAA description',
     domainName: 'test.domainAAAA',
+    loadBalancingDecisionLogVerbosity:
+    [
+        'pool-selection',
+        'pool-traversal',
+        'pool-member-selection',
+        'pool-member-traversal'
+    ],
     resourceRecordType: 'AAAA',
     aliases: ['*test1.aaaa?', '*test2.aaaa', '?test3.aaaa']
 };
 
 const domainCNAME = {
+    description: 'CNAME description',
     domainName: 'type.changes',
     resourceRecordType: 'CNAME',
     aliases: ['*.test.cname'],
@@ -37,6 +46,7 @@ const domainCNAME = {
 };
 
 const domainMX = {
+    description: 'MX description',
     domainName: 'type.changes',
     resourceRecordType: 'MX',
     aliases: ['?.test.mx'],
@@ -44,7 +54,19 @@ const domainMX = {
     enabled: true
 };
 
+const domainNAPTR = {
+    description: 'NAPTR description',
+    domainName: 'type.changes',
+    resourceRecordType: 'NAPTR',
+    aliases: ['?.test.naptr'],
+    poolbMode: 'round-robin',
+    enabled: false
+};
+
 const extractFunctions = {
+    description(result) {
+        return result.description;
+    },
     domainName(result) {
         return result.name;
     },
@@ -99,6 +121,12 @@ describe('GSLB Domain', function () {
     it('All properties', () => {
         const properties = [
             {
+                name: 'remark',
+                inputValue: [domainAAAA.description],
+                expectedValue: [domainAAAA.description],
+                extractFunctions: extractFunctions.description
+            },
+            {
                 name: 'domainName',
                 inputValue: [domainAAAA.domainName],
                 expectedValue: [domainAAAA.domainName],
@@ -115,6 +143,29 @@ describe('GSLB Domain', function () {
                 inputValue: [undefined, false, undefined],
                 expectedValue: [true, false, true],
                 extractFunction: extractFunctions.enabled
+            },
+            {
+                name: 'failureRcodeResponse',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: extractFunctions.failureRcodeResponse
+            },
+            {
+                name: 'failureRcode',
+                inputValue: [undefined, 'refused', undefined],
+                expectedValue: ['noerror', 'refused', 'noerror'],
+                extractFunction: extractFunctions.failureRcode
+            },
+            {
+                name: 'failureRcodeTtl',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: [0, 1000, 0],
+                extractFunction: extractFunctions.failureRcodeTtl
+            },
+            {
+                name: 'loadBalancingDecisionLogVerbosity',
+                inputValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined],
+                expectedValue: [undefined, domainAAAA.loadBalancingDecisionLogVerbosity, undefined]
             },
             {
                 name: 'poolLbMode',
@@ -243,40 +294,67 @@ describe('GSLB Domain', function () {
     it('update - type change', () => {
         const properties = [
             {
+                name: 'remark',
+                inputValue: [domainCNAME.description, domainMX.description, domainNAPTR.description],
+                expectedValue: [domainCNAME.description, domainMX.description, domainNAPTR.description],
+                extractFunctions: extractFunctions.description
+            },
+            {
                 name: 'domainName',
-                inputValue: [domainCNAME.domainName, domainMX.domainName],
-                expectedValue: [domainCNAME.domainName, domainMX.domainName],
+                inputValue: [domainCNAME.domainName, domainMX.domainName, domainNAPTR.domainName],
+                expectedValue: [domainCNAME.domainName, domainMX.domainName, domainNAPTR.domainName],
                 extractFunction: extractFunctions.domainName
             },
             {
                 name: 'resourceRecordType',
-                inputValue: [domainCNAME.resourceRecordType, domainMX.resourceRecordType],
-                expectedValue: [domainCNAME.resourceRecordType, domainMX.resourceRecordType],
+                inputValue: [domainCNAME.resourceRecordType, domainMX.resourceRecordType,
+                    domainNAPTR.resourceRecordType],
+                expectedValue: [domainCNAME.resourceRecordType, domainMX.resourceRecordType,
+                    domainNAPTR.resourceRecordType],
                 extractFunction: extractFunctions.resourceRecordType
             },
             {
                 name: 'enabled',
-                inputValue: [domainCNAME.enabled, domainMX.enabled],
-                expectedValue: [domainCNAME.enabled, domainMX.enabled],
+                inputValue: [domainCNAME.enabled, domainMX.enabled, domainNAPTR.enabled],
+                expectedValue: [domainCNAME.enabled, domainMX.enabled, domainNAPTR.enabled],
                 extractFunction: extractFunctions.enabled
             },
             {
+                name: 'failureRcodeResponse',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: extractFunctions.failureRcodeResponse
+            },
+            {
+                name: 'failureRcode',
+                inputValue: [undefined, 'refused', undefined],
+                expectedValue: ['noerror', 'refused', 'noerror'],
+                extractFunction: extractFunctions.failureRcode
+            },
+            {
+                name: 'failureRcodeTtl',
+                inputValue: [undefined, 1000, undefined],
+                expectedValue: [0, 1000, 0],
+                extractFunction: extractFunctions.failureRcodeTtl
+            },
+            {
                 name: 'poolLbMode',
-                inputValue: [domainCNAME.poolLbMode, domainMX.poolLbMode],
-                expectedValue: [domainCNAME.poolLbMode, domainMX.poolLbMode]
+                inputValue: [domainCNAME.poolLbMode, domainMX.poolLbMode, domainNAPTR.poolbMode],
+                expectedValue: [domainCNAME.poolLbMode, domainMX.poolLbMode, domainNAPTR.poolbMode]
             },
             {
                 name: 'aliases',
-                inputValue: [domainCNAME.aliases, domainMX.aliases],
-                expectedValue: [domainCNAME.aliases, domainMX.aliases],
+                inputValue: [domainCNAME.aliases, domainMX.aliases, domainNAPTR.aliases],
+                expectedValue: [domainCNAME.aliases, domainMX.aliases, domainNAPTR.aliases],
                 extractFunction: extractFunctions.aliases
             },
             {
                 name: 'lastResortPool',
-                inputValue: [{ use: 'pool1' }, { use: 'pool2' }, undefined],
+                inputValue: [{ use: 'pool1' }, { use: 'pool2' }, { use: 'pool3' }, undefined],
                 expectedValue: [
                     'cname /TEST_GSLB_Domain/Application/pool1',
                     'mx /TEST_GSLB_Domain/Application/pool2',
+                    'naptr /TEST_GSLB_Domain/Application/pool3',
                     ''
                 ],
                 extractFunction: extractFunctions.lastResortPool,
@@ -288,13 +366,17 @@ describe('GSLB Domain', function () {
                     pool2: {
                         class: 'GSLB_Pool',
                         resourceRecordType: 'MX'
+                    },
+                    pool3: {
+                        class: 'GSLB_Pool',
+                        resourceRecordType: 'NAPTR'
                     }
                 }
             },
             {
                 name: 'lastResortPoolType',
-                inputValue: ['CNAME', 'MX', undefined],
-                expectedValue: ['cname', 'mx', ''],
+                inputValue: ['CNAME', 'MX', 'NAPTR', undefined],
+                expectedValue: ['cname', 'mx', 'naptr', ''],
                 extractFunction: extractFunctions.lastResortPoolType
             },
             {
@@ -306,6 +388,9 @@ describe('GSLB Domain', function () {
                     [
                         { use: 'theRule2' }
                     ],
+                    [
+                        { use: 'theRule1' }
+                    ],
                     undefined
                 ],
                 expectedValue: [
@@ -314,6 +399,9 @@ describe('GSLB Domain', function () {
                     ],
                     [
                         '/TEST_GSLB_Domain/Application/theRule2'
+                    ],
+                    [
+                        '/TEST_GSLB_Domain/Application/theRule1'
                     ],
                     []
                 ],
@@ -337,28 +425,28 @@ describe('GSLB Domain', function () {
             },
             {
                 name: 'persistenceEnabled',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled']
+                inputValue: [undefined, true, undefined, true],
+                expectedValue: ['disabled', 'enabled', 'disabled', 'enabled']
             },
             {
                 name: 'persistCidrIpv4',
-                inputValue: [undefined, 0, undefined],
-                expectedValue: [32, 0, 32]
+                inputValue: [undefined, 0, undefined, 0],
+                expectedValue: [32, 0, 32, 0]
             },
             {
                 name: 'persistCidrIpv6',
-                inputValue: [undefined, 0, undefined],
-                expectedValue: [128, 0, 128]
+                inputValue: [undefined, 0, undefined, 0],
+                expectedValue: [128, 0, 128, 0]
             },
             {
                 name: 'ttlPersistence',
-                inputValue: [undefined, 4294967295, undefined],
-                expectedValue: [3600, 4294967295, 3600]
+                inputValue: [undefined, 4294967295, undefined, 4294967295],
+                expectedValue: [3600, 4294967295, 3600, 4294967295]
             },
             {
                 name: 'clientSubnetPreferred',
-                inputValue: [undefined, true, undefined],
-                expectedValue: ['disabled', 'enabled', 'disabled'],
+                inputValue: [undefined, true, undefined, true],
+                expectedValue: ['disabled', 'enabled', 'disabled', 'enabled'],
                 minVersion: '14.1'
             }
         ];

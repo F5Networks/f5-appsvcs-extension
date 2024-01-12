@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1354,6 +1354,15 @@ describe('map_as3', () => {
             const result = translate.HTTP_Profile(context, 'tenantId', 'appId', 'itemId', item, 'notNeeed');
             assert.strictEqual(result.configs[0].properties['response-chunking'], 'sustain');
             assert.strictEqual(result.configs[0].properties['request-chunking'], 'sustain');
+        });
+
+        it('should map "sustain" to "selective" and "preserve" when TMOS version is older than 15.0', () => {
+            item.responseChunking = 'sustain';
+            item.requestChunking = 'sustain';
+            context.target.tmosVersion = '14.1';
+            const result = translate.HTTP_Profile(context, 'tenantId', 'appId', 'itemId', item, 'notNeeed');
+            assert.strictEqual(result.configs[0].properties['response-chunking'], 'selective');
+            assert.strictEqual(result.configs[0].properties['request-chunking'], 'preserve');
         });
 
         it('should map "allowBlankSpaceAfterHeaderName" when TMOS version is 16.1 or newer', () => {
@@ -8369,13 +8378,15 @@ describe('map_as3', () => {
                     ],
                     renegotiatePeriod: 'indefinite',
                     renegotiateSize: 'indefinite',
-                    renegotiateMaxRecordDelay: 'indefinite'
+                    renegotiateMaxRecordDelay: 'indefinite',
+                    handshakeTimeout: 'indefinite'
                 };
                 const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
                 const profile = results.configs[0].properties;
                 assert.strictEqual(profile['renegotiate-period'], 4294967295);
                 assert.strictEqual(profile['renegotiate-size'], 4294967295);
                 assert.strictEqual(profile['renegotiate-max-record-delay'], 4294967295);
+                assert.strictEqual(profile['handshake-timeout'], 4294967295);
             });
 
             it('should set sniDefault to first certificate', () => {
@@ -8689,7 +8700,8 @@ describe('map_as3', () => {
                 class: 'TLS_Client',
                 authenticationFrequency: '',
                 renegotiatePeriod: 'indefinite',
-                renegotiateSize: 'indefinite'
+                renegotiateSize: 'indefinite',
+                handshakeTimeout: 'indefinite'
             };
             const decl = {
                 class: 'ADC',
@@ -8703,7 +8715,8 @@ describe('map_as3', () => {
                             class: 'TLS_Client',
                             authenticationFrequency: '',
                             renegotiatePeriod: 'indefinite',
-                            renegotiateSize: 'indefinite'
+                            renegotiateSize: 'indefinite',
+                            handshakeTimeout: 'indefinite'
                         }
                     }
                 }
@@ -8712,6 +8725,7 @@ describe('map_as3', () => {
             const profile = results.configs[0].properties;
             assert.strictEqual(profile['renegotiate-period'], 4294967295);
             assert.strictEqual(profile['renegotiate-size'], 4294967295);
+            assert.strictEqual(profile['handshake-timeout'], 4294967295);
         });
     });
 
@@ -9505,7 +9519,7 @@ describe('map_as3', () => {
                         count: 10,
                         database: 'sales',
                         interval: 10,
-                        password: 'sql-password',
+                        password: 'sql-password', // gitleaks:allow
                         recv: 'received something',
                         'recv-column': 2,
                         'recv-row': 3,
@@ -9528,7 +9542,7 @@ describe('map_as3', () => {
                                 description: '"My little db pony"',
                                 destination: '10.11.12.13:3456',
                                 interval: 10,
-                                password: '"sql-password"',
+                                password: '"sql-password"', // gitleaks:allow
                                 recv: '"received something"',
                                 send: '"SELECT * FROM db_name"',
                                 timeout: 81,
@@ -9684,12 +9698,136 @@ describe('map_as3', () => {
         });
     });
 
+    describe('GSLB_Monitor', () => {
+        describe('GSLB HTTPS Monitor', () => {
+            it('should handle default properties of HTTPS monitor', () => {
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should handle all properties of HTTPS monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test HTTPS props',
+                    monitorType: 'https',
+                    clientCertificate: 'webcert',
+                    ciphers: 'DEFAULT:TLS1.2:!SSLv3',
+                    target: '*:*',
+                    interval: 30,
+                    timeout: 120,
+                    probeTimeout: 5,
+                    receive: 'foo',
+                    receiveStatusCodes: [200, 302],
+                    reverseEnabled: true,
+                    send: 'GET /',
+                    sniServerName: 'test.example.com',
+                    transparent: true
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'webcert.crt',
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test HTTPS props\"',
+                            send: '\"GET /\"',
+                            recv: '\"foo\"',
+                            /* eslint-enable no-useless-escape */
+                            timeout: 120,
+                            cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
+                            destination: '*:*',
+                            interval: 30,
+                            'probe-timeout': 5,
+                            'recv-status-code': '"200 302"',
+                            'sni-server-name': 'test.example.com',
+                            reverse: 'enabled',
+                            transparent: 'enabled'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should ignore recvStatusCode property for < 15.1', () => {
+                defaultContext.target.tmosVersion = '15.0';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https',
+                    recvStatusCode: ['200']
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+
+            it('should ignore sniServerName property for < 16.1', () => {
+                defaultContext.target.tmosVersion = '16.0';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'https',
+                    sniServerName: 'test.example.com'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            description: 'none',
+                            recv: 'none',
+                            'recv-status-code': 'none',
+                            send: 'none'
+                        },
+                        ignore: []
+                    });
+            });
+        });
+    });
+
     describe('GSLB_Domain', () => {
         it('should return a proper wideip AAAA config with pools', () => {
             const item = {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
                 domainName: 'example.edu',
+                loadBalancingDecisionLogVerbosity: [
+                    'pool-member-selection',
+                    'pool-member-traversal',
+                    'pool-selection',
+                    'pool-traversal'
+                ],
                 enabled: true,
                 poolLbMode: 'round-robin',
                 pools: [
@@ -9711,8 +9849,15 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {
+                                    'pool-member-selection': {},
+                                    'pool-member-traversal': {},
+                                    'pool-selection': {},
+                                    'pool-traversal': {}
+                                },
                                 'pool-lb-mode': 'round-robin',
                                 pools: {
                                     '/ten/app/pool2': { order: 1, ratio: 2 },
@@ -9733,6 +9878,7 @@ describe('map_as3', () => {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
                 domainName: 'example.edu',
+                loadBalancingDecisionLogVerbosity: [],
                 enabled: true,
                 poolLbMode: 'round-robin',
                 resourceRecordType: 'AAAA'
@@ -9749,8 +9895,10 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
@@ -9766,9 +9914,11 @@ describe('map_as3', () => {
             const item = {
                 class: 'GSLB_Domain',
                 clientSubnetPreferred: true,
+                description: '"example.edu"',
                 domainName: 'example.edu',
                 enabled: true,
                 poolLbMode: 'round-robin',
+                remark: '"My Remark"',
                 iRules: [
                     '/ten/app/rule1',
                     { use: '/ten/app/rule2' },
@@ -9788,8 +9938,10 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"My Remark"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {},
                                 'pools-cname': {},
@@ -9832,8 +9984,10 @@ describe('map_as3', () => {
                             path: '/ten/app/example.edu',
                             properties: {
                                 aliases: {},
+                                description: '"example.edu"',
                                 enabled: true,
                                 'last-resort-pool': 'none',
+                                'load-balancing-decision-log-verbosity': {},
                                 'pool-lb-mode': 'round-robin',
                                 pools: {
                                     '/ten/app/pool2': { order: 1, ratio: 2 },
@@ -10584,6 +10738,144 @@ describe('map_as3', () => {
                     }
                 ]
             });
+        });
+    });
+
+    describe('GSLB_Pool NAPTR', () => {
+        it('should return a correct config using minimum amounts of information', () => {
+            const item = {
+                class: 'GSLB_Pool',
+                resourceRecordType: 'NAPTR'
+            };
+
+            const results = translate.GSLB_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm pool naptr',
+                        ignore: [],
+                        properties: {
+                            members: {},
+                            'qos-hit-ratio': 5,
+                            'qos-hops': 0,
+                            'qos-kilobytes-second': 3,
+                            'qos-lcs': 30,
+                            'qos-packet-rate': 1,
+                            'qos-rtt': 50,
+                            'qos-topology': 0,
+                            'qos-vs-capacity': 0,
+                            'qos-vs-score': 0
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a correct config using full specified information', () => {
+            const item = {
+                class: 'GSLB_Pool',
+                resourceRecordType: 'NAPTR',
+                enabled: false,
+                manualResumeEnabled: true,
+                ttl: 31,
+                dynamicRatioEnabled: true,
+                maxAnswersReturned: 2,
+                verifyMemberEnabled: false,
+                lbModePreferred: 'ratio',
+                lbModeAlternate: 'topology',
+                lbModeFallback: 'static-persistence',
+                members: [
+                    {
+                        service: 'sip+d2u',
+                        domainName: {
+                            use: '/Tenant/Application/testDomain'
+                        },
+                        enabled: true,
+                        order: 10,
+                        preference: 0,
+                        ratio: 1
+                    },
+                    {
+                        service: 'sip',
+                        domainName: {
+                            use: '/Tenant/Application/testDomain2'
+                        },
+                        enabled: false,
+                        order: 11,
+                        preference: 1,
+                        ratio: 2
+                    }
+                ]
+            };
+
+            const declaration = {
+                class: 'ADC',
+                Tenant: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        testDomain: {
+                            class: 'GSLB_Domain',
+                            domainName: 'example.com'
+                        },
+                        testDomain2: {
+                            class: 'GSLB_Domain',
+                            domainName: 'example2.com'
+                        }
+                    }
+                }
+            };
+
+            const results = translate.GSLB_Pool(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            return assert.deepStrictEqual(results,
+                {
+                    configs: [
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: 'gtm pool naptr',
+                            properties: {
+                                'alternate-mode': 'topology',
+                                'dynamic-ratio': 'enabled',
+                                enabled: false,
+                                'fallback-mode': 'static-persistence',
+                                'load-balancing-mode': 'ratio',
+                                'manual-resume': 'enabled',
+                                'max-answers-returned': 2,
+                                members: {
+                                    '/Tenant/Application/example.com': {
+                                        enabled: true,
+                                        flags: 'a',
+                                        'member-order': 0,
+                                        preference: 0,
+                                        ratio: 1,
+                                        service: 'sip+d2u'
+                                    },
+                                    '/Tenant/Application/example2.com': {
+                                        enabled: false,
+                                        flags: 'a',
+                                        'member-order': 1,
+                                        preference: 1,
+                                        ratio: 2,
+                                        service: 'sip'
+                                    }
+                                },
+                                'qos-hit-ratio': 5,
+                                'qos-hops': 0,
+                                'qos-kilobytes-second': 3,
+                                'qos-lcs': 30,
+                                'qos-packet-rate': 1,
+                                'qos-rtt': 50,
+                                'qos-topology': 0,
+                                'qos-vs-capacity': 0,
+                                'qos-vs-score': 0,
+                                ttl: 31,
+                                'verify-member-availability': 'disabled'
+                            },
+                            ignore: []
+                        }
+                    ]
+                });
         });
     });
 
@@ -11963,6 +12255,117 @@ describe('map_as3', () => {
                             'source-path': 'file:/var/config/rest/downloads/_tenantId_appId_dataGroupId',
                             type: 'integer'
                         }
+                    }
+                ]
+            );
+        });
+    });
+
+    describe('Firewall_Policy', () => {
+        let item;
+
+        beforeEach(() => {
+            item = {
+                class: 'Firewall_Policy',
+                remark: 'firewall policy',
+                rules: [
+                    {
+                        name: 'theRule',
+                        action: 'accept-decisively',
+                        protocol: 'tcp',
+                        loggingEnabled: true
+                    }
+                ]
+            };
+        });
+
+        it('should handle a config that only includes Firewall_Policy', () => {
+            const result = mapAs3.translate.Firewall_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'security firewall policy',
+                        properties: {
+                            description: '"firewall policy"',
+                            rules: {
+                                theRule: {
+                                    action: 'accept-decisively',
+                                    'ip-protocol': 'tcp',
+                                    source: {
+                                        'address-lists': {},
+                                        'port-lists': {},
+                                        vlans: {}
+                                    },
+                                    destination: {
+                                        'address-lists': {},
+                                        'port-lists': {}
+                                    },
+                                    log: 'yes',
+                                    'irule-sample-rate': 1
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                ]
+            );
+        });
+
+        it('should handle adding a route-domain config when routeDomainEnforcement is provided', () => {
+            item.routeDomainEnforcement = [
+                {
+                    bigip: '/Common/10'
+                },
+                {
+                    bigip: '/Common/100'
+                }
+            ];
+            const result = mapAs3.translate.Firewall_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'security firewall policy',
+                        properties: {
+                            description: '"firewall policy"',
+                            rules: {
+                                theRule: {
+                                    action: 'accept-decisively',
+                                    'ip-protocol': 'tcp',
+                                    source: {
+                                        'address-lists': {},
+                                        'port-lists': {},
+                                        vlans: {}
+                                    },
+                                    destination: {
+                                        'address-lists': {},
+                                        'port-lists': {}
+                                    },
+                                    log: 'yes',
+                                    'irule-sample-rate': 1
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/Common/10',
+                        command: 'net route-domain',
+                        properties: {
+                            'fw-enforced-policy': '/tenantId/appId/itemId'
+                        },
+                        ignore: []
+                    },
+                    {
+                        path: '/Common/100',
+                        command: 'net route-domain',
+                        properties: {
+                            'fw-enforced-policy': '/tenantId/appId/itemId'
+                        },
+                        ignore: []
                     }
                 ]
             );

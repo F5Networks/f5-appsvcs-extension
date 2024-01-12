@@ -1,6 +1,20 @@
 OUTPUT_LOCATION=./deployment_info
 set -e
 
+# Colors
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+if [ -z "$BIGIP_VERSION" ]; then
+    echo -e "${RED}BIGIP_VERSION is required.${NC}"
+    exit 1
+fi
+
+if [ -z "$F5_CIDR_BLOCKS" ]; then
+    echo -e "${RED}F5_CIDR_BLOCKS is required.${NC}"
+    exit 1
+fi
+
 if [[ -n $1 ]]; then
     OUTPUT_LOCATION="$1"
 fi

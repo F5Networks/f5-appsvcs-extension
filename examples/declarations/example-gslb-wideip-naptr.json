@@ -1,0 +1,62 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.49.0",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "naptrDomain": {
+                "class": "GSLB_Domain",
+                "aliases": [
+                    "NAPTR.example"
+                ],
+                "clientSubnetPreferred": false,
+                "domainName": "example_NAPTR.com",
+                "enabled": true,
+                "iRules": [
+                    "testGSLB_iRule"
+                ],
+                "label": "my label",
+                "lastResortPool": {
+                    "use": "testPool3"
+                },
+                "lastResortPoolType": "NAPTR",
+                "persistCidrIpv4": 32,
+                "persistCidrIpv6": 128,
+                "persistenceEnabled": false,
+                "poolLbMode": "ratio",
+                "pools": [
+                    {
+                        "ratio": 2,
+                        "use": "testPool"
+                    },
+                    {
+                        "ratio": 3,
+                        "use": "testPool2"
+                    }
+                ],
+                "remark": "my remark",
+                "resourceRecordType": "NAPTR",
+                "ttlPersistence": 3600
+            },
+            "testGSLB_iRule": {
+                "class": "GSLB_iRule",
+                "iRule": {
+                    "base64": "d2hlbiBETlNfUkVRVUVTVCB7CiAgICBsb2cgbG9jYWwyLiAiR1RNIGlydWxlOiBBIEROUyByZXF1ZXN0IHdhcyBzZWVuIGZvciBbRE5TOjpxdWVzdGlvbiBuYW1lXSBzZWVuIGZyb20gW0lQOjpjbGllbnRfYWRkcl0iCn0="
+                }
+            },
+            "testPool": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "NAPTR"
+            },
+            "testPool2": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "NAPTR"
+            },
+            "testPool3": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "NAPTR"
+            }
+        }
+    }
+}

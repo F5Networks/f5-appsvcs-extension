@@ -110,7 +110,7 @@
                 "resourceRecordType": "CNAME",
                 "members": [
                     {
-                        "domainName": "example.edu",
+                        "domainName": "OTHER.edu",
                         "enabled": false
                     }
                 ]

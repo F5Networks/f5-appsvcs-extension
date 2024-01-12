@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ function removePatchVersion(versionString) {
 
 describe('versions', () => {
     it('should match in package.json and the schema', () => {
-        const schemaVersion = removePatchVersion(schema.properties.schemaVersion.enum[0].toString());
+        const schemaVersion = removePatchVersion(schema.properties.schemaVersion.anyOf[1].const);
         const packageVersion = removePatchVersion(packageInfo.version.split('-')[0]);
         assert.equal(schemaVersion, packageVersion);
     });

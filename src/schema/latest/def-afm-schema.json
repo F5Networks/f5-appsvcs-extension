@@ -592,6 +592,17 @@
                         "then": { "$ref": "#/definitions/Pointer_Firewall_Rule_List" },
                         "else": { "$ref": "#/definitions/Firewall_Rule" }
                     }
+                },
+                "routeDomainEnforcement": {
+                    "description": "Specifies Route Domains to enforce this policy on. Rules of this policy will be enforced on the Route Domains. If setting this property, the Firewall_Policy must be defined in /Common/Shared.",
+                    "type": "array",
+                    "items": {
+                        "allOf": [
+                            {
+                                "$ref": "#/definitions/Pointer_Route_Domain"
+                            }
+                        ]
+                    }
                 }
             },
             "additionalProperties": false,

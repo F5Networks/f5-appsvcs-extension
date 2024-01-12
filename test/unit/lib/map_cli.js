@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1435,7 +1435,7 @@ describe('map_cli', () => {
 
             const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
             assert.deepStrictEqual(result.preTrans, ['tmsh::modify ltm pool /tenant/application/pool monitor none']);
-            assert.deepStrictEqual(result.commands, ['tmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin members none min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10']);
+            assert.deepStrictEqual(result.commands, ['tmsh::create ltm pool /tenant/application/pool load-balancing-mode round-robin min-active-members 1 monitor min 1 of \\{ /Common/http /tenant/application/customMonitor \\} reselect-tries 0 service-down-action none slow-ramp-time 10']);
             assert.deepStrictEqual(result.rollback, ['tmsh::modify ltm pool /tenant/application/pool monitor min 2 of \\{ /tenant/application/customMonitor /Common/gateway_icmp \\}']);
         });
 
@@ -2140,6 +2140,59 @@ describe('map_cli', () => {
             };
 
             assert.deepStrictEqual(apmUpdates, expectedUpdates);
+        });
+    });
+
+    describe('net route-domain', () => {
+        it('should get modify command for route-domain', () => {
+            const diff = {
+                kind: 'N',
+                path: ['/Common/10', 'properties', 'fw-enforced-policy'],
+                rhs: '/Common/shared/firewallPolicy',
+                command: 'net route-domain',
+                lhsCommand: 'net route-domain',
+                rhsCommand: 'net route-domain'
+            };
+            const targetConfig = {
+                'fw-enforced-policy': '/Common/Shared/firewallPolicy'
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::modify net route-domain /Common/10 fw-enforced-policy /Common/Shared/firewallPolicy'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+
+        it('should revert with a modify when diff kind is D', () => {
+            const diff = {
+                kind: 'D',
+                path: ['/Common/10', 'properties', 'fw-enforced-policy'],
+                rhs: '/Common/shared/firewallPolicy',
+                command: 'net route-domain',
+                lhsCommand: 'net route-domain',
+                rhsCommand: 'net route-domain'
+            };
+
+            const results = mapCli.tmshDelete(context, diff);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::modify net route-domain /Common/10 fw-enforced-policy none'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
         });
     });
 });
