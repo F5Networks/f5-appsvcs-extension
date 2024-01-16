@@ -31,6 +31,7 @@ const assert = chai.assert;
 const HostContext = require('../../../../src/lib/context/hostContext');
 const Async = require('../../../../src/lib/asyncHandler');
 const As3Parser = require('../../../../src/lib/adcParser');
+const SchemaValidator = require('../../../../src/lib/schemaValidator');
 const log = require('../../../../src/lib/log');
 const Config = require('../../../../src/lib/config');
 
@@ -49,11 +50,12 @@ describe('hostContext', function () {
         return httpWrapper;
     }
 
-    const originalLoadJson = util.loadJSON;
     const originalReadFileSync = fs.readFileSync;
 
-    const as3RequestSchema = JSON.parse(fs.readFileSync(`${__dirname}/../../../../src/schema/latest/as3-request-schema.json`));
-    const as3AdcSchema = JSON.parse(fs.readFileSync(`${__dirname}/../../../../src/schema/latest/adc-schema.json`));
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../../../src/schema/latest/adc-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(DEVICE_TYPES.BIG_IP, schemaConfigs);
 
     let hostContext;
     let ensureInstallSpy;
@@ -67,8 +69,7 @@ describe('hostContext', function () {
         }, settings)));
     });
 
-    const adcParser = new As3Parser();
-    before(() => adcParser.loadSchemas([as3AdcSchema]));
+    before(() => schemaValidator.init());
 
     beforeEach(() => {
         // stubs
@@ -85,16 +86,10 @@ describe('hostContext', function () {
             .withArgs('cat /var/config/rest/iapps/f5-appsvcs/declRetryAttempts')
             .resolves('1');
 
-        sinon.stub(util, 'loadJSON').callsFake((url, opts) => {
-            const baseUrl = 'file:///var/config/rest/iapps/f5-appsvcs/schema/latest/';
-            if (url === `${baseUrl}adc-schema.json`) {
-                return Promise.resolve(as3AdcSchema);
-            }
-            if (url === `${baseUrl}as3-request-schema.json`) {
-                return Promise.resolve(as3RequestSchema);
-            }
-            return originalLoadJson(url, opts);
-        });
+        // Performance improvement. Copy schemaValidator existing contents to new schemaValidator in each test
+        sinon.stub(SchemaValidator.prototype, 'init').callsFake((function () {
+            Object.assign(this, schemaValidator);
+        }));
         sinon.stub(util, 'getDeviceInfo').resolves({});
 
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
@@ -102,12 +97,6 @@ describe('hostContext', function () {
         sinon.stub(cloudLibUtils, 'getIsAvailable').resolves(true);
         ensureInstallSpy = sinon.stub(cloudLibUtils, 'ensureInstall').resolves();
         ensureUninstallSpy = sinon.stub(cloudLibUtils, 'ensureUninstall').resolves();
-
-        // ajv stubs (test performance improvement)
-        sinon.stub(As3Parser.prototype, 'loadSchemas').callsFake(function () {
-            this.schemas = adcParser.schemas;
-            this.validator = adcParser.validator;
-        });
 
         // lib stubs
         sinon.stub(Async.prototype, 'restoreState').resolves();
@@ -139,8 +128,9 @@ describe('hostContext', function () {
 
         it('should instantiate an AS3 Parser, with correct deviceType and version info', () => hostContext.get()
             .then((context) => {
+                assert.ok(context.schemaValidator instanceof SchemaValidator);
                 assert.ok(context.parser instanceof As3Parser);
-                assert.strictEqual(context.parser.deviceType, 'BIG-IP');
+                assert.strictEqual(context.schemaValidator.getDeviceType(), 'BIG-IP');
                 assert.strictEqual(context.as3VersionInfo.version, '3.15.0');
                 assert.strictEqual(context.as3VersionInfo.release, '1');
             }));

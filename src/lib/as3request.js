@@ -16,8 +16,6 @@
 
 'use strict';
 
-const Ajv = require('ajv');
-const fs = require('fs');
 const ipUtil = require('@f5devcentral/atg-shared-utilities').ipUtils;
 const util = require('./util/util');
 const declarationUtil = require('./util/declarationUtil');
@@ -28,47 +26,16 @@ class As3Request {
     /**
      * This builds an AS3Request object.
      *
-     * @param {string} schemaPath - REQUIRED: The path to the schema
-     * @param {object} ajvOptions - An object with various booleans see getDefaultAjvOptions()
+     * @param {SchemaValidator} schemaValidator - schemaValidator instance for AJV validation
      */
-    constructor(schemaPath, ajvOptions) {
-        if (!schemaPath) {
-            throw new Error('A path to the schema is required');
-        }
-        this.schemaPath = schemaPath;
-        this.ajvOptions = ajvOptions || this.getDefaultAjvOptions();
-        this.validator = this.getAjvValidatorInstance();
+    constructor(schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
-    getDefaultAjvOptions() {
-        return {
-            allErrors: false,
-            verbose: true,
-            useDefaults: true,
-            jsonPointers: true,
-            async: false
-        };
-    }
-
-    getAjvValidatorInstance() {
-        const ajv = new Ajv(this.ajvOptions);
-
-        // test if string is an f5 IP, which means valid IPv4 or IPv6
-        // with optional %route-domain and/or /mask-length appended.
-        const IPrex = /^((((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))|(::(([0-9a-f]{1,4}:){0,5}((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))))?)|([0-9a-f]{1,4}::(([0-9a-f]{1,4}:){0,4}((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))))?)|([0-9a-f]{1,4}:[0-9a-f]{1,4}::(([0-9a-f]{1,4}:){0,3}((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))))?)|([0-9a-f]{1,4}(:[0-9a-f]{1,4}){2}::(([0-9a-f]{1,4}:){0,2}((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))))?)|([0-9a-f]{1,4}(:[0-9a-f]{1,4}){3}::(([0-9a-f]{1,4}:)?((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d))))?)|([0-9a-f]{1,4}(:[0-9a-f]{1,4}){4}::((([0-9a-f]{1,4}:)?[0-9a-f]{1,4})|(((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)[.]){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)))?)|([0-9a-f]{1,4}(:[0-9a-f]{1,4}){5}::([0-9a-f]{1,4})?)|([0-9a-f]{1,4}(:[0-9a-f]{1,4}){0,6}::)|(([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}))(%(6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]\d{4}|[1-9]\d{3}|[1-9]\d{2}|[1-9]?\d))?(\x2f(12[0-8]|1[01]\d|[1-9]?\d))?$/;
-        ajv.addFormat('f5ip', (s) => {
-            if (s === '') return true;
-            return ((s.toLowerCase().match(/[^0-9a-f:.%\x2f]/) === null) && IPrex.test(s));
-        });
-
-        return ajv.compile(JSON.parse(fs.readFileSync(this.schemaPath, 'utf8')));
-    }
-
-    getValidatorError() {
+    formatValidatorError(errors) {
         let error;
-        if (!util.isEmptyOrUndefined(this.validator.errors)) {
-            error = this.validator.errors[0];
-            error = `Invalid request value '${error.data}' (path: ${error.dataPath}) : ${error.message} ${JSON.stringify(error.params)}`;
+        if (!util.isEmptyOrUndefined(errors)) {
+            error = `Invalid request: ${util.formatAjvErr(errors[0])}`;
         }
         return error;
     }
@@ -188,14 +155,19 @@ class As3Request {
      * @returns {object} error - Any errors encountered during the process
      */
     validateAndWrap(requestContext, hostContext) {
+        if (!requestContext || !hostContext) {
+            throw new Error('Request and host contexts are required');
+        }
+
         let error;
         let request = util.simpleCopy(requestContext.body);
 
         // populate AS3 class prop defaults from schema if req === [ADC]
         request = this.wrapWithAS3Class(request, requestContext.pathName);
 
-        if (!this.validator(request)) {
-            error = this.getValidatorError();
+        const results = this.schemaValidator.validate(constants.SCHEMA_ID.AS3, request);
+        if (!results.valid) {
+            error = this.formatValidatorError(results.errors);
         }
 
         if (!Array.isArray(request)) {

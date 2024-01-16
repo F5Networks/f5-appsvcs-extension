@@ -30,19 +30,14 @@ const ajv = new Ajv(
 const adcSchema = require('../../../src/schema/latest/adc-schema.json');
 const formats = require('../../../src/lib/adcParserFormats');
 const keywords = require('../../../src/lib/adcParserKeywords');
-const Context = require('../../../src/lib/context/context');
 
 formats.forEach((customFormat) => {
     ajv.addFormat(customFormat.name, customFormat.check);
 });
 
 const parserScope = {
-    context: Context.build(),
-    components: [],
-    fetches: [],
-    postProcess: []
+    _postProcess: []
 };
-parserScope.context.target.provisionedModules = ['afm'];
 keywords.keywords.forEach((keyword) => ajv.addKeyword(keyword.name, keyword.definition(parserScope)));
 
 const validate = ajv
@@ -85,7 +80,7 @@ describe('def-dos-schema.json', () => {
                 };
 
                 assert.ok(validate(decl), getErrorString(validate));
-                assert.deepStrictEqual(parserScope.postProcess,
+                assert.deepStrictEqual(parserScope._postProcess,
                     [
                         {
                             instancePath: '/tenant/application/dosProfile/allowlist/use',
@@ -153,8 +148,6 @@ describe('def-dos-schema.json', () => {
                         '233.252.0.0/24'
                     ]
                 };
-
-                parserScope.context.target.provisionedModules = ['asm']; // required for applicationAllowlist
 
                 assert.ok(validate(decl), getErrorString(validate));
             });

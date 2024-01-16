@@ -749,8 +749,6 @@ describe('DeclarationHandler', () => {
             });
 
             parser = new As3Parser();
-
-            parser = new As3Parser();
             sinon.stub(parser, 'digest').resolves('1');
             context.host.parser = parser;
         });

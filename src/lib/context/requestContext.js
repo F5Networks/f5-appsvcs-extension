@@ -74,7 +74,7 @@ const perAppUtil = require('../util/perAppUtil');
 class RequestContext {
     static get(restOperation, hostContext) {
         if (!this.as3Wrapper) {
-            this.as3Wrapper = new As3Request(constants.reqSchemaFile);
+            this.as3Wrapper = new As3Request(hostContext.schemaValidator);
         }
         const initialContext = buildInitialContext(restOperation);
         if (initialContext.error) {

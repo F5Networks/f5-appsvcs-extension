@@ -21,12 +21,11 @@ const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
-const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
-const Ajv = require('ajv');
-const As3Parser = require('../../../src/lib/adcParser');
 
+const SchemaValidator = require('../../../src/lib/schemaValidator');
+const As3Parser = require('../../../src/lib/adcParser');
 const log = require('../../../src/lib/log');
 const Tag = require('../../../src/lib/tag');
 const util = require('../../../src/lib/util/util');
@@ -35,27 +34,32 @@ const Context = require('../../../src/lib/context/context');
 const Config = require('../../../src/lib/config');
 const PostProcessor = require('../../../src/lib/postProcessor');
 
-const adcSchemaPath = `${__dirname}/../../../src/schema/latest/adc-schema.json`;
-const appSchemaPath = `${__dirname}/../../../src/schema/latest/app-schema.json`;
-const as3AdcSchema = JSON.parse(fs.readFileSync(adcSchemaPath));
-const as3AppSchema = JSON.parse(fs.readFileSync(appSchemaPath));
-
 describe('adcParser', function () {
     this.timeout(5000);
-    const theParser = new As3Parser(DEVICE_TYPES.BIG_IP, [adcSchemaPath, appSchemaPath]);
+    const schemaPaths = [
+        `file://${__dirname}/../../../src/schema/latest/adc-schema.json`,
+        `file://${__dirname}/../../../src/schema/latest/app-schema.json`
+    ];
+    const schemaConfigsBigIp = [{
+        paths: schemaPaths
+    }];
+    const schemaConfigsBigIq = [{
+        paths: schemaPaths,
+        options: { useDefaults: false }
+    }];
+    const schemaValidatorBigIp = new SchemaValidator(DEVICE_TYPES.BIG_IP, schemaConfigsBigIp);
+    const schemaValidatorBigIq = new SchemaValidator(DEVICE_TYPES.BIG_IQ, schemaConfigsBigIq);
     let logWarningSpy;
-    let logErrorSpy;
     let secretTagSpy;
     let context;
     let postProcessSpy;
 
-    before(() => theParser.loadSchemas([as3AdcSchema, as3AppSchema]));
+    before(() => schemaValidatorBigIp.init()
+        .then(() => schemaValidatorBigIq.init()));
 
     beforeEach(() => {
         context = Context.build();
-        context.host.parser = theParser;
         logWarningSpy = sinon.stub(log, 'warning');
-        logErrorSpy = sinon.stub(log, 'error');
         sinon.stub(util, 'getNodelist').resolves([]);
         sinon.stub(util, 'getVirtualAddressList').resolves([]);
         sinon.stub(util, 'getAccessProfileList').resolves([]);
@@ -74,17 +78,20 @@ describe('adcParser', function () {
         nock.cleanAll();
     });
 
-    function parseDeclaration(declaration, deviceType, options) {
-        const opts = Object.assign({}, options);
-        if (!deviceType) {
-            deviceType = DEVICE_TYPES.BIG_IP;
-        }
-        theParser.deviceType = deviceType;
-        return theParser.digest(context, declaration, opts);
-    }
+    const getBigIpParser = () => {
+        const parser = new As3Parser(schemaValidatorBigIp);
+        context.host.parser = parser;
+        return parser;
+    };
 
-    function assertInvalid(declaration, errMessage, deviceType) {
-        return parseDeclaration(declaration, deviceType)
+    const getBigIqParser = () => {
+        const parser = new As3Parser(schemaValidatorBigIq);
+        context.host.parser = parser;
+        return parser;
+    };
+
+    function assertInvalid(declaration, errMessage, parser) {
+        return parser.digest(context, declaration)
             .then(
                 () => {
                     throw new Error('Declaration was successful');
@@ -109,20 +116,24 @@ describe('adcParser', function () {
     describe('validation', function () {
         it('should fail on empty JSON', () => assertInvalid(
             {},
-            'lacks valid \'id\''
+            'lacks valid \'id\'',
+            getBigIpParser()
         ));
 
         it('should fail on bad tenant name', () => assertInvalid(
             {
+                class: 'ADC',
                 id: 'id',
                 scratch: 'scratch',
                 'f5*com': { class: 'Tenant' }
             },
-            '"f5*com" should match pattern'
+            '"f5*com" should match pattern',
+            getBigIpParser()
         ));
 
         it('should call validatePathLength', () => {
-            const spy = sinon.spy(theParser, 'validatePathLength');
+            const parser = getBigIpParser();
+            const spy = sinon.spy(parser, 'validatePathLength');
             const decl = {
                 id: 'testPathLength',
                 class: 'ADC',
@@ -140,13 +151,14 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return theParser.digest(context, decl)
+            return parser.digest(context, decl)
                 .then(() => {
                     sinon.assert.calledOnce(spy);
                 });
         });
 
         it('.validatePathLength should throw when path > 255 chars', () => {
+            const parser = getBigIpParser();
             const decl = {
                 id: 'id',
                 ThisIsTheTenantForThePathThatWillDefinitelyExceedTheCharacterLimitWhichIsTwoHundredFiftyFive: {
@@ -159,12 +171,13 @@ describe('adcParser', function () {
                 }
             };
             assert.throws(
-                () => theParser.validatePathLength(decl),
+                () => parser.validatePathLength(decl),
                 /exceeds the 255 full path character limit/
             );
         });
 
         it('should redact sensitive aws information', () => {
+            const parser = getBigIpParser();
             const decl = {
                 id: 'redactAWS',
                 class: 'ADC',
@@ -197,13 +210,14 @@ describe('adcParser', function () {
                 copySecrets: true,
                 baseDeclaration: decl
             };
-            return parseDeclaration(decl, null, options)
+            return parser.digest(context, decl, options)
                 .then(() => {
                     assert.deepStrictEqual(decl.tenant.app.webpool.members[0].accessKeyId, '<redacted>');
                 });
         });
 
         it('should redact sensitive azure information', () => {
+            const parser = getBigIpParser();
             const decl = {
                 id: 'redactAzure',
                 class: 'ADC',
@@ -236,7 +250,7 @@ describe('adcParser', function () {
                 copySecrets: true,
                 baseDeclaration: decl
             };
-            return parseDeclaration(decl, null, options)
+            return parser.digest(context, decl, options)
                 .then(() => {
                     assert.deepStrictEqual(decl.tenant.app.webpool.members[0].resourceGroup, '<redacted>');
                     assert.deepStrictEqual(decl.tenant.app.webpool.members[0].subscriptionId, '<redacted>');
@@ -246,6 +260,7 @@ describe('adcParser', function () {
         });
 
         it('should validate using the per app schema and skip PostProcessing', () => {
+            const parser = getBigIpParser();
             context.request.isPerApp = true;
             context.request.body = {
                 id: 'autogen_new-uuid-xxxx'
@@ -269,7 +284,7 @@ describe('adcParser', function () {
                 isPerApp: true
             };
 
-            return parseDeclaration(decl, undefined, options)
+            return parser.digest(context, decl, options)
                 .then(() => {
                     assert.strictEqual(postProcessSpy.called, false);
                     assert.deepStrictEqual(
@@ -321,39 +336,8 @@ describe('adcParser', function () {
                 });
         });
 
-        it('should invalidate when using a per app declaration with the adc schema', () => {
-            context.request.isPerApp = false;
-            context.request.body = {
-                id: 'autogen_new-uuid-xxxx'
-            }; // This simulates the id added to the transformed declaration
-            const decl = {
-                id: 'test', // While id is not supported, this is added to simulate bad user input
-                app: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.100'],
-                        virtualPort: 80,
-                        pool: 'pool'
-                    },
-                    pool: {
-                        class: 'Pool'
-                    }
-                }
-            };
-            return assert.isRejected(parseDeclaration(decl))
-                .then(() => {
-                    assert.deepStrictEqual(logWarningSpy.args[0][0], {
-                        status: 422,
-                        message: 'declaration is invalid',
-                        errors: [
-                            '/app/service/virtualAddresses: should be object'
-                        ]
-                    });
-                });
-        });
-
         it('should invalidate when using the per app schema and an invalid property', () => {
+            const parser = getBigIpParser();
             context.request.isPerApp = true;
             context.request.body = {
                 id: 'autogen_new-uuid-xxxx'
@@ -376,7 +360,7 @@ describe('adcParser', function () {
             const options = {
                 isPerApp: true
             };
-            return assert.isRejected(parseDeclaration(decl, undefined, options))
+            return assert.isRejected(parser.digest(context, decl, options))
                 .then(() => {
                     assert.strictEqual(postProcessSpy.called, false);
                     assert.deepStrictEqual(logWarningSpy.args[0][0], {
@@ -390,6 +374,7 @@ describe('adcParser', function () {
         });
 
         it('should invalidate when using a tenant declaration against the app schema', () => {
+            const parser = getBigIpParser();
             context.request.isPerApp = true;
             context.request.body = {
                 id: 'autogen_new-uuid-xxxx'
@@ -416,7 +401,7 @@ describe('adcParser', function () {
             const options = {
                 isPerApp: true
             };
-            return assert.isRejected(parseDeclaration(decl, undefined, options))
+            return assert.isRejected(parser.digest(context, decl, options))
                 .then(() => {
                     assert.strictEqual(logWarningSpy.called, true);
                     assert.deepStrictEqual(logWarningSpy.args[0][0], {
@@ -431,6 +416,7 @@ describe('adcParser', function () {
         });
 
         it('should invalidate when using a per-app declaration against the adc schema', () => {
+            const parser = getBigIpParser();
             context.request.isPerApp = false;
             context.request.body = {
                 id: 'autogen_new-uuid-xxxx'
@@ -450,7 +436,7 @@ describe('adcParser', function () {
                     }
                 }
             };
-            return assert.isRejected(parseDeclaration(decl))
+            return assert.isRejected(parser.digest(context, decl))
                 .then(() => {
                     assert.deepStrictEqual(logWarningSpy.args[0][0], {
                         status: 422,
@@ -459,49 +445,11 @@ describe('adcParser', function () {
                     });
                 });
         });
-    });
 
-    describe('platform behavior', function () {
-        it('should expand decl when on BIG-IP', () => {
+        it('should copy secrets to base declaration if enabled', () => {
+            const parser = getBigIpParser();
             const origDecl = {
-                id: 'testBIGIP',
-                class: 'ADC',
-                schemaVersion: '3.0.0',
-                testTenant: {
-                    class: 'Tenant',
-                    app: {
-                        class: 'Application',
-                        template: 'http',
-                        serviceMain: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: ['192.0.2.200'],
-                            virtualPort: 80
-                        }
-                    }
-                }
-            };
-            const decl = Object.assign({}, origDecl);
-            return parseDeclaration(decl)
-                .then(() => {
-                    assert.notDeepEqual(decl, origDecl);
-                    assert.strictEqual(decl.id, origDecl.id);
-                    // test one of the known defaults
-                    assert.strictEqual(decl.testTenant.app.enable, true);
-                });
-        });
-
-        it('should still validate when on BIG-IQ', () => assertInvalid(
-            {
-                id: 'id',
-                tenant: { class: 'Tenant' }
-            },
-            'should have required property \'class\'',
-            DEVICE_TYPES.BIG_IQ
-        ));
-
-        it('should still handle secrets when on BIG-IQ', () => {
-            const origDecl = {
-                id: 'testBIGIQ-encrypt',
+                id: 'test-encrypt',
                 class: 'ADC',
                 schemaVersion: '3.0.0',
                 target: { address: '192.0.2.1' },
@@ -514,64 +462,6 @@ describe('adcParser', function () {
                             class: 'Certificate',
                             certificate: '-----BEGIN CERTIFICATE-----theCert-----END CERTIFICATE-----',
                             privateKey: '-----BEGIN RSA PRIVATE KEY-----theKey-----END RSA PRIVATE KEY-----', // gitleaks:allow
-                            passphrase: {
-                                ciphertext: 'mumblemumble',
-                                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0'
-                            }
-                        }
-                    }
-                }
-            };
-            const decl = Object.assign({}, origDecl);
-            return parseDeclaration(decl, DEVICE_TYPES.BIG_IQ)
-                .then(() => {
-                    const matchedSecret = secretTagSpy.args
-                        .find((call) => call[2].data && call[2].data.ciphertext === 'mumblemumble');
-                    assert.notStrictEqual(typeof matchedSecret, undefined);
-                });
-        });
-
-        it('should NOT expand declaration when on BIG-IQ', () => {
-            const origDecl = {
-                id: 'testBIGIQ-expand',
-                class: 'ADC',
-                schemaVersion: '3.0.0',
-                target: { address: '192.0.2.1' },
-                testTenant: {
-                    class: 'Tenant',
-                    app: {
-                        class: 'Application',
-                        template: 'http',
-                        serviceMain: {
-                            class: 'Service_HTTP',
-                            virtualAddresses: ['192.0.2.100']
-                        }
-                    }
-                }
-            };
-            const decl = Object.assign({}, origDecl);
-            return theParser.loadSchemas([as3AdcSchema])
-                .then(parseDeclaration(decl, DEVICE_TYPES.BIG_IQ))
-                .then(() => {
-                    assert.deepStrictEqual(decl, origDecl);
-                });
-        });
-
-        it('should copy secrets to base declaration if enabled', () => {
-            const origDecl = {
-                id: 'testBIGIQ-encrypt',
-                class: 'ADC',
-                schemaVersion: '3.0.0',
-                target: { address: '192.0.2.1' },
-                testTenant: {
-                    class: 'Tenant',
-                    app: {
-                        class: 'Application',
-                        template: 'generic',
-                        webcert1: {
-                            class: 'Certificate',
-                            certificate: '-----BEGIN CERTIFICATE-----theCert-----END CERTIFICATE-----',
-                            privateKey: '-----BEGIN RSA PRIVATE KEY-----theKey-----END RSA PRIVATE KEY-----',
                             passphrase: {
                                 ciphertext: 'mumblemumble',
                                 protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0'
@@ -619,7 +509,7 @@ describe('adcParser', function () {
                 return Promise.resolve([]);
             });
 
-            return parseDeclaration(decl, null, options)
+            return parser.digest(context, decl, options)
                 .then(() => {
                     assert.deepStrictEqual(origDecl, expectDecl);
                 })
@@ -629,81 +519,102 @@ describe('adcParser', function () {
         });
     });
 
-    describe('.loadSchemas', () => {
-        let compileSpy;
-        let parser;
-        beforeEach(() => {
-            compileSpy = sinon.stub(Ajv.prototype, 'compile').returns(() => {});
-            sinon.stub(Ajv.prototype, 'addKeyword').returns();
-            parser = new As3Parser(DEVICE_TYPES.BIG_IP, [adcSchemaPath, appSchemaPath]);
-        });
-
-        const assertLoadSchema = (schemas, expectedIds) => parser.loadSchemas(schemas)
-            .then((ids) => {
-                assert.deepStrictEqual(ids, expectedIds);
-                expectedIds.forEach((id, idx) => {
-                    assert.strictEqual(compileSpy.args[idx][0].$id, id);
-                });
-            });
-
-        const assertLoadSchemaError = (schemas, expectedErrorMsg) => {
-            let errorFound = false;
-            return parser.loadSchemas(schemas)
-                .catch((err) => {
-                    errorFound = true;
-                    assert.strictEqual(err.message, expectedErrorMsg);
-                })
+    describe('platform behavior', function () {
+        it('should expand decl when on BIG-IP', () => {
+            const parser = getBigIpParser();
+            const origDecl = {
+                id: 'testBIGIP',
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                testTenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        template: 'http',
+                        serviceMain: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.200'],
+                            virtualPort: 80
+                        }
+                    }
+                }
+            };
+            const decl = Object.assign({}, origDecl);
+            return parser.digest(context, decl)
                 .then(() => {
-                    assert.ok(errorFound, 'should have rejected with error');
-                });
-        };
-
-        it('should reject if sources is not an array',
-            () => assertLoadSchemaError({}, 'loadSchemas argument must be an Array'));
-
-        it('should reject if source is not an object, URL, or filename',
-            () => assertLoadSchemaError([null], 'loadSchemas argument must be schema, URL, or filename'));
-
-        it('should reject if schema source is missing an $id property', () => {
-            nock('https://localhost:8100')
-                .get('/schema.json')
-                .reply(200, {});
-            const schemas = ['https://localhost:8100/schema.json'];
-            const expectedErrorMsg = 'loading schema https://localhost:8100/schema.json failed,'
-                + ' error: AS3 schema must contain an $id property';
-            return assertLoadSchemaError(schemas, expectedErrorMsg)
-                .then(() => {
-                    assert.strictEqual(logErrorSpy.args[0][0].message, expectedErrorMsg);
+                    assert.notDeepEqual(decl, origDecl);
+                    assert.strictEqual(decl.id, origDecl.id);
+                    // test one of the known defaults
+                    assert.strictEqual(decl.testTenant.app.enable, true);
                 });
         });
 
-        it('should reject if ajv cannot compile schema', () => {
-            Ajv.prototype.compile.restore();
-            sinon.stub(Ajv.prototype, 'compile').throws(new Error('test compile error'));
-            const schemas = [{ $id: 'foo' }];
-            const expectedErrorMsg = 'compiling schema foo failed, error: test compile error';
-            return assertLoadSchemaError(schemas, expectedErrorMsg)
+        it('should still validate when on BIG-IQ', () => assertInvalid(
+            {
+                id: 'id',
+                tenant: { class: 'Tenant' }
+            },
+            'should have required property \'class\'',
+            getBigIqParser()
+        ));
+
+        it('should still handle secrets when on BIG-IQ', () => {
+            const parser = getBigIqParser();
+            const origDecl = {
+                id: 'testBIGIQ-encrypt',
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                target: { address: '192.0.2.1' },
+                testTenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        template: 'generic',
+                        webcert1: {
+                            class: 'Certificate',
+                            certificate: '-----BEGIN CERTIFICATE-----theCert-----END CERTIFICATE-----',
+                            privateKey: '-----BEGIN RSA PRIVATE KEY-----theKey-----END RSA PRIVATE KEY-----', // gitleaks:allow
+                            passphrase: {
+                                ciphertext: 'mumblemumble',
+                                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0'
+                            }
+                        }
+                    }
+                }
+            };
+            const decl = Object.assign({}, origDecl);
+            return parser.digest(context, decl)
                 .then(() => {
-                    assert.strictEqual(logErrorSpy.args[0][0].message, expectedErrorMsg);
+                    const matchedSecret = secretTagSpy.args
+                        .find((call) => call[2].data && call[2].data.ciphertext === 'mumblemumble');
+                    assert.notStrictEqual(typeof matchedSecret, undefined);
                 });
         });
 
-        it('should load default schema if sources is undefined',
-            () => assertLoadSchema(undefined, [as3AdcSchema.$id, as3AppSchema.$id]));
-
-        it('should load default schema if sources is empty array',
-            () => assertLoadSchema([], [as3AdcSchema.$id, as3AppSchema.$id]));
-
-        it('should load multiple schemas', () => {
-            nock('https://localhost:8100')
-                .get('/schema.json')
-                .reply(200, { $id: 'hello_world' });
-            const schemas = [
-                { $id: 'foo' },
-                { $id: 'bar' },
-                'https://localhost:8100/schema.json'
-            ];
-            return assertLoadSchema(schemas, ['foo', 'bar', 'hello_world']);
+        it('should NOT expand declaration when on BIG-IQ', () => {
+            const parser = getBigIqParser();
+            const origDecl = {
+                id: 'testBIGIQ-expand',
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                target: { address: '192.0.2.1' },
+                testTenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        template: 'http',
+                        serviceMain: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.100']
+                        }
+                    }
+                }
+            };
+            const decl = Object.assign({}, origDecl);
+            return parser.digest(context, decl)
+                .then(() => {
+                    assert.deepStrictEqual(decl, origDecl);
+                });
         });
     });
 });

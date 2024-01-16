@@ -17,122 +17,23 @@
 'use strict';
 
 const AJV = require('ajv');
-const f = require('fs');
-const promiseUtil = require('@f5devcentral/atg-shared-utilities').promiseUtils;
 const log = require('./log');
-const parserFormats = require('./adcParserFormats');
-const parserKeywords = require('./adcParserKeywords');
 const myValidator = require('./validator');
 const util = require('./util/util');
 const PostProcessor = require('./postProcessor');
 const PostValidator = require('./postValidator');
 const certUtil = require('./util/certUtil');
 const declarationUtil = require('./util/declarationUtil');
-const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
+const SCHEMA_ID = require('./constants').SCHEMA_ID;
 
 class As3Parser {
-    constructor(deviceType, schemaPaths) {
-        this.deviceType = deviceType;
-        this.defaultSchemaSources = schemaPaths
-            || [
-                'file:///var/config/rest/iapps/f5-appsvcs/schema/latest/adc-schema.json',
-                'file:///var/config/rest/iapps/f5-appsvcs/schema/latest/app-schema.json'
-            ];
-        this.schemas = [];
+    constructor(schemaValidator) {
+        this.schemaValidator = schemaValidator;
         this.nodelist = [];
         this.virtualAddressList = [];
         this.accessProfileList = [];
-        this.validators = {};
         this.options = {};
         this.postProcess = [];
-    }
-
-    /**
-     * return a promise to compile schemas for use by
-     * digest().  If supplied, argument 'sources' contains an
-     * AS3 schema (as an object) or else a filename or URL
-     * (file:/http(s):) from which to load an AS3 schema,
-     * if undefined or empty array we load the default AS3 schema
-     *
-     * @public
-     * @param {object[]|string[]} [sources] - if not empty overrides default schema(s)
-     * @returns {Promise} - resolves to array of schema "$id" values
-     */
-    loadSchemas(sources) {
-        const schemas = [];
-        // first get an AJV instance with our custom keywords, etc.
-        const ajv = prepareParserAjv.call(this);
-
-        const R_OK = (typeof f.R_OK === 'undefined') ? f.constants.R_OK : f.R_OK;
-
-        if (!sources || (Array.isArray(sources) && sources.length === 0)) {
-            sources = this.defaultSchemaSources;
-        } else if (!Array.isArray(sources)) {
-            return Promise.reject(new Error('loadSchemas argument must be an Array'));
-        }
-
-        const promiseFuncs = sources.map((source) => () => {
-            let promise;
-            let currentSchema;
-            // did caller supply actual schema or a URL to schema?
-            if ((typeof source === 'object') && (source !== null)
-                && Object.prototype.hasOwnProperty.call(source, '$id')) {
-                // caller provided a schema
-                schemas.push(source);
-                currentSchema = source.$id;
-                if (currentSchema === 'urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a') {
-                    currentSchema = 'adc';
-                } else if (currentSchema === 'urn:uuid:f23d7326-d355-4168-8772-c1ca4978acea') {
-                    currentSchema = 'app';
-                }
-                promise = Promise.resolve(source);
-            } else if ((typeof source === 'string')
-                    && (source.match(/^(https?|file):/)
-                        || (f.accessSync(source, R_OK) === undefined))) {
-                // must fetch schema from URL
-                const loadOpts = {
-                    why: 'for schema',
-                    timeout: this.targetTimeout
-                };
-                currentSchema = source.split('/').pop().split('.')[0].split('-')[0];
-
-                promise = util.loadJSON(source, loadOpts)
-                    .then((s) => {
-                        if (!Object.prototype.hasOwnProperty.call(s, '$id')) {
-                            throw new Error('AS3 schema must contain an $id property');
-                        }
-                        schemas.push(s);
-                        return s;
-                    })
-                    .catch((e) => {
-                        e.message = `loading schema ${source} failed, error: ${e.message}`;
-                        log.error(e);
-                        throw e;
-                    });
-            } else {
-                return Promise.reject(new Error('loadSchemas argument must be schema, URL, or filename'));
-            }
-
-            return promise.then((schema) => {
-                // compile schema to AJV validation function
-                try {
-                    this.validators[currentSchema] = ajv.compile(schema);
-                } catch (e) {
-                    e.message = `compiling schema ${schema.$id} failed, error: ${e.message}`;
-                    log.error(e);
-                    this.validators = {};
-                    throw e;
-                }
-
-                return schema.$id;
-            });
-        });
-
-        return promiseUtil.series(promiseFuncs)
-            .then((results) => {
-                this.schemas = schemas;
-                return results;
-            });
     }
 
     /**
@@ -163,7 +64,7 @@ class As3Parser {
     /**
      * given a declaration, return a promise to digest
      * it according to the current schema (chosen with
-     * loadSchema()).  Has the HUGE SIDE-EFFECT of
+     * schemaValidator).  Has the HUGE SIDE-EFFECT of
      * modifying declaration!
      *
      * An adcParser needs to know how to contact the
@@ -193,12 +94,7 @@ class As3Parser {
             isPerApp: false
         };
         this.options = Object.assign(this.options, defaultOpts, options);
-        this.fetches = [];
 
-        if (Object.keys(this.validators).length === 0) {
-            // someone didn't call loadSchema() or didn't notice it failed
-            return Promise.reject(new Error('loadSchema() required before digest()'));
-        }
         if ((typeof declaration !== 'object') || (declaration === null)) {
             return Promise.reject(new Error('digest() requires declaration'));
         }
@@ -235,62 +131,25 @@ class As3Parser {
 // the /T/A in which it was found except when it
 // points into /T/Shared or /Common/Shared.
 
-/**
- * return a handle to an instance of ajv to
- * which our custom formats and keywords have
- * been added.
- *
- * We utilize the excellent 'ajv' tool from
- *
- *      http://epoberezkin.github.io/ajv/
- *
- * to validate AS3 declarations against our AS3
- * JSON Schema and to drive a bunch of features
- * controlled by custom schema keywords
- *
- * @private
- * @returns {object}
-*/
-
-function prepareParserAjv() {
-    const ajvOptions = {
-        allErrors: false,
-        verbose: true,
-        useDefaults: this.deviceType !== DEVICE_TYPES.BIG_IQ,
-        jsonPointers: true,
-        async: true
-    };
-
-    const ajv = new AJV(ajvOptions);
-
-    // Add AS3 custom string formats
-    parserFormats.forEach((format) => ajv.addFormat(format.name, format.check));
-
-    parserKeywords.keywords.forEach((keyword) => ajv.addKeyword(keyword.name,
-        keyword.definition(this)));
-
-    return ajv;
-}
-
 function validate(declaration) {
     const parserTime = new Date();
-    const validator = this.options.isPerApp ? 'app' : 'adc';
+    const validator = this.options.isPerApp ? SCHEMA_ID.APP : SCHEMA_ID.ADC;
 
     let id = declaration.id;
-    if (validator === 'app') {
+    if (validator === SCHEMA_ID.APP) {
         // Use the transformed declaration id for consistency
         id = this.context.request.body.id;
     }
 
     // what is the ID of this declaration?
-    if (validator === 'adc' && (!Object.prototype.hasOwnProperty.call(declaration, 'id')
+    if (validator === SCHEMA_ID.ADC && (!Object.prototype.hasOwnProperty.call(declaration, 'id')
         || (!id.match(/^[^\x00-\x20\x22'<>\x5c^`|\x7f]{0,255}$/)))) {
         // Per-app declarations do not currently support id
         const error = new Error('declaration lacks valid \'id\' property');
         error.status = 422;
         return Promise.reject(error);
     }
-    if (validator === 'adc' && (Object.prototype.hasOwnProperty.call(declaration, 'label')
+    if (validator === SCHEMA_ID.ADC && (Object.prototype.hasOwnProperty.call(declaration, 'label')
         && (declaration.label.match(/^[^\x00-\x1f\x22#&*<>?\x5b-\x5d`\x7f]{1,48}$/)))) {
         // Per-app declarations do not currently support label
         id = `id ${id}|${declaration.label.replace(/'/g, '.')}`;
@@ -299,16 +158,13 @@ function validate(declaration) {
     }
     log.debug(`validating declaration having ${id}`);
 
-    if (Object.keys(this.validators).length === 0) {
-        return Promise.reject(new Error('validation requires loaded schema'));
-    }
-
     return Promise.resolve()
-        .then(() => this.validators[validator](declaration))
-        .then((valid) => {
-            if (!valid) throw new AJV.ValidationError(this.validators[validator].errors);
+        .then(() => {
+            const results = this.schemaValidator.validate(validator, declaration);
+            if (!results.valid) throw new AJV.ValidationError(results.errors);
             const certErrors = certUtil.validateCertificates(declaration, []);
             if (!util.isEmptyOrUndefined(certErrors)) throw new AJV.ValidationError(certErrors);
+            this.postProcess = results.postProcess;
         })
         .then(() => this.validatePathLength(declaration))
         .then(() => {

@@ -50,7 +50,7 @@ const keywords = [
                     parentDataProperty = args[5];
                 }
 
-                that.postProcess.push({
+                that._postProcess.push({
                     instancePath,
                     parentDataProperty,
                     tag: schema.tag,

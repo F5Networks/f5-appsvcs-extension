@@ -1152,7 +1152,8 @@ class Util {
      * @returns {string}
      */
     static formatAjvErr(err) {
-        let msg = typeof err.dataPath === 'undefined' ? 'unknown data path: ' : `${err.dataPath}: `;
+        const dataPath = err.dataPath === '' ? '/' : err.dataPath; // empty dataPath refers to root of declaration
+        let msg = typeof dataPath === 'undefined' ? 'unknown data path: ' : `${dataPath}: `;
         let tmp;
 
         switch (err.keyword || 'unk') {

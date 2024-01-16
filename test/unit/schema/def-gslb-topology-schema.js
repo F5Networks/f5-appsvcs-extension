@@ -36,7 +36,7 @@ formats.forEach((customFormat) => {
 });
 
 const parserScope = {
-    postProcess: []
+    _postProcess: []
 };
 keywords.keywords.forEach((keyword) => ajv.addKeyword(keyword.name, keyword.definition(parserScope)));
 

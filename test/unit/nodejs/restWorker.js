@@ -28,6 +28,7 @@ const log = require('../../../src/lib/log');
 const HostContext = require('../../../src/lib/context/hostContext');
 const RequestContext = require('../../../src/lib/context/requestContext');
 const SettingsHandler = require('../../../src/lib/settingsHandler');
+const SchemaValidator = require('../../../src/lib/schemaValidator');
 const restUtil = require('../../../src/lib/util/restUtil');
 const config = require('../../../src/lib/config');
 const util = require('../../../src/lib/util/util');
@@ -37,6 +38,13 @@ const STATUS_CODES = require('../../../src/lib/constants').STATUS_CODES;
 describe('restWorker', () => {
     let restWorker = null;
     let spyMakeRestjavadUri;
+
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../../src/schema/latest/as3-request-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(constants.DEVICE_TYPES.BIG_IP, schemaConfigs);
+
+    before(() => schemaValidator.init());
 
     afterEach(() => {
         sinon.restore();
@@ -53,8 +61,6 @@ describe('restWorker', () => {
         restWorker.dependencies = [];
 
         spyMakeRestjavadUri = sinon.spy(restWorker.restHelper, 'makeRestjavadUri');
-        sinon.stub(constants, 'reqSchemaFile')
-            .value(`${__dirname}/../../../src/schema/latest/as3-request-schema.json`);
         sinon.stub(log, 'error').callsFake((msg) => ({ message: msg }));
 
         sinon.stub(config, 'getAllSettings').resolves({});
@@ -118,7 +124,8 @@ describe('restWorker', () => {
             sinon.stub(HostContext.prototype, 'get').resolves(
                 {
                     asyncHandler,
-                    as3VersionInfo: {}
+                    as3VersionInfo: {},
+                    schemaValidator
                 }
             );
             let dataGroupExists = false;
@@ -131,7 +138,8 @@ describe('restWorker', () => {
                     restWorker.hostContext,
                     {
                         asyncHandler,
-                        as3VersionInfo: {}
+                        as3VersionInfo: {},
+                        schemaValidator
                     }
                 );
                 assert.strictEqual(restWorker.asyncHandler, asyncHandler);
@@ -303,7 +311,8 @@ describe('restWorker', () => {
                 restOp.setPathName('/shared/appsvcs/declare');
                 restWorker.hostContext = {
                     deviceType: constants.DEVICE_TYPES.CONTAINER,
-                    as3VersionInfo: {}
+                    as3VersionInfo: {},
+                    schemaValidator
                 };
 
                 assert.doesNotThrow(() => restWorker.onGet(restOp));
@@ -326,7 +335,8 @@ describe('restWorker', () => {
                 restOp.setPathName('/shared/appsvcs/settings');
                 restWorker.hostContext = {
                     deviceType: constants.DEVICE_TYPES.BIG_IP,
-                    as3VersionInfo: {}
+                    as3VersionInfo: {},
+                    schemaValidator
                 };
                 restWorker.asyncHandler = { cleanRecords: () => { } };
 
@@ -337,7 +347,10 @@ describe('restWorker', () => {
                 const restOp = createRestOpMock(200, done, 'here is the body');
                 restOp.method = 'Get';
                 restOp.setPathName('/shared/appsvcs/info');
-                restWorker.hostContext = { as3VersionInfo: 'here is the body' };
+                restWorker.hostContext = {
+                    as3VersionInfo: 'here is the body',
+                    schemaValidator
+                };
                 restWorker.asyncHandler = {
                     cleanRecords: (context) => {
                         assert.strictEqual(context.request.method, 'Get');
@@ -442,7 +455,8 @@ describe('restWorker', () => {
                 restOp.setPathName('/shared/appsvcs/declare/tenant1/applications');
                 restWorker.hostContext = {
                     deviceType: constants.DEVICE_TYPES.BIG_IP,
-                    as3VersionInfo: {}
+                    as3VersionInfo: {},
+                    schemaValidator
                 };
                 restWorker.asyncHandler = { cleanRecords: () => { } };
 
@@ -486,7 +500,8 @@ describe('restWorker', () => {
                 restOp.setPathName('/shared/appsvcs/declare/tenant1/applications/app1');
                 restWorker.hostContext = {
                     deviceType: constants.DEVICE_TYPES.BIG_IP,
-                    as3VersionInfo: {}
+                    as3VersionInfo: {},
+                    schemaValidator
                 };
                 restWorker.asyncHandler = { cleanRecords: () => { } };
 
@@ -502,7 +517,8 @@ describe('restWorker', () => {
             restOp.setPathName('/shared/appsvcs/declare');
             restWorker.hostContext = {
                 deviceType: constants.DEVICE_TYPES.BIG_IQ,
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onDelete(restOp));
@@ -513,7 +529,8 @@ describe('restWorker', () => {
             restOp.method = 'Delete';
             restWorker.hostContext = {
                 deviceType: constants.DEVICE_TYPES.CONTAINER,
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onDelete(restOp));
@@ -527,7 +544,8 @@ describe('restWorker', () => {
             restOp.body = 'test bad JSON';
 
             restWorker.hostContext = {
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onPost(restOp));
@@ -538,7 +556,8 @@ describe('restWorker', () => {
             restOp.method = 'Post';
 
             restWorker.hostContext = {
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onPost(restOp));
@@ -562,7 +581,8 @@ describe('restWorker', () => {
             restOp.setPathName('/shared/appsvcs/settings');
             restWorker.hostContext = {
                 deviceType: constants.DEVICE_TYPES.BIG_IP,
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
             restWorker.asyncHandler = { cleanRecords: () => {} };
 
@@ -590,7 +610,8 @@ describe('restWorker', () => {
             restOp.method = 'Patch';
             restWorker.hostContext = {
                 deviceType: constants.DEVICE_TYPES.CONTAINER,
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
         });
@@ -601,7 +622,8 @@ describe('restWorker', () => {
             restOp.body = 'test bad JSON';
 
             restWorker.hostContext = {
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
@@ -612,7 +634,8 @@ describe('restWorker', () => {
             restOp.method = 'Patch';
 
             restWorker.hostContext = {
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
 
             assert.doesNotThrow(() => restWorker.onPatch(restOp));
@@ -634,7 +657,8 @@ describe('restWorker', () => {
             restOp.uri.href = '/shared/appsvcs/settings';
             restWorker.hostContext = {
                 deviceType: constants.DEVICE_TYPES.BIG_IP,
-                as3VersionInfo: {}
+                as3VersionInfo: {},
+                schemaValidator
             };
             restWorker.asyncHandler = { cleanRecords: () => {} };
 

@@ -23,6 +23,7 @@ const assert = require('assert');
 const StorageMemory = require('@f5devcentral/atg-storage').StorageMemory;
 const Config = require('../../src/lib/config');
 const Context = require('../../src/lib/context/context');
+const SchemaValidator = require('../../src/lib/schemaValidator');
 const As3Parser = require('../../src/lib/adcParser');
 const Tag = require('../../src/lib/tag');
 const util = require('../../src/lib/util/util');
@@ -39,9 +40,11 @@ const ignoreList = [
 
 describe('Examples', function () {
     this.timeout(5000);
-    const schemaPath = `${__dirname}/../../src/schema/latest/adc-schema.json`;
-    const as3Parser = new As3Parser(DEVICE_TYPES.BIG_IP, schemaPath);
-    const as3AdcSchema = JSON.parse(fs.readFileSync(schemaPath));
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../src/schema/latest/adc-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(DEVICE_TYPES.BIG_IP, schemaConfigs);
+    const as3Parser = new As3Parser(schemaValidator);
 
     const targetContext = {
         deviceType: DEVICE_TYPES.BIG_IP
@@ -49,10 +52,9 @@ describe('Examples', function () {
     const context = Context.build(null, null, targetContext);
     context.host.parser = as3Parser;
 
-    before(() => as3Parser.loadSchemas([as3AdcSchema])
-        .then(() => {
-            Config.injectSettings(new StorageMemory());
-        }));
+    before(() => Promise.resolve()
+        .then(() => schemaValidator.init())
+        .then(() => Config.injectSettings(new StorageMemory())));
 
     beforeEach(() => {
         sinon.stub(util, 'getNodelist').resolves([]);

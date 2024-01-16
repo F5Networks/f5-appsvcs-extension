@@ -23,6 +23,7 @@ const constants = require('../../../../src/lib/constants');
 const RestOperationMock = require('../../RestOperationMock');
 const HostContext = require('../../../../src/lib/context/hostContext');
 const RequestContext = require('../../../../src/lib/context/requestContext');
+const SchemaValidator = require('../../../../src/lib/schemaValidator');
 const util = require('../../../../src/lib/util/util');
 const tmshUtil = require('../../../../src/lib/util/tmshUtil');
 const config = require('../../../../src/lib/config');
@@ -30,11 +31,16 @@ const config = require('../../../../src/lib/config');
 const assert = chai.assert;
 
 describe('RequestContext', () => {
-    // Pull the premock value
-    const origSchemaFile = constants.reqSchemaFile;
+    let validDecl;
+    let expectedValidDecl;
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../../../src/schema/latest/as3-request-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(constants.DEVICE_TYPES.BIG_IP, schemaConfigs);
+
+    before(() => schemaValidator.init());
+
     beforeEach(() => {
-        // set the mock value
-        constants.reqSchemaFile = `${__dirname}/../../../../src/schema/latest/as3-request-schema.json`;
         sinon.stub(util, 'getMgmtPort').resolves(443);
         sinon.stub(util, 'getDeviceInfo').resolves({});
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
@@ -42,13 +48,8 @@ describe('RequestContext', () => {
     });
 
     afterEach(() => {
-        // restore the original
-        constants.reqSchemaFile = origSchemaFile;
         sinon.restore();
     });
-
-    let validDecl;
-    let expectedValidDecl;
 
     describe('/declare', () => {
         beforeEach(() => {
@@ -82,6 +83,7 @@ describe('RequestContext', () => {
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
                 hostContext.as3VersionInfo = {};
+                hostContext.schemaValidator = schemaValidator;
             });
 
             it('should build the correct GET context', () => {
@@ -483,6 +485,7 @@ describe('RequestContext', () => {
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
                 hostContext.as3VersionInfo = {};
+                hostContext.schemaValidator = schemaValidator;
             });
 
             it('should invalidate per-app declaration POST to /declare', () => {
@@ -514,7 +517,7 @@ describe('RequestContext', () => {
                         assert.strictEqual(ctxt.isPerApp, false);
                         assert.strictEqual(ctxt.method, 'Post');
                         assert.strictEqual(ctxt.error,
-                            'Invalid request value \'[object Object]\' (path: /declaration) : should have required property \'class\' {"missingProperty":"class"}');
+                            'Invalid request: /declaration: should have required property \'class\'');
                         assert.strictEqual(ctxt.pathName, 'declare');
                         assert.strictEqual(ctxt.subPath, undefined);
                         assert.deepStrictEqual(ctxt.queryParams, []);
@@ -552,6 +555,7 @@ describe('RequestContext', () => {
 
             hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
             hostContext.as3VersionInfo = {};
+            hostContext.schemaValidator = schemaValidator;
 
             validDecl = {
                 controls: {
