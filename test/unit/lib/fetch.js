@@ -4297,6 +4297,81 @@ describe('fetch', () => {
             );
         });
 
+        it('should remove member only once pre-trans if only member adminState is updated', () => {
+            const desiredConfig = {
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                session: 'user-disabled',
+                                state: 'user-down',
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/Tenant/Application/myPool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Tenant/my.example.com:80': {
+                                session: 'user-enabled',
+                                state: 'user-up',
+                                metadata: {}
+                            }
+                        },
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Application/myPool',
+                        'properties',
+                        'members',
+                        '/Tenant/my.example.com:80',
+                        'state'
+                    ],
+                    lhs: 'user-up',
+                    rhs: 'user-down',
+                    tags: ['tmsh'],
+                    command: 'ltm pool',
+                    lhsCommand: 'ltm pool',
+                    rhsCommand: 'ltm pool'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/Tenant/Application/myPool',
+                        'properties',
+                        'members',
+                        '/Tenant/my.example.com:80',
+                        'session'
+                    ],
+                    lhs: 'user-enabled',
+                    rhs: 'user-disabled',
+                    tags: ['tmsh'],
+                    command: 'ltm pool',
+                    lhsCommand: 'ltm pool',
+                    rhsCommand: 'ltm pool'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            assert.strictEqual(
+                result.script,
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}\ntmsh::begin_transaction\ntmsh::delete ltm pool /Tenant/Application/myPool\ntmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ session user-disabled state user-down metadata none \\} \\} metadata none\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Tenant/Application/myPool members add \\{ /Tenant/my.example.com:80 \\{ session user-enabled state user-up metadata none \\} \\}\n}}\n}'
+            );
+        });
+
         describe('security firewall', () => {
             it('should properly setup preTrans, trans, and rollback during a delete', () => {
                 const desiredConfig = {};

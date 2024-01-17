@@ -2547,6 +2547,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         const commands = diffUpdates.commands.split('\n');
                         commands.forEach((command) => {
                             if (command.startsWith('tmsh::modify')) {
+                                if (preTrans.indexOf(command) > -1) return;
                                 arrayUtil.insertBeforeOrAtBeginning(
                                     preTrans,
                                     'delete ltm node',
@@ -2554,6 +2555,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                                     'inc'
                                 );
                             } else {
+                                if (trans.indexOf(command) > -1) return;
                                 trans.push(command);
                             }
                         });

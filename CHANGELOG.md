@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- EC-425: Updaging only a Pool_Member adminState, creates two consecutive deletes before the tmsh transaction.
 
 ### Changed
 
