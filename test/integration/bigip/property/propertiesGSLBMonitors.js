@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ const {
     assertClass,
     assertModuleProvisioned,
     getItemName,
+    getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
+const util = require('../../../../src/lib/util/util');
 const constants = require('../../../../src/lib/constants');
 const oauth = require('../../../common/oauth');
 const { validateEnvVars } = require('../../../common/checkEnv');
@@ -100,6 +102,16 @@ describe('GSLB Monitors', function () {
                 expectedValue: ['HTTP/1.', 'HTTP', 'HTTP/1.']
             }
         ];
+
+        if (!util.versionLessThan(getBigIpVersion(), '15.1')) {
+            const receiveStatusCodes = {
+                name: 'receiveStatusCodes',
+                inputValue: [undefined, [200, 302], undefined],
+                expectedValue: [undefined, '200 302', undefined]
+            };
+            properties.push(receiveStatusCodes);
+        }
+
         return assertGSLBMonitorClass(properties);
     });
 
@@ -139,6 +151,26 @@ describe('GSLB Monitors', function () {
                 }
             }
         ];
+
+        if (!util.versionLessThan(getBigIpVersion(), '15.1')) {
+            const receiveStatusCodes = {
+                name: 'receiveStatusCodes',
+                inputValue: [undefined, [200], undefined],
+                expectedValue: [undefined, '200', undefined]
+            };
+            properties.push(receiveStatusCodes);
+        }
+
+        if (!util.versionLessThan(getBigIpVersion(), '16.1')) {
+            const sniServerName = {
+                name: 'sniServerName',
+                inputValue: [undefined, 'test.example.com', undefined],
+                expectedValue: [undefined, 'test.example.com', undefined],
+                extractFunction: (o) => o.sniServerName
+            };
+            properties.push(sniServerName);
+        }
+
         return assertGSLBMonitorClass(properties);
     });
 

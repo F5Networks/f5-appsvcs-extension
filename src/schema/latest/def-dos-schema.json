@@ -4,11 +4,6 @@
             "title": "DOS_Profile",
             "description": "Configures a Denial of Service (DOS) profile",
             "type": "object",
-            "f5PostProcess": {
-                "tag": "modules",
-                "data": ["afm", "asm"]
-            },
-
             "properties": {
                 "class": {
                     "title": "Class",
@@ -103,10 +98,23 @@
                 }
             },
             "additionalProperties": false,
-            "f5aliases": {
-                "allowlist": "whitelist",
-                "applicationAllowlist": "applicationWhitelist"
-            }
+            "allOf": [
+                {
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm", "asm"]
+                    }
+                },
+                {
+                    "f5PostProcess": {
+                        "tag": "aliases",
+                        "data": {
+                            "allowlist": "whitelist",
+                            "applicationAllowlist": "applicationWhitelist"
+                        }
+                    }
+                }
+            ]
         },
 
         "DOS_Auto_Denylist_Settings": {
@@ -303,8 +311,11 @@
                     "items": { "type": "string" }
                 }
             },
-            "f5aliases": {
-                "urlAllowlist": "urlWhitelist"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "urlAllowlist": "urlWhitelist"
+                }
             },
 
             "dependencies": {
@@ -1071,9 +1082,12 @@
                 }
             },
             "additionalProperties": false,
-            "f5aliases": {
-                "allowlistedGeolocations": "whitelistedGeolocations",
-                "denylistedGeolocations": "blacklistedGeolocations"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "allowlistedGeolocations": "whitelistedGeolocations",
+                    "denylistedGeolocations": "blacklistedGeolocations"
+                }
             }
         },
 
@@ -1261,8 +1275,11 @@
                 }
             },
             "additionalProperties": false,
-            "f5aliases": {
-                "autoDenylistSettings": "autoBlacklistSettings"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "autoDenylistSettings": "autoBlacklistSettings"
+                }
             }
         },
 
@@ -1387,8 +1404,11 @@
             },
             "additionalProperties": false,
             "required": ["type"],
-            "f5aliases": {
-                "autoDenylistSettings": "autoBlacklistSettings"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "autoDenylistSettings": "autoBlacklistSettings"
+                }
             }
         },
 
@@ -1511,8 +1531,11 @@
             },
             "additionalProperties": false,
             "required": ["type"],
-            "f5aliases": {
-                "autoDenylistSettings": "autoBlacklistSettings"
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "autoDenylistSettings": "autoBlacklistSettings"
+                }
             }
         }
     }

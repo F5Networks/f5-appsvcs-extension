@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,11 @@ describe('SNAT_Translation', function () {
                 inputValue: [undefined, 'disable', undefined],
                 expectedValue: [true, false, true],
                 extractFunction: (o) => o.enabled === true
+            },
+            {
+                name: 'arpEnabled',
+                inputValue: [undefined, false, undefined],
+                expectedValue: ['enabled', 'disabled', 'enabled']
             },
             {
                 name: 'ipIdleTimeout',

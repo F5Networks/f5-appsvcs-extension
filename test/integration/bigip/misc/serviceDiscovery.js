@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ function getTask(taskId) {
         path: `/mgmt/shared/service-discovery/task/${taskId || ''}`,
         retryCount: 20,
         retryInterval: 5000,
-        retryIf: (error, response) => response.body.items
+        retryIf: (error, response) => response.body && response.body.items
             && response.body.items.some((item) => item.lastDiscoveryResult.status !== 'Success')
     };
     return requestUtil.get(reqOpts)

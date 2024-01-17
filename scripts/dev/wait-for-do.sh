@@ -98,6 +98,32 @@ wait_for_do() {
     set -e
 }
 
+
+wait_for_curl_response_with_retries() {
+    url="https://$TARGET/mgmt/tm/util/bash"
+    MAX_TRIES=300
+    interval=10
+    counter=1
+    data="{\"command\":\"run\", \"utilCmdArgs\":\"-c 'cat /var/prompt/ps1'\"}"
+    content="Content-type: application/json"
+
+    sleep $interval
+    until [[ $counter -gt MAX_TRIES ]]; do
+        response=$(curl $CURL_FLAGS -X POST -H "$content" -d "$data" "$url" | jq -r .commandResult)
+
+        if [[ "$response" == "Active" ]]; then
+            echo -e "Prompt state: $response on $TARGET"
+            exit 0  # Success
+        fi
+
+        retries=$((retries + 1))
+        sleep $interval
+    done
+
+    echo -e "${RED}Maximum number of retries ($MAX_TRIES) reached. Instance $TARGET is in $response state.${NC}"
+    exit 1  # Maximum retries reached
+}
+
 echo "Waiting for REST framework to be available on $TARGET"
 check_echo_js_endpoint
 
@@ -113,3 +139,6 @@ fi
 echo "Waiting for DO to complete on $TARGET"
 wait_for_do
 echo "DO is done on $TARGET"
+
+echo "Waiting for $TARGET to reach an active state"
+wait_for_curl_response_with_retries

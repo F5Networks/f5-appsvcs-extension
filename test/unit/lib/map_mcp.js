@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1908,6 +1908,7 @@ describe('map_mcp', () => {
                 obj.renegotiateMaxRecordDelay = 'indefinite';
                 obj.renegotiatePeriod = 'indefinite';
                 obj.renegotiateSize = 'indefinite';
+                obj.handshakeTimeout = 'indefinite';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -1925,6 +1926,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled-with-anti-replay',
                                 description: 'none',
+                                'handshake-timeout': 4294967295,
                                 options: {},
                                 'renegotiate-max-record-delay': 4294967295,
                                 'renegotiate-period': 4294967295,
@@ -1937,13 +1939,14 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values that are not indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values that are not indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.allowDynamicRecordSizing = 'enabled';
                 obj.data_0rtt = 'enabled-with-anti-replay';
                 obj.renegotiateMaxRecordDelay = '100';
                 obj.renegotiatePeriod = '100';
                 obj.renegotiateSize = '100';
+                obj.handshakeTimeout = '100';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -1961,6 +1964,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled-with-anti-replay',
                                 description: 'none',
+                                'handshake-timeout': 100,
                                 options: {},
                                 'renegotiate-max-record-delay': 100,
                                 'renegotiate-period': 100,
@@ -2031,11 +2035,12 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values of indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values of indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.data_0rtt = 'enabled';
                 obj.renegotiatePeriod = 'indefinite';
                 obj.renegotiateSize = 'indefinite';
+                obj.handshakeTimeout = 'indefinite';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -2053,6 +2058,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled',
                                 description: 'none',
+                                'handshake-timeout': 4294967295,
                                 key: 'none',
                                 options: {},
                                 'renegotiate-period': 4294967295,
@@ -2065,11 +2071,12 @@ describe('map_mcp', () => {
                 );
             });
 
-            it('should handle renegotiate values that are not indefinite', () => {
+            it('should handle renegotiate and handshakeTimeout values that are not indefinite', () => {
                 defaultContext.target.tmosVersion = '15.1';
                 obj.data_0rtt = 'enabled';
                 obj.renegotiatePeriod = '100';
                 obj.renegotiateSize = '100';
+                obj.handshakeTimeout = '100';
                 const results = translate[obj.kind](defaultContext, obj);
 
                 assert.deepStrictEqual(
@@ -2087,6 +2094,7 @@ describe('map_mcp', () => {
                                 'crl-file': 'none',
                                 'data-0rtt': 'enabled',
                                 description: 'none',
+                                'handshake-timeout': 100,
                                 key: 'none',
                                 options: {},
                                 'renegotiate-period': 100,
@@ -2907,6 +2915,105 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:gtm:pool:naptr:naptrstate', () => {
+            it('should return GSLB_Pool NAPTR with members', () => {
+                const obj = {
+                    kind: 'tm:gtm:pool:naptr:naptrstate',
+                    name: 'naptrPool',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/naptrPool',
+                    generation: 3461,
+                    selfLink: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool?ver=16.1.2',
+                    alternateMode: 'static-persistence',
+                    description: 'testDescription',
+                    dynamicRatio: 'disabled',
+                    enabled: true,
+                    fallbackMode: 'return-to-dns',
+                    loadBalancingMode: 'round-robin',
+                    manualResume: 'disabled',
+                    maxAnswersReturned: 1,
+                    minMembersUpMode: 'off',
+                    minMembersUpValue: 0,
+                    qosHitRatio: 5,
+                    qosHops: 0,
+                    qosKilobytesSecond: 3,
+                    qosLcs: 30,
+                    qosPacketRate: 1,
+                    qosRtt: 50,
+                    qosTopology: 0,
+                    qosVsCapacity: 0,
+                    qosVsScore: 0,
+                    ttl: 30,
+                    verifyMemberAvailability: 'enabled',
+                    membersReference: {
+                        link: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool/members?ver=16.1.2',
+                        isSubcollection: true
+                    }
+                };
+
+                const referenceConfig = [
+                    {
+                        kind: 'tm:gtm:pool:naptr:members:membersstate',
+                        name: 'example.edu',
+                        fullPath: 'example.edu',
+                        generation: 3461,
+                        selfLink: 'https://localhost/mgmt/tm/gtm/pool/naptr/~Tenant~Application~naptrPool/members/example.edu?ver=16.1.2',
+                        description: 'memberDescription',
+                        enabled: true,
+                        flags: 'a',
+                        memberOrder: 0,
+                        order: 10,
+                        preference: 10,
+                        ratio: 1,
+                        service: 'sip+d2u'
+                    }
+                ];
+
+                const results = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(results,
+                    [
+                        {
+                            path: '/Tenant/Application/naptrPool',
+                            command: 'gtm pool naptr',
+                            properties: {
+                                description: '"testDescription"',
+                                'dynamic-ratio': 'disabled',
+                                enabled: true,
+                                'load-balancing-mode': 'round-robin',
+                                'alternate-mode': 'static-persistence',
+                                'fallback-mode': 'return-to-dns',
+                                'manual-resume': 'disabled',
+                                ttl: 30,
+                                'verify-member-availability': 'enabled',
+                                'max-answers-returned': 1,
+                                members: {
+                                    '/Common/example.edu': {
+                                        description: '"memberDescription"',
+                                        enabled: true,
+                                        flags: 'a',
+                                        'member-order': 0,
+                                        preference: 10,
+                                        ratio: 1,
+                                        service: 'sip+d2u'
+                                    }
+                                },
+                                'qos-hit-ratio': 5,
+                                'qos-hops': 0,
+                                'qos-kilobytes-second': 3,
+                                'qos-lcs': 30,
+                                'qos-packet-rate': 1,
+                                'qos-rtt': 50,
+                                'qos-topology': 0,
+                                'qos-vs-capacity': 0,
+                                'qos-vs-score': 0
+                            },
+                            ignore: []
+                        }
+                    ]);
+            });
+        });
+
         describe('tm:gtm:pool:cname:cnamestate', () => {
             it('should return GSLB_Pool CNAME', () => {
                 const obj = {
@@ -3184,6 +3291,12 @@ describe('map_mcp', () => {
                     enabled: true,
                     fullPath: '/ten/app/example.edu',
                     lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
                     minimalResponse: 'enabled',
                     name: 'example.edu',
                     partition: 'ten',
@@ -3211,6 +3324,12 @@ describe('map_mcp', () => {
                             aliases: {},
                             enabled: true,
                             'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
                             'pool-lb-mode': 'round-robin',
                             pools: {
                                 '/ten/app/pool3': { order: 1, ratio: 3 },
@@ -3230,6 +3349,7 @@ describe('map_mcp', () => {
                     enabled: true,
                     fullPath: '/ten/app/example.edu',
                     lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
                     minimalResponse: 'enabled',
                     name: 'example.edu',
                     partition: 'ten',
@@ -3246,6 +3366,7 @@ describe('map_mcp', () => {
                             aliases: {},
                             enabled: true,
                             'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
                             'pool-lb-mode': 'round-robin',
                             pools: {},
                             'pools-cname': {},
@@ -3253,6 +3374,154 @@ describe('map_mcp', () => {
                         }
                     }
                 );
+            });
+        });
+
+        describe('tm:gtm:monitor', () => {
+            describe('tm:gtm:monitor:http:httpstate', () => {
+                it('should return GSLB_Monitor HTTP', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:http:httpstate',
+                        name: 'gslb_monitor_http',
+                        partition: 'Tenant',
+                        subPath: 'Application',
+                        fullPath: '/Tenant/Application/gslb_monitor_http',
+                        generation: 0,
+                        selfLink: 'https://localhost/mgmt/tm/gtm/monitor/http/~Tenant~Application~gslb_monitor_http?ver=15.1.8',
+                        defaultsFrom: '/Common/http',
+                        description: 'my remark',
+                        destination: '192.0.2.20:80',
+                        ignoreDownResponse: 'enabled',
+                        interval: 31,
+                        probeTimeout: 6,
+                        recv: 'My Receive String',
+                        recvStatusCode: '200 302',
+                        reverse: 'enabled',
+                        send: 'GET /www/siterequest/index.html\\r\\n',
+                        timeout: 121,
+                        transparent: 'enabled'
+                    };
+
+                    const results = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(results, [
+                        {
+                            path: '/Tenant/Application/gslb_monitor_http',
+                            command: 'gtm monitor http',
+                            properties: {
+                                description: '"my remark"',
+                                destination: '192.0.2.20:80',
+                                'ignore-down-response': 'enabled',
+                                interval: 31,
+                                'probe-timeout': 6,
+                                recv: '"My Receive String"',
+                                'recv-status-code': '"200 302"',
+                                reverse: 'enabled',
+                                send: '"GET /www/siterequest/index.html\\\\r\\\\n"',
+                                timeout: 121,
+                                transparent: 'enabled'
+                            },
+                            ignore: []
+                        }
+                    ]);
+                });
+            });
+
+            describe('tm:gtm:monitor:https:httpsstate', () => {
+                it('should process with default values', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        cert: 'none',
+                        'recv-status-code': 'none',
+                        'sni-server-name': 'none'
+                    });
+                });
+
+                it('should process with all values', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor',
+                        remark: 'Test HTTPS props',
+                        clientCertificate: 'webcert',
+                        ciphers: 'DEFAULT:TLS1.2:!SSLv3',
+                        target: '*:*',
+                        interval: 30,
+                        timeout: 120,
+                        probeTimeout: 5,
+                        receive: 'foo',
+                        receiveStatusCodes: '200',
+                        reverseEnabled: true,
+                        send: 'GET /',
+                        sniServerName: 'test.example.com',
+                        transparent: true
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        cert: 'webcert',
+                        cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
+                        /* eslint-disable no-useless-escape */
+                        description: '\"Test HTTPS props\"',
+                        recv: '\"foo\"',
+                        send: '\"GET /\"',
+                        /* eslint-enable no-useless-escape */
+                        destination: '*:*',
+                        interval: 30,
+                        'probe-timeout': 5,
+                        'recv-status-code': '"200"',
+                        reverse: 'enabled',
+                        'sni-server-name': 'test.example.com',
+                        timeout: 120,
+                        transparent: 'enabled'
+                    });
+                });
+
+                it('should ignore sniServerName property for < 16.1', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        'recv-status-code': 'none',
+                        send: 'none',
+                        cert: 'none'
+                    });
+                });
+
+                it('should ignore recvStatusCodes property for < 15.1', () => {
+                    defaultContext.target.tmosVersion = '14.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:https:httpsstate',
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        cert: 'none'
+                    });
+                });
             });
         });
 
@@ -3541,6 +3810,28 @@ describe('map_mcp', () => {
                             'udp-idle-timeout': '2000'
                         },
                         ignore: []
+                    }
+                );
+            });
+        });
+
+        describe('tm:net:route-domain:route-domainstate', () => {
+            it('should create tm:net:route-domain:route-domainstate config', () => {
+                const obj = {
+                    kind: 'tm:net:route-domain:route-domainstate',
+                    fullPath: '/Common/100',
+                    fwEnforcedPolicy: '/Common/Shared/firewallPolicy'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'net route-domain',
+                        ignore: [],
+                        path: '/Common/100',
+                        properties: {
+                            'fw-enforced-policy': '/Common/Shared/firewallPolicy'
+                        }
                     }
                 );
             });

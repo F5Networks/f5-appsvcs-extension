@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ const TAG = 'serviceDiscovery';
  * @param {Object} declaration - The current declaration that was validated by AJV
  * @param {Object[]} [serviceDiscoveryList] - The list of service discovery data that will be processed
  * @param {*} serviceDiscoveryArray[].data - The service discovery data from the declaration
- * @param {*} minVersions[].schemaData - The service discovery schema data from the declaration
+ * @param {*} serviceDiscoveryArray[].schemaData - The service discovery schema data from the declaration
  * @param {string} serviceDiscoveryArray[].instancePath - The json pointer that was used to fetch the data
  * @returns {Promise} - Promise resolves when all data is processed
  */

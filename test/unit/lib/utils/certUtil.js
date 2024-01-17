@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ describe('certUtil', () => {
 
             assert.deepStrictEqual(results.certificates, expected);
             // Private key results change every run. At least verify header and footer
-            assert.strictEqual(results.privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----\n'), true);
+            assert.strictEqual(results.privateKey.startsWith('-----BEGIN RSA PRIVATE KEY-----\n'), true); // gitleaks:allow
             assert.strictEqual(results.privateKey.endsWith('-----END RSA PRIVATE KEY-----\n'), true);
         });
 
@@ -117,7 +117,7 @@ describe('certUtil', () => {
 
             assert.deepStrictEqual(results.certificates, expected);
             // Private key results change every run. At least verify header and footer
-            assert.strictEqual(results.privateKey.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----\n'), true);
+            assert.strictEqual(results.privateKey.startsWith('-----BEGIN ENCRYPTED PRIVATE KEY-----\n'), true); // gitleaks:allow
             assert.strictEqual(results.privateKey.endsWith('-----END ENCRYPTED PRIVATE KEY-----\n'), true);
         });
 
@@ -126,7 +126,7 @@ describe('certUtil', () => {
 
             const expected = {
                 certificates: ['-----BEGIN CERTIFICATE-----\nMIIDRjCCAi6gAwIBAgIBATALBgkqhkiG9w0BAQswODE2MAkGA1UEBhMCVVMwKQYD\nVQQDHiIAUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMB4XDTEzMDEz\nMTIxMDAwMFoXDTE2MDEzMTIxMDAwMFowODE2MAkGA1UEBhMCVVMwKQYDVQQDHiIA\nUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1\nYxi0BjRuDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYp\nEUj/o7cykNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKl\ngZsx8395UNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJD\nMfUSiWT5cFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCc\nDOAmVSfUAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABo10wWzAMBgNV\nHRMEBTADAQH/MAsGA1UdDwQEAwIA/zAdBgNVHQ4EFgQU5QmA6U960XL4SII2SEhC\ncxij0JYwHwYDVR0jBBgwFoAU5QmA6U960XL4SII2SEhCcxij0JYwDQYJKoZIhvcN\nAQELBQADggEBACKRCWzcuFjythAJn7yNet1pFNjcvkndLbHOgCh+QSdA3M0wKVpa\ntltj8pD6AbbkwgXA85Zmf+5hQoHaPTIdNEw8QCn+/nBrBKozYGR2eQY/ivkS3H2l\n7eaiDbE1QGpJ6ik022jtCBXSjXJge24wpCE0DNwUHUIbPbn6Ve/xW65TU+hg2tOO\nKmuSMsOA+6s1dSNSH0BmXTr4JqSh7vksSS5pkq4FAgw0skVwzZlIr9AABojQTUOi\n9ywJy1bzH/pCTl9jA27SNwh2eD13MphfK3NXnf44bF0rmaV3IEGTK9Ots7xtbBhP\ndz7B4HWG42mCelEckozPnFWPRtt2ceKvq5w=\n-----END CERTIFICATE-----\n'],
-                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n'
+                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n' // gitleaks:allow
             };
 
             const options = { keyFormat: 'pkcs8' };

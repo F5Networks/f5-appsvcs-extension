@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,12 @@ class RestWorker {
                 this.asyncHandler.updatePending();
             })
             .then(() => {
-                const storage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
-                return storage.ensureDataGroup();
+                const accessProfileStorage = new atgStorage.StorageDataGroup('/Common/appsvcs/accessProfiles');
+                return accessProfileStorage.ensureDataGroup()
+                    .then(() => {
+                        const routeDomainStorage = new atgStorage.StorageDataGroup('/Common/appsvcs/routeDomains');
+                        return routeDomainStorage.ensureDataGroup();
+                    });
             })
             .then(() => success())
             .catch((e) => {

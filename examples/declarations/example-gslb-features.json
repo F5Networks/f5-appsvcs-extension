@@ -1,6 +1,6 @@
 {
     "class": "ADC",
-    "schemaVersion": "3.37.0",
+    "schemaVersion": "3.49.0",
     "id": "GSLB_Sample",
     "Sample_non_http_05": {
         "class": "Tenant",
@@ -12,6 +12,12 @@
                 "aliases": [
                     "another.example*" ],
                 "resourceRecordType": "A",
+                "loadBalancingDecisionLogVerbosity": [
+                    "pool-selection",
+                    "pool-traversal",
+                    "pool-member-selection",
+                    "pool-member-traversal"
+                  ],
                 "poolLbMode": "ratio",
                 "pools": [
                     {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -415,7 +415,16 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
         .then(() => fetch.checkDesiredForReferencedProfiles(context, tenantDesiredConfig))
         .then(() => {
             if (tenantId === 'Common') {
-                return fetch.getCommonAccessProfiles(context);
+                const dataGroupInfo = {
+                    name: 'commonAccessProfiles',
+                    storageName: 'accessProfiles'
+                };
+                return fetch.getDataGroupData(context, dataGroupInfo)
+                    .then(() => {
+                        dataGroupInfo.name = 'commonRouteDomains';
+                        dataGroupInfo.storageName = 'routeDomains';
+                        return fetch.getDataGroupData(context, dataGroupInfo);
+                    });
             }
             return Promise.resolve();
         })
@@ -489,7 +498,18 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
         })
         .then((response) => {
             if (tenantId === 'Common' && !context.tasks[context.currentIndex].firstPassNoDelete) {
-                return fetch.updateCommonAccessProfiles(context, tenantDesiredConfig)
+                const dataGroupInfo = {
+                    command: 'apm profile access',
+                    name: 'commonAccessProfiles',
+                    storageName: 'accessProfiles'
+                };
+                return fetch.updateDataGroup(context, tenantDesiredConfig, dataGroupInfo)
+                    .then(() => {
+                        dataGroupInfo.name = 'commonRouteDomains';
+                        dataGroupInfo.storageName = 'routeDomains';
+                        dataGroupInfo.command = 'net route-domain';
+                        return fetch.updateDataGroup(context, tenantDesiredConfig, dataGroupInfo);
+                    })
                     .then(() => response);
             }
             return response;
@@ -499,7 +519,8 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
             response.host = context.target.host;
             response.tenant = tenantId;
             response.runTime = new Date() - startTime;
-            return log.debug(response);
+            response.declarationId = declaration.id;
+            return log.info(response);
         })
         .catch((err) => {
             const response = {};

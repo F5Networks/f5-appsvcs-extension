@@ -83,6 +83,29 @@ check_info_endpoint() {
     set -e
 }
 
+wait_for_curl_response_with_retries() {
+    url="https://$TARGET/mgmt/tm/cm/device"
+    MAX_TRIES=300
+    interval=10
+    counter=1
+
+    sleep $interval
+    until [[ $counter -gt MAX_TRIES ]]; do
+        response=$(curl ${CURL_FLAGS} "$url" | jq -r .items[0].failoverState)
+
+        if [[ "$response" == "active" ]]; then
+            echo "$TARGET's MCPD is in $response state."
+            return 0  # Success
+        fi
+
+        retries=$((retries + 1))
+        sleep $interval
+    done
+
+    echo "${RED}Maximum number of retries ($MAX_TRIES) reached. MCPD on $TARGET is in $response state${NC}"
+    return 1  # Maximum retries reached
+}
+
 echo "Waiting for REST framework to be available on $TARGET"
 check_echo_js_endpoint
 
@@ -129,5 +152,8 @@ if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
 fi
 
 echo "Installed $RPM_NAME on $TARGET"
+
+echo "Waiting for $TARGET device's MCPD to be active"
+wait_for_curl_response_with_retries
 
 exit 0

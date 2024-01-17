@@ -1,0 +1,67 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.49.0",
+    "id": "declaration",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "firewallPolicy": {
+                "class": "Firewall_Policy",
+                "routeDomainEnforcement": [
+                    {
+                        "bigip": "/Common/100"
+                    }
+                ],
+                "rules": [
+                    {
+                        "use": "fwRuleList"
+                    }
+                ]
+            },
+            "fwRuleList": {
+                "class": "Firewall_Rule_List",
+                "rules": [
+                    {
+                        "remark": "description",
+                        "name": "rule1",
+                        "action": "accept-decisively",
+                        "protocol": "tcp",
+                        "loggingEnabled": true
+                    },
+                    {
+                        "remark": "description",
+                        "name": "rule2",
+                        "action": "reject",
+                        "protocol": "tcp",
+                        "loggingEnabled": true,
+                        "source": {
+                            "vlans": [
+                                {
+                                    "bigip": "/Common/external"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "tenant": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.0"
+                ],
+                "virtualPort": 443,
+                "policyFirewallEnforced": {
+                    "use": "/Common/Shared/firewallPolicy"
+                }
+            }
+        }
+    }
+}

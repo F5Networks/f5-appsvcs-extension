@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 F5, Inc.
+ * Copyright 2024 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ const chaiAsPromised = require('chai-as-promised');
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
+
+const checkAndDelete = require('@f5devcentral/atg-shared-utilities-dev').checkAndDeleteProperty;
 
 const {
     postDeclaration,
@@ -59,33 +61,6 @@ describe('Test Tenants (__smoke)', function () {
         };
     }
 
-    /**
-     * This function confirms that a property of a specific type exists and then removes it.
-     * This removes the more randomized values from the large deepStrictEqual checks.
-     *
-     * @param {array <object>} resultsArray Array of objects with properties to test
-     * @param {string} propertyName         The name of the property to be tested and deleted
-     * @param {string} expectedPropType     The expected typeof value for the property to test
-     * @param {boolean} isMissingProp       OPTIONAL: A boolean to skip the test if the value is
-     *                                      undefined, this covers the use case of if the array is
-     *                                      not uniform and may lack the expected property
-     *
-     * @returns {void}                      This function changes resultsArray object directly
-     */
-    function checkAndDeleteProperty(resultsArray, propertyName, expectedPropType, isMissingProp) {
-        resultsArray.forEach((result) => {
-            if (isMissingProp && typeof result[propertyName] === 'undefined') {
-                return;
-            }
-            assert.strictEqual(
-                typeof result[propertyName],
-                expectedPropType,
-                `typeof ${propertyName} does NOT equal expected typeof`
-            );
-            delete result[propertyName];
-        });
-    }
-
     describe('test single tenant', () => {
         const decl = {
             class: 'ADC',
@@ -104,18 +79,38 @@ describe('Test Tenants (__smoke)', function () {
             .then(() => deleteDeclaration()) // Clear machine for testing successful POST
             .then(() => postDeclaration(decl, { declarationIndex: 0 }))
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'lineCount', 'number');
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.results[0].host, 'localhost');
-                assert.strictEqual(response.results[0].tenant, 'testTenant');
+                assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                assert.deepStrictEqual(
+                    response.results,
+                    [
+                        {
+                            code: 200,
+                            message: 'success',
+                            host: 'localhost',
+                            tenant: 'testTenant'
+                        }
+                    ]
+                );
             })
             .then(() => postDeclaration(decl, { declarationIndex: 1 }))
             .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'no change');
-                assert.strictEqual(response.results[0].host, 'localhost');
-                assert.strictEqual(response.results[0].tenant, 'testTenant');
+                assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                assert.deepStrictEqual(
+                    response.results,
+                    [
+                        {
+                            code: 200,
+                            message: 'no change',
+                            host: 'localhost',
+                            tenant: 'testTenant'
+                        }
+                    ]
+                );
             }));
 
         it('should GET a single tenant declare show=base', () => Promise.resolve()
@@ -124,8 +119,8 @@ describe('Test Tenants (__smoke)', function () {
             .then((response) => {
                 // show=base does not seem to respond with an array, so the values are converted
                 // to an array for use in the convenience function
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
-                checkAndDeleteProperty([response], 'id', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
+                response = checkAndDelete([response], 'id', 'string')[0];
                 assert.deepStrictEqual(
                     response,
                     {
@@ -193,7 +188,7 @@ describe('Test Tenants (__smoke)', function () {
                     }
                 );
                 assert.deepStrictEqual(response.testTenant.Application.redirect.expand, true);
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
                 assert.deepStrictEqual(
                     response.controls,
                     {
@@ -221,7 +216,7 @@ describe('Test Tenants (__smoke)', function () {
                         iRule: 'when HTTP_REQUEST {\r\n   HTTP::redirect https://[getfield [HTTP::host] ":" 1][HTTP::uri]\r\n}'
                     }
                 );
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
                 assert.deepStrictEqual(
                     response.controls,
                     {
@@ -271,7 +266,7 @@ describe('Test Tenants (__smoke)', function () {
                     }
                 );
                 assert.deepStrictEqual(response.testTenant.Application.redirect.expand, true);
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
                 assert.deepStrictEqual(
                     response.controls,
                     {
@@ -302,8 +297,9 @@ describe('Test Tenants (__smoke)', function () {
         it('should DELETE testTenant', () => Promise.resolve()
             .then(() => deleteDeclaration('testTenant'))
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
-                checkAndDeleteProperty(response.results, 'lineCount', 'number');
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number');
                 assert.deepStrictEqual(
                     response.results[0],
                     {
@@ -318,7 +314,8 @@ describe('Test Tenants (__smoke)', function () {
         it('should handle DELETING a non-existing tenant', () => Promise.resolve()
             .then(() => assert.isFulfilled(deleteDeclaration('non-existing-tenant')))
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     response.results,
                     [
@@ -346,8 +343,9 @@ describe('Test Tenants (__smoke)', function () {
             })
             .then(() => assert.isFulfilled(deleteDeclaration('testTenant,non-existing-tenant')))
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
-                checkAndDeleteProperty(response.results, 'lineCount', 'number', true);
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number', { skipUndefinedProperties: 'MIN1' });
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     response.results,
                     [
@@ -393,11 +391,13 @@ describe('Test Tenants (__smoke)', function () {
             .then(() => deleteDeclaration()) // Clear machine for testing successful POST
             .then(() => postDeclaration(decl, { declarationIndex: 0 }))
             .then((response) => {
-                checkAndDeleteProperty([response.declaration.controls], 'archiveTimestamp', 'string');
-                checkAndDeleteProperty([response.declaration], 'id', 'string');
-                checkAndDeleteProperty([response], 'id', 'string');
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
-                checkAndDeleteProperty(response.results, 'lineCount', 'number');
+                response.declaration.controls = checkAndDelete([response.declaration.controls], 'archiveTimestamp', 'string')[0];
+                response.declaration = checkAndDelete([response.declaration], 'id', 'string')[0];
+                response = checkAndDelete([response], 'id', 'string')[0];
+                assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number');
                 assert.deepStrictEqual(
                     response,
                     {
@@ -564,10 +564,12 @@ describe('Test Tenants (__smoke)', function () {
             })
             .then(() => postDeclaration(decl, { declarationIndex: 1 }))
             .then((response) => {
-                checkAndDeleteProperty([response.declaration.controls], 'archiveTimestamp', 'string');
-                checkAndDeleteProperty([response.declaration], 'id', 'string');
-                checkAndDeleteProperty([response], 'id', 'string');
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
+                response.declaration.controls = checkAndDelete([response.declaration.controls], 'archiveTimestamp', 'string')[0];
+                response.declaration = checkAndDelete([response.declaration], 'id', 'string')[0];
+                response = checkAndDelete([response], 'id', 'string')[0];
+                assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
                 assert.deepStrictEqual(
                     response.results,
                     [
@@ -615,8 +617,8 @@ describe('Test Tenants (__smoke)', function () {
             // show=base is the default value so skipping just /declare test
             .then(() => getPath('/mgmt/shared/appsvcs/declare?show=base'))
             .then((response) => {
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
-                checkAndDeleteProperty([response], 'id', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
+                response = checkAndDelete([response], 'id', 'string')[0];
                 assert.deepStrictEqual(
                     response,
                     {
@@ -792,7 +794,7 @@ describe('Test Tenants (__smoke)', function () {
                 assert.strictEqual(response.testTenant0.defaultRouteDomain, 0);
                 assert.strictEqual(response.testTenant0.optimisticLockKey, '');
                 assert.strictEqual(response.testTenant0.Application.redirect.expand, true);
-                checkAndDeleteProperty([response.controls], 'archiveTimestamp', 'string');
+                response.controls = checkAndDelete([response.controls], 'archiveTimestamp', 'string')[0];
                 assert.deepStrictEqual(
                     response.controls,
                     {
@@ -903,8 +905,9 @@ describe('Test Tenants (__smoke)', function () {
         it('should DELETE specific tenants testTenant2,testTenant0', () => Promise.resolve()
             .then(() => deleteDeclaration('testTenant2,testTenant0'))
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
-                checkAndDeleteProperty(response.results, 'lineCount', 'number');
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number');
                 assert.deepStrictEqual(
                     response.results,
                     [
@@ -938,8 +941,9 @@ describe('Test Tenants (__smoke)', function () {
                 ]))
             .then(() => deleteDeclaration())
             .then((response) => {
-                checkAndDeleteProperty(response.results, 'runTime', 'number');
-                checkAndDeleteProperty(response.results, 'lineCount', 'number');
+                response.results = checkAndDelete(response.results, 'declarationId', 'string');
+                response.results = checkAndDelete(response.results, 'runTime', 'number');
+                response.results = checkAndDelete(response.results, 'lineCount', 'number');
                 assert.deepStrictEqual(
                     response.results,
                     [
@@ -1194,7 +1198,9 @@ describe('Test Tenants (__smoke)', function () {
                     decl.TEST_Service_Generic.optimisticLockKey = lockKey;
                     return postDeclaration(decl, { declarationIndex: 1 });
                 })
-                .then((response) => assert.strictEqual(response.results[0].code, 200))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 // new declaration with same optimisticLockKey
                 .then(() => {
                     const decl = simpleCopy(baseDecl);
@@ -1202,7 +1208,9 @@ describe('Test Tenants (__smoke)', function () {
                     decl.TEST_Service_Generic.Application.testItem.virtualPort = 80;
                     return postDeclaration(decl, { declarationIndex: 2 });
                 })
-                .then((response) => assert.strictEqual(response.results[0].code, 200))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
                 // declaration with old/bad optimisticLockKey
                 .then(() => {
                     const decl = simpleCopy(baseDecl);
