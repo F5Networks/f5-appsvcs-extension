@@ -108,9 +108,43 @@ describe('Service_Address', function () {
                 extractFunction: (o) => o.address
             },
             {
-            // The expected values are based on the supplied /CIDR address
+                // The expected values are based on the supplied /CIDR address
                 name: 'netmask',
                 expectedValue: ['any']
+            }
+        ];
+        return assertServiceAddressClass(properties);
+    });
+
+    it('Wildcard-like IPv4', function () {
+        const properties = [
+            {
+                name: 'virtualAddress',
+                inputValue: ['100.0.0.0', '100.0.0.0/16', '100.0.0.0/1'],
+                expectedValue: ['100.0.0.0', '100.0.0.0', '100.0.0.0'],
+                extractFunction: (o) => o.address
+            },
+            {
+                // The expected values are based on the supplied /CIDR address
+                name: 'netmask',
+                expectedValue: ['255.255.255.255', '255.255.0.0', '128.0.0.0']
+            }
+        ];
+        return assertServiceAddressClass(properties);
+    });
+
+    it('Wildcard-like IPv4 in IPv6', function () {
+        const properties = [
+            {
+                name: 'virtualAddress',
+                inputValue: ['2001::100.0.0.0', '2001::100.0.0.0/16', '2001::100.0.0.0/1'],
+                expectedValue: ['2001::6400:0', '2001::6400:0', '2001::6400:0'],
+                extractFunction: (o) => o.address
+            },
+            {
+                // The expected values are based on the supplied /CIDR address
+                name: 'netmask',
+                expectedValue: ['ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff', 'ffff::', '8000::']
             }
         ];
         return assertServiceAddressClass(properties);
@@ -136,7 +170,7 @@ describe('Service_Address', function () {
                 extractFunction: (o) => o.address
             },
             {
-            // The expected values are based on the supplied /CIDR address
+                // The expected values are based on the supplied /CIDR address
                 name: 'netmask',
                 expectedValue: ['any']
             }
@@ -153,7 +187,7 @@ describe('Service_Address', function () {
                 extractFunction: (o) => o.address
             },
             {
-            // The expected values are based on the supplied /CIDR address
+                // The expected values are based on the supplied /CIDR address
                 name: 'netmask',
                 expectedValue: ['any']
             }
@@ -192,9 +226,43 @@ describe('Service_Address', function () {
                 extractFunction: (o) => o.address
             },
             {
-            // The expected values are based on the supplied /CIDR address
+                // The expected values are based on the supplied /CIDR address
                 name: 'netmask',
                 expectedValue: ['255.255.255.255']
+            }
+        ];
+        return assertServiceAddressClass(properties, 2323);
+    });
+
+    it('Wildcard-like IPv4 with routeDomain', function () {
+        const properties = [
+            {
+                name: 'virtualAddress',
+                inputValue: ['100.0.0.0%2323', '100.0.0.0%2323/16', '100.0.0.0%2323/1'],
+                expectedValue: ['100.0.0.0%2323', '100.0.0.0%2323', '100.0.0.0%2323'],
+                extractFunction: (o) => o.address
+            },
+            {
+                // The expected values are based on the supplied /CIDR address
+                name: 'netmask',
+                expectedValue: ['255.255.255.255', '255.255.0.0', '128.0.0.0']
+            }
+        ];
+        return assertServiceAddressClass(properties, 2323);
+    });
+
+    it('Wildcard-like IPv4 in IPv6 with routeDomain', function () {
+        const properties = [
+            {
+                name: 'virtualAddress',
+                inputValue: ['2001::100.0.0.0%2323', '2001::100.0.0.0%2323/16', '2001::100.0.0.0%2323/1'],
+                expectedValue: ['2001::6400:0%2323', '2001::6400:0%2323', '2001::6400:0%2323'],
+                extractFunction: (o) => o.address
+            },
+            {
+                // The expected values are based on the supplied /CIDR address
+                name: 'netmask',
+                expectedValue: ['ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff', 'ffff::', '8000::']
             }
         ];
         return assertServiceAddressClass(properties, 2323);

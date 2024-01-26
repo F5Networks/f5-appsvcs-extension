@@ -2225,11 +2225,12 @@ const translate = {
             ? parsedAddress.routeDomain
             : getDefaultRouteDomain(declaration, tenantId);
 
-        const regex = /^::%/;
+        const regexV6 = /^::%/;
+        const regexV4 = /^0\.0\.0\.0/;
         // can be wildcard with routedomain
-        if (parsedAddress.ip.includes('0.0.0.0')) {
+        if (regexV4.test(parsedAddress.ip)) {
             itemCopy.virtualAddress = `any${routeDomain}`;
-        } else if (regex.test(parsedAddress.ipWithRoute) || parsedAddress.ip === '::') {
+        } else if (regexV6.test(parsedAddress.ipWithRoute) || parsedAddress.ip === '::') {
             itemCopy.virtualAddress = `any6${routeDomain}`;
         } else {
             itemCopy.virtualAddress = `${parsedAddress.ip}${routeDomain}`;
@@ -2618,14 +2619,14 @@ const translate = {
                 // For idempotency, the name of the Service_Address should reflect its address
                 const convertedIp = parsAddr[0].ip;
                 let saName = `${convertedIp}${routeDomain}`;
-                const regexSAName = /^::%/;
+                const regexSANameV6 = /^::%/;
+                const regexSANameV4 = /^0\.0\.0\.0/;
                 // can be wildcard with routedomain
-                if (convertedIp.includes('0.0.0.0')) {
+                if (regexSANameV4.test(convertedIp)) {
                     saName = `any${routeDomain}`;
-                } else if (regexSAName.test(parsAddr[0].ipWithRoute) || convertedIp === '::') {
+                } else if (regexSANameV6.test(parsAddr[0].ipWithRoute) || convertedIp === '::') {
                     saName = `any6${routeDomain}`;
                 }
-
                 // Service_Address calculates its own appId, so the passed in one is ignored
                 const translatedServiceAddr = translate.Service_Address(
                     context,

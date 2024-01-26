@@ -3270,7 +3270,9 @@ describe('map_as3', () => {
                     '192.0.2.36%50/30',
                     '::%25',
                     '2001:0db8:85a3:0000:0000:8a2e:0370:7334/128',
-                    '2001:0db8:85a3:0000:0000:0000:0000:0000/64'
+                    '2001:0db8:85a3:0000:0000:0000:0000:0000/64',
+                    '100.0.0.0',
+                    '2001::100.0.0.0.'
                 ],
                 virtualPort: 123,
                 persistenceMethods: ['cookie'],
@@ -3327,7 +3329,9 @@ describe('map_as3', () => {
                                 '192.0.2.36%50/30',
                                 '::%25',
                                 '2001:0db8:85a3:0000:0000:8a2e:0370:7334/128',
-                                '2001:0db8:85a3:0000:0000:0000:0000:0000/64'
+                                '2001:0db8:85a3:0000:0000:0000:0000:0000/64',
+                                '100.0.0.0',
+                                '2001::100.0.0.0.'
                             ],
                             virtualPort: 123
                         }
@@ -3431,6 +3435,30 @@ describe('map_as3', () => {
                         destination: '/tenantId/2001:db8:85a3::.123',
                         source: '::/0',
                         mask: 'ffff:ffff:ffff:ffff::'
+                    }
+                },
+                {
+                    path: '/tenantId/Service_Address-100.0.0.0',
+                    properties: { address: '100.0.0.0', mask: '255.255.255.255' }
+                },
+                {
+                    path: '/tenantId/appId/itemId-8-',
+                    properties: {
+                        destination: '/tenantId/100.0.0.0:123',
+                        source: '0.0.0.0/0',
+                        mask: '255.255.255.255'
+                    }
+                },
+                {
+                    path: '/tenantId/Service_Address-2001::6400:0',
+                    properties: { address: '2001::6400:0', mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff' }
+                },
+                {
+                    path: '/tenantId/appId/itemId-9-',
+                    properties: {
+                        destination: '/tenantId/2001::6400:0.123',
+                        source: '::/0',
+                        mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
                     }
                 }
             ];

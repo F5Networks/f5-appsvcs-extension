@@ -7,6 +7,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - EC-425: Updaging only a Pool_Member adminState, creates two consecutive deletes before the tmsh transaction.
+- AUTOTOOL-3941: ([GitHub Issue 740](https://github.com/F5Networks/f5-appsvcs-extension/issues/740)): Unable to use 10.0.0.0/8 as a virtual address
 
 ### Changed
 
