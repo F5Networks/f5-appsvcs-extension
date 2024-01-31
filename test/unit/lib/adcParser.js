@@ -267,6 +267,7 @@ describe('adcParser', function () {
             }; // This simulates the id added to the transformed declaration
 
             const decl = {
+                schemaVersion: '3.50',
                 app: {
                     class: 'Application',
                     service: {
@@ -290,6 +291,7 @@ describe('adcParser', function () {
                     assert.deepStrictEqual(
                         decl,
                         {
+                            schemaVersion: '3.50',
                             app: {
                                 class: 'Application',
                                 service: {

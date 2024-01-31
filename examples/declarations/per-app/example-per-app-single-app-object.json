@@ -1,4 +1,6 @@
 {
+    "id": "per-app-declaration",
+    "schemaVersion": "3.50.0",
     "controls": {
         "class": "Controls",
         "logLevel": "debug",

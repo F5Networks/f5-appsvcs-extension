@@ -34,18 +34,9 @@ const validate = ajv
 describe('settings-schema.json', () => {
     describe('betaOptions', () => {
         describe('Valid', () => {
-            it('should accept an empty object', () => {
-                const data = {
-                    betaOptions: {}
-                };
-                assert.ok(validate(data), getErrorString(validate));
-            });
-
             it('should accept perAppDeploymentAllowed', () => {
                 const data = {
-                    betaOptions: {
-                        perAppDeploymentAllowed: true
-                    }
+                    perAppDeploymentAllowed: true
                 };
                 assert.ok(validate(data), getErrorString(validate));
             });
@@ -63,9 +54,7 @@ describe('settings-schema.json', () => {
 
             it('should error if non-schema values are provided', () => {
                 const data = {
-                    betaOptions: {
-                        perAppDeploymentAllowed: 'enabled'
-                    }
+                    perAppDeploymentAllowed: 'enabled'
                 };
                 assert.strictEqual(validate(data), false, 'Invalid values should not be allowed');
             });

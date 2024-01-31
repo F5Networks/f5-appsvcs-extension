@@ -14,26 +14,17 @@
             ],
             "default": "data-group"
         },
-        "betaOptions": {
-            "title": "Beta options",
-            "description": "Which beta options to enable",
-            "type": "object",
-            "properties": {
-                "perAppDeploymentAllowed": {
-                    "title": "Per Application Deployment",
-                    "description": "Whether or not to allow per-application deployments",
-                    "type": "boolean",
-                    "default": false
-                }
-            },
-            "default": {},
-            "additionalProperties": false
-        },
         "burstHandlingEnabled": {
             "title": "Burst Handling Enabled",
             "description": "A boolean that controls if BIG-IP AS3 on this BIG-IP system uses the Burst Handling feature",
             "type": "boolean",
             "default": false
+        },
+        "perAppDeploymentAllowed": {
+            "title": "Per Application Deployment",
+            "description": "Whether or not to allow per-application deployments",
+            "type": "boolean",
+            "default": true
         },
         "performanceTracingEnabled": {
             "title": "Performance Tracing Enabled",

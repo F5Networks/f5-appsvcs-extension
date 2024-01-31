@@ -737,6 +737,7 @@ describe('RequestContext', () => {
                 restOp.setPathName(`${path}/Tenant1/applications/`);
                 restOp.setPath(`${path}/Tenant1/applications/`);
                 restOp.setBody({
+                    schemaVersion: '3.50',
                     app1: {
                         class: 'Application',
                         template: 'generic',
@@ -767,6 +768,7 @@ describe('RequestContext', () => {
                                 apps: ['app1'],
                                 tenant: 'Tenant1',
                                 decl: {
+                                    schemaVersion: '3.50',
                                     app1: {
                                         class: 'Application',
                                         template: 'generic',
@@ -790,7 +792,7 @@ describe('RequestContext', () => {
                             ctxt.request.body,
                             {
                                 class: 'ADC',
-                                schemaVersion: '3.0.0',
+                                schemaVersion: '3.50',
                                 Tenant1: {
                                     class: 'Tenant',
                                     app1: {
@@ -820,6 +822,7 @@ describe('RequestContext', () => {
                 restOp.setPathName(`${path}/Tenant1/applications/`);
                 restOp.setPath(`${path}/Tenant1/applications/`);
                 restOp.setBody({
+                    schemaVersion: '3.50',
                     app1: {
                         class: 'Application',
                         template: 'generic',
@@ -864,6 +867,7 @@ describe('RequestContext', () => {
                                 apps: ['app1', 'app2'],
                                 tenant: 'Tenant1',
                                 decl: {
+                                    schemaVersion: '3.50',
                                     app1: {
                                         class: 'Application',
                                         template: 'generic',
@@ -901,7 +905,7 @@ describe('RequestContext', () => {
                             ctxt.request.body,
                             {
                                 class: 'ADC',
-                                schemaVersion: '3.0.0',
+                                schemaVersion: '3.50',
                                 Tenant1: {
                                     class: 'Tenant',
                                     app1: {

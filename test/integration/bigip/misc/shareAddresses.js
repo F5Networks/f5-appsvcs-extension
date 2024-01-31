@@ -376,17 +376,6 @@ describe('shareAddresses', function () {
     describe('per-app', () => {
         let appDecl;
 
-        before('activate perAppDeploymentAllowed', () => postDeclaration(
-            {
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                }
-            },
-            undefined,
-            '?async=false',
-            '/mgmt/shared/appsvcs/settings'
-        ));
-
         beforeEach(() => {
             appDecl = {
                 class: 'Application',
@@ -419,7 +408,12 @@ describe('shareAddresses', function () {
 
             return Promise.resolve()
                 .then(() => postDeclaration(
-                    { appOne, appTwo, appThree },
+                    {
+                        schemaVersion: '3.50',
+                        appOne,
+                        appTwo,
+                        appThree
+                    },
                     { declarationIndex: 0 },
                     undefined,
                     perAppPath

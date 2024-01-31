@@ -46,9 +46,7 @@ describe('settingsHandler', () => {
         // StorageMemory is a localized version of the normal memory
         localStorageDataGroup = new atgStorage.StorageMemory();
         localStorageDataGroup.setItem('asyncTaskStorage', 'data-group');
-        localStorageDataGroup.setItem('betaOptions', {
-            perAppDeploymentAllowed: false
-        });
+        localStorageDataGroup.setItem('perAppDeploymentAllowed', true);
         localStorageDataGroup.setItem('burstHandlingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEnabled', false);
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
@@ -131,15 +129,11 @@ describe('settingsHandler', () => {
         it('should set the perAppDeploymentAllowed value if passed in', () => {
             restOp.method = 'Post';
             restOp.body = {
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                }
+                perAppDeploymentAllowed: false
             };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                },
+                perAppDeploymentAllowed: false,
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -156,9 +150,7 @@ describe('settingsHandler', () => {
             restOp.body = { burstHandlingEnabled: true };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
+                perAppDeploymentAllowed: true,
                 burstHandlingEnabled: true,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -175,9 +167,7 @@ describe('settingsHandler', () => {
             restOp.body = { asyncTaskStorage: 'memory' };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'memory',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
+                perAppDeploymentAllowed: true,
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -198,9 +188,7 @@ describe('settingsHandler', () => {
             restOp.body = { performanceTracingEnabled: true };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
+                perAppDeploymentAllowed: true,
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: true,
                 performanceTracingEndpoint: '',
@@ -217,9 +205,7 @@ describe('settingsHandler', () => {
             restOp.body = { webhook: 'https://www.example.com' };
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
+                perAppDeploymentAllowed: true,
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',
@@ -320,9 +306,7 @@ describe('settingsHandler', () => {
             restOp.method = 'Get';
             const restOpPromise = createRestOpCompletePromise(restOp, 200, {
                 asyncTaskStorage: 'data-group',
-                betaOptions: {
-                    perAppDeploymentAllowed: false
-                },
+                perAppDeploymentAllowed: true,
                 burstHandlingEnabled: false,
                 performanceTracingEnabled: false,
                 performanceTracingEndpoint: '',

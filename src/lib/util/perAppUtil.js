@@ -42,7 +42,7 @@ const convertToPerTenant = (perAppDeclaration, perAppInfo) => {
 
     const perTenantDecl = {
         class: 'ADC',
-        schemaVersion: '3.0.0',
+        schemaVersion: perAppDeclaration.schemaVersion,
         id: `autogen_${uuid.v4()}`
     };
 
@@ -89,6 +89,7 @@ const convertToPerApp = (perTenDeclaration, perAppInfo) => {
     }
 
     const perAppDecl = {};
+    perAppDecl.schemaVersion = perTenDeclaration.schemaVersion;
     if (perAppInfo.apps.length === 0) {
         // If the apps array is empty, we want all apps in tenant
         Object.keys(perTenDeclaration[perAppInfo.tenant]).forEach((app) => {

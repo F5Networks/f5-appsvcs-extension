@@ -36,6 +36,7 @@ describe('perAppUtil', () => {
     describe('convertToPerTenant', () => {
         it('should early exit and return the declaration if perAppInfo is not provided', () => {
             const decl = {
+                schemaVersion: '3.50',
                 exApp: {
                     class: 'Application',
                     template: 'generic',
@@ -55,6 +56,7 @@ describe('perAppUtil', () => {
             const result = perAppUtil.convertToPerTenant(decl);
             return assert.deepStrictEqual(result,
                 {
+                    schemaVersion: '3.50',
                     exApp: {
                         class: 'Application',
                         template: 'generic',
@@ -84,6 +86,7 @@ describe('perAppUtil', () => {
 
         it('should convert single app per-app declaration into a per-tenant declaration', () => {
             const decl = {
+                schemaVersion: '3.50',
                 exApp: {
                     class: 'Application',
                     template: 'generic',
@@ -110,7 +113,7 @@ describe('perAppUtil', () => {
                 {
                     class: 'ADC',
                     id: 'autogen_new-uuid-xxxx',
-                    schemaVersion: '3.0.0',
+                    schemaVersion: '3.50',
                     exampleTenant: {
                         class: 'Tenant',
                         exApp: {
@@ -133,6 +136,7 @@ describe('perAppUtil', () => {
 
         it('should convert multi-app per-app declaration into a per-tenant declaration', () => {
             const decl = {
+                schemaVersion: '3.50',
                 otherApp: {
                     class: 'Application',
                     template: 'generic',
@@ -173,7 +177,7 @@ describe('perAppUtil', () => {
                 {
                     class: 'ADC',
                     id: 'autogen_new-uuid-xxxx',
-                    schemaVersion: '3.0.0',
+                    schemaVersion: '3.50',
                     exampleTenant: {
                         class: 'Tenant',
                         exApp: {
@@ -210,6 +214,7 @@ describe('perAppUtil', () => {
 
         it('should copy controls object if present', () => {
             const decl = {
+                schemaVersion: '3.50',
                 controls: {
                     class: 'Controls',
                     control1: true
@@ -230,7 +235,7 @@ describe('perAppUtil', () => {
                 {
                     class: 'ADC',
                     id: 'autogen_new-uuid-xxxx',
-                    schemaVersion: '3.0.0',
+                    schemaVersion: '3.50',
                     exampleTenant: {
                         class: 'Tenant',
                         controls: {
@@ -509,6 +514,7 @@ describe('perAppUtil', () => {
             const result = perAppUtil.convertToPerApp(decl, perAppInfo);
             return assert.deepStrictEqual(result,
                 {
+                    schemaVersion: '3.0.0',
                     exApp: {
                         class: 'Application',
                         template: 'generic',
@@ -576,6 +582,7 @@ describe('perAppUtil', () => {
             const result = perAppUtil.convertToPerApp(decl, perAppInfo);
             return assert.deepStrictEqual(result,
                 {
+                    schemaVersion: '3.0.0',
                     exApp: {
                         class: 'Application',
                         template: 'generic',
@@ -657,6 +664,7 @@ describe('perAppUtil', () => {
             const result = perAppUtil.convertToPerApp(decl, perAppInfo);
             return assert.deepStrictEqual(result,
                 {
+                    schemaVersion: '3.0.0',
                     exApp: {
                         class: 'Application',
                         template: 'generic',
