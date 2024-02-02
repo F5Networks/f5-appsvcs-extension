@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Changed
 - AUTOTOOL-4148: Update per-app for GA
+- AUTOTOOL-4160: Record first and second passes of Common in separate trace files
 
 ### Removed
 
