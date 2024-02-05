@@ -515,6 +515,10 @@ class DeclarationHandler {
                     decl.target = prevDecl.target;
                 }
 
+                if (currentTask.action === 'remove' && prevDecl.schemaVersion) {
+                    baseDecl.schemaVersion = prevDecl.schemaVersion;
+                }
+
                 if (decl.updateMode === 'complete' && !context.request.isPerApp) {
                     // mark unwanted Tenants for deletion
                     info.metadata.tenants.forEach((t) => {

@@ -557,6 +557,51 @@ describe('API Testing (__smoke)', function () {
                     assert.strictEqual(response.statusCode, 204);
                 }));
         });
+
+        describe('DELETE', () => {
+            it('should remove specified Tenant and not update schemaVersion', () => {
+                const declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.50',
+                    id: 'declId',
+                    tenant1: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            pool: {
+                                class: 'Pool'
+                            }
+                        }
+                    },
+                    tenant2: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            pool: {
+                                class: 'Pool'
+                            }
+                        }
+                    }
+                };
+
+                return Promise.resolve()
+                    .then(() => postDeclaration(declaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare'))
+                    .then((results) => {
+                        assert.strictEqual(results.results[0].code, 200);
+                        assert.strictEqual(results.results[0].message, 'success');
+                        assert.strictEqual(results.results[1].code, 200);
+                        assert.strictEqual(results.results[1].message, 'success');
+                        return deleteDeclaration('tenant1');
+                    })
+                    .then((results) => {
+                        assert.strictEqual(results.results[0].code, 200);
+                        assert.strictEqual(results.results[0].message, 'success');
+                    })
+                    .then(() => assert.isRejected(getPath('/mgmt/shared/appsvcs/declare/tenant1')))
+                    .then(() => getPath('/mgmt/shared/appsvcs/declare'))
+                    .then((results) => assert.strictEqual(results.schemaVersion, '3.50'));
+            });
+        });
     });
 });
 
@@ -964,7 +1009,7 @@ describe('per-app API testing (__smoke)', function () {
                 ))
                 .then((results) => {
                     assert.deepStrictEqual(results, {
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         app2: {
                             class: 'Application',
                             template: 'generic',
@@ -992,7 +1037,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',
@@ -1078,7 +1123,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',

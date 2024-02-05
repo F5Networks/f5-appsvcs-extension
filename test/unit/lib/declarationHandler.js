@@ -2055,6 +2055,59 @@ describe('DeclarationHandler', () => {
                     );
                 });
         });
+
+        it('should use the previous declarations schemaVersion when doing a remove', () => {
+            sinon.stub(util, 'getNodelist').resolves([]);
+            sinon.stub(handler, 'getSavedDeclarations').callsFake(() => (
+                {
+                    declaration: {
+                        id: 'declId',
+                        schemaVersion: '3.50',
+                        class: 'ADC',
+                        tenant1: {
+                            class: 'Tenant'
+                        }
+                    },
+                    metadata: {
+                        blocks: 1,
+                        tenants: []
+                    }
+                }
+            ));
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declId'
+            };
+            context.tasks[0].action = 'remove';
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.strictEqual(result.body.declaration.schemaVersion, '3.50');
+                });
+        });
+
+        it('should not try to use previous schemaVersion when there is no content', () => {
+            sinon.stub(util, 'getNodelist').resolves([]);
+            sinon.stub(handler, 'getSavedDeclarations').resolves({
+                declaration: {},
+                metadata: {
+                    blocks: 0,
+                    tenants: []
+                }
+            });
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declId'
+            };
+            context.tasks[0].action = 'remove';
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.strictEqual(result.body.declaration.schemaVersion, '3.0.0');
+                });
+        });
     });
 
     describe('.handlePatch', () => {
