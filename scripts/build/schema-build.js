@@ -305,6 +305,7 @@ function buildSharedSchema() {
         'Pointer_L4_Profile',
         'Pointer_Log_Destination',
         'Pointer_Log_Publisher',
+        'Pointer_Monitor',
         'Pointer_Pool',
         'Pointer_SNAT_Pool',
         'Pointer_SNAT_Translation',

@@ -32,7 +32,7 @@ if [ -z "$UPDATE_BRANCH_NAME" ]; then
     exit 1
 fi
 
-npx npm-check-updates -u -x ajv,semver,nock,sinon,error,eslint,uuid
+npx npm-check-updates -u -x ajv,semver,nock,sinon,error,eslint,uuid,chai
 npm i
 npm upgrade
 
