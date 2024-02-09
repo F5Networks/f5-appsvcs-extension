@@ -1637,8 +1637,7 @@ const translate = {
     },
     'tm:gtm:topology:topologystate': function (context, obj) {
         // the returned path value is same as the name, no partition or key at all
-        // Might need to change path value based on whether there will be partitions in the future
-        const path = `/Common/${constants.gtmTopologyMockPath}`;
+        const path = constants.gtmTopologyMockPath;
         const item = { records: [] };
         const record = {};
         const itemName = obj.name;

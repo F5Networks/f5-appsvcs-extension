@@ -8,6 +8,9 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 - EC-425: Updaging only a Pool_Member adminState, creates two consecutive deletes before the tmsh transaction.
 - AUTOTOOL-3941: ([GitHub Issue 740](https://github.com/F5Networks/f5-appsvcs-extension/issues/740)): Unable to use 10.0.0.0/8 as a virtual address
+- AUTOTOOL-4135: Topology Records created in /Common/Shared are being unintentionally deleted
+- AUTOTOOL-4134: ([GitHub Issue 791](https://github.com/F5Networks/f5-appsvcs-extension/issues/791)): Topology Records created in places other than /Common/Shared are being unintentionally
+ deleted
 
 ### Changed
 - AUTOTOOL-4148: Update per-app for GA

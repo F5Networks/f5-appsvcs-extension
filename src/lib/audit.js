@@ -23,6 +23,7 @@ const DiffProcessor = require('./diffProcessor');
 const tracerUtil = require('./tracer').Util;
 const fetch = require('./fetch');
 const bigiq = require('./bigiq');
+const gtmUtil = require('./util/gtmUtil');
 const util = require('./util/util');
 const log = require('./log');
 const hash = require('./util/hashUtil');
@@ -567,6 +568,7 @@ const allTenants = function (context, tenantList, declaration, commonConfig, pre
 
     if (i === 0) {
         registerForRequestEvents(context);
+        gtmUtil.getTopologyRecordsTenant(context, declaration, previousDeclaration);
     }
 
     if (context.tasks[context.currentIndex].unchecked && typeof uncheckedDiff === 'undefined') {

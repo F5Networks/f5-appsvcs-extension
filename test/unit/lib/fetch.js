@@ -1815,14 +1815,17 @@ describe('fetch', () => {
                         assert.deepStrictEqual(diff,
                             [
                                 {
-                                    kind: 'E',
+                                    kind: 'N',
                                     path: [
-                                        '/Common/global-settings',
-                                        'properties',
-                                        'topology-longest-match'
+                                        '/Common/global-settings'
                                     ],
-                                    lhs: 'yes',
-                                    rhs: 'no'
+                                    rhs: {
+                                        command: 'gtm global-settings load-balancing',
+                                        ignore: [],
+                                        properties: {
+                                            'topology-longest-match': 'no'
+                                        }
+                                    }
                                 },
                                 {
                                     kind: 'N',
@@ -5507,7 +5510,7 @@ describe('fetch', () => {
                 context.tasks = [{ firstPassNoDelete: true }];
             });
 
-            describe('gtmTopologyProcessed', () => {
+            describe('gslbTopologyRecordsTenant', () => {
                 let commonConfig;
 
                 beforeEach(() => {
@@ -5552,19 +5555,19 @@ describe('fetch', () => {
                     commonConfig = { nodeList: [] };
                 });
 
-                it('should not delete topology record from current config when gtmTopologyProcessed is true and no value in desired config', () => {
-                    context.tasks = [{ gtmTopologyProcessed: true }];
+                it('should not delete topology record from current config when gslbTopologyRecordsTenant does not match the tenantId and no value in desired config', () => {
+                    context.tasks = [{ gslbTopologyRecordsTenant: 'Common' }];
                     sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
-                    return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
+                    return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, 'Tenant', {})
                         .then((actualDiffs) => {
                             assert.deepStrictEqual(actualDiffs, []);
                         });
                 });
 
-                it('should delete topology record from current config when gtmTopologyProcessed is not present and no value in desired config', () => {
-                    context.tasks = [{ }];
+                it('should delete topology record from current config when gslbTopologyRecordsTenant matches the tenantId and no value in desired config', () => {
+                    context.tasks = [{ gslbTopologyRecordsTenant: 'Tenant' }];
                     sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
-                    return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, {})
+                    return fetch.getDiff(context, currentConfig, desiredConfig, commonConfig, 'Tenant', {})
                         .then((actualDiffs) => {
                             assert.strictEqual(actualDiffs.length, 1);
                             assert.deepStrictEqual(actualDiffs[0],

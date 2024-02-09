@@ -145,7 +145,6 @@ describe('map_cli', () => {
             context.tasks.push({});
 
             const output = mapCli.tmshCreate(context, diff, targetConfig);
-            assert.strictEqual(context.tasks[0].gtmTopologyProcessed, true);
             assert.strictEqual(
                 output.commands[0],
                 'tmsh::create gtm topology  description \\"This object is managed by appsvcs, do not modify this description\\" ldns region /Common/private-net server pool /INT-DNS/DNS/pool-test-443 score 100 order 1'

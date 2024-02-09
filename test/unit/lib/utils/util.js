@@ -1244,6 +1244,10 @@ describe('util', () => {
         it('should return false if v1 is greater than v2', () => {
             assert.strictEqual(util.versionLessThan('3.2.1', '1.2.3'), false);
         });
+
+        it('should return false if v1 is equal to v2', () => {
+            assert.strictEqual(util.versionLessThan('1.2.3', '1.2.3'), false);
+        });
     });
 
     describe('.versionLessThanRecurse', () => {

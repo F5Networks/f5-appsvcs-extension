@@ -1484,7 +1484,8 @@ const getTopologyDiff = function (currentConfig, desiredConfig, currentValue, de
         return `${records[key]['ldns:']} ${records[key]['server:']} ${records[key]['score:']}`;
     };
 
-    if (currentConfig[constants.gtmSettingsMockPath].properties['topology-longest-match'] !== desiredConfig[constants.gtmSettingsMockPath].properties['topology-longest-match']) {
+    // BTW if current value is missing we previously deleted it to turn 'E' into an 'N'
+    if (!currentConfig[constants.gtmSettingsMockPath] || currentConfig[constants.gtmSettingsMockPath].properties['topology-longest-match'] !== desiredConfig[constants.gtmSettingsMockPath].properties['topology-longest-match']) {
         currentValue.properties.records = [];
     }
 
@@ -1694,6 +1695,15 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
                 }
             }
 
+            if (currentValue.command === 'gtm global-settings load-balancing') {
+                // if this is an 'E' turn it into an 'N' because an 'E' gets converted into a delete and a modify
+                // since this is a permanent global value an 'E' can show up twice in the script
+                // as a reset to the default value plus a change to the new value
+                if (currentValue.properties['topology-longest-match'] !== desiredValue.properties['topology-longest-match']) {
+                    delete currentConfig[configKey];
+                }
+            }
+
             if (currentValue.command === 'ltm virtual' || currentValue.command.startsWith('gtm wideip ')) {
                 // Add an array which captures the order of the irules so we generate a diff
                 // when the order changes. Otherwise, order is only in the keys of the object
@@ -1741,8 +1751,6 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
                 }
             }
         // we should only track this if we have a desired value
-        } else if (currentValue && currentValue.command === 'gtm global-settings load-balancing') {
-            delete currentConfig[configKey];
         } else if (currentValue && currentValue.command === 'ltm snatpool' && tenantId === 'Common') {
             // BIGIP will auto delete snat-translation(s) belonging to a snatpool
             if (currentValue.properties && currentValue.properties.members) {
@@ -1752,9 +1760,11 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             }
         }
 
-        if (!desiredValue && currentValue && currentValue.command === 'gtm topology' && context.tasks[context.currentIndex].gtmTopologyProcessed) {
-            // gtm topology is common to all tenants and has already been processed in another tenant
-            // delete it from the current config so the diff doesn't delete them
+        if (currentValue && !desiredValue && (currentValue.command === 'gtm topology' || currentValue.command === 'gtm global-settings load-balancing')
+            && context.tasks[context.currentIndex].gslbTopologyRecordsTenant !== tenantId) {
+            // if there is only a current value then this is a candidate for deletion
+            // these commands are global in Common but AS3 treats them like they can belong to other tenants
+            // only allow a delete to happen if it originates from the Tenant we recorded the creation from.
             delete currentConfig[configKey];
         }
     });

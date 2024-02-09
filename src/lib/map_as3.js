@@ -4017,7 +4017,7 @@ const translate = {
 
     GSLB_Topology_Records(context, tenantId, appId, itemId, item) {
         const records = [];
-        const recordsPath = `/${tenantId}/${constants.gtmTopologyMockPath}`;
+        const recordsPath = constants.gtmTopologyMockPath;
         item.records.forEach((itemRecord, indexAsKey) => {
             // add the order number to path to allow multiple items of same type
             // this path will be stripped of the cli script

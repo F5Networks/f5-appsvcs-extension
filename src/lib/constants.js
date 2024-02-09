@@ -71,7 +71,7 @@ module.exports = {
     as3CommonFolder: 'appsvcs',
     // Topology records don't have separate partition, a containing parent object or key name
     // Unlike other modules/components
-    gtmTopologyMockPath: 'topology/records',
+    gtmTopologyMockPath: '/Common/topology/records',
     gtmSettingsMockPath: '/Common/global-settings',
     defaultHost: 'localhost',
     defaultPort: 8100,

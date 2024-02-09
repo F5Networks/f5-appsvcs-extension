@@ -10276,6 +10276,7 @@ describe('map_as3', () => {
                 ]
             };
         });
+
         it('should return a translated config with order not set in 14.0-', () => {
             defaultContext.target.tmosVersion = '14.0.0';
 
@@ -10292,7 +10293,7 @@ describe('map_as3', () => {
                     {
                         command: 'gtm topology',
                         ignore: [],
-                        path: '/tenantId/topology/records',
+                        path: '/Common/topology/records',
                         properties: {
                             records: {
                                 0: {
@@ -10324,7 +10325,7 @@ describe('map_as3', () => {
                     {
                         command: 'gtm topology',
                         ignore: [],
-                        path: '/tenantId/topology/records',
+                        path: '/Common/topology/records',
                         properties: {
                             records: {
                                 0: {
