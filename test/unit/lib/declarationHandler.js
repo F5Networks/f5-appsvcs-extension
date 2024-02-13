@@ -755,16 +755,14 @@ describe('DeclarationHandler', () => {
 
         describe('mutex locking', () => {
             beforeEach(() => {
-                context.tasks[0].declaration = [
-                    {
-                        class: 'ADC',
-                        schemaVersion: '3.0.0',
-                        id: 'declaration_id',
-                        tenant1: {
-                            class: 'Tenant'
-                        }
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declaration_id',
+                    tenant1: {
+                        class: 'Tenant'
                     }
-                ];
+                };
                 context.tasks[0].dryRun = false;
             });
 
@@ -2106,6 +2104,33 @@ describe('DeclarationHandler', () => {
             return handler.handleCreateUpdateOrDelete(context)
                 .then((result) => {
                     assert.strictEqual(result.body.declaration.schemaVersion, '3.0.0');
+                });
+        });
+
+        it('should return epected error response', () => {
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.50',
+                id: 'declId'
+            };
+            sinon.stub(audit, 'allTenants').rejects();
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            body: {
+                                code: 500,
+                                errors: undefined,
+                                declarationFullId: 'declId',
+                                message: 'Error',
+                                declarationId: 'declId'
+                            },
+                            errorMessage: 'Error',
+                            statusCode: 500
+                        }
+                    );
                 });
         });
     });

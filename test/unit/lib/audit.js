@@ -467,6 +467,37 @@ describe('audit', () => {
                 });
         });
 
+        it('should return an expected response when there is an error', () => {
+            context.log = {};
+            context.control = { fortune: false };
+            context.tasks.push({ unchecked: true });
+            context.target.deviceType = DEVICE_TYPES.BIG_IP;
+            context.target.host = 'targetHost';
+            context.host.parser = {
+                digest: sinon.stub()
+            };
+            declaration.tenant.controls.fortune = false;
+            fetch.getDesiredConfig.restore();
+            const err = new Error('Error');
+            err.code = 422;
+            sinon.stub(fetch, 'getDesiredConfig').throws(err);
+            sinon.stub(log, 'error').resolves();
+
+            return audit.auditTenant(context, 'tenant', declaration, {}, {})
+                .then((response) => {
+                    assert.deepStrictEqual(
+                        response,
+                        {
+                            message: 'Error',
+                            host: 'targetHost',
+                            tenant: 'tenant',
+                            code: 422,
+                            declarationId: 'audit_tenant_id'
+                        }
+                    );
+                });
+        });
+
         describe('uncheckedDiff application', () => {
             let prevDecl;
             let decl;

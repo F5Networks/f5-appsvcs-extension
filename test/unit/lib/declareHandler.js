@@ -1592,6 +1592,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscInstall,
                         runTime: 0,
@@ -1682,6 +1683,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscUninstall,
                         runTime: 0,
@@ -1763,6 +1765,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgDeclSubmitted,
                         runTime: 0,
@@ -1847,6 +1850,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscUninstall,
                         runTime: 0,
@@ -2626,7 +2630,7 @@ describe('DeclareHandler', () => {
                         targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.0.2.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100', // gitleaks:allow
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2650,6 +2654,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId1,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAsync1',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2662,6 +2667,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId2,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAsync2',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2784,6 +2790,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId1,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAutoAsync1',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2796,6 +2803,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId2,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAutoAsync2',
                                 host: '',
                                 message: msgServDiscInstall,
                                 runTime: 0,

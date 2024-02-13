@@ -641,8 +641,8 @@ function createAsyncRecord(logPrefix, context, index) {
 
 function prepAsyncRecords(context, logPrefix) {
     if (context.request.isMultiDecl) {
-        const promises = context.tasks.map((decl, index) => createAsyncRecord(
-            `${logPrefix} declarationID: ${decl.id}`, context, index
+        const promises = context.tasks.map((task, index) => createAsyncRecord(
+            `${logPrefix} ${task.declaration ? `declarationID: ${task.declaration.id}` : ''}`, context, index
         ));
         return Promise.all(promises)
             .then((results) => restUtil.buildOpResultMulti(results));

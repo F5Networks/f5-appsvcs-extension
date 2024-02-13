@@ -960,6 +960,11 @@ class DeclarationHandler {
                     declarationFullId,
                     message: e.message
                 };
+
+                if (decl && decl.id) {
+                    body.declarationId = decl.id;
+                }
+
                 const result = DeclarationHandler.buildResult(statusCode, e.message, body);
 
                 return result;

@@ -55,6 +55,7 @@ describe('Test Async', function () {
         const postDecl = {
             class: 'ADC',
             schemaVersion: '3.0.0',
+            id: 'declId',
             Async_Test: {
                 class: 'Tenant',
                 A1: {
@@ -93,10 +94,13 @@ describe('Test Async', function () {
             .then((response) => {
                 assert.strictEqual(response.body.results[0].code, 0);
                 assert.strictEqual(response.body.results[0].message, 'Declaration successfully submitted');
+                assert.strictEqual(response.body.results[0].declarationId, 'declId');
                 return _checkForCompleteStatus(response.body.id);
             })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].declarationId, 'declId');
                 return patch(
                     '/mgmt/shared/appsvcs/declare?async=true',
                     patchDecl,
@@ -112,6 +116,8 @@ describe('Test Async', function () {
             })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].declarationId, 'declId');
             });
     });
 
@@ -119,6 +125,7 @@ describe('Test Async', function () {
         const declaration = {
             class: 'ADC',
             schemaVersion: '3.6.0',
+            id: 'declId',
             'f5*com': { class: 'Tenant' },
             controls: {
                 class: 'Controls',
@@ -132,11 +139,13 @@ describe('Test Async', function () {
             .then((response) => {
                 assert.strictEqual(response.body.results[0].code, 0);
                 assert.strictEqual(response.body.results[0].message, 'Declaration successfully submitted');
+                assert.strictEqual(response.body.results[0].declarationId, 'declId');
                 return _checkForCompleteStatus(response.body.id);
             })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 422);
                 assert.strictEqual(response.results[0].message, 'declaration is invalid');
+                assert.strictEqual(response.results[0].declarationId, 'declId');
             });
     });
 
@@ -198,12 +207,74 @@ describe('Test Async', function () {
             .then((response) => {
                 assert.strictEqual(response.body.results[0].code, 0);
                 assert.strictEqual(response.body.results[0].message, 'Declaration successfully submitted');
+                assert.strictEqual(response.body.results[0].declarationId, 'fghijkl7890');
                 return _checkForCompleteStatus(response.body.id);
             })
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].declarationId, 'fghijkl7890');
                 return getPath('/mgmt/shared/appsvcs/task'); // pull all current tasks
             })
             .then((response) => assert(taskCount >= response.items.length));
+    });
+
+    it('should handle responses for declarations with multiple declarations', () => {
+        const declaration = [
+            {
+                class: 'ADC',
+                schemaVersion: '3.50',
+                id: 'declId1',
+                tenant1: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        pool: {
+                            class: 'Pool'
+                        }
+                    }
+                }
+            },
+            {
+                class: 'ADC',
+                schemaVersion: '3.50',
+                id: 'declId2',
+                tenant2: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        pool: {
+                            class: 'Pool'
+                        }
+                    }
+                }
+            }
+        ];
+        const taskIds = [];
+
+        return Promise.resolve()
+            .then(() => sendDeclaration(declaration, '?async=true'))
+            .then((response) => {
+                assert.strictEqual(response.body.items[0].results[0].code, 0);
+                assert.strictEqual(response.body.items[0].results[0].message, 'Declaration successfully submitted');
+                assert.strictEqual(response.body.items[0].results[0].declarationId, 'declId1');
+                assert.strictEqual(response.body.items[1].results[0].code, 0);
+                assert.strictEqual(response.body.items[1].results[0].message, 'Declaration successfully submitted');
+                assert.strictEqual(response.body.items[1].results[0].declarationId, 'declId2');
+                taskIds.push(response.body.items[0].id);
+                taskIds.push(response.body.items[1].id);
+                return _checkForCompleteStatus(taskIds[0]);
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].declarationId, 'declId1');
+                return _checkForCompleteStatus(taskIds[1]);
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].declarationId, 'declId2');
+            });
     });
 });

@@ -201,7 +201,20 @@ describe('asyncHandler', () => {
     }
 
     describe('.handleRecord()', () => {
+        let defaultContext;
         const asyncUuid = 'handle-record-uuid';
+
+        beforeEach(() => {
+            defaultContext = {
+                request: {
+                    method: 'Foo'
+                },
+                tasks: [
+                    { action: '' }
+                ]
+            };
+        });
+
         function assertRecord(asyncHandler, method, results, context) {
             return asyncHandler.handleRecord(context, method, asyncUuid, results, 'handleRecord message')
                 .then((result) => {
@@ -223,7 +236,7 @@ describe('asyncHandler', () => {
 
         it('should create new records', () => {
             const asyncHandler = new AsyncHandler();
-            return assertRecord(asyncHandler, 'POST')
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
                 .then(() => getRecords(asyncHandler))
                 .then((records) => {
                     const record = records[0];
@@ -235,7 +248,7 @@ describe('asyncHandler', () => {
         it('should persist records', () => {
             const dataStore = new JsonDataStore();
             let asyncHandler = new AsyncHandler(dataStore);
-            return assertRecord(asyncHandler, 'POST')
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
                 .then(() => {
                     asyncHandler = new AsyncHandler(dataStore);
                     return asyncHandler.restoreState();
@@ -251,8 +264,8 @@ describe('asyncHandler', () => {
         it('should create update records', () => {
             const asyncHandler = new AsyncHandler();
             const response = createResponse();
-            return assertRecord(asyncHandler, 'POST')
-                .then(() => assertRecord(asyncHandler, 'PATCH', response))
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
+                .then(() => assertRecord(asyncHandler, 'PATCH', response, defaultContext))
                 .then(() => getRecords(asyncHandler))
                 .then((records) => {
                     const record = records[0];
@@ -264,39 +277,18 @@ describe('asyncHandler', () => {
 
         it('should create delete records', () => {
             const asyncHandler = new AsyncHandler();
-            return assertRecord(asyncHandler, 'POST')
-                .then(() => assertRecord(asyncHandler, 'DELETE'))
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
+                .then(() => assertRecord(asyncHandler, 'DELETE', undefined, defaultContext))
                 .then(() => getRecords(asyncHandler))
                 .then((records) => {
                     assert.deepEqual(records, []);
                 });
         });
 
-        it('should create records when the context method is not Get', () => {
-            const asyncHandler = new AsyncHandler();
-            const context = {
-                request: {
-                    method: 'Foo'
-                }
-            };
-            return assertRecord(asyncHandler, 'POST', null, context)
-                .then(() => getRecords(asyncHandler))
-                .then((records) => {
-                    assert.strictEqual(records.length, 1);
-                });
-        });
-
         it('should not create records when the context method is Get', () => {
             const asyncHandler = new AsyncHandler();
-            const context = {
-                request: {
-                    method: 'Get'
-                },
-                tasks: [
-                    { action: '' }
-                ]
-            };
-            return assertRecord(asyncHandler, 'POST', null, context)
+            defaultContext.request.method = 'Get';
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
                 .then(() => getRecords(asyncHandler))
                 .then((records) => {
                     assert.strictEqual(records.length, 0);
@@ -305,18 +297,38 @@ describe('asyncHandler', () => {
 
         it('should run Get when action is retrieve', () => {
             const asyncHandler = new AsyncHandler();
-            const context = {
-                request: {
-                    method: 'Post'
-                },
-                tasks: [
-                    { action: 'retrieve' }
-                ]
-            };
-            return assertRecord(asyncHandler, 'POST', null, context)
+            defaultContext.method = 'Post';
+            defaultContext.tasks[0].action = 'retrieve';
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
                 .then(() => getRecords(asyncHandler))
                 .then((records) => {
                     assert.strictEqual(records.length, 1);
+                });
+        });
+
+        it('should add declaration.id to results when there is a declaration', () => {
+            const asyncHandler = new AsyncHandler();
+            defaultContext.tasks[0] = {
+                asyncUuid,
+                declaration: {
+                    id: 'declId'
+                }
+            };
+            return assertRecord(asyncHandler, 'POST', null, defaultContext)
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result.body.results,
+                        [
+                            {
+                                message: 'handleRecord message',
+                                tenant: '',
+                                host: '',
+                                runTime: 0,
+                                code: 0,
+                                declarationId: 'declId'
+                            }
+                        ]
+                    );
                 });
         });
     });
@@ -510,10 +522,15 @@ describe('asyncHandler', () => {
     });
 
     describe('.asyncReturn()', () => {
+        const context = {
+            tasks: [{}],
+            currentIndex: 0
+        };
+
         it('should allow overwriting the status code', () => {
             function assertCode(code, expectCode) {
                 const asyncHandler = new AsyncHandler();
-                const resultCode = asyncHandler.asyncReturn('message', 'uuid', code).statusCode;
+                const resultCode = asyncHandler.asyncReturn(context, 'message', 'uuid', code).statusCode;
                 assert.strictEqual(resultCode, expectCode);
             }
             assertCode(undefined, 202);
@@ -524,7 +541,7 @@ describe('asyncHandler', () => {
             const asyncHandler = new AsyncHandler();
             const uuid = 'uuid';
             const message = 'custom message';
-            const body = asyncHandler.asyncReturn(message, uuid).body;
+            const body = asyncHandler.asyncReturn(context, message, uuid).body;
             assert.equal(body.id, uuid);
             assert(Array.isArray(body.results), 'Body does not contain a results array');
             assert.equal(body.results[0].message, message);

@@ -594,8 +594,18 @@ describe('API Testing (__smoke)', function () {
                         return deleteDeclaration('tenant1');
                     })
                     .then((results) => {
-                        assert.strictEqual(results.results[0].code, 200);
-                        assert.strictEqual(results.results[0].message, 'success');
+                        results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                        results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                        results.results = checkAndDelete(results.results, 'runTime', 'number');
+                        assert.deepStrictEqual(
+                            results.results[0],
+                            {
+                                code: 200,
+                                host: 'localhost',
+                                message: 'success',
+                                tenant: 'tenant1'
+                            }
+                        );
                     })
                     .then(() => assert.isRejected(getPath('/mgmt/shared/appsvcs/declare/tenant1')))
                     .then(() => getPath('/mgmt/shared/appsvcs/declare'))

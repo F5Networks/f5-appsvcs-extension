@@ -529,6 +529,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
             response.host = context.target.host;
             response.tenant = tenantId;
             response.code = err.code;
+            response.declarationId = declaration.id;
             log.error(err);
             traceSpan.logError(err);
             return log.debug(response); // intentionally not reject()

@@ -16,6 +16,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4148: Update per-app for GA
 - AUTOTOOL-4160: Record first and second passes of Common in separate trace files
 - AUTOTOOL-4177: A DELETE to a Tenant or an Application with per-app will now use the previous declarations schemaVersion as the saved schemaVersion
+- AUTOTOOL-4115: declarationId response and logging values in non-POST requests
 
 ### Removed
 
