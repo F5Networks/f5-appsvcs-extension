@@ -26,15 +26,20 @@ const assert = chai.assert;
 const {
     postDeclaration,
     deleteDeclaration,
+    getBigIpVersion,
     getPath,
     assertModuleProvisioned,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
-describe('GSLB_Domain', function () {
+describe('GSLB_Topology_Records', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
-    beforeEach('provision check and clean up', function () {
+    beforeEach('version and provision check and clean up', function () {
+        if (util.versionLessThan(getBigIpVersion(), '14.1')) {
+            this.skip();
+        }
+
         assertModuleProvisioned.call(this, 'gtm');
         return deleteDeclaration();
     });
@@ -125,7 +130,11 @@ describe('GSLB_Domain', function () {
             // initial check
             .then(() => getPath('/mgmt/tm/gtm/topology'))
             .then((response) => {
-                assert.strictEqual(response.items.length, 0);
+                if (util.versionLessThan(getBigIpVersion(), '14.0')) {
+                    assert.isUndefined(response.items);
+                } else {
+                    assert.strictEqual(response.items.length, 0);
+                }
             })
             .then(() => getPath('/mgmt/tm/gtm/global-settings/load-balancing'))
             .then((response) => {
@@ -334,7 +343,11 @@ describe('GSLB_Domain', function () {
             // initial check
             .then(() => getPath('/mgmt/tm/gtm/topology'))
             .then((response) => {
-                assert.strictEqual(response.items.length, 0);
+                if (util.versionLessThan(getBigIpVersion(), '14.0')) {
+                    assert.isUndefined(response.items);
+                } else {
+                    assert.strictEqual(response.items.length, 0);
+                }
             })
             .then(() => getPath('/mgmt/tm/gtm/global-settings/load-balancing'))
             .then((response) => {
