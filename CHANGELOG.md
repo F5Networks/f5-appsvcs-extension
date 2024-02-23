@@ -14,6 +14,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Changed
 - Remove node 4 testing due to end of BIG-IP 13.1 support: ([Supported BIG-IP Versions](https://my.f5.com/manage/s/article/K5903))
+- AUTOTOOL-4137: ([GitHub Issue 788](https://github.com/F5Networks/f5-appsvcs-extension/issues/788)): Service-discovery deletes the pool members for each sd modification
 - AUTOTOOL-4148: Update per-app for GA
 - AUTOTOOL-4160: Record first and second passes of Common in separate trace files
 - AUTOTOOL-4177: A DELETE to a Tenant or an Application with per-app will now use the previous declarations schemaVersion as the saved schemaVersion

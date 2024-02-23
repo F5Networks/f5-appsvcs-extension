@@ -114,7 +114,7 @@ describe('serviceDiscovery', () => {
                 path: '/tenant/app/item'
             };
             const task = serviceDiscovery.createTask(sdItem, 'tenant', []);
-            assert.strictEqual(task.id, '~tenant~1W4Cpe98kark2Bdj1zYlzL3eAy4uZGDP170P~a1ZMrtQ3D');
+            assert.strictEqual(task.id, '~tenant~kTTUt6yCc2BiuSWkaqdOIZZ8uCEFdyuw2ri6uG3CxbHc3D');
         });
 
         it('should setup a gce provider task', () => {
@@ -180,9 +180,8 @@ describe('serviceDiscovery', () => {
                 }
             };
             const tenantId = 'Common';
-            const expected = '~test~sIDOV~vSBQ45Jgc5DeZSJUiCnMeBS3RUNALgNQza~eQ3D';
             const result = serviceDiscovery.generateTaskId(task, tenantId);
-            assert.strictEqual(result, expected);
+            assert.strictEqual(result, '~test~mMIvv0aXGmrDh7GGUfsuQpdhn1XWlt8cr5irplpsxxU3D');
         });
 
         it('should encode uri without hashing when event provider', () => {
@@ -195,9 +194,110 @@ describe('serviceDiscovery', () => {
                 provider: 'event'
             };
             const tenantId = 'Common';
-            const expected = '~test~Application~pool_www_demo_f5demo_aws_2';
             const result = serviceDiscovery.generateTaskId(task, tenantId);
-            assert.strictEqual(result, expected);
+            assert.strictEqual(result, '~test~Application~pool_www_demo_f5demo_aws_2');
+        });
+
+        it('should return the same task ID even though non-deterministic properties change', () => {
+            // NOTE: This is not a valid declaration, I wanted to test "All Properties" in this function
+            const task = {
+                resources: [
+                    {
+                        type: 'pool',
+                        path: '/test/Application/pool_www_demo_f5demo_aws_2',
+                        options: {
+                            servicePort: 80,
+                            connectionLimit: 0,
+                            rateLimit: 'disabled',
+                            dynamicRatio: 1,
+                            ratio: 1,
+                            priorityGroup: 0,
+                            monitor: 'default',
+                            shareNodes: false,
+                            routeDomain: 2,
+                            remark: 'randomRemark',
+                            minimumMonitors: 2,
+                            metadata: 'randomMetadata'
+                        }
+                    }
+                ],
+                nodePrefix: '/Common/',
+                provider: 'aws',
+                providerOptions: {
+                    tagKey: 'demo-key',
+                    tagValue: 'as3-webapp-tag-value',
+                    addressRealm: 'public',
+                    region: 'us-east-1c',
+                    accessKeyId: 'correctAccessKey',
+                    secretAccessKey: '$M$Cg$5fbTc4ydJOwuL9s76gZQpQ==',
+                    uri: 'example.com/thingy',
+                    jmesPathQuery: '[?Node==`consul-client`]',
+                    projectId: 'medicalAppNetwork',
+                    resourceGroup: 'cloud-shell-storage-eastus',
+                    subscriptionId: 'abcdef01',
+                    directoryId: 'funky',
+                    applicationId: 'monkey',
+                    resourceType: 'tag',
+                    resourceId: 'amazingNodes',
+                    environment: 'awsEnvironWest',
+                    serverAddresses: ['192.0.2.35'],
+                    servers: ['192.0.2.12'],
+                    bigip: '/tenant/application/nodes/nodeId',
+                    hostname: 'mymail.somecollege.edu',
+                    fqdnPrefix: 'homeNodes',
+                    addressFamily: 'IPv6',
+                    autoPopulate: true,
+                    updateInterval: 200,
+                    enable: false,
+                    adminState: 'disable',
+                    queryInterval: 31,
+                    downInterval: 124,
+                    roleARN: 'randomRoleARN',
+                    externalId: 'randomExternalId',
+                    useManagedIdentity: true,
+                    apiAccessKey: 'randomApiAccessKey',
+                    credentialUpdate: false,
+                    undetectableAction: 'remove',
+                    encodedCredentials: 'randomEncodedCredentials',
+                    encodedToken: 'randomEncodedToken',
+                    trustCA: 'something',
+                    rejectUnauthorized: true
+                }
+            };
+            let result = serviceDiscovery.generateTaskId(task, 'Common');
+            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
+
+            // update properties that should not affect hash
+            task.resources[0].options.connectionLimit = 10;
+            task.resources[0].options.rateLimit = 390;
+            task.resources[0].options.dynamicRatio = 28;
+            task.resources[0].options.ratio = 8;
+            task.resources[0].options.priorityGroup = 182;
+            task.resources[0].options.monitor = 'otherMonitor';
+            task.resources[0].options.remark = 'otherRemark';
+            task.resources[0].options.minimumMonitors = 5;
+            task.resources[0].options.metadata = 'otherMetadata';
+
+            task.providerOptions.accessKeyId = 'otherAccessKey';
+            task.providerOptions.secretAccessKey = 'otherSecret';
+            task.providerOptions.updateInterval = 10000;
+            task.providerOptions.enable = true;
+            task.providerOptions.adminState = 'offline';
+            task.providerOptions.queryInterval = 12;
+            task.providerOptions.downInterval = 21234;
+            task.providerOptions.roleARN = 'otherRoleARN';
+            task.providerOptions.externalId = 'otherExternalId';
+            task.providerOptions.useManagedIdentity = false;
+            task.providerOptions.apiAccessKey = 'otherApiAccessKey';
+            task.providerOptions.credentialUpdate = true;
+            task.providerOptions.undetectableAction = 'disable';
+            task.providerOptions.encodedCredentials = 'otherEncodedCreds';
+            task.providerOptions.encodedToken = 'otherEncodedToken';
+            task.providerOptions.trustCA = 'heyItIsSomethingElse';
+            task.providerOptions.rejectUnauthorized = false;
+
+            result = serviceDiscovery.generateTaskId(task, 'Common');
+            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
         });
     });
 

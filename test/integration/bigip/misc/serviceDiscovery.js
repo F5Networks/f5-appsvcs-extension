@@ -572,6 +572,92 @@ describe('Service Discovery', function () {
                     );
                 });
         });
+
+        it('should validate the task id is unchanged when non-hash values are updated', () => {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.31.0',
+                id: 'TEST',
+                controls: {
+                    traceResponse: true
+                },
+                TEST: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        testVirtual: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.125'
+                            ],
+                            pool: {
+                                use: 'testPool'
+                            }
+                        },
+                        testPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080,
+                                    ratio: 10
+                                },
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}',
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080
+                                },
+                                {
+                                    addressDiscovery: 'gce',
+                                    updateInterval: 60,
+                                    tagKey: 'foo',
+                                    tagValue: 'bar',
+                                    addressRealm: 'private',
+                                    region: 'us-west1',
+                                    encodedCredentials: 'randomValuesWhich',
+                                    credentialUpdate: false,
+                                    servicePort: 8080
+                                }
+                            ]
+                        }
+                    }
+                }
+            };
+            return Promise.resolve()
+                .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results.length, 1); // only 1 tenant, only 1 result
+                    response.traces.TESTDiff.forEach((diff) => {
+                        assert.deepStrictEqual(diff.kind, 'N', 'Tasks should only be created at this step.');
+                    });
+
+                    declaration.TEST.Application.testPool.members[0].ratio = 50;
+                    declaration.TEST.Application.testPool.members[1].adminState = 'offline';
+                    declaration.TEST.Application.testPool.members[2].updateInterval = 100;
+
+                    return postDeclaration(declaration, { declarationIndex: 1 });
+                })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results.length, 1); // only 1 tenant, only 1 result
+                    assert.deepStrictEqual(response.traces.TESTDiff.length, 4); // 4 Edits to existing tasks
+                    response.traces.TESTDiff.forEach((diff) => {
+                        assert.deepStrictEqual(diff.kind, 'E', 'Tasks should only be edited at this step.');
+                        assert.deepStrictEqual(diff.command, 'mgmt shared service-discovery task');
+                    });
+                });
+        });
     });
 
     describe('Firewall Address List', function () {

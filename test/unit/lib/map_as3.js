@@ -621,9 +621,9 @@ describe('map_as3', () => {
                     {
                         command: 'mgmt shared service-discovery task',
                         ignore: [],
-                        path: '/tenantId/~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
+                        path: '/tenantId/~tenantId~1mz5zBTnwNcOL82rys2G0ZZtEBx3cZzp6aUAaWXkuZw3D',
                         properties: {
-                            id: '~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
+                            id: '~tenantId~1mz5zBTnwNcOL82rys2G0ZZtEBx3cZzp6aUAaWXkuZw3D',
                             metadata: {
                                 configuredBy: 'AS3'
                             },
@@ -11081,11 +11081,11 @@ describe('map_as3', () => {
                 {
                     configs: [
                         {
-                            path: '/tenantId/~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
+                            path: '/tenantId/~tenantId~dNPxtyLAg8Amf7TZZZqJEpAWZUboWAPLVXscYN83KC43D',
                             command: 'mgmt shared service-discovery task',
                             properties: {
                                 schemaVersion: '1.0.0',
-                                id: '~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
+                                id: '~tenantId~dNPxtyLAg8Amf7TZZZqJEpAWZUboWAPLVXscYN83KC43D',
                                 updateInterval: 60,
                                 resources: {
                                     0: {
@@ -11196,11 +11196,11 @@ describe('map_as3', () => {
                         ignore: []
                     },
                     {
-                        path: '/tenantId/~tenantId~Mw8jIQ9ayaeMCzGE5ohjjiLouhPkGjtOc8ltKOwh3m03D',
+                        path: '/tenantId/~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                         command: 'mgmt shared service-discovery task',
                         properties: {
                             schemaVersion: '1.0.0',
-                            id: '~tenantId~Mw8jIQ9ayaeMCzGE5ohjjiLouhPkGjtOc8ltKOwh3m03D',
+                            id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',
@@ -11246,11 +11246,11 @@ describe('map_as3', () => {
                         ignore: []
                     },
                     {
-                        path: '/tenantId/~tenantId~QN1zwZgXTd5Lwki0G9SPjfYxQHdNsEEA3eGTUKNL4BQ3D',
+                        path: '/tenantId/~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                         command: 'mgmt shared service-discovery task',
                         properties: {
                             schemaVersion: '1.0.0',
-                            id: '~tenantId~QN1zwZgXTd5Lwki0G9SPjfYxQHdNsEEA3eGTUKNL4BQ3D',
+                            id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',
@@ -11279,11 +11279,11 @@ describe('map_as3', () => {
                 results.configs,
                 [
                     {
-                        path: '/tenantId/~tenantId~6mbpio9KDu96TxgO5SB4HwI7bIKU3dfDaVWe2BH74DdY3D',
+                        path: '/tenantId/~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                         command: 'mgmt shared service-discovery task',
                         properties: {
                             schemaVersion: '1.0.0',
-                            id: '~tenantId~6mbpio9KDu96TxgO5SB4HwI7bIKU3dfDaVWe2BH74DdY3D',
+                            id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',
