@@ -29,6 +29,9 @@ const keywords = [
                     },
                     data: {
                         type: ['string', 'object', 'array']
+                    },
+                    errSchemaPath: { // Utilized by f5-appsvcs-schema for error response, allow this
+                        type: 'string'
                     }
                 },
                 required: ['tag'],
