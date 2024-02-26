@@ -51,6 +51,72 @@ describe('Per-app tests', function () {
 
     beforeEach(() => deleteDeclaration());
 
+    it('should handle dryRun in Tenant controls', () => {
+        const decl = {
+            id: 'per-app-declaration',
+            schemaVersion: '3.50.0',
+            controls: {
+                class: 'Controls',
+                dryRun: true,
+                logLevel: 'debug'
+            },
+            Application1: {
+                class: 'Application',
+                service: {
+                    class: 'Service_HTTP',
+                    virtualAddresses: [
+                        '192.0.2.1'
+                    ],
+                    pool: 'pool'
+                },
+                pool: {
+                    class: 'Pool',
+                    members: [
+                        {
+                            servicePort: 80,
+                            serverAddresses: [
+                                '192.0.2.10',
+                                '192.0.2.20'
+                            ]
+                        }
+                    ]
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((results) => {
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'changes', 'object');
+                assert.deepStrictEqual(
+                    results.results,
+                    [
+                        {
+                            code: 200,
+                            message: 'success',
+                            dryRun: true,
+                            host: 'localhost',
+                            tenant: 'tenant1',
+                            warnings: [
+                                {
+                                    tenant: 'tenant1',
+                                    message: 'dryRun true found in Tenant controls'
+                                }
+                            ]
+                        }
+                    ]
+                );
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
     it('should NOT modify applications outside the declaration', () => {
         const perTenDecl = {
             class: 'ADC',

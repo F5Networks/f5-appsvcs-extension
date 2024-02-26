@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4135: Topology Records created in /Common/Shared are being unintentionally deleted
 - AUTOTOOL-4134: ([GitHub Issue 791](https://github.com/F5Networks/f5-appsvcs-extension/issues/791)): Topology Records created in places other than /Common/Shared are being unintentionally
  deleted
+ - AUTOTOOL-4116: dryRun does not work when specified in Tenant level controls
 
 ### Changed
 - Remove node 4 testing due to end of BIG-IP 13.1 support: ([Supported BIG-IP Versions](https://my.f5.com/manage/s/article/K5903))

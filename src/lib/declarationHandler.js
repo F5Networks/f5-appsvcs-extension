@@ -625,6 +625,14 @@ class DeclarationHandler {
                         warnings[warning.tenant].push(warning);
                     });
                 }
+                if (currentTask.warnings) {
+                    currentTask.warnings.forEach((warning) => {
+                        if (!warnings[warning.tenant]) {
+                            warnings[warning.tenant] = [];
+                        }
+                        warnings[warning.tenant].push(warning);
+                    });
+                }
             })
             .then(() => {
                 // Nodelist is acquired by a call to util.getNodelist in adcParser.

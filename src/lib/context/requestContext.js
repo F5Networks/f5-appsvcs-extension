@@ -129,7 +129,7 @@ class RequestContext {
                 // Iterate through all the declarations looking for controls
                 tasks.forEach((task) => {
                     if (task.declaration) {
-                        const controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
+                        let controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
                         if (task.declaration[controlsName]) {
                             if (task.declaration[controlsName].internalUse) {
                                 if (task.declaration[controlsName].internalUse.action) {
@@ -139,6 +139,19 @@ class RequestContext {
                             }
                             task.dryRun = task.declaration[controlsName].dryRun || false;
                         }
+                        Object.keys(task.declaration).forEach((tenant) => {
+                            if (declarationUtil.isTenant(task.declaration[tenant])) {
+                                controlsName = util.getObjectNameWithClassName(task.declaration[tenant], 'Controls');
+                                if (controlsName && task.declaration[tenant][controlsName].dryRun) {
+                                    task.dryRun = true;
+                                    task.warnings = task.warnings || [];
+                                    task.warnings.push({
+                                        tenant,
+                                        message: 'dryRun true found in Tenant controls'
+                                    });
+                                }
+                            }
+                        });
                     }
                     task.dryRun = task.dryRun || false; // Enforce default if there is no declaration
                     if (task.action === 'dry-run') {
