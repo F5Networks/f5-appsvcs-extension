@@ -60,7 +60,7 @@
     ```
   * Create a merge request like for any other development task and announce on Teams `AS3-DO General`.
 
-### Perform actions after go ahead from Go/No-Go meeting
+### Perform actions after confirming GO for release
 Merge the release branch into `develop` and `main` following the steps below for each merge.
 * Navigate to the `Merge Requests` page and click on `New merge request` in the upper right corner.
 * Select the release branch as the `source branch`.
