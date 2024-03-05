@@ -101,6 +101,22 @@ update_autotool_deps:
       fi
   tags: [cm-official-docker-executor]
 
+update_shared_schema:
+  stage: update
+  rules:
+    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
+  needs: []
+  variables:
+    UPDATE_BRANCH_NAME: update_shared_schema
+  script:
+    - . ./scripts/dev/update-shared-schema.sh
+    - >
+      if [ "$SHARED_SCHEMA_DIFF" = "true" ]; then
+        git push -f origin ${UPDATE_BRANCH_NAME}
+        node ./scripts/dev/createMR.js
+      fi
+  tags: [cm-official-docker-executor]
+
 schema:
   image: $DOCKER_URL/node:10
   stage: schema
@@ -351,6 +367,12 @@ deploy_for_this_project:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
+      # Don't run deploy in case of scheduled shared schema run
+    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
+      when: never
+      # In case of update_shared_schema branch we would like to have an integration
+      #  testing run, so enable it here
+    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   needs:
@@ -362,6 +384,11 @@ deploy_for_this_project:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
     REGKEY: "$BIGIP_LICENSE"
   before_script:
+    # In case of update_shared_schema run we need to provide some extra vars
+    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
+    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    -   export PARALLEL=true
+    - fi
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
@@ -488,8 +515,21 @@ test_rpms_for_this_project:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
+      # Don't run test in case of scheduled shared schema run
+    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
+      when: never
+      # In case of update_shared_schema branch we would like to have an integration
+      #  testing run, so enable it here
+    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
+  before_script:
+    # In case of update_shared_schema run we need to provide some extra vars
+    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
+    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    -   export PARALLEL=true
+    -   export REGRESSION_SCHEDULE=nightly
+    - fi
   <<: *test_rpms_common
   artifacts:
     name: f5-appsvcs-extension-$CI_COMMIT_SHA
@@ -575,6 +615,13 @@ teardown_openstack:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
+      # Don't run test in case of scheduled shared schema run
+    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
+      when: never
+      # In case of update_shared_schema branch we would like to have an integration
+      #  testing run, so enable it here
+    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: always
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
@@ -584,6 +631,11 @@ teardown_openstack:
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
   before_script:
+    # In case of update_shared_schema run we need to provide some extra vars
+    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
+    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+    -   export PARALLEL=true
+    - fi
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
     - if [[ "$PARALLEL" = "true" ]]; then
