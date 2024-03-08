@@ -87,6 +87,7 @@ Merge the release branch into `develop` and `main` following the steps below for
   * Update the `schemaVersion.anyOf[1].const` property in `schemas/core-schema.json` using the preexisting format. The `pattern` property should also be updated to allow the new version (e.g. if going from 3.49.0 to 3.50.0, we'll add `|5[0]`).
   * Run `npm ci`.
   * Run `npm run compile-schema`. If you don't have the typescript compiler (tsc) installed, you will need to run `npm install -g typescript`.
+  * Be sure to update the invalid_schema test case as well since the error uses the `pattern`.
   * Add and commit your changes, then push your branch.
   * Publish an MR and ask for approval in the `AppSvcs Schema` channel.
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
@@ -132,7 +133,7 @@ Merge the release branch into `develop` and `main` following the steps below for
 * Make any additions or modifications to the **doc-release-branch** for items specific to the release.
   * Update the release version in the **conf.py** file.
   * Update the latest version in the **versions.json** files (in doc-release branch and any LTS doc branches (for example **docs-3.36.1**, and **doc-3.32.1**)). Do NOT push the versions.json file for the LTS branches until the release has gone out.
-  * Update the support.md file if applicable (currently not applicable for AS3, but is applicable for DO)
+  * Update the support.md file.
   * Make sure the **revision-history.rst** file is up-to-date with all work done and the Issues resolved from the changelog.md file.
 * On release day, wait for the announcement that the code has been pushed to Github.
 * Checkout out **docs-latest**, and then merge the **doc-release-branch** into docs-latest.
