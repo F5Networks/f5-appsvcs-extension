@@ -23,6 +23,7 @@ const DiffProcessor = require('./diffProcessor');
 const tracerUtil = require('./tracer').Util;
 const fetch = require('./fetch');
 const bigiq = require('./bigiq');
+const gtmUtil = require('./util/gtmUtil');
 const util = require('./util/util');
 const log = require('./log');
 const hash = require('./util/hashUtil');
@@ -410,7 +411,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
         })
         .then((result) => {
             tenantDesiredConfig = result;
-            log.writeTraceFile(tenantId, 'desired', JSON.stringify(result, undefined, 2));
+            log.writeTraceFile(tenantId, 'desired', JSON.stringify(result, undefined, 2), context);
         })
         .then(() => fetch.checkDesiredForReferencedProfiles(context, tenantDesiredConfig))
         .then(() => {
@@ -452,7 +453,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
                     tenantCurrentConfig[key] = util.simpleCopy(uncheckedDiff[key]);
                 });
             }
-            log.writeTraceFile(tenantId, 'current', JSON.stringify(result, undefined, 2));
+            log.writeTraceFile(tenantId, 'current', JSON.stringify(result, undefined, 2), context);
         })
         .then(() => reportTime(
             `generating ${tenantId} diff`,
@@ -480,7 +481,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
         .then(() => {
             // Tag diff entries for updaters
             updaters.forEach((u) => u.tagDiff(tenantConfigDiff));
-            log.writeTraceFile(tenantId, 'diff', JSON.stringify(tenantConfigDiff, undefined, 2));
+            log.writeTraceFile(tenantId, 'diff', JSON.stringify(tenantConfigDiff, undefined, 2), context);
         })
         .then(() => diffProcessor.validate().catch((error) => {
             context.tasks[context.currentIndex].firstPassNoDelete = false;
@@ -528,6 +529,7 @@ const auditTenant = function (context, tenantId, declaration, commonConfig, prev
             response.host = context.target.host;
             response.tenant = tenantId;
             response.code = err.code;
+            response.declarationId = declaration.id;
             log.error(err);
             traceSpan.logError(err);
             return log.debug(response); // intentionally not reject()
@@ -567,6 +569,7 @@ const allTenants = function (context, tenantList, declaration, commonConfig, pre
 
     if (i === 0) {
         registerForRequestEvents(context);
+        gtmUtil.getTopologyRecordsTenant(context, declaration, previousDeclaration);
     }
 
     if (context.tasks[context.currentIndex].unchecked && typeof uncheckedDiff === 'undefined') {

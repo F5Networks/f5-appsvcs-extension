@@ -24,257 +24,32 @@ const As3Request = require('../../../src/lib/as3request');
 const util = require('../../../src/lib/util/util');
 const tmshUtil = require('../../../src/lib/util/tmshUtil');
 const constants = require('../../../src/lib/constants');
+const SchemaValidator = require('../../../src/lib/schemaValidator');
+const DEVICE_TYPES = require('../../../src/lib/constants').DEVICE_TYPES;
 
 describe('as3request', function () {
-    let schemaPath;
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../../src/schema/latest/as3-request-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(DEVICE_TYPES.BIG_IP, schemaConfigs);
     let as3Request;
 
-    before(() => {
-        schemaPath = `${__dirname}/../../../src/schema/latest/as3-request-schema.json`;
-        // Build the request once so that we don't have to keep parsing the schema
-        as3Request = new As3Request(schemaPath);
-    });
+    // Build the validator once so that we don't have to keep parsing the schema
+    before(() => schemaValidator.init());
     beforeEach(() => {
+        as3Request = new As3Request(schemaValidator);
         sinon.stub(util, 'getMgmtPort').resolves(8443);
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
     });
     afterEach(() => sinon.restore());
 
-    describe('.constructor', () => {
-        it('should error if the schemaPath is not provided', () => assert.throws(
-            () => new As3Request(), /A path to the schema is required/
-        ));
-
-        it('should set the default values', () => {
-            assert.deepStrictEqual(as3Request.ajvOptions, {
-                allErrors: false,
-                async: false,
-                jsonPointers: true,
-                useDefaults: true,
-                verbose: true
-            });
-            assert.strictEqual(typeof as3Request.validator, 'function');
-        });
-
-        it('should set the passed in values', () => {
-            const ajvOptions = {
-                allErrors: false,
-                async: true,
-                jsonPointers: false,
-                useDefaults: false,
-                verbose: false
-            };
-            const tempAs3Request = new As3Request(schemaPath, ajvOptions);
-
-            assert.match(tempAs3Request.schemaPath,
-                /..\/..\/..\/src\/schema\/latest\/as3-request-schema.json/);
-            assert.deepStrictEqual(tempAs3Request.ajvOptions, {
-                allErrors: false,
-                async: true,
-                jsonPointers: false,
-                useDefaults: false,
-                verbose: false
-            });
-            assert.strictEqual(typeof tempAs3Request.validator, 'function');
-        });
-    });
-
-    describe('validator', () => {
-        let validator;
-        before(() => {
-            validator = new As3Request(schemaPath).getAjvValidatorInstance();
-        });
-
-        function validate(request, expectedResult) {
-            let errMsg;
-            validator(request);
-
-            let isValid = true;
-            if (validator.errors) {
-                isValid = false;
-                errMsg = `Errors: ${JSON.stringify(validator.errors[0])}`;
-            }
-            return assert.equal(isValid, expectedResult, errMsg);
-        }
-
-        function assertInvalid(request) {
-            return validate(request, false);
-        }
-
-        function assertValid(request) {
-            return validate(request, true);
-        }
-
-        it('should fail on empty object', () => assertInvalid({}));
-
-        it('should fail on empty array', () => assertInvalid([]));
-
-        it('should fail when class is specified and invalid',
-            () => assertInvalid(
-                {
-                    class: 'mumble'
-                }
-            ));
-
-        it('should fail with invalid AS3', () => assertInvalid(
-            {
-                class: 'AS3',
-                action: 'magically transform'
-            }
-        ));
-
-        it('should succeed with AS3', () => assertValid(
-            {
-                class: 'AS3',
-                action: 'redeploy',
-                targetHost: '192.0.2.1',
-                targetUsername: 'user',
-                targetPassphrase: 'password'
-            }
-        ));
-
-        it('should succeed with AS3 array', () => assertValid(
-            [
-                {
-                    class: 'AS3',
-                    action: 'retrieve',
-                    targetHost: '192.0.2.1',
-                    targetUsername: 'user',
-                    targetPassphrase: 'password'
-                },
-                {
-                    class: 'AS3',
-                    action: 'redeploy',
-                    targetHost: '192.0.2.2',
-                    targetUsername: 'user',
-                    targetPassphrase: 'password'
-                }
-            ]
-        ));
-
-        it('should succeed with ADC', () => assertValid(
-            {
-                class: 'ADC',
-                id: 'test1111',
-                schemaVersion: '3.0.0'
-
-            }
-        ));
-
-        it('should succeed with ADC array', () => assertValid(
-            [
-                {
-                    class: 'ADC',
-                    id: 'test1111',
-                    schemaVersion: '3.10.0'
-
-                },
-                {
-                    class: 'ADC',
-                    id: 'test2222',
-                    schemaVersion: '3.10.0'
-                }
-            ]
-        ));
-
-        it('should succeed with patch single', () => assertValid(
-            [{
-                op: 'add',
-                path: '/some/test',
-                value: 'to add'
-
-            }]
-        ));
-
-        it('should succeed with patch multiple', () => assertValid([
-            {
-                op: 'add',
-                path: '/some/test',
-                value: 'to add'
-
-            },
-            {
-                op: 'remove',
-                path: '/some/test'
-            }
-        ]));
-
-        it('should fail with invalid patch body', () => assertInvalid(
-            [{
-                op: 'add',
-                value: 'to add'
-            }]
-        ));
-
-        it('should fail with array containing both ADC item and AS3 item', () => assertInvalid(
-            [
-                {
-                    class: 'AS3',
-                    action: 'remove'
-                },
-                {
-                    class: 'ADC',
-                    id: 'test1111',
-                    schemaVersion: '3.10.0'
-
-                }
-            ]
-        ));
-
-        it('should fail with array containing ADC item and patchBody item', () => assertInvalid(
-            [
-                {
-                    class: 'ADC',
-                    id: 'test1111',
-                    schemaVersion: '3.10.0'
-
-                },
-                {
-                    op: 'add',
-                    path: '/some/test',
-                    value: 'to add'
-                }
-            ]
-        ));
-
-        it('should fail with array containing AS3 item and patchBody item', () => assertInvalid(
-            [
-                {
-                    op: 'add',
-                    path: '/some/test',
-                    value: 'to add'
-                },
-                {
-                    class: 'AS3',
-                    action: 'retrieve'
-                }
-            ]
-        ));
-    });
-
-    describe('.getDefaultAjvOptions', () => {
-        it('should return a proper default object', () => {
-            assert.deepStrictEqual(
-                as3Request.getDefaultAjvOptions(),
-                {
-                    allErrors: false,
-                    async: false,
-                    jsonPointers: true,
-                    useDefaults: true,
-                    verbose: true
-                }
-            );
-        });
-    });
-
-    describe('.getValidatorError', () => {
+    describe('.formatValidatorError', () => {
         it('should return undefined if there are no errors', () => {
-            assert.strictEqual(as3Request.getValidatorError(), undefined);
+            assert.strictEqual(as3Request.formatValidatorError(), undefined);
         });
 
         it('should return a formatted error message if there was an error', () => {
-            as3Request.validator.errors = [];
-            as3Request.validator.errors.push({
+            const errors = [{
                 data: 'example data',
                 dataPath: 'fileName.js (/path/to/fileName.js)',
                 message: 'something broke',
@@ -283,12 +58,11 @@ describe('as3request', function () {
                         { keyword: 'thisPropertyFailed', dataPath: '' } // example pulled from ajv docs
                     ]
                 }
-            });
+            }];
 
             assert.strictEqual(
-                as3Request.getValidatorError(),
-                'Invalid request value \'example data\' (path: fileName.js (/path/to/fileName.js))'
-                + ' : something broke {"errors":[{"keyword":"thisPropertyFailed","dataPath":""}]}'
+                as3Request.formatValidatorError(errors),
+                'Invalid request: fileName.js (/path/to/fileName.js): something broke'
             );
         });
     });
@@ -588,7 +362,7 @@ describe('as3request', function () {
         it('should error if requestContext is not provided', () => {
             assert.throws(
                 () => as3Request.validateAndWrap(undefined, {}),
-                /Cannot read propert(y 'body' of undefined|ies of undefined \(reading 'body'\))/
+                /Request and host contexts are required/
             );
         });
 
@@ -599,7 +373,7 @@ describe('as3request', function () {
             };
             assert.throws(
                 () => as3Request.validateAndWrap(requestContext),
-                /Cannot read propert(y 'deviceType' of undefined|ies of undefined \(reading 'deviceType'\))/
+                /Request and host contexts are required/
             );
         });
 
@@ -621,8 +395,7 @@ describe('as3request', function () {
             };
 
             const results = as3Request.validateAndWrap(requestContext, {});
-            assert.strictEqual(results.error, 'Invalid request value \'[object Object],[object '
-                + 'Object]\' (path: ) : should be object {"type":"object"}');
+            assert.strictEqual(results.error, 'Invalid request: /: should be object');
         });
 
         it('should error if on a container and the declaration is not correct', () => {

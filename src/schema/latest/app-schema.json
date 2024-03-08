@@ -13,6 +13,21 @@
             "minLength": 0,
             "maxLength": 255
         },
+        "schemaVersion": {
+            "title": "Schema version",
+            "description": "Version of ADC Declaration schema this declaration uses",
+            "type": "string",
+            "anyOf": [
+                {
+                    "description": "Any version of AS3.",
+                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0])($|[.][0-9]+$)"
+                },
+                {
+                    "description": "The current version of AS3.",
+                    "const": "3.50.0"
+                }
+            ]
+        },
         "controls": { "$ref": "urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a#/definitions/Controls" }
     },
     "additionalProperties": {
@@ -21,5 +36,6 @@
     "propertyNames": {
         "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
         "maxLength": 190
-    }
+    },
+    "required": [ "schemaVersion" ]
 }

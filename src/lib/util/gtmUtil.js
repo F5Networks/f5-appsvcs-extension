@@ -16,6 +16,37 @@
 
 'use strict';
 
+const declUtil = require('./declarationUtil');
+
+/**
+ * Search for a GSLB_Topology_Records class first in the current declaration and then in the previous declaration.
+ * Store result in context current task. Will return the first instance found. AS3 will only support location for now.
+ * @public
+ * @param {object} context - context
+ * @param {object} currentDecl - the current declaration
+ * @param {object} previousDecl - the previous declaration
+ */
+const getTopologyRecordsTenant = function getTopologyRecordsTenant(context, currentDecl, previousDecl) {
+    function findTopologyRecordsTenant(decl) {
+        return Object.keys(decl).find((tenant) => {
+            if (declUtil.isTenant(decl[tenant])) {
+                return Object.keys(decl[tenant]).find((app) => {
+                    if (declUtil.isApplication(decl[tenant][app])) {
+                        if (Object.keys(decl[tenant][app]).find((c) => declUtil.isClass(decl[tenant][app][c], 'GSLB_Topology_Records'))) {
+                            return tenant;
+                        }
+                    }
+                    return false;
+                });
+            }
+            return false;
+        });
+    }
+
+    context.tasks[context.currentIndex].gslbTopologyRecordsTenant = findTopologyRecordsTenant(currentDecl || {})
+        || findTopologyRecordsTenant(previousDecl || {});
+};
+
 const parseTopologyItem = function parseTopologyItem(objString) {
     const parsedItem = {};
     let notPrefix = '';
@@ -44,5 +75,6 @@ const parseTopologyItem = function parseTopologyItem(objString) {
 };
 
 module.exports = {
+    getTopologyRecordsTenant,
     parseTopologyItem
 };

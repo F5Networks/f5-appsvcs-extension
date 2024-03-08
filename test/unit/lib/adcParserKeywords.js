@@ -31,7 +31,7 @@ describe('adcParserKeywords', () => {
         beforeEach(() => {
             context = Context.build();
             that = {
-                postProcess: [],
+                _postProcess: [],
                 context
             };
             declaration = {
@@ -84,7 +84,7 @@ describe('adcParserKeywords', () => {
             );
             assert.strictEqual(results, true);
             assert.deepStrictEqual(
-                that.postProcess,
+                that._postProcess,
                 [
                     {
                         instancePath: '/tenant/application/service/profileHTTP/use',

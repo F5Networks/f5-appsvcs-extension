@@ -557,6 +557,61 @@ describe('API Testing (__smoke)', function () {
                     assert.strictEqual(response.statusCode, 204);
                 }));
         });
+
+        describe('DELETE', () => {
+            it('should remove specified Tenant and not update schemaVersion', () => {
+                const declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.50',
+                    id: 'declId',
+                    tenant1: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            pool: {
+                                class: 'Pool'
+                            }
+                        }
+                    },
+                    tenant2: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            pool: {
+                                class: 'Pool'
+                            }
+                        }
+                    }
+                };
+
+                return Promise.resolve()
+                    .then(() => postDeclaration(declaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare'))
+                    .then((results) => {
+                        assert.strictEqual(results.results[0].code, 200);
+                        assert.strictEqual(results.results[0].message, 'success');
+                        assert.strictEqual(results.results[1].code, 200);
+                        assert.strictEqual(results.results[1].message, 'success');
+                        return deleteDeclaration('tenant1');
+                    })
+                    .then((results) => {
+                        results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                        results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                        results.results = checkAndDelete(results.results, 'runTime', 'number');
+                        assert.deepStrictEqual(
+                            results.results[0],
+                            {
+                                code: 200,
+                                host: 'localhost',
+                                message: 'success',
+                                tenant: 'tenant1'
+                            }
+                        );
+                    })
+                    .then(() => assert.isRejected(getPath('/mgmt/shared/appsvcs/declare/tenant1')))
+                    .then(() => getPath('/mgmt/shared/appsvcs/declare'))
+                    .then((results) => assert.strictEqual(results.schemaVersion, '3.50'));
+            });
+        });
     });
 });
 
@@ -571,15 +626,6 @@ describe('per-app API testing (__smoke)', function () {
             '/mgmt/shared/appsvcs/settings'
         );
     }
-
-    before('activate perAppDeploymentAllowed', () => Promise.resolve()
-        .then(() => postSettings(
-            {
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                }
-            }
-        )));
 
     after('restore settings', () => postSettings({}));
 
@@ -633,6 +679,7 @@ describe('per-app API testing (__smoke)', function () {
                 assert.deepStrictEqual(
                     response.body,
                     {
+                        schemaVersion: '3.0.0',
                         testApp1: {
                             class: 'Application',
                             template: 'http',
@@ -662,6 +709,7 @@ describe('per-app API testing (__smoke)', function () {
                 assert.deepStrictEqual(
                     response.body,
                     {
+                        schemaVersion: '3.0.0',
                         testApp1: {
                             class: 'Application',
                             template: 'http',
@@ -723,6 +771,7 @@ describe('per-app API testing (__smoke)', function () {
 
         it('should handle creating a tenant via POSTing to the applications endpoint', () => {
             const declaration = {
+                schemaVersion: '3.50',
                 app1: {
                     class: 'Application',
                     template: 'generic',
@@ -781,6 +830,7 @@ describe('per-app API testing (__smoke)', function () {
                 ))
                 .then((results) => {
                     assert.deepStrictEqual(results, {
+                        schemaVersion: '3.50',
                         app1: {
                             class: 'Application',
                             template: 'generic',
@@ -809,7 +859,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',
@@ -839,6 +889,7 @@ describe('per-app API testing (__smoke)', function () {
 
         it('should handle DELETE only delete targeted app via the applications endpoint', () => {
             const declaration1 = {
+                schemaVersion: '3.50',
                 app1: {
                     class: 'Application',
                     template: 'generic',
@@ -872,6 +923,7 @@ describe('per-app API testing (__smoke)', function () {
             };
 
             const declaration2 = {
+                schemaVersion: '3.50',
                 app3: {
                     class: 'Application',
                     template: 'generic',
@@ -967,6 +1019,7 @@ describe('per-app API testing (__smoke)', function () {
                 ))
                 .then((results) => {
                     assert.deepStrictEqual(results, {
+                        schemaVersion: '3.50',
                         app2: {
                             class: 'Application',
                             template: 'generic',
@@ -994,7 +1047,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',
@@ -1080,7 +1133,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',
@@ -1106,6 +1159,7 @@ describe('per-app API testing (__smoke)', function () {
 
         it('should fail to delete anything if an application is NOT specified', () => {
             const declaration1 = {
+                schemaVersion: '3.50',
                 app1: {
                     class: 'Application',
                     template: 'generic',
@@ -1139,6 +1193,7 @@ describe('per-app API testing (__smoke)', function () {
             };
 
             const declaration2 = {
+                schemaVersion: '3.50',
                 app3: {
                     class: 'Application',
                     template: 'generic',
@@ -1221,7 +1276,7 @@ describe('per-app API testing (__smoke)', function () {
                     assert.deepStrictEqual(results, {
                         class: 'ADC',
                         controls: {},
-                        schemaVersion: '3.0.0',
+                        schemaVersion: '3.50',
                         updateMode: 'selective',
                         tenant1: {
                             class: 'Tenant',

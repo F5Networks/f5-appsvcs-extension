@@ -224,17 +224,6 @@ describe('serviceAddress', function () {
         let Shared;
         let serviceApp;
 
-        before('activate perAppDeploymentAllowed', () => postDeclaration(
-            {
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                }
-            },
-            undefined,
-            '?async=false',
-            '/mgmt/shared/appsvcs/settings'
-        ));
-
         beforeEach(() => {
             Shared = {
                 class: 'Application',
@@ -260,7 +249,7 @@ describe('serviceAddress', function () {
             const perAppPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
             serviceApp.Service.virtualAddresses.push({ use: '/Tenant/Shared/ServiceAddress' });
             return Promise.resolve()
-                .then(() => postDeclaration({ Shared, serviceApp }, { declarationIndex: 0 }, undefined, perAppPath))
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared, serviceApp }, { declarationIndex: 0 }, undefined, perAppPath))
                 .then((response) => {
                     assert.strictEqual(response.results[0].code, 200);
                 })
@@ -282,12 +271,12 @@ describe('serviceAddress', function () {
             const perAppTenantPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
             serviceApp.Service.virtualAddresses.push({ use: '/Common/Shared/ServiceAddress' });
             return Promise.resolve()
-                .then(() => postDeclaration({ Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
                 .then((response) => {
                     assert.strictEqual(response.results[0].code, 200);
                 })
                 .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'))
-                .then(() => postDeclaration({ serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
+                .then(() => postDeclaration({ schemaVersion: '3.50', serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
                 .then((response) => {
                     assert.strictEqual(response.results[0].code, 200);
                 })

@@ -1125,8 +1125,6 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         Object.keys(targetConfig.records).forEach((recordKey) => {
             commands.push(`${instruction} ${stringify('gtm topology records', targetConfig.records[recordKey], escapeQuote)}`);
         });
-
-        context.tasks[context.currentIndex].gtmTopologyProcessed = true;
         commandObj.commands = commands;
         return commandObj;
     }

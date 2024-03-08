@@ -46,19 +46,76 @@ describe('Per-app tests', function () {
         );
     }
 
-    before('activate perAppDeploymentAllowed', () => Promise.resolve()
-        .then(() => postSettings(
-            {
-                betaOptions: {
-                    perAppDeploymentAllowed: true
-                }
-            }
-        )));
-
     after(() => deleteDeclaration()
         .then(() => postSettings({})));
 
     beforeEach(() => deleteDeclaration());
+
+    it('should handle dryRun in Tenant controls', () => {
+        const decl = {
+            id: 'per-app-declaration',
+            schemaVersion: '3.50.0',
+            controls: {
+                class: 'Controls',
+                dryRun: true,
+                logLevel: 'debug'
+            },
+            Application1: {
+                class: 'Application',
+                service: {
+                    class: 'Service_HTTP',
+                    virtualAddresses: [
+                        '192.0.2.1'
+                    ],
+                    pool: 'pool'
+                },
+                pool: {
+                    class: 'Pool',
+                    members: [
+                        {
+                            servicePort: 80,
+                            serverAddresses: [
+                                '192.0.2.10',
+                                '192.0.2.20'
+                            ]
+                        }
+                    ]
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((results) => {
+                results.results = checkAndDelete(results.results, 'lineCount', 'number');
+                results.results = checkAndDelete(results.results, 'runTime', 'number');
+                assert.isTrue(results.results[0].declarationId.startsWith('autogen_'), `${results.results[0].declarationId} should have started with 'autogen_'`);
+                results.results = checkAndDelete(results.results, 'declarationId', 'string');
+                results.results = checkAndDelete(results.results, 'changes', 'object');
+                assert.deepStrictEqual(
+                    results.results,
+                    [
+                        {
+                            code: 200,
+                            message: 'success',
+                            dryRun: true,
+                            host: 'localhost',
+                            tenant: 'tenant1',
+                            warnings: [
+                                {
+                                    tenant: 'tenant1',
+                                    message: 'dryRun true found in Tenant controls'
+                                }
+                            ]
+                        }
+                    ]
+                );
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
 
     it('should NOT modify applications outside the declaration', () => {
         const perTenDecl = {
@@ -98,6 +155,7 @@ describe('Per-app tests', function () {
         };
 
         const app1Decl = {
+            schemaVersion: '3.50',
             app1: {
                 class: 'Application',
                 template: 'generic',
@@ -118,6 +176,7 @@ describe('Per-app tests', function () {
         };
 
         const app2Decl = {
+            schemaVersion: '3.50',
             app2: {
                 class: 'Application',
                 template: 'generic',
@@ -307,6 +366,7 @@ describe('Per-app tests', function () {
 
     it('should delete the tenant if the last app in the tenant is deleted', () => {
         const appDecl = {
+            schemaVersion: '3.50',
             app1: {
                 class: 'Application',
                 template: 'generic',
@@ -383,6 +443,7 @@ describe('Per-app tests', function () {
         // Use something with 'ignoreChanges: false' so we can verify this app is not considered
         // when posting just app2
         const app1Decl = {
+            schemaVersion: '3.50',
             application1: {
                 class: 'Application',
                 item: {
@@ -395,6 +456,7 @@ describe('Per-app tests', function () {
             }
         };
         const app2Decl = {
+            schemaVersion: '3.50',
             application2: {
                 class: 'Application',
                 template: 'generic',
@@ -474,6 +536,30 @@ describe('Per-app tests', function () {
                         }
                     ]
                 );
+            });
+    });
+
+    it('should disable the use of per-app', () => {
+        const settingsDeclaration = { perAppDeploymentAllowed: false };
+        const appDeclaration = {
+            schemaVersion: '3.50',
+            app: {
+                class: 'Application',
+                pool: {
+                    class: 'Pool'
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postSettings(settingsDeclaration))
+            .then(() => postDeclaration(appDeclaration, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then(() => {
+                assert.fail('This should have failed');
+            })
+            .catch((err) => {
+                assert.strictEqual(err.code, 400);
+                assert.strictEqual(err.message, 'Unable to POST declaration: Error: Received unexpected 400 status code: {"code":400,"message":"Error: Per-application deployment has been disabled on the settings endpoint"}');
             });
     });
 });

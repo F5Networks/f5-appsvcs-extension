@@ -48,15 +48,20 @@ const STATUS_CODES = {
     GATEWAY_TIMEOUT: 504
 };
 
+const SCHEMA_ID = {
+    AS3: 'urn:uuid:85626792-9ee7-46bb-8fc8-4ba708cfdc1d',
+    ADC: 'urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a',
+    APP: 'urn:uuid:f23d7326-d355-4168-8772-c1ca4978acea'
+};
+
 module.exports = {
     DEVICE_TYPES,
     BUILD_TYPES,
     EVENTS,
     STATUS_CODES,
+    SCHEMA_ID,
     MAX_PATH_LENGTH: 195,
-    reqSchemaFile: '/var/config/rest/iapps/f5-appsvcs/schema/latest/as3-request-schema.json',
     settingsSchemaFile: '/var/config/rest/iapps/f5-appsvcs/schema/latest/settings-schema.json',
-    adcSchemaId: 'urn:uuid:f83d84a1-b27b-441a-ae32-314b3de3315a',
     tmosVersion: '0.0.0',
     cloudLibsBaseDir: '/config/cloud/as3',
     cloudLibsLogFolder: '/var/log/cloudlibs',
@@ -66,7 +71,7 @@ module.exports = {
     as3CommonFolder: 'appsvcs',
     // Topology records don't have separate partition, a containing parent object or key name
     // Unlike other modules/components
-    gtmTopologyMockPath: 'topology/records',
+    gtmTopologyMockPath: '/Common/topology/records',
     gtmSettingsMockPath: '/Common/global-settings',
     defaultHost: 'localhost',
     defaultPort: 8100,

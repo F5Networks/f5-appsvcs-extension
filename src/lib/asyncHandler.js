@@ -189,7 +189,7 @@ class AsyncHandler {
             this.saveState();
         }
         const defaultMessage = method === 'POST' ? 'Declaration successfully submitted' : `Async task ${asyncUuid} successfully updated.`;
-        return Promise.resolve(this.asyncReturn(customMessage || defaultMessage, asyncUuid));
+        return Promise.resolve(this.asyncReturn(context, customMessage || defaultMessage, asyncUuid));
     }
 
     buildResult(statusCode, body) {
@@ -199,8 +199,8 @@ class AsyncHandler {
         };
     }
 
-    buildResponseBody(message, asyncUuid) {
-        return {
+    buildResponseBody(context, message, asyncUuid) {
+        const response = {
             id: asyncUuid,
             results: [{
                 message,
@@ -212,13 +212,20 @@ class AsyncHandler {
             declaration: {},
             selfLink: `https://localhost/mgmt/shared/appsvcs/task/${asyncUuid}`
         };
+
+        const currentTask = context.tasks.find((task) => task.asyncUuid === asyncUuid);
+        if (currentTask && currentTask.declaration) {
+            response.results[0].declarationId = currentTask.declaration.id;
+        }
+
+        return response;
     }
 
-    asyncReturn(message, asyncUuid, statusCode) {
+    asyncReturn(context, message, asyncUuid, statusCode) {
         if (!statusCode) {
             statusCode = STATUS_CODES.ACCEPTED;
         }
-        const resultBody = this.buildResponseBody(message, asyncUuid);
+        const resultBody = this.buildResponseBody(context, message, asyncUuid);
         return this.buildResult(statusCode, resultBody);
     }
 }

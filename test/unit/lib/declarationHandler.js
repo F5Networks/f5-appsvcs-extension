@@ -749,24 +749,20 @@ describe('DeclarationHandler', () => {
             });
 
             parser = new As3Parser();
-
-            parser = new As3Parser();
             sinon.stub(parser, 'digest').resolves('1');
             context.host.parser = parser;
         });
 
         describe('mutex locking', () => {
             beforeEach(() => {
-                context.tasks[0].declaration = [
-                    {
-                        class: 'ADC',
-                        schemaVersion: '3.0.0',
-                        id: 'declaration_id',
-                        tenant1: {
-                            class: 'Tenant'
-                        }
+                context.tasks[0].declaration = {
+                    class: 'ADC',
+                    schemaVersion: '3.0.0',
+                    id: 'declaration_id',
+                    tenant1: {
+                        class: 'Tenant'
                     }
-                ];
+                };
                 context.tasks[0].dryRun = false;
             });
 
@@ -2054,6 +2050,86 @@ describe('DeclarationHandler', () => {
                                 ]
                             }
                         ]
+                    );
+                });
+        });
+
+        it('should use the previous declarations schemaVersion when doing a remove', () => {
+            sinon.stub(util, 'getNodelist').resolves([]);
+            sinon.stub(handler, 'getSavedDeclarations').callsFake(() => (
+                {
+                    declaration: {
+                        id: 'declId',
+                        schemaVersion: '3.50',
+                        class: 'ADC',
+                        tenant1: {
+                            class: 'Tenant'
+                        }
+                    },
+                    metadata: {
+                        blocks: 1,
+                        tenants: []
+                    }
+                }
+            ));
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declId'
+            };
+            context.tasks[0].action = 'remove';
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.strictEqual(result.body.declaration.schemaVersion, '3.50');
+                });
+        });
+
+        it('should not try to use previous schemaVersion when there is no content', () => {
+            sinon.stub(util, 'getNodelist').resolves([]);
+            sinon.stub(handler, 'getSavedDeclarations').resolves({
+                declaration: {},
+                metadata: {
+                    blocks: 0,
+                    tenants: []
+                }
+            });
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'declId'
+            };
+            context.tasks[0].action = 'remove';
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.strictEqual(result.body.declaration.schemaVersion, '3.0.0');
+                });
+        });
+
+        it('should return epected error response', () => {
+            context.tasks[0].declaration = {
+                class: 'ADC',
+                schemaVersion: '3.50',
+                id: 'declId'
+            };
+            sinon.stub(audit, 'allTenants').rejects();
+
+            return handler.handleCreateUpdateOrDelete(context)
+                .then((result) => {
+                    assert.deepStrictEqual(
+                        result,
+                        {
+                            body: {
+                                code: 500,
+                                errors: undefined,
+                                declarationFullId: 'declId',
+                                message: 'Error',
+                                declarationId: 'declId'
+                            },
+                            errorMessage: 'Error',
+                            statusCode: 500
+                        }
                     );
                 });
         });

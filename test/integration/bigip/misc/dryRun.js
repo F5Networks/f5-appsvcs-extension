@@ -123,6 +123,155 @@ describe('dryRun testing', function () {
             });
     });
 
+    it('should run a Tenant level controls dryRun declaration and not change the system', () => {
+        decl.declaration.TEST_DNS_Nameserver.controls = {
+            class: 'Controls',
+            dryRun: true,
+            trace: true,
+            logLevel: 'debug',
+            traceResponse: true
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl)))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].dryRun, true);
+                assert.strictEqual(response.results[0].warnings.length, 1);
+                assert.deepStrictEqual(response.results[0].warnings[0], {
+                    tenant: 'TEST_DNS_Nameserver',
+                    message: 'dryRun true found in Tenant controls'
+                });
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should run a single Tenant level controls dryRun declaration with 2 Tenants and not change the system', () => {
+        decl.declaration.TEST_DNS_Nameserver.controls = {
+            class: 'Controls',
+            dryRun: true,
+            trace: true,
+            logLevel: 'debug',
+            traceResponse: true
+        };
+
+        decl.declaration.Second_Tenant = {
+            class: 'Tenant',
+            Application: {
+                class: 'Application',
+                template: 'http',
+                redirect: {
+                    class: 'iRule',
+                    iRule: {
+                        base64: 'd2hlbiBIVFRQX1JFUVVFU1Qgew0KICAgSFRUUDo6cmVkaXJlY3QgaHR0cHM6Ly9bZ2V0ZmllbGQgW0hUVFA6Omhvc3RdICI6IiAxXVtIVFRQOjp1cmldDQp9'
+                    }
+                },
+                serviceMain: {
+                    class: 'Service_HTTP',
+                    iRules: ['redirect'],
+                    virtualAddresses: ['10.10.0.1'],
+                    virtualPort: 8080
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl)))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].dryRun, true);
+                assert.strictEqual(response.results[0].warnings.length, 1);
+                assert.deepStrictEqual(response.results[0].warnings[0], {
+                    tenant: 'TEST_DNS_Nameserver',
+                    message: 'dryRun true found in Tenant controls'
+                });
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+                assert.strictEqual(response.results[1].dryRun, true);
+                assert.isUndefined(response.results[1].warnings);
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should run 2 Tenant level controls dryRun declaration with 2 Tenants and not change the system', () => {
+        decl.declaration.TEST_DNS_Nameserver.controls = {
+            class: 'Controls',
+            dryRun: true,
+            trace: true,
+            logLevel: 'debug',
+            traceResponse: true
+        };
+
+        decl.declaration.Second_Tenant = {
+            class: 'Tenant',
+            controls: {
+                class: 'Controls',
+                dryRun: true
+            },
+            Application: {
+                class: 'Application',
+                template: 'http',
+                redirect: {
+                    class: 'iRule',
+                    iRule: {
+                        base64: 'd2hlbiBIVFRQX1JFUVVFU1Qgew0KICAgSFRUUDo6cmVkaXJlY3QgaHR0cHM6Ly9bZ2V0ZmllbGQgW0hUVFA6Omhvc3RdICI6IiAxXVtIVFRQOjp1cmldDQp9'
+                    }
+                },
+                serviceMain: {
+                    class: 'Service_HTTP',
+                    iRules: ['redirect'],
+                    virtualAddresses: ['10.10.0.1'],
+                    virtualPort: 8080
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl)))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[0].dryRun, true);
+                assert.strictEqual(response.results[0].warnings.length, 1);
+                assert.deepStrictEqual(response.results[0].warnings[0], {
+                    tenant: 'TEST_DNS_Nameserver',
+                    message: 'dryRun true found in Tenant controls'
+                });
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+                assert.strictEqual(response.results[1].dryRun, true);
+                assert.strictEqual(response.results[1].warnings.length, 1);
+                assert.deepStrictEqual(response.results[1].warnings[0], {
+                    tenant: 'Second_Tenant',
+                    message: 'dryRun true found in Tenant controls'
+                });
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
     it('should not change the system when controls.dryRun query parameter is used', () => {
         decl.declaration.controls.dryRun = false;
 

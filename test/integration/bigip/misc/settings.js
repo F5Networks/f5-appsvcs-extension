@@ -48,9 +48,7 @@ describe('settings (__smoke)', function () {
 
     const defaults = {
         asyncTaskStorage: 'data-group',
-        betaOptions: {
-            perAppDeploymentAllowed: false
-        },
+        perAppDeploymentAllowed: true,
         burstHandlingEnabled: false,
         performanceTracingEnabled: false,
         performanceTracingEndpoint: '',
@@ -66,9 +64,7 @@ describe('settings (__smoke)', function () {
     it('should be able to go from defaults to non-defaults and back', () => {
         const declaration = {
             asyncTaskStorage: 'memory',
-            betaOptions: {
-                perAppDeploymentAllowed: true
-            },
+            perAppDeploymentAllowed: false,
             burstHandlingEnabled: true,
             performanceTracingEnabled: false, // need to leave false because jaeger-client not installed
             performanceTracingEndpoint: 'http://196.168.0.1/api/traces',

@@ -29,6 +29,9 @@ const keywords = [
                     },
                     data: {
                         type: ['string', 'object', 'array']
+                    },
+                    errSchemaPath: { // Utilized by f5-appsvcs-schema for error response, allow this
+                        type: 'string'
                     }
                 },
                 required: ['tag'],
@@ -50,7 +53,7 @@ const keywords = [
                     parentDataProperty = args[5];
                 }
 
-                that.postProcess.push({
+                that._postProcess.push({
                     instancePath,
                     parentDataProperty,
                     tag: schema.tag,

@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  version: 3.49.0
+  version: 3.50.0
   title: F5 BIG-IP AS3
   description: This reference describes the BIG-IP AS3 API and available endpoints.
 externalDocs:
@@ -247,7 +247,7 @@ paths:
                   $ref: '#/components/examples/declarationTenantSyncResponse'
   /declare/{tenant}/applications:
     post:
-      summary: UNDER DEVELOPMENT - Apply BIG-IP AS3 configuration on a per-application basis
+      summary: Apply BIG-IP AS3 configuration on a per-application basis
       tags:
         - Configuration
       description: |
@@ -296,7 +296,7 @@ paths:
                 successResponse:
                   $ref: '#/components/examples/declarationApplicationResponse'
     get:
-      summary: UNDER DEVELOPMENT - Read all current BIG-IP AS3 application configurations
+      summary: Read all current BIG-IP AS3 application configurations
       tags:
         - Configuration
       description: |
@@ -317,7 +317,7 @@ paths:
           $ref: '#/components/responses/503'
   /declare/{tenant}/applications/{application}:
     get:
-      summary: UNDER DEVELOPMENT - Read current BIG-IP AS3 application configuration
+      summary: Read current BIG-IP AS3 application configuration
       tags:
         - Configuration
       description: |
@@ -337,7 +337,7 @@ paths:
         503:
           $ref: '#/components/responses/503'
     delete:
-      summary: UNDER DEVELOPMENT - Delete current BIG-IP AS3 application configuration
+      summary: Delete current BIG-IP AS3 application configuration
       tags:
         - Configuration
       description:

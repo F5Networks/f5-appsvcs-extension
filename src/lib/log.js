@@ -231,10 +231,15 @@ const traceFile = function (tenantId) {
  * @param {string} tenantId
  * @param {string} key
  * @param {string} content
+ * @param {object} context
  * @returns {undefined}
  */
-const writeTraceFile = function (tenantId, key, content) {
+const writeTraceFile = function (tenantId, key, content, context) {
     if (!globalTrace) { return; }
+
+    if (tenantId === 'Common') {
+        tenantId = context.tasks[context.currentIndex].firstPassNoDelete ? 'Common_1' : 'Common_2';
+    }
 
     try {
         fs.writeFileSync(traceFile(tenantId)[key], content);

@@ -1,5 +1,3 @@
 {
-    "betaOptions": {
-        "perAppDeploymentAllowed": true
-    }
+    "perAppDeploymentAllowed": true
 }

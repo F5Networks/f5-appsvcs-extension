@@ -663,9 +663,7 @@ describe('DeclareHandler', () => {
                 it('should support GET request to per-app endpoint', () => {
                     config.getAllSettings.restore();
                     sinon.stub(config, 'getAllSettings').resolves({
-                        betaOptions: {
-                            perAppDeploymentAllowed: true
-                        }
+                        perAppDeploymentAllowed: true
                     });
                     context.request = {
                         subPath: 'Tenant1/applications',
@@ -1129,9 +1127,7 @@ describe('DeclareHandler', () => {
                 it('should handle verifying if the per-app declaration is valid', () => {
                     config.getAllSettings.restore();
                     sinon.stub(config, 'getAllSettings').resolves({
-                        betaOptions: {
-                            perAppDeploymentAllowed: true
-                        }
+                        perAppDeploymentAllowed: true
                     });
                     sinon.stub(As3Parser.prototype, 'digest').resolves({});
                     context.request.isPerApp = true;
@@ -1210,15 +1206,13 @@ describe('DeclareHandler', () => {
                 it('shoud error if per-app not allowed', () => {
                     config.getAllSettings.restore();
                     sinon.stub(config, 'getAllSettings').resolves({
-                        betaOptions: {
-                            perAppDeploymentAllowed: false
-                        }
+                        perAppDeploymentAllowed: false
                     });
                     context.request.isPerApp = true;
                     const expectedCode = STATUS_CODES.BAD_REQUEST;
                     const expectedResult = {
                         code: 400,
-                        message: 'Error: Per-application is a beta feature that must be enabled in settings for this request'
+                        message: 'Error: Per-application deployment has been disabled on the settings endpoint'
                     };
                     return assertResultAndRestComplete(context, restOp, expectedResult, expectedCode);
                 });
@@ -1226,9 +1220,7 @@ describe('DeclareHandler', () => {
                 it('should error if the per-app declaration is a per-tenant declaration', () => {
                     config.getAllSettings.restore();
                     sinon.stub(config, 'getAllSettings').resolves({
-                        betaOptions: {
-                            perAppDeploymentAllowed: true
-                        }
+                        perAppDeploymentAllowed: true
                     });
                     sinon.stub(As3Parser.prototype, 'digest').rejects({
                         status: 422,
@@ -1302,9 +1294,7 @@ describe('DeclareHandler', () => {
                 it('should error if the per-app declaration fails validation - such as string instead of integer', () => {
                     config.getAllSettings.restore();
                     sinon.stub(config, 'getAllSettings').resolves({
-                        betaOptions: {
-                            perAppDeploymentAllowed: true
-                        }
+                        perAppDeploymentAllowed: true
                     });
                     sinon.stub(As3Parser.prototype, 'digest').rejects({
                         status: 422,
@@ -1602,6 +1592,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscInstall,
                         runTime: 0,
@@ -1692,6 +1683,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscUninstall,
                         runTime: 0,
@@ -1773,6 +1765,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgDeclSubmitted,
                         runTime: 0,
@@ -1857,6 +1850,7 @@ describe('DeclareHandler', () => {
                     id: mockNewUuid,
                     results: [{
                         code: 0,
+                        declarationId: 'GoAsync',
                         host: '',
                         message: msgServDiscUninstall,
                         runTime: 0,
@@ -2636,7 +2630,7 @@ describe('DeclareHandler', () => {
                         targetHost: '192.0.2.19',
                         targetPort: 8100,
                         protocol: 'https',
-                        urlPrefix: 'https://192.0.2.19:8100',
+                        urlPrefix: 'https://192.0.2.19:8100', // gitleaks:allow
                         targetTokens: { 'X-F5-Auth-Token': 'testMultiAsync2' },
                         timeSlip: 0,
                         action: 'deploy',
@@ -2660,6 +2654,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId1,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAsync1',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2672,6 +2667,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId2,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAsync2',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2794,6 +2790,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId1,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAutoAsync1',
                                 host: '',
                                 message: msgDeclSubmitted,
                                 runTime: 0,
@@ -2806,6 +2803,7 @@ describe('DeclareHandler', () => {
                             id: mockNewId2,
                             results: [{
                                 code: 0,
+                                declarationId: 'MultiAutoAsync2',
                                 host: '',
                                 message: msgServDiscInstall,
                                 runTime: 0,

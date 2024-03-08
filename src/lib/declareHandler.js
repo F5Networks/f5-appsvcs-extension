@@ -64,9 +64,9 @@ class DeclareHandler {
         return Config.getAllSettings()
             .then((settingsResponse) => {
                 settings = settingsResponse;
-                if (context.request.isPerApp && !settings.betaOptions.perAppDeploymentAllowed) {
-                    const e = new Error('Per-application is a beta feature that must be enabled in settings for this request');
-                    e.betaOptions = true;
+                if (context.request.isPerApp && !settings.perAppDeploymentAllowed) {
+                    const e = new Error('Per-application deployment has been disabled on the settings endpoint');
+                    e.badRequest = true;
                     throw e;
                 }
                 return getInitialControls(context, settings);
@@ -641,8 +641,8 @@ function createAsyncRecord(logPrefix, context, index) {
 
 function prepAsyncRecords(context, logPrefix) {
     if (context.request.isMultiDecl) {
-        const promises = context.tasks.map((decl, index) => createAsyncRecord(
-            `${logPrefix} declarationID: ${decl.id}`, context, index
+        const promises = context.tasks.map((task, index) => createAsyncRecord(
+            `${logPrefix} ${task.declaration ? `declarationID: ${task.declaration.id}` : ''}`, context, index
         ));
         return Promise.all(promises)
             .then((results) => restUtil.buildOpResultMulti(results));
@@ -786,7 +786,7 @@ function reportError(context, error) {
         const cancelRecord = context.host.asyncHandler.records
             .find((record) => record.name === context.tasks[0].asyncUuid);
         cancelRecord.status = 'cancelled';
-    } else if (error.betaOptions) {
+    } else if (error.badRequest) {
         message = `Error: ${error.message}`;
         log.error(`ERROR: ${error.message}`);
         code = STATUS_CODES.BAD_REQUEST;

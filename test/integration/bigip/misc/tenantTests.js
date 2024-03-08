@@ -1225,6 +1225,7 @@ describe('Test Tenants (__smoke)', function () {
                         response.results[0],
                         {
                             code: 422,
+                            declarationId: 'Service_Generic',
                             message: 'The hash you submitted does not match the hash on the current Tenant. This usually indicates there was a change to the Tenant since you pulled this hash. You will want to do a GET and see what the changes are.',
                             tenant: 'TEST_Service_Generic'
                         }

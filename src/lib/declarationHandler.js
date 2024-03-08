@@ -515,6 +515,10 @@ class DeclarationHandler {
                     decl.target = prevDecl.target;
                 }
 
+                if (currentTask.action === 'remove' && prevDecl.schemaVersion) {
+                    baseDecl.schemaVersion = prevDecl.schemaVersion;
+                }
+
                 if (decl.updateMode === 'complete' && !context.request.isPerApp) {
                     // mark unwanted Tenants for deletion
                     info.metadata.tenants.forEach((t) => {
@@ -615,6 +619,14 @@ class DeclarationHandler {
             .then((results) => {
                 if (results && results.warnings) {
                     results.warnings.forEach((warning) => {
+                        if (!warnings[warning.tenant]) {
+                            warnings[warning.tenant] = [];
+                        }
+                        warnings[warning.tenant].push(warning);
+                    });
+                }
+                if (currentTask.warnings) {
+                    currentTask.warnings.forEach((warning) => {
                         if (!warnings[warning.tenant]) {
                             warnings[warning.tenant] = [];
                         }
@@ -956,6 +968,11 @@ class DeclarationHandler {
                     declarationFullId,
                     message: e.message
                 };
+
+                if (decl && decl.id) {
+                    body.declarationId = decl.id;
+                }
+
                 const result = DeclarationHandler.buildResult(statusCode, e.message, body);
 
                 return result;

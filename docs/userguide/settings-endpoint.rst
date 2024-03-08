@@ -45,10 +45,9 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **webhook** |br| *Requires BIG-IP AS3 3.45 or later* - URL to post results to. 
 
-- **betaOptions** |br| *Requires BIG-IP AS3 3.47 or later* - A boolean that controls whether beta options are enabled or disabled.  Currently, there is only one option, **perAppDeploymentAllowed**. See :doc:`per-app-declarations` for more information.
-
 - **serializeFileUploads** |br| *Requires BIG-IP AS3 3.47 or later* - When uploading files to the BIG-IP, this setting enables uploading in serial rather than parallel. See the following section for more information.
 
+- **perAppDeploymentAllowed** |br| *Requires BIG-IP AS3 3.50 or later* - This setting controls whether per-application deployments are allowed or not. See :doc:`per-app-declarations` for more information.
 
 .. _serialize:
 

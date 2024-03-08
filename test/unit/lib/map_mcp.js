@@ -3684,6 +3684,19 @@ describe('map_mcp', () => {
                 const results = translate[obj.kind](defaultContext, obj);
                 assert(results[0].properties.destination, '/Tenant0.0.0.0/any:443');
             });
+
+            it('should handle wildcard-like in destination', () => {
+                const obj = {
+                    kind: 'tm:ltm:virtual:virtualstate',
+                    name: 'vs',
+                    partition: 'Tenant',
+                    subPath: 'app0',
+                    fullPath: '/Tenant/app0/vs',
+                    destination: '/Tenant/100.0.0.0:443'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert(results[0].properties.destination, '/Tenant/100.0.0.0:443');
+            });
         });
 
         describe('tm:ltm:data-group:internal:internalstate', () => {

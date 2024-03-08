@@ -22,82 +22,187 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const assert = chai.assert;
 
+const Context = require('../../../../src/lib/context/context');
 const gtmUtil = require('../../../../src/lib/util/gtmUtil');
+const util = require('../../../../src/lib/util/util');
 
 describe('gtmUtil', () => {
-    it('should error if undefined is provided', () => Promise.resolve()
-        .then(() => gtmUtil.parseTopologyItem())
-        .then(() => assert.fail('This util should have errored if undefined'))
-        .catch((err) => {
-            assert.match(
-                err.message,
-                /Cannot read propert(y 'indexOf' of undefined|ies of undefined \(reading 'indexOf'\))/
-            );
-        }));
+    let context;
+    let emptyDecl;
+    let hasTopologyInCommon;
+    let hasTopologyInNotCommon;
 
-    it('should return an object with empty values if an empty string is sent in', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem(''),
-        {
-            '': '',
-            type: '',
-            value: '',
-            not: '',
-            name: ' '
-        }
-    ));
+    beforeEach(() => {
+        context = Context.build();
+        context.target.tmosVersion = '0.0.0';
+        context.currentIndex = 0;
+        context.tasks = [{}];
 
-    it('should return an object with the provided string', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem('notfoo'),
-        {
-            '': 'notfoo',
-            type: '',
-            value: 'notfoo',
-            not: '',
-            name: ' notfoo'
-        }
-    ));
+        emptyDecl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            id: '1706822840529',
+            updateMode: 'complete',
+            controls: {
+                archiveTimestamp: '2024-02-01T21:27:21.048Z'
+            }
+        };
 
-    it('should return an object with the provided string and parsed not', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem('not foo'),
-        {
-            '': 'foo',
-            type: '',
-            value: 'foo',
-            not: 'not',
-            name: 'not  foo'
-        }
-    ));
+        const gslbTopologyRecords = {
+            class: 'GSLB_Topology_Records',
+            property: 'property'
+        };
 
-    it('should return an object with the provided string and parsed out /Common/', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem('isp /Common/foo'),
-        {
-            isp: 'foo',
-            type: 'isp',
-            value: 'foo',
-            not: '',
-            name: 'isp foo'
-        }
-    ));
+        const baseDecl = {
+            class: 'ADC',
+            controls: {
+                class: 'Controls'
+            },
+            id: 'id',
+            label: 'label',
+            remark: 'remark',
+            schemaVersion: '3.47.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    TestDC: {
+                        class: 'GSLB_Data_Center',
+                        property: 'property'
+                    }
+                }
+            },
+            NotCommon: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    property: 'property'
+                },
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    GLB_serviceAddress: {
+                        class: 'Service_Address',
+                        virtualAddress: '0.0.0.0/0'
+                    }
+                }
+            }
+        };
 
-    it('should return an object with the provided string and parsed out state', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem('state /Common/foo'),
-        {
-            state: '"/Common/foo"',
-            type: 'state',
-            value: '"/Common/foo"',
-            not: '',
-            name: 'state "/Common/foo"'
-        }
-    ));
+        hasTopologyInCommon = util.simpleCopy(baseDecl);
+        hasTopologyInCommon.Common.Shared.TopologyRecords = gslbTopologyRecords;
 
-    it('should return an object with the provided string and parsed out geoip-isp', () => assert.deepStrictEqual(
-        gtmUtil.parseTopologyItem('geoip-isp /Common/foo'),
-        {
-            'geoip-isp': '"/Common/foo"',
-            type: 'geoip-isp',
-            value: '"/Common/foo"',
-            not: '',
-            name: 'geoip-isp "/Common/foo"'
-        }
-    ));
+        hasTopologyInNotCommon = util.simpleCopy(baseDecl);
+        hasTopologyInNotCommon.NotCommon.Shared.TopologyRecords = gslbTopologyRecords;
+    });
+
+    describe('.getTopologyRecordsTenant', () => {
+        it('should handle empty declarations', () => {
+            const decl = util.simpleCopy(emptyDecl);
+            const previousDecl = util.simpleCopy(emptyDecl);
+
+            gtmUtil.getTopologyRecordsTenant(context, decl, previousDecl);
+            assert.strictEqual(context.tasks[context.currentIndex].gslbTopologyRecordsTenant, undefined);
+        });
+
+        it('should handle undefined declarations', () => {
+            gtmUtil.getTopologyRecordsTenant(context, undefined, undefined);
+            assert.strictEqual(context.tasks[context.currentIndex].gslbTopologyRecordsTenant, undefined);
+        });
+
+        it('should find in current declaration', () => {
+            const decl = util.shallowCopy(hasTopologyInCommon);
+            const previousDecl = util.simpleCopy(emptyDecl);
+
+            gtmUtil.getTopologyRecordsTenant(context, decl, previousDecl);
+            assert.strictEqual(context.tasks[context.currentIndex].gslbTopologyRecordsTenant, 'Common');
+        });
+
+        it('should find in previous declaration', () => {
+            const decl = util.simpleCopy(emptyDecl);
+            const previousDecl = util.shallowCopy(hasTopologyInNotCommon);
+
+            gtmUtil.getTopologyRecordsTenant(context, decl, previousDecl);
+            assert.strictEqual(context.tasks[context.currentIndex].gslbTopologyRecordsTenant, 'NotCommon');
+        });
+    });
+
+    describe('.parseTopologyItem', () => {
+        it('should error if undefined is provided', () => Promise.resolve()
+            .then(() => gtmUtil.parseTopologyItem())
+            .then(() => assert.fail('This util should have errored if undefined'))
+            .catch((err) => {
+                assert.match(
+                    err.message,
+                    /Cannot read propert(y 'indexOf' of undefined|ies of undefined \(reading 'indexOf'\))/
+                );
+            }));
+
+        it('should return an object with empty values if an empty string is sent in', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem(''),
+            {
+                '': '',
+                type: '',
+                value: '',
+                not: '',
+                name: ' '
+            }
+        ));
+
+        it('should return an object with the provided string', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem('notfoo'),
+            {
+                '': 'notfoo',
+                type: '',
+                value: 'notfoo',
+                not: '',
+                name: ' notfoo'
+            }
+        ));
+
+        it('should return an object with the provided string and parsed not', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem('not foo'),
+            {
+                '': 'foo',
+                type: '',
+                value: 'foo',
+                not: 'not',
+                name: 'not  foo'
+            }
+        ));
+
+        it('should return an object with the provided string and parsed out /Common/', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem('isp /Common/foo'),
+            {
+                isp: 'foo',
+                type: 'isp',
+                value: 'foo',
+                not: '',
+                name: 'isp foo'
+            }
+        ));
+
+        it('should return an object with the provided string and parsed out state', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem('state /Common/foo'),
+            {
+                state: '"/Common/foo"',
+                type: 'state',
+                value: '"/Common/foo"',
+                not: '',
+                name: 'state "/Common/foo"'
+            }
+        ));
+
+        it('should return an object with the provided string and parsed out geoip-isp', () => assert.deepStrictEqual(
+            gtmUtil.parseTopologyItem('geoip-isp /Common/foo'),
+            {
+                'geoip-isp': '"/Common/foo"',
+                type: 'geoip-isp',
+                value: '"/Common/foo"',
+                not: '',
+                name: 'geoip-isp "/Common/foo"'
+            }
+        ));
+    });
 });

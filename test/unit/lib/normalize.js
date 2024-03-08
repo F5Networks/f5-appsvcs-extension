@@ -45,7 +45,8 @@ describe('normalize', () => {
             };
             sinon.stub(properties, mcpCommand).get(() => [
                 { id: 'myProperty', requiredModules: { anyOf: ['someModule'] } },
-                { id: 'anotherProperty', quotedString: true }
+                { id: 'anotherProperty', quotedString: true },
+                { id: 'topologyTenant' }
             ]);
         });
 
@@ -100,6 +101,24 @@ describe('normalize', () => {
             original.anotherProperty = '"{start me up}"';
             normalize.actionableMcp(defaultContext, original, mcpCommand);
             assert.strictEqual(original.anotherProperty, '"{start me up}"');
+        });
+
+        it('should process an ignored string', () => {
+            original.topologyTenant = 'MyTopologyTenant';
+            original.ignore = { topologyTenant: original.topologyTenant };
+            const result = normalize.actionableMcp(defaultContext, original, mcpCommand);
+            assert.strictEqual(result.properties.topologyTenant, 'MyTopologyTenant');
+            assert.deepStrictEqual(result.ignore, ['topologyTenant']);
+        });
+
+        it('should process an ignored object', () => {
+            original.topologyTenant = { tenant: 'myTopologyTenant' };
+            original.ignore = {
+                topologyTenant: { tenant: 'myTopologyTenant' }
+            };
+            const result = normalize.actionableMcp(defaultContext, original, mcpCommand);
+            assert.deepStrictEqual(result.properties.topologyTenant, { tenant: 'myTopologyTenant' });
+            assert.deepStrictEqual(result.ignore, ['topologyTenant.tenant']);
         });
     });
 

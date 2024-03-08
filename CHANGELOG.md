@@ -1,6 +1,27 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.50.0
+
+### Added
+
+### Fixed
+- EC-425: Updating only a `Pool_Member adminState` creates two consecutive deletes before the tmsh transaction.
+- AUTOTOOL-3941: ([GitHub Issue 740](https://github.com/F5Networks/f5-appsvcs-extension/issues/740)): Unable to use 10.0.0.0/8 as a virtual address.
+- AUTOTOOL-4135: Topology Records created in /Common/Shared are being unintentionally deleted.
+- AUTOTOOL-4134: ([GitHub Issue 791](https://github.com/F5Networks/f5-appsvcs-extension/issues/791)): Topology Records created in places other than /Common/Shared are being unintentionally deleted.
+ - AUTOTOOL-4116: `dryRun` does not work when specified in Tenant level controls.
+
+### Changed
+- Removed node 4 testing due to the end of support for BIG-IP 13.1 : ([Supported BIG-IP Versions](https://my.f5.com/manage/s/article/K5903)).
+- AUTOTOOL-4137: ([GitHub Issue 788](https://github.com/F5Networks/f5-appsvcs-extension/issues/788)): Service-discovery deletes the pool members for each SD (Service Discovery) modification.
+- AUTOTOOL-4148: Update per-app for GA.
+- AUTOTOOL-4160: Record first and second passes of Common in separate trace files.
+- AUTOTOOL-4177: A DELETE to a Tenant or an Application with per-app will now use the previous declarations `schemaVersion` as the saved `schemaVersion`.
+- AUTOTOOL-4115: `declarationId` response and logging values in non-POST requests.
+
+### Removed
+
 ## 3.49.0
 
 ### Added

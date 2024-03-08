@@ -40,7 +40,7 @@ class UpdaterTmsh {
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
             this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
         }
-        log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script);
+        log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script, this.context);
         return update.submit(this.context, tenantUpdate, diff);
     }
 
@@ -53,7 +53,7 @@ class UpdaterTmsh {
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
             this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
         }
-        log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script);
+        log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script, this.context);
         return update.submit(this.context, tenantUpdate, 'post process');
     }
 }

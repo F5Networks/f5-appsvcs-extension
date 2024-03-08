@@ -181,6 +181,44 @@ function createTaskProvider(sdItem) {
 }
 
 function generateTaskId(task, sdItem) {
+    const resourceHashProperties = [ // These are the property names we use to hash the taskId
+        'path',
+        'servicePort',
+        'routeDomain',
+        'provider',
+        'uri',
+        'jmesPathQuery',
+        'region',
+        'projectId',
+        'resourceGroup',
+        'subscriptionId',
+        'directoryId',
+        'applicationId',
+        'tagKey',
+        'tagValue',
+        'serverAddresses',
+        'bigip',
+        'hostname',
+        'fqdnPrefix',
+        'shareNodes',
+        'servers',
+        'addressFamily',
+        'resourceType',
+        'resourceId',
+        'environment'
+    ];
+
+    const flattenObject = function (obj, flattened) { // iterate through task to grab desired property values
+        flattened = flattened || {};
+        Object.keys(obj).forEach((key) => {
+            if (typeof obj[key] === 'object') {
+                flattenObject(obj[key], flattened);
+            } else if (resourceHashProperties.includes(key) && typeof obj[key] !== 'undefined') {
+                flattened[key] = JSON.parse(JSON.stringify(obj[key]));
+            }
+        });
+        return flattened;
+    };
     const primaryResource = task.resources[0];
     const resourcePath = (primaryResource && sdItem.class !== 'Address_Discovery') ? primaryResource.path : sdItem.path;
 
@@ -188,21 +226,10 @@ function generateTaskId(task, sdItem) {
         return encodeURIComponent(resourcePath.replace(/\//g, '~'));
     }
 
-    const taskCpy = util.simpleCopy(task);
-
-    delete taskCpy.ignore;
-    if (taskCpy.provider === 'aws') {
-        delete taskCpy.providerOptions.secretAccessKey;
-    } else if (taskCpy.provider === 'azure') {
-        delete taskCpy.providerOptions.apiAccessKey;
-    } else if (taskCpy.provider === 'gce') {
-        delete taskCpy.providerOptions.encodedCredentials;
-    } else if (taskCpy.provider === 'consul') {
-        delete taskCpy.providerOptions.encodedToken;
-    }
+    const flattenedObj = flattenObject(task);
 
     const tenant = resourcePath.split('/')[1];
-    return encodeURIComponent(util.mcpPath(tenant, null, hashUtil.hashTenant(JSON.stringify(taskCpy)))
+    return encodeURIComponent(util.mcpPath(tenant, null, hashUtil.hashTenant(JSON.stringify(flattenedObj)))
         .replace(/\//g, '~'))
         .replace(/['%]/g, '');
 }

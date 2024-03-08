@@ -23,6 +23,7 @@ const constants = require('../../../../src/lib/constants');
 const RestOperationMock = require('../../RestOperationMock');
 const HostContext = require('../../../../src/lib/context/hostContext');
 const RequestContext = require('../../../../src/lib/context/requestContext');
+const SchemaValidator = require('../../../../src/lib/schemaValidator');
 const util = require('../../../../src/lib/util/util');
 const tmshUtil = require('../../../../src/lib/util/tmshUtil');
 const config = require('../../../../src/lib/config');
@@ -30,11 +31,16 @@ const config = require('../../../../src/lib/config');
 const assert = chai.assert;
 
 describe('RequestContext', () => {
-    // Pull the premock value
-    const origSchemaFile = constants.reqSchemaFile;
+    let validDecl;
+    let expectedValidDecl;
+    const schemaConfigs = [{
+        paths: [`file://${__dirname}/../../../../src/schema/latest/as3-request-schema.json`]
+    }];
+    const schemaValidator = new SchemaValidator(constants.DEVICE_TYPES.BIG_IP, schemaConfigs);
+
+    before(() => schemaValidator.init());
+
     beforeEach(() => {
-        // set the mock value
-        constants.reqSchemaFile = `${__dirname}/../../../../src/schema/latest/as3-request-schema.json`;
         sinon.stub(util, 'getMgmtPort').resolves(443);
         sinon.stub(util, 'getDeviceInfo').resolves({});
         sinon.stub(tmshUtil, 'getPrimaryAdminUser').resolves('admin');
@@ -42,13 +48,8 @@ describe('RequestContext', () => {
     });
 
     afterEach(() => {
-        // restore the original
-        constants.reqSchemaFile = origSchemaFile;
         sinon.restore();
     });
-
-    let validDecl;
-    let expectedValidDecl;
 
     describe('/declare', () => {
         beforeEach(() => {
@@ -82,6 +83,7 @@ describe('RequestContext', () => {
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
                 hostContext.as3VersionInfo = {};
+                hostContext.schemaValidator = schemaValidator;
             });
 
             it('should build the correct GET context', () => {
@@ -239,6 +241,95 @@ describe('RequestContext', () => {
                         assert.isUndefined(ctxt.error);
                         assert.strictEqual(ctxt.tasks[0].action, 'deploy');
                         assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                    });
+            });
+
+            it('should build the correct POST context with Controls.dryRun in the Tenant', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}/?mock=1`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.tenantId.controls = {
+                    class: 'Controls',
+                    dryRun: true
+                };
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].tenant, 'tenantId');
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].message, 'dryRun true found in Tenant controls');
+                    });
+            });
+
+            it('should build the correct POST context with Controls.dryRun in one of multiple Tenants', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}/?mock=1`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.tenantId.controls = {
+                    class: 'Controls',
+                    dryRun: true
+                };
+                dryRunDecl.tenantId2 = {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application'
+                    }
+                };
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.strictEqual(ctxt.tasks[0].warnings.length, 1);
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].tenant, 'tenantId');
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].message, 'dryRun true found in Tenant controls');
+                    });
+            });
+
+            it('should build the correct POST context with Controls.dryRun in multiple Tenants with a warning for each Tenant', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}/?mock=1`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.tenantId.controls = {
+                    class: 'Controls',
+                    dryRun: true
+                };
+                dryRunDecl.tenantId2 = {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application'
+                    },
+                    controls: {
+                        class: 'Controls',
+                        dryRun: true
+                    }
+                };
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.strictEqual(ctxt.tasks[0].warnings.length, 2);
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].tenant, 'tenantId');
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].message, 'dryRun true found in Tenant controls');
+                        assert.strictEqual(ctxt.tasks[0].warnings[1].tenant, 'tenantId2');
+                        assert.strictEqual(ctxt.tasks[0].warnings[1].message, 'dryRun true found in Tenant controls');
                     });
             });
 
@@ -483,6 +574,7 @@ describe('RequestContext', () => {
 
                 hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
                 hostContext.as3VersionInfo = {};
+                hostContext.schemaValidator = schemaValidator;
             });
 
             it('should invalidate per-app declaration POST to /declare', () => {
@@ -514,7 +606,7 @@ describe('RequestContext', () => {
                         assert.strictEqual(ctxt.isPerApp, false);
                         assert.strictEqual(ctxt.method, 'Post');
                         assert.strictEqual(ctxt.error,
-                            'Invalid request value \'[object Object]\' (path: /declaration) : should have required property \'class\' {"missingProperty":"class"}');
+                            'Invalid request: /declaration: should have required property \'class\'');
                         assert.strictEqual(ctxt.pathName, 'declare');
                         assert.strictEqual(ctxt.subPath, undefined);
                         assert.deepStrictEqual(ctxt.queryParams, []);
@@ -552,6 +644,7 @@ describe('RequestContext', () => {
 
             hostContext.deviceType = constants.DEVICE_TYPES.BIG_IP;
             hostContext.as3VersionInfo = {};
+            hostContext.schemaValidator = schemaValidator;
 
             validDecl = {
                 controls: {
@@ -726,6 +819,78 @@ describe('RequestContext', () => {
                     });
             });
 
+            it('should build the correct per-app POST context with dry-run in Tenant controls', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+
+                restOp.setPathName(`${path}/Tenant1/applications/`);
+                restOp.setPath(`${path}/Tenant1/applications/`);
+
+                restOp.setBody({
+                    id: 'per-app-declaration',
+                    schemaVersion: '3.50.0',
+                    controls: {
+                        class: 'Controls',
+                        dryRun: true,
+                        logLevel: 'debug',
+                        trace: true
+                    },
+                    Application1: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.1'
+                            ],
+                            pool: 'pool'
+                        },
+                        pool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.2.10',
+                                        '192.0.2.20'
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    Application2: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.2'
+                            ],
+                            pool: 'pool'
+                        },
+                        pool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.2.30',
+                                        '192.0.2.40'
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                });
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.strictEqual(ctxt.tasks[0].warnings.length, 1);
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].tenant, 'Tenant1');
+                        assert.strictEqual(ctxt.tasks[0].warnings[0].message, 'dryRun true found in Tenant controls');
+                    });
+            });
+
             it('should validate a per-app POST request with one app', () => {
                 const restOp = new RestOperationMock();
                 restOp.method = 'Post';
@@ -733,6 +898,7 @@ describe('RequestContext', () => {
                 restOp.setPathName(`${path}/Tenant1/applications/`);
                 restOp.setPath(`${path}/Tenant1/applications/`);
                 restOp.setBody({
+                    schemaVersion: '3.50',
                     app1: {
                         class: 'Application',
                         template: 'generic',
@@ -763,6 +929,7 @@ describe('RequestContext', () => {
                                 apps: ['app1'],
                                 tenant: 'Tenant1',
                                 decl: {
+                                    schemaVersion: '3.50',
                                     app1: {
                                         class: 'Application',
                                         template: 'generic',
@@ -786,7 +953,7 @@ describe('RequestContext', () => {
                             ctxt.request.body,
                             {
                                 class: 'ADC',
-                                schemaVersion: '3.0.0',
+                                schemaVersion: '3.50',
                                 Tenant1: {
                                     class: 'Tenant',
                                     app1: {
@@ -816,6 +983,7 @@ describe('RequestContext', () => {
                 restOp.setPathName(`${path}/Tenant1/applications/`);
                 restOp.setPath(`${path}/Tenant1/applications/`);
                 restOp.setBody({
+                    schemaVersion: '3.50',
                     app1: {
                         class: 'Application',
                         template: 'generic',
@@ -860,6 +1028,7 @@ describe('RequestContext', () => {
                                 apps: ['app1', 'app2'],
                                 tenant: 'Tenant1',
                                 decl: {
+                                    schemaVersion: '3.50',
                                     app1: {
                                         class: 'Application',
                                         template: 'generic',
@@ -897,7 +1066,7 @@ describe('RequestContext', () => {
                             ctxt.request.body,
                             {
                                 class: 'ADC',
-                                schemaVersion: '3.0.0',
+                                schemaVersion: '3.50',
                                 Tenant1: {
                                     class: 'Tenant',
                                     app1: {

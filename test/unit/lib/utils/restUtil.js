@@ -181,6 +181,7 @@ describe('restUtil', () => {
             assert.deepStrictEqual(restOp.body, {
                 results: [{ code: 200 }],
                 declaration: {
+                    schemaVersion: '3.15.0',
                     app2: {
                         class: 'Application',
                         template: 'generic'

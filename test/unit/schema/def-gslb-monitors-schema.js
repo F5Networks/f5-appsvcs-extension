@@ -18,7 +18,6 @@
 
 const assert = require('assert');
 const Ajv = require('ajv');
-const Context = require('../../../src/lib/context/context');
 
 const ajv = new Ajv(
     {
@@ -36,12 +35,8 @@ formats.forEach((customFormat) => {
 });
 
 const parserScope = {
-    context: Context.build(),
-    components: [],
-    fetches: [],
-    postProcess: []
+    _postProcess: []
 };
-parserScope.context.target.provisionedModules = ['gtm'];
 keywords.keywords.forEach((keyword) => ajv.addKeyword(keyword.name, keyword.definition(parserScope)));
 
 const validate = ajv

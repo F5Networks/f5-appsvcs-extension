@@ -47,6 +47,7 @@ const DataGroupDataStore = require('../DataGroupDataStore');
 const JsonDataStore = require('../JsonDataStore');
 const Context = require('./context');
 const config = require('../config');
+const SchemaValidator = require('../schemaValidator');
 
 const CHECK_INTERVAL_MS = 10000;
 const CHECK_TIMEOUT_MS = 2 * 60 * 1000;
@@ -97,11 +98,12 @@ function buildContext(initialContext) {
             return promiseUtil.series(promises);
         })
         .then(() => {
-            context.parser = new As3Parser(context.deviceType);
-            return context.parser.loadSchemas();
+            context.schemaValidator = new SchemaValidator(context.deviceType);
+            return context.schemaValidator.init();
         })
-        .then((schemaIds) => {
-            context.schemaIds = schemaIds;
+        .then(() => {
+            context.parser = new As3Parser(context.schemaValidator);
+            context.schemaIds = context.schemaValidator.getSchemaIds();
             context.as3VersionInfo = initAs3VersionInfo(context);
             return initServiceDiscovery.call(this, context);
         })
@@ -197,12 +199,12 @@ function checkAddtlDependencies(context, url, timeout, interval) {
 
 function initAs3VersionInfo(context) {
     const versionInfo = fs.readFileSync(path.join(__dirname, '../../version'), 'ascii').split('-');
-    const schema = context.parser.schemas.find((s) => s.$id === constants.adcSchemaId);
+    const schema = context.schemaValidator.getSchemas().find((s) => s.$id === constants.SCHEMA_ID.ADC);
+    const schemaVersion = schema.properties.schemaVersion;
     const as3Info = {
         version: versionInfo[0],
         release: versionInfo[1],
-        schemaCurrent: schema.properties.schemaVersion.enum
-            ? schema.properties.schemaVersion.enum[0] : schema.properties.schemaVersion.anyOf[1].const,
+        schemaCurrent: schemaVersion.enum ? schemaVersion.enum[0] : schemaVersion.anyOf[1].const,
         schemaMinimum: '3.0.0'
     };
     log.warning(`AS3 version: ${as3Info.version}`);

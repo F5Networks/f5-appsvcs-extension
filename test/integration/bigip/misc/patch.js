@@ -40,6 +40,7 @@ describe('patch', function () {
         assert.strictEqual(result.code, 200);
         assert.strictEqual(result.message, 'success');
         assert.strictEqual(result.tenant, expectedTenantName);
+        assert.ok(result.declarationId.startsWith('autogen_'));
     }
 
     it('should patch just the tenant mentioned', () => {

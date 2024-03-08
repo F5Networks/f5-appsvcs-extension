@@ -47,6 +47,7 @@ describe('per-app schema testing', () => {
     describe('valid', () => {
         it('should handle a single per-app declaration', () => {
             const data = {
+                schemaVersion: '3.50',
                 application1: {
                     class: 'Application',
                     service: {
@@ -76,6 +77,7 @@ describe('per-app schema testing', () => {
         it('should handle a single per-app declaration with an id', () => {
             const data = {
                 id: 'id',
+                schemaVersion: '3.50',
                 application1: {
                     class: 'Application',
                     service: {
@@ -104,6 +106,7 @@ describe('per-app schema testing', () => {
 
         it('should handle a multiple per-app declaration', () => {
             const data = {
+                schemaVersion: '3.50',
                 application1: {
                     class: 'Application',
                     service: {
