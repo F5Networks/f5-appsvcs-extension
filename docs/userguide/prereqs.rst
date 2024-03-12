@@ -9,6 +9,7 @@ The following are prerequisites for using BIG-IP AS3:
 - You must be using BIG-IP version 12.1.x (if using BIG-IP AS3 v3.1.0 through v3.26.1) or v13.1 or later to use BIG-IP AS3.
   BIG-IP AS3 is not intended to work on BIG-IP versions that have reached End of Life.
   See `here <https://support.f5.com/csp/article/K5903>`_ for more information about BIG-IP versions supported by F5.
+.. IMPORTANT:: Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
 - To use BIG-IP AS3, your BIG-IP user account must have the **Administrator**
   role.
 - You should be familiar with the F5 BIG-IP and F5 terminology.  For

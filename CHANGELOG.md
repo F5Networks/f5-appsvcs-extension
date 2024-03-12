@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Removed
 
 ## 3.50.0
+**Important**: Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
 
 ### Added
 
@@ -29,9 +30,9 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4160: Record first and second passes of Common in separate trace files.
 - AUTOTOOL-4177: A DELETE to a Tenant or an Application with per-app will now use the previous declarations `schemaVersion` as the saved `schemaVersion`.
 - AUTOTOOL-4115: `declarationId` response and logging values in non-POST requests.
-- Updated to Service Discovery 1.18.0-2
-  - AUTOTOOL-4147: Update packages to latest available versions
-  - AUTOTOOL-4136: Tasks are updated immediately after a PATCH request
+- Updates to Service Discovery 1.18.0-2
+  - AUTOTOOL-4147: Update packages to latest available versions.
+  - AUTOTOOL-4136: Tasks are updated immediately after a PATCH request.
 
 ### Removed
 
