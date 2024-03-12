@@ -21,8 +21,8 @@ Currently supported versions (the next LTS release, 3.46.1, will release on 9/12
 |------------------|---------------|---------------------|-----------------|
 | AS 3.46.1        | LTS           |  12-Sep-2023        | 12-Sep-2024     |
 | AS 3.46.2        | LTS           |  14-Nov-2023        | 12-Sep-2024     |
-| AS 3.48.0        | Feature       |  14-Nov-2023        | 14-Feb-2024     |
 | AS 3.49.0        | Feature       |  16-Jan-2024        | 16-Apr-2024     |
+| AS 3.50.0        | Feature       |  11-Mar-2024        | 11-Jun-2024     |
 
 
 
@@ -88,6 +88,7 @@ Versions no longer supported:
 | AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
 | AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
 | AS 3.47.0        | Feature       |  12-Sep-2023        | 12-Dec-2023     |
+| AS 3.48.0        | Feature       |  14-Nov-2023        | 14-Feb-2024     |
 
 \* Fix for updated Docker Container packaging only
 \*\* Update for the schema description for Pool minimumMonitors
