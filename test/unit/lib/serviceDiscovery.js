@@ -35,6 +35,37 @@ describe('serviceDiscovery', () => {
             const def = {};
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
             assert.strictEqual(task.nodePrefix, '/Test_Tenant/');
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~oZTdpSdu8c1gzgE~~3QnsYifnLs6YPLTLQylXmY~C2B03D',
+                    altId: '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D',
+                    ignore: {},
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: undefined,
+                    providerOptions: {},
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: undefined,
+                                session: undefined,
+                                state: undefined
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: undefined
+                });
         });
 
         it('should not prefix fqdn', () => {
@@ -85,12 +116,48 @@ describe('serviceDiscovery', () => {
                 jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}'
             };
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
-            assert.strictEqual(task.providerOptions.addressRealm, def.addressRealm);
-            assert.strictEqual(task.providerOptions.uri, def.uri);
-            assert.strictEqual(task.providerOptions.encodedToken, def.encodedToken);
-            assert.strictEqual(task.providerOptions.trustCA, def.trustCA);
-            assert.strictEqual(task.providerOptions.rejectUnauthorized, def.rejectUnauthorized);
-            assert.strictEqual(task.providerOptions.jmesPathQuery, def.jmesPathQuery);
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~znD18smXkq86x8Y8OCmyYErNtQEFJgZxzzMzrNSfqTQ3D',
+                    altId: '~tenant~xbvw1lVgA4kI3Y2QsD02RsKnx7eer4~t~d4QAixdbUU3D',
+                    ignore: {
+                        providerOptions: {
+                            encodedToken: 'secret'
+                        }
+                    },
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: 'consul',
+                    providerOptions: {
+                        addressRealm: 'addressRealm',
+                        encodedToken: 'secret',
+                        jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}',
+                        rejectUnauthorized: true,
+                        trustCA: 'something',
+                        uri: 'https://example.com/api'
+                    },
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: undefined,
+                                session: undefined,
+                                state: undefined
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: undefined
+                });
         });
 
         it('should give correct id for Address_Discovery case for event addressDiscovery', () => {
@@ -132,13 +199,48 @@ describe('serviceDiscovery', () => {
             };
 
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
-            assert.strictEqual(task.provider, 'gce');
-            assert.strictEqual(task.nodePrefix, '/Test_Tenant/');
-            assert.strictEqual(task.providerOptions.projectId, 'id-of-first-project');
-            assert.strictEqual(task.providerOptions.tagKey, 'foo');
-            assert.strictEqual(task.providerOptions.tagValue, 'bar');
-            assert.strictEqual(task.providerOptions.encodedCredentials, 'base 64 encoded credentials');
-            assert.strictEqual(task.ignore.providerOptions.encodedCredentials, 'base 64 encoded credentials');
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~W4cGs7prbpCfz0tJeuONhpsxyAlBfBke2zMWBcTWKas3D',
+                    altId: '~tenant~Iw4jSkQw05TmqvbPJAums1N9Xu0YgHXevF5RaoO8W0Q3D',
+                    ignore: {
+                        providerOptions: {
+                            encodedCredentials: 'base 64 encoded credentials'
+                        }
+                    },
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: 'gce',
+                    providerOptions: {
+                        addressRealm: 'private',
+                        encodedCredentials: 'base 64 encoded credentials',
+                        projectId: 'id-of-first-project',
+                        region: 'us-west1',
+                        tagKey: 'foo',
+                        tagValue: 'bar'
+                    },
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: 80,
+                                session: undefined,
+                                state: undefined
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: 10
+                });
         });
 
         it('should add routeDomain to task', () => {

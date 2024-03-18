@@ -581,6 +581,7 @@ describe('map_as3', () => {
                         path: '/tenantId/~tenantId~appId~myPool',
                         properties: {
                             id: '~tenantId~appId~myPool',
+                            altId: '~tenantId~appId~myPool',
                             metadata: {
                                 configuredBy: 'AS3'
                             },
@@ -624,6 +625,7 @@ describe('map_as3', () => {
                         path: '/tenantId/~tenantId~1mz5zBTnwNcOL82rys2G0ZZtEBx3cZzp6aUAaWXkuZw3D',
                         properties: {
                             id: '~tenantId~1mz5zBTnwNcOL82rys2G0ZZtEBx3cZzp6aUAaWXkuZw3D',
+                            altId: '~tenantId~Nh6HZWw0VJckBj4mgYveGsYdsCE5wLj7~nIKJAp931I3D',
                             metadata: {
                                 configuredBy: 'AS3'
                             },
@@ -11086,6 +11088,7 @@ describe('map_as3', () => {
                             properties: {
                                 schemaVersion: '1.0.0',
                                 id: '~tenantId~dNPxtyLAg8Amf7TZZZqJEpAWZUboWAPLVXscYN83KC43D',
+                                altId: '~tenantId~3axGwkABEWrezTl~Q~65SF9jiQyY93FP78BUOc1OITY3D',
                                 updateInterval: 60,
                                 resources: {
                                     0: {
@@ -11157,6 +11160,7 @@ describe('map_as3', () => {
                             path: '/tenantId/~tenantId~appId~itemId',
                             properties: {
                                 id: '~tenantId~appId~itemId',
+                                altId: '~tenantId~appId~itemId',
                                 metadata: {
                                     configuredBy: 'AS3'
                                 },
@@ -11201,6 +11205,7 @@ describe('map_as3', () => {
                         properties: {
                             schemaVersion: '1.0.0',
                             id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
+                            altId: '~tenantId~Mw8jIQ9ayaeMCzGE5ohjjiLouhPkGjtOc8ltKOwh3m03D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',
@@ -11251,6 +11256,7 @@ describe('map_as3', () => {
                         properties: {
                             schemaVersion: '1.0.0',
                             id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
+                            altId: '~tenantId~QN1zwZgXTd5Lwki0G9SPjfYxQHdNsEEA3eGTUKNL4BQ3D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',
@@ -11284,6 +11290,7 @@ describe('map_as3', () => {
                         properties: {
                             schemaVersion: '1.0.0',
                             id: '~tenantId~re32UPhLJYkPWmnThZ0RlvT9qL2PC4oY2VRxbrML6J83D',
+                            altId: '~tenantId~6mbpio9KDu96TxgO5SB4HwI7bIKU3dfDaVWe2BH74DdY3D',
                             updateInterval: 0,
                             resources: {},
                             provider: 'static',

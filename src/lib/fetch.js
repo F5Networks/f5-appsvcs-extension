@@ -1660,6 +1660,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
     Object.keys(currentConfig).forEach((configKey) => {
         const currentValue = currentConfig[configKey];
         const desiredValue = desiredConfig[configKey];
+
         // if ignoreChanges is set to false for asm policies, delete the entry from the
         // current config so deepDiff can pick up a change. Set edit true for tmshUpdateScript
         if (desiredValue && currentValue) {
@@ -1767,6 +1768,35 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
             // only allow a delete to happen if it originates from the Tenant we recorded the creation from.
             delete currentConfig[configKey];
         }
+    });
+
+    const taskConfig = [];
+    // Iterate through desiredConfig to see if a currentConfig might match alternate id
+    // SD needs to not delete old tasks with the previous hashes, so we check for alternate ids the task could be under
+    // If we detect the old hash, create a new object using the hash in the desired config to avoid changes in diff
+    // New tasks will be created with the new hash
+    Object.keys(desiredConfig).forEach((configKey) => {
+        const desiredValue = desiredConfig[configKey];
+        if (desiredValue.command === 'mgmt shared service-discovery task' && typeof desiredValue.properties !== 'undefined'
+            && typeof desiredValue.properties.altId !== 'undefined') {
+            const altId = desiredValue.properties.altId;
+            const altPath = util.mcpPath(tenantId, null, desiredValue.properties.altId); // taskIds are tenant+id
+            // altPath & configKey check is to skip identical ids (e.g. non-hash ids)
+            if (altPath !== configKey && typeof currentConfig[altPath] !== 'undefined') {
+                // If a current task has the previous id, we must retain it
+                taskConfig.push({ altId, altPath, configKey });
+            }
+
+            // remove altId so it is not diffed
+            delete desiredValue.properties.altId;
+        }
+    });
+
+    taskConfig.forEach((taskObj) => {
+        const desiredValue = desiredConfig[taskObj.configKey]; // pull the current desired object
+        desiredValue.properties.id = taskObj.altId; // update the id to use the previous hash so diff works
+        desiredConfig[taskObj.altPath] = desiredValue; // point desiredConfig at object to match current
+        delete desiredConfig[taskObj.configKey]; // Remove the task object made with the new hash
     });
 
     let finalDiffs = [];

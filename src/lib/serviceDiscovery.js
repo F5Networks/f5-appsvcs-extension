@@ -48,6 +48,7 @@ function createTask(sdItem, tenantId, resources) {
     task.routeDomain = sdItem.routeDomain || 0;
 
     // ADD ANY NEW PROPERTIES ABOVE THIS LINE (task ID is a hash of the properties in the task)
+    task.altId = generateAltTaskId(util.simpleCopy(task), sdItem);
     task.id = generateTaskId(task, sdItem);
     return task;
 }
@@ -178,6 +179,33 @@ function createTaskProvider(sdItem) {
     }
 
     return provObj;
+}
+
+function generateAltTaskId(task, sdItem) {
+    const primaryResource = task.resources[0];
+    const resourcePath = (primaryResource && sdItem.class !== 'Address_Discovery') ? primaryResource.path : sdItem.path;
+
+    if (task.provider === 'event') {
+        return encodeURIComponent(resourcePath.replace(/\//g, '~'));
+    }
+
+    const taskCpy = util.simpleCopy(task);
+
+    delete taskCpy.ignore;
+    if (taskCpy.provider === 'aws') {
+        delete taskCpy.providerOptions.secretAccessKey;
+    } else if (taskCpy.provider === 'azure') {
+        delete taskCpy.providerOptions.apiAccessKey;
+    } else if (taskCpy.provider === 'gce') {
+        delete taskCpy.providerOptions.encodedCredentials;
+    } else if (taskCpy.provider === 'consul') {
+        delete taskCpy.providerOptions.encodedToken;
+    }
+
+    const tenant = resourcePath.split('/')[1];
+    return encodeURIComponent(util.mcpPath(tenant, null, hashUtil.hashTenant(JSON.stringify(taskCpy)))
+        .replace(/\//g, '~'))
+        .replace(/['%]/g, '');
 }
 
 function generateTaskId(task, sdItem) {

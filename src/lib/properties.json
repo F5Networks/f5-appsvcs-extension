@@ -337,6 +337,7 @@
   "mgmt shared service-discovery task": [
     { "id": "schemaVersion",             "default": "1.0.0" },
     { "id": "id" },
+    { "id": "altId" },
     { "id": "updateInterval" },
     { "id": "resources",                 "extend": "objArray" },
     { "id": "provider" },

@@ -10,6 +10,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4238: ([GitHub Issue 802](https://github.com/F5Networks/f5-appsvcs-extension/issues/802)): Endpoint_Policy action clientSsl does not error or set the false value when 'enable' is specified instead of 'enabled'. To help users who have 'enable' in production either property name will be accepted and work.
 
 ### Changed
+- AUTOTOOL-4292: Update task hash collision checks to minimize task churn
 
 ### Removed
 

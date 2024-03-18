@@ -658,6 +658,216 @@ describe('Service Discovery', function () {
                     });
                 });
         });
+
+        it('should respect currently established SD tasks with the hash prior to 3.50', () => {
+            // Create SD tasks using the old hash
+            const task1 = {
+                schemaVersion: '1.0.0',
+                id: '~TEST~A0VRXPz02B4PKJ1fy0Zt2Bcb3R32Btf1wEdcH8~sxyLH4Q3D',
+                updateInterval: 10,
+                resources: [
+                    {
+                        type: 'pool',
+                        path: '/TEST/Application/testPool',
+                        options: {
+                            servicePort: 8080,
+                            connectionLimit: 0,
+                            rateLimit: 'disabled',
+                            dynamicRatio: 1,
+                            ratio: 1,
+                            priorityGroup: 0,
+                            monitor: 'default',
+                            state: 'user-up',
+                            session: 'user-enabled'
+                        }
+                    }
+                ],
+                provider: 'consul',
+                providerOptions: {
+                    addressRealm: 'private',
+                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                    rejectUnauthorized: false
+                },
+                nodePrefix: '/TEST/',
+                metadata: {
+                    configuredBy: 'AS3'
+                },
+                routeDomain: 0
+            };
+            const task2 = {
+                schemaVersion: '1.0.0',
+                id: '~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D',
+                updateInterval: 10,
+                resources: [
+                    {
+                        type: 'pool',
+                        path: '/TEST/Application/testPool',
+                        options: {
+                            servicePort: 8080,
+                            connectionLimit: 0,
+                            rateLimit: 'disabled',
+                            dynamicRatio: 1,
+                            ratio: 1,
+                            priorityGroup: 0,
+                            monitor: 'default',
+                            state: 'user-down',
+                            session: 'user-disabled'
+                        }
+                    }
+                ],
+                provider: 'consul',
+                providerOptions: {
+                    addressRealm: 'private',
+                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                    rejectUnauthorized: false,
+                    jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                },
+                nodePrefix: '/TEST/',
+                metadata: {
+                    configuredBy: 'AS3'
+                },
+                routeDomain: 0
+            };
+
+            const declaration0 = {
+                class: 'ADC',
+                schemaVersion: '3.31.0',
+                id: 'TEST',
+                TEST: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        testVirtual: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.125'
+                            ],
+                            pool: {
+                                use: 'testPool'
+                            }
+                        },
+                        testPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    jmesPathQuery: '[?Node==`consul-client`].{id:ID||Node,ip:{private:Address,public:Address}}',
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080
+                                }
+                            ]
+                        }
+                    }
+                }
+            };
+
+            const declaration1 = {
+                class: 'ADC',
+                schemaVersion: '3.31.0',
+                id: 'TEST',
+                controls: {
+                    traceResponse: true
+                },
+                TEST: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        testVirtual: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.2.125'
+                            ],
+                            pool: {
+                                use: 'testPool'
+                            }
+                        },
+                        testPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080
+                                },
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}',
+                                    credentialUpdate: true,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080
+                                },
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                                    jmesPathQuery: '[?Node==`consul-client`].{id:ID||Node,ip:{private:Address,public:Address}}',
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'enable',
+                                    servicePort: 8080
+                                }
+                            ]
+                        }
+                    }
+                }
+            };
+
+            return Promise.resolve()
+                // Do initial setup so that AS3 pulls in SD tasks
+                .then(() => postDeclaration(declaration0, { declarationIndex: 0 }))
+                .then((response) => {
+                    assert.strictEqual(response.results.length, 1);
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results[0].message, 'success');
+                })
+                // POST 2 old hash SD tasks for testing purposes
+                .then(() => postBigipItems([
+                    {
+                        endpoint: '/mgmt/shared/service-discovery/task',
+                        data: task1
+                    },
+                    {
+                        endpoint: '/mgmt/shared/service-discovery/task',
+                        data: task2
+                    }
+                ]))
+                // Validate there are 3 SD tasks running
+                .then(() => getPath('/mgmt/shared/service-discovery/task'))
+                .then((response) => {
+                    assert.strictEqual(response.code, 200);
+                    assert.strictEqual(response.items.length, 3);
+                })
+                // Post declaration where two tasks should remain and the third change
+                .then(() => postDeclaration(declaration1, { declarationIndex: 1 }))
+                // Validate 1 create and 1 delete
+                .then((response) => {
+                    const diff = response.traces.TESTDiff;
+                    assert.strictEqual(diff.length, 2);
+                    assert.strictEqual(diff[0].kind, 'D');
+                    assert.deepStrictEqual(diff[0].path, ['/TEST/~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D']);
+                    assert.strictEqual(diff[0].command, 'mgmt shared service-discovery task');
+                    assert.strictEqual(diff[1].kind, 'N');
+                    assert.deepStrictEqual(diff[1].path, ['/TEST/~TEST~fdrh3r~4AhPwQxs7ssq2Bz~OOzvtiTKlcjj3XAl~oG3M3D']);
+                    assert.strictEqual(diff[1].command, 'mgmt shared service-discovery task');
+                })
+                .then(() => getPath('/mgmt/shared/service-discovery/task'))
+                // Validate 3 SD tasks are running
+                .then((response) => {
+                    assert.strictEqual(response.code, 200);
+                    assert.strictEqual(response.items.length, 3);
+                });
+        });
     });
 
     describe('Firewall Address List', function () {
