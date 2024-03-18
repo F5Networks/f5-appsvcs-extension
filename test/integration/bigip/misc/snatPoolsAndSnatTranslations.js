@@ -26,6 +26,8 @@ const requestUtil = require('../../../common/requestUtilPromise');
 const {
     postDeclaration,
     deleteDeclaration,
+    postBigipItems,
+    deleteBigipItems,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 const {
@@ -281,5 +283,110 @@ describe('SNAT Pools and SNAT Translations', function () {
                 assert.strictEqual(response.results[0].message, 'no change');
             })
             .then(() => deleteDeclaration());
+    });
+
+    it('should allow POST declaration when snat and snatpool are created outside AS3', () => {
+        const dec0 = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            id: '00547273-declaration-01',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    http_custom: {
+                        class: 'HTTP_Profile',
+                        remark: 'Test http profile'
+                    },
+                    tcp_custom: {
+                        class: 'TCP_Profile',
+                        remark: 'Test tcp profile'
+                    }
+                }
+            }
+        };
+        const dec1 = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            id: '00547273-declaration-02',
+            MyTenant1: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    serviceMain: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            '10.0.1.10'
+                        ],
+                        pool: 'web_pool',
+                        profileHTTP: {
+                            bigip: '/Common/Shared/http_custom'
+                        }
+                    },
+                    web_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [{
+                            servicePort: 80,
+                            serverAddresses: [
+                                '192.0.1.10',
+                                '192.0.1.11'
+                            ]
+                        }]
+                    }
+                }
+            }
+        };
+        const bigipSnatItems = [
+            {
+                endpoint: '/mgmt/tm/ltm/snat',
+                data: {
+                    name: 'my_snat',
+                    translation: '10.10.10.1',
+                    origins: [
+                        {
+                            name: '6.6.6.1'
+                        },
+                        {
+                            name: '6.6.6.2'
+                        }
+                    ]
+                }
+            }
+        ];
+        const bigipSnatPoolItems = [
+            {
+                endpoint: '/mgmt/tm/ltm/snatpool',
+                data: {
+                    name: 'non_as3_snatpool',
+                    members: [
+                        '/Common/3.3.3.1',
+                        '/Common/3.3.3.2'
+                    ]
+                }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postDeclaration(dec0, { declarationIndex: 0 }))
+            .then(() => postBigipItems(bigipSnatPoolItems))
+            .then(() => postDeclaration(dec1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+            })
+            .then(() => postBigipItems(bigipSnatItems))
+            .then(() => postDeclaration(dec1, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[2].code, 200);
+                assert.strictEqual(response.results[2].message, 'no change');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipSnatItems))
+                .then(() => deleteBigipItems(bigipSnatPoolItems)));
     });
 });
