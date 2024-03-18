@@ -1924,6 +1924,87 @@ describe('util', () => {
         });
     });
 
+    describe('.getGlobalSnat', () => {
+        beforeEach(() => {
+            context.tasks = [
+                {
+                    urlPrefix: 'http://admin@localhost:8100'
+                }
+            ];
+            context.control = {
+                targetPort: 8100,
+                basicAuth: 'HeresSomeBasicAuth',
+                targetContext: {
+                    tokens: {
+                        'X-F5-Auth-Token': 'validtoken'
+                    },
+                    port: 8100
+                }
+            };
+        });
+
+        it('should error when no context is provided', () => {
+            assert.isRejected(
+                util.getGlobalSnat(),
+                'argument context required'
+            );
+        });
+
+        it('should return empty array if no snat objects exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snat?$select=fullPath,partition,translation')
+                .reply(
+                    200,
+                    {
+                        items: []
+                    }
+                );
+
+            return assert.becomes(
+                util.getGlobalSnat(context),
+                []
+            );
+        });
+
+        it('should return snat objects that exist', () => {
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/snat?$select=fullPath,partition,translation')
+                .reply(
+                    200,
+                    {
+                        items: [
+                            {
+                                partition: 'Common',
+                                fullPath: '/Common/snat1',
+                                translation: '192.0.2.11'
+                            },
+                            {
+                                partition: 'Tenant',
+                                fullPath: '/Tenant/Application/snat2',
+                                translation: '192.0.2.110'
+                            }
+                        ]
+                    }
+                );
+
+            return assert.becomes(
+                util.getGlobalSnat(context),
+                [
+                    {
+                        partition: 'Common',
+                        fullPath: '/Common/snat1',
+                        translation: '192.0.2.11'
+                    },
+                    {
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/snat2',
+                        translation: '192.0.2.110'
+                    }
+                ]
+            );
+        });
+    });
+
     describe('.getSnatTranslationList', () => {
         beforeEach(() => {
             context.tasks = [

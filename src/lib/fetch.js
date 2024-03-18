@@ -1604,19 +1604,23 @@ const filterReferencedSnatTranslations = function (context, diffs) {
             && diff.lhs.command === 'ltm snat-translation'
             && referencedMembers.indexOf(diff.path[0]) !== -1;
     };
-
+    const referencedMembers = [];
     return Promise.resolve()
         .then(() => util.getSnatPoolList(context))
-        .then((remainingPools) => {
-            const referencedMembers = [];
-            remainingPools.forEach((snatPool) => {
+        .then((snatPoolMembers) => {
+            snatPoolMembers.forEach((snatPool) => {
                 snatPool.members.forEach((member) => {
                     referencedMembers.push(member);
                 });
             });
-            return referencedMembers;
         })
-        .then((referencedMembers) => {
+        .then(() => util.getGlobalSnat(context))
+        .then((globalSnats) => {
+            globalSnats.forEach((item) => {
+                referencedMembers.push(item.translation);
+            });
+        })
+        .then(() => {
             filteredDiffs = filteredDiffs.filter((diff) => !isReferencedSnatTranslation(diff, referencedMembers));
             return filteredDiffs;
         });

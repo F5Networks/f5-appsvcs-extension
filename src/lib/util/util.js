@@ -1034,6 +1034,39 @@ class Util {
     }
 
     /**
+     * return a promise to discover all the ltm global snat
+     * objects on a BIG-IP.  Promise resolves to an array
+     * (possibly empty) of objects describing global snat,
+     * or rejects with error.
+     *
+     * @public
+     * @param {object} context - info needed to access target BIG-IP
+     * @param {string} [tenant] - optional tenant to limit query to
+     * @returns {Promise}
+     */
+    static getGlobalSnat(context, tenant) {
+        if ((typeof context !== 'object') || (context === null)) {
+            return Promise.reject(new Error('getGlobalSnat(): argument context required'));
+        }
+
+        const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
+        const opts = {
+            path: `/mgmt/tm/ltm/snat?${filter}$select=fullPath,partition,translation`,
+            why: 'query target BIG-IP current ltm snat list'
+        };
+
+        return this.iControlRequest(context, opts)
+            .then((resp) => {
+                if (!Object.prototype.hasOwnProperty.call(resp, 'items')
+                    || !Array.isArray(resp.items) || (resp.items.length < 1)) {
+                    return [];
+                }
+
+                return resp.items;
+            });
+    }
+
+    /**
      * return a promise to discover all the ltm snat-translation
      * objects on a BIG-IP.  Promise resolves to an array
      * (possibly empty) of objects describing snat-translations,
@@ -1046,7 +1079,7 @@ class Util {
      */
     static getSnatTranslationList(context, tenant) {
         if ((typeof context !== 'object') || (context === null)) {
-            return Promise.reject(new Error('getSnatPoolList(): argument context required'));
+            return Promise.reject(new Error('getSnatTranslationList(): argument context required'));
         }
 
         const filter = tenant ? `$filter=partition+eq+${tenant}&` : '';
