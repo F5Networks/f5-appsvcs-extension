@@ -2241,6 +2241,9 @@ const translate = {
         if (itemCopy.trafficGroup === undefined) {
             itemCopy.trafficGroup = 'default';
         }
+        if (itemCopy.serverScope === undefined) {
+            itemCopy.serverScope = 'any';
+        }
         const taggedId = `Service_Address-${itemId}`;
         return { configs: [normalize.actionableMcp(context, itemCopy, 'ltm virtual-address', util.mcpPath(tenantId, newAppId, taggedId))] };
     },

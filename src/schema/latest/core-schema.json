@@ -2519,6 +2519,17 @@
                     ],
                     "default": "enable"
                 },
+                "serverScope": {
+                    "title": "Enable server scope",
+                    "description": "Specifies when the virtual address is considered available. When a virtual address is available and Route Advertisement is enabled or selective, the BIG-IP system advertises the route for the virtual address. The default value is 'any'.  'any'  When any virtual server is available: Advertises the route when any virtual server is available. 'all'  When all virtual servers are available: Advertises the route when all virtual servers are available. 'none' Always advertises the route regardless of the virtual servers available.",
+                    "type": "string",
+                    "enum": [
+                        "any",
+                        "all",
+                        "none"
+                    ],
+                    "default": "any"
+                },
                 "routeAdvertisement": {
                     "title": "Enable route advertisement",
                     "description": "If true, the route is advertised",

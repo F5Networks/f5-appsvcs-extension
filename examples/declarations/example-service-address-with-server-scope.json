@@ -1,0 +1,30 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.51.0",
+    "id": "declarationId",
+    "source_service_address_example": {
+        "class": "Tenant",
+        "app": {
+            "class": "Application",
+            "my_service_address": {
+                "class": "Service_Address",
+                "virtualAddress": "1.1.1.1",
+                "arpEnabled": false,
+                "icmpEcho": "disable",
+                "serverScope": "all"
+            },
+            "service": {
+                "class": "Service_Generic",
+                "virtualAddresses": [
+                    [
+                        {
+                            "use": "my_service_address"
+                        },
+                        "1.2.3.4/32"
+                    ]
+                ],
+                "virtualPort": 1000
+            }
+        }
+    }
+}

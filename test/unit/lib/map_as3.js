@@ -2064,6 +2064,7 @@ describe('map_as3', () => {
             assert.deepEqual(result.properties['route-advertisement'], (item.routeAdvertisement === undefined) ? 'disabled' : item.routeAdvertisement.replace(/able$/, 'abled'));
             assert.deepEqual(result.properties.spanning === 'enabled', item.spanningEnabled);
             assert.deepEqual(result.properties['traffic-group'], item.trafficGroup);
+            assert.deepEqual(result.properties['server-scope'], item.serverScope);
         };
         it('should return a basic Service_Address config', () => {
             const item = {
@@ -2073,7 +2074,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'all'
             };
             const declaration = {
                 class: 'ADC',
@@ -2096,7 +2098,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'all'
                         },
                         enable: true
                     },
@@ -2121,7 +2124,8 @@ describe('map_as3', () => {
                 icmpEcho: 'disable',
                 routeAdvertisement: 'enable',
                 spanningEnabled: true,
-                trafficGroup: '/Common/traffic-group-local-only'
+                trafficGroup: '/Common/traffic-group-local-only',
+                serverScope: 'none'
             };
             const declaration = {
                 class: 'ADC',
@@ -2144,7 +2148,8 @@ describe('map_as3', () => {
                             icmpEcho: 'disable',
                             routeAdvertisement: 'enable',
                             spanningEnabled: true,
-                            trafficGroup: '/Common/traffic-group-local-only'
+                            trafficGroup: '/Common/traffic-group-local-only',
+                            serverScope: 'none'
                         },
                         enable: true
                     },
@@ -2169,7 +2174,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'any'
             };
             const declaration = {
                 class: 'ADC',
@@ -2192,7 +2198,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'any'
                         },
                         enable: true
                     },
@@ -2217,7 +2224,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'none'
             };
             const declaration = {
                 class: 'ADC',
@@ -2240,7 +2248,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'none'
                         },
                         enable: true
                     },
@@ -2265,7 +2274,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'all'
             };
             const declaration = {
                 class: 'ADC',
@@ -2289,7 +2299,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'all'
                         },
                         enable: true
                     },
@@ -2330,7 +2341,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'all'
                         }
                     }
                 }
@@ -2356,7 +2368,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'all'
             };
             const declaration = {
                 class: 'ADC',
@@ -2380,7 +2393,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'all'
                         },
                         enable: true
                     },
@@ -2404,7 +2418,8 @@ describe('map_as3', () => {
                 icmpEcho: 'enable',
                 routeAdvertisement: 'disable',
                 spanningEnabled: false,
-                trafficGroup: 'default'
+                trafficGroup: 'default',
+                serverScope: 'all'
             };
             const declaration = {
                 class: 'ADC',
@@ -2428,7 +2443,8 @@ describe('map_as3', () => {
                             icmpEcho: 'enable',
                             routeAdvertisement: 'disable',
                             spanningEnabled: false,
-                            trafficGroup: 'default'
+                            trafficGroup: 'default',
+                            serverScope: 'all'
                         },
                         enable: true
                     },
@@ -2473,7 +2489,8 @@ describe('map_as3', () => {
                     icmpEcho: 'enable',
                     spanning: false,
                     shareAddresses: true,
-                    virtualAddress: '10.10.0.11'
+                    virtualAddress: '10.10.0.11',
+                    serverScope: 'all'
                 };
 
                 const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.11', item, declaration);
@@ -2486,7 +2503,8 @@ describe('map_as3', () => {
                     icmpEcho: 'enable',
                     spanning: false,
                     shareAddresses: false,
-                    virtualAddress: '10.10.0.11'
+                    virtualAddress: '10.10.0.11',
+                    serverScope: 'all'
                 };
 
                 const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.11', item, declaration);
@@ -2545,7 +2563,8 @@ describe('map_as3', () => {
                             routeAdvertisement: 'enable',
                             spanningEnabled: false,
                             trafficGroup: 'default',
-                            virtualAddress: '10.204.64.249'
+                            virtualAddress: '10.204.64.249',
+                            serverScope: 'all'
                         }
                     }
                 },
@@ -2561,7 +2580,8 @@ describe('map_as3', () => {
                 routeAdvertisement: 'enable',
                 spanningEnabled: false,
                 trafficGroup: 'default',
-                virtualAddress: '10.204.64.249'
+                virtualAddress: '10.204.64.249',
+                serverScope: 'all'
             };
 
             const results = translate.Service_Address(defaultContext, 'dot.test', 'test_http', 'test_service_address', item, declaration);
@@ -5822,7 +5842,8 @@ describe('map_as3', () => {
                                 mask: '255.255.255.255',
                                 'route-advertisement': 'disabled',
                                 spanning: 'disabled',
-                                'traffic-group': 'default'
+                                'traffic-group': 'default',
+                                'server-scope': 'any'
                             },
                             ignore: []
                         },
@@ -11917,7 +11938,8 @@ describe('map_as3', () => {
                 mask: 'any',
                 'route-advertisement': 'disabled',
                 spanning: 'disabled',
-                'traffic-group': 'default'
+                'traffic-group': 'default',
+                'server-scope': 'any'
             };
 
             const result = translate.Service_Forwarding(defaultContext, 'tenantId', 'appId', 'itemId', item);

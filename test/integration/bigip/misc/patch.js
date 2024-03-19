@@ -750,7 +750,8 @@ describe('patch', function () {
                         class: 'Service_Address',
                         virtualAddress: 'fdf5:4153:3300::1011',
                         arpEnabled: true,
-                        icmpEcho: 'enable'
+                        icmpEcho: 'enable',
+                        serverScope: 'all'
                     }
                 }
             }
@@ -767,6 +768,7 @@ describe('patch', function () {
             .then((response) => {
                 assert.strictEqual(response.arp, 'enabled');
                 assert.strictEqual(response.icmpEcho, 'enabled');
+                assert.strictEqual(response.serverScope, 'all');
             })
             // PATCH modify service address arpEnabled
             .then(() => patch(
@@ -807,6 +809,26 @@ describe('patch', function () {
             .then(() => getPath('/mgmt/tm/ltm/virtual-address/~TEST_SERVICE_ADDRESS~saArpTrueEchoEnable'))
             .then((response) => {
                 assert.strictEqual(response.icmpEcho, 'disabled');
+            })
+            // PATCH modify service address serverScope
+            .then(() => patch(
+                '/mgmt/shared/appsvcs/declare/TEST_SERVICE_ADDRESS',
+                [{
+                    op: 'replace',
+                    path: '/TEST_SERVICE_ADDRESS/TEST_Service_Address/saArpTrueEchoEnable/serverScope',
+                    value: 'none'
+                }],
+                {
+                    logInfo: { patchIndex: 2 }
+                }
+            ))
+            .then((response) => {
+                assert.strictEqual(response.body.results.length, 1);
+                validateAs3Result(response.body.results[0], 'TEST_SERVICE_ADDRESS');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~TEST_SERVICE_ADDRESS~saArpTrueEchoEnable'))
+            .then((response) => {
+                assert.strictEqual(response.serverScope, 'none');
             });
     });
 
