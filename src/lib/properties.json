@@ -1298,6 +1298,7 @@
     { "id":"mask",                      "altId": "netmask" },
     { "id":"route-advertisement" },
     { "id":"spanning",                  "truth": "enabled", "falsehood": "disabled", "altId": "spanningEnabled" },
+    { "id":"server-scope" },
     { "id":"traffic-group" }
   ],
   "ltm cipher rule": [

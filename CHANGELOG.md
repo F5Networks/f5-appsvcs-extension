@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.51.0
 
 ### Added
+- AUTOTOOL-4262: Add Support for serverScope attribute under Service_Address Class
 
 ### Fixed
 - AUTOTOOL-4257: SNAT translation address is still referenced by SNAT 

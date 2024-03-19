@@ -79,6 +79,12 @@ describe('Service_Address', function () {
                 extractFunction: (o) => o.routeAdvertisement
             },
             {
+                name: 'serverScope',
+                inputValue: [undefined, 'all', 'none', undefined, 'all', undefined],
+                expectedValue: ['any', 'all', 'none', 'any', 'all', 'any'],
+                extractFunction: (o) => o.serverScope
+            },
+            {
                 name: 'spanningEnabled',
                 inputValue: [undefined, true, undefined],
                 expectedValue: ['disabled', 'enabled', 'disabled'],
