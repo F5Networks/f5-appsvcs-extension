@@ -1,6 +1,16 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.50.2
+
+### Added
+
+### Fixed
+
+### Changed
+- AUTOTOOL-4292: Update new SD task hash collision checks to minimize task churn, when updating from most AS3 versions.
+
+### Removed
 
 ## 3.50.1
 
@@ -10,7 +20,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4238: ([GitHub Issue 802](https://github.com/F5Networks/f5-appsvcs-extension/issues/802)): Endpoint_Policy action clientSsl does not error or set the false value when 'enable' is specified instead of 'enabled'. To help users who have 'enable' in production either property name will be accepted and work.
 
 ### Changed
-- AUTOTOOL-4292: Update task hash collision checks to minimize task churn
+- AUTOTOOL-4292: Update task hash collision checks to minimize task churn, for AS3 v3.48.X and v3.49.X.
 
 ### Removed
 

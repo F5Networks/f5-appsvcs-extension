@@ -660,7 +660,7 @@ describe('Service Discovery', function () {
         });
 
         it('should respect currently established SD tasks with the hash prior to 3.50', () => {
-            // Create SD tasks using the old hash
+            // Create SD tasks using the 3.49 hash
             const task1 = {
                 schemaVersion: '1.0.0',
                 id: '~TEST~A0VRXPz02B4PKJ1fy0Zt2Bcb3R32Btf1wEdcH8~sxyLH4Q3D',
@@ -694,6 +694,8 @@ describe('Service Discovery', function () {
                 },
                 routeDomain: 0
             };
+
+            // Task that should be replaced
             const task2 = {
                 schemaVersion: '1.0.0',
                 id: '~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D',
@@ -723,6 +725,40 @@ describe('Service Discovery', function () {
                     jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}'
                 },
                 nodePrefix: '/TEST/',
+                metadata: {
+                    configuredBy: 'AS3'
+                },
+                routeDomain: 0
+            };
+
+            // Task with 3.36 hashing
+            const task3 = {
+                schemaVersion: '1.0.0',
+                id: '~TEST~t6zG2BJZQNnrvpSGCBoJHunBBNgd7w3XDoslWGHd64Sw3D',
+                updateInterval: 10,
+                resources: [
+                    {
+                        type: 'pool',
+                        path: '/TEST/Application/testPool',
+                        options: {
+                            servicePort: 8080,
+                            connectionLimit: 0,
+                            rateLimit: 'disabled',
+                            dynamicRatio: 1,
+                            ratio: 1,
+                            priorityGroup: 0,
+                            monitor: 'default'
+                        }
+                    }
+                ],
+                provider: 'consul',
+                providerOptions: {
+                    addressRealm: 'private',
+                    uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                    rejectUnauthorized: false,
+                    jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                },
+                nodePrefix: '/Common/',
                 metadata: {
                     configuredBy: 'AS3'
                 },
@@ -816,6 +852,17 @@ describe('Service Discovery', function () {
                                     rejectUnauthorized: false,
                                     adminState: 'enable',
                                     servicePort: 8080
+                                },
+                                {
+                                    addressDiscovery: 'consul',
+                                    updateInterval: 10,
+                                    uri: 'http://as3consul.pd.f5net.com:8500/v1/catalog/nodes',
+                                    jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}',
+                                    credentialUpdate: false,
+                                    rejectUnauthorized: false,
+                                    adminState: 'disable',
+                                    servicePort: 8080,
+                                    shareNodes: true
                                 }
                             ]
                         }
@@ -840,32 +887,50 @@ describe('Service Discovery', function () {
                     {
                         endpoint: '/mgmt/shared/service-discovery/task',
                         data: task2
+                    },
+                    {
+                        endpoint: '/mgmt/shared/service-discovery/task',
+                        data: task3
                     }
                 ]))
-                // Validate there are 3 SD tasks running
+                // Validate there are 4 SD tasks running
                 .then(() => getPath('/mgmt/shared/service-discovery/task'))
                 .then((response) => {
                     assert.strictEqual(response.code, 200);
-                    assert.strictEqual(response.items.length, 3);
+                    assert.strictEqual(response.items.length, 4);
                 })
                 // Post declaration where two tasks should remain and the third change
                 .then(() => postDeclaration(declaration1, { declarationIndex: 1 }))
                 // Validate 1 create and 1 delete
                 .then((response) => {
                     const diff = response.traces.TESTDiff;
-                    assert.strictEqual(diff.length, 2);
+                    assert.strictEqual(diff.length, 3);
                     assert.strictEqual(diff[0].kind, 'D');
                     assert.deepStrictEqual(diff[0].path, ['/TEST/~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D']);
                     assert.strictEqual(diff[0].command, 'mgmt shared service-discovery task');
-                    assert.strictEqual(diff[1].kind, 'N');
-                    assert.deepStrictEqual(diff[1].path, ['/TEST/~TEST~fdrh3r~4AhPwQxs7ssq2Bz~OOzvtiTKlcjj3XAl~oG3M3D']);
+                    assert.strictEqual(diff[1].kind, 'E');
+                    assert.deepStrictEqual(diff[1].path, [
+                        '/TEST/~TEST~t6zG2BJZQNnrvpSGCBoJHunBBNgd7w3XDoslWGHd64Sw3D',
+                        'properties',
+                        'resources',
+                        '0',
+                        'options',
+                        'session'
+                    ]);
+                    assert.strictEqual(diff[1].lhs, 'user-enabled');
+                    assert.strictEqual(diff[1].rhs, 'user-disabled');
                     assert.strictEqual(diff[1].command, 'mgmt shared service-discovery task');
+                    assert.strictEqual(diff[2].kind, 'N');
+                    assert.deepStrictEqual(diff[2].path, ['/TEST/~TEST~gA3O61~VGDUpZLesLVPqAnVu0oEEAftsRqVBSJrUlDE3D']);
+                    assert.strictEqual(diff[2].command, 'mgmt shared service-discovery task');
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results.length, 1); // only 1 tenant, only 1 result
                 })
                 .then(() => getPath('/mgmt/shared/service-discovery/task'))
-                // Validate 3 SD tasks are running
+                // Validate 4 SD tasks are running
                 .then((response) => {
                     assert.strictEqual(response.code, 200);
-                    assert.strictEqual(response.items.length, 3);
+                    assert.strictEqual(response.items.length, 4);
                 });
         });
     });

@@ -1779,13 +1779,14 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         const desiredValue = desiredConfig[configKey];
         if (desiredValue.command === 'mgmt shared service-discovery task' && typeof desiredValue.properties !== 'undefined'
             && typeof desiredValue.properties.altId !== 'undefined') {
-            const altId = desiredValue.properties.altId;
-            const altPath = util.mcpPath(tenantId, null, desiredValue.properties.altId); // taskIds are tenant+id
-            // altPath & configKey check is to skip identical ids (e.g. non-hash ids)
-            if (altPath !== configKey && typeof currentConfig[altPath] !== 'undefined') {
-                // If a current task has the previous id, we must retain it
-                taskConfig.push({ altId, altPath, configKey });
-            }
+            desiredValue.properties.altId.forEach((altId) => {
+                const altPath = util.mcpPath(tenantId, null, altId); // taskIds are tenant+id
+                // altPath & configKey check is to skip identical ids (e.g. non-hash ids)
+                if (altPath !== configKey && typeof currentConfig[altPath] !== 'undefined') {
+                    // If a current task has the previous id, we must retain it
+                    taskConfig.push({ altId, altPath, configKey });
+                }
+            });
 
             // remove altId so it is not diffed
             delete desiredValue.properties.altId;

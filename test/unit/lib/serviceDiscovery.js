@@ -37,8 +37,11 @@ describe('serviceDiscovery', () => {
             assert.strictEqual(task.nodePrefix, '/Test_Tenant/');
             assert.deepStrictEqual(task,
                 {
-                    id: '~tenant~oZTdpSdu8c1gzgE~~3QnsYifnLs6YPLTLQylXmY~C2B03D',
-                    altId: '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D',
+                    id: '~tenant~j7DX2Ktq9~Jg1SlT1amXRQmotVMEdNdtluOD1lM~Tgs3D',
+                    altId: [
+                        '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D',
+                        '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D'
+                    ],
                     ignore: {},
                     metadata: {
                         configuredBy: 'AS3'
@@ -113,13 +116,18 @@ describe('serviceDiscovery', () => {
                 encodedToken: 'secret',
                 trustCA: 'something',
                 rejectUnauthorized: true,
-                jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}'
+                jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}',
+                state: 'user-up',
+                session: 'user-enabled'
             };
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
             assert.deepStrictEqual(task,
                 {
-                    id: '~tenant~znD18smXkq86x8Y8OCmyYErNtQEFJgZxzzMzrNSfqTQ3D',
-                    altId: '~tenant~xbvw1lVgA4kI3Y2QsD02RsKnx7eer4~t~d4QAixdbUU3D',
+                    id: '~tenant~WhJjLBRlmxeu3ARazJ5Q2Pq0l3w3w6SQVvdWe6hPKqM3D',
+                    altId: [
+                        '~tenant~EulxT8KHd2B6FVCDzAHpdZhGsEYBFEnCWDJAMqHms9Ic3D',
+                        '~tenant~xbvw1lVgA4kI3Y2QsD02RsKnx7eer4~t~d4QAixdbUU3D'
+                    ],
                     ignore: {
                         providerOptions: {
                             encodedToken: 'secret'
@@ -148,8 +156,8 @@ describe('serviceDiscovery', () => {
                                 rateLimit: undefined,
                                 ratio: undefined,
                                 servicePort: undefined,
-                                session: undefined,
-                                state: undefined
+                                session: 'user-enabled',
+                                state: 'user-up'
                             },
                             path: '/tenant/app/item',
                             type: 'pool'
@@ -181,7 +189,7 @@ describe('serviceDiscovery', () => {
                 path: '/tenant/app/item'
             };
             const task = serviceDiscovery.createTask(sdItem, 'tenant', []);
-            assert.strictEqual(task.id, '~tenant~kTTUt6yCc2BiuSWkaqdOIZZ8uCEFdyuw2ri6uG3CxbHc3D');
+            assert.strictEqual(task.id, '~tenant~6Ky1JwY9UUAjKyh8iK02BAP8z78bfvTA7bV98OTa~v2BE3D');
         });
 
         it('should setup a gce provider task', () => {
@@ -195,14 +203,19 @@ describe('serviceDiscovery', () => {
                 addressRealm: 'private',
                 region: 'us-west1',
                 encodedCredentials: 'base 64 encoded credentials',
-                credentialUpdate: false
+                credentialUpdate: false,
+                state: 'user-down',
+                session: 'user-disabled'
             };
 
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
             assert.deepStrictEqual(task,
                 {
-                    id: '~tenant~W4cGs7prbpCfz0tJeuONhpsxyAlBfBke2zMWBcTWKas3D',
-                    altId: '~tenant~Iw4jSkQw05TmqvbPJAums1N9Xu0YgHXevF5RaoO8W0Q3D',
+                    id: '~tenant~VpMhaXh4x8im2BBHPwarEfId0OyUearnGwmiiLGhykZk3D',
+                    altId: [
+                        '~tenant~46nl1TYNTeCj4iRvHi7pCSq3gepCq~CU4N7bLy3yAG43D',
+                        '~tenant~Iw4jSkQw05TmqvbPJAums1N9Xu0YgHXevF5RaoO8W0Q3D'
+                    ],
                     ignore: {
                         providerOptions: {
                             encodedCredentials: 'base 64 encoded credentials'
@@ -231,8 +244,8 @@ describe('serviceDiscovery', () => {
                                 rateLimit: undefined,
                                 ratio: undefined,
                                 servicePort: 80,
-                                session: undefined,
-                                state: undefined
+                                state: 'user-down',
+                                session: 'user-disabled'
                             },
                             path: '/tenant/app/item',
                             type: 'pool'
@@ -283,7 +296,7 @@ describe('serviceDiscovery', () => {
             };
             const tenantId = 'Common';
             const result = serviceDiscovery.generateTaskId(task, tenantId);
-            assert.strictEqual(result, '~test~mMIvv0aXGmrDh7GGUfsuQpdhn1XWlt8cr5irplpsxxU3D');
+            assert.strictEqual(result, '~test~ZTLEoTH1iro2HJvs2BbLTv3WSK5ASckuxnnJ0nYsT1KM3D');
         });
 
         it('should encode uri without hashing when event provider', () => {
@@ -323,7 +336,7 @@ describe('serviceDiscovery', () => {
                         }
                     }
                 ],
-                nodePrefix: '/Common/',
+                nodePrefix: '/test/',
                 provider: 'aws',
                 providerOptions: {
                     tagKey: 'demo-key',
@@ -367,7 +380,7 @@ describe('serviceDiscovery', () => {
                 }
             };
             let result = serviceDiscovery.generateTaskId(task, 'Common');
-            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
+            assert.strictEqual(result, '~test~tNiMCU9y~p440QyQ3~OiRZZRAnDfrvhe3z9oMSYZe2BU3D');
 
             // update properties that should not affect hash
             task.resources[0].options.connectionLimit = 10;
@@ -399,7 +412,7 @@ describe('serviceDiscovery', () => {
             task.providerOptions.rejectUnauthorized = false;
 
             result = serviceDiscovery.generateTaskId(task, 'Common');
-            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
+            assert.strictEqual(result, '~test~tNiMCU9y~p440QyQ3~OiRZZRAnDfrvhe3z9oMSYZe2BU3D');
         });
     });
 

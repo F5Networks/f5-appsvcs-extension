@@ -2782,11 +2782,11 @@ describe('fetch', () => {
 
         it('should detect the old hash in the current config and not delete it', () => {
             const currentConfig = {
-                '/TEST/~TEST~qZ9UsBdyXxNMwzf~rmUq0DRzvfgdBUweo4ka0FBQj8E3D': {
+                '/TEST/~TEST~KeepThisTask': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~qZ9UsBdyXxNMwzf~rmUq0DRzvfgdBUweo4ka0FBQj8E3D',
+                        id: '~TEST~KeepThisTask',
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -2820,11 +2820,11 @@ describe('fetch', () => {
                     },
                     ignore: []
                 },
-                '/TEST/~TEST~A0VRXPz02B4PKJ1fy0Zt2Bcb3R32Btf1wEdcH8~sxyLH4Q3D': {
+                '/TEST/~TEST~ShouldMatchAltId': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~A0VRXPz02B4PKJ1fy0Zt2Bcb3R32Btf1wEdcH8~sxyLH4Q3D',
+                        id: '~TEST~ShouldMatchAltId',
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -2857,11 +2857,11 @@ describe('fetch', () => {
                     },
                     ignore: []
                 },
-                '/TEST/~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D': {
+                '/TEST/~TEST~ThisTaskShouldBeDeleted': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D',
+                        id: '~TEST~ThisTaskShouldBeDeleted',
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -2898,12 +2898,15 @@ describe('fetch', () => {
             };
 
             const desiredConfig = {
-                '/TEST/~TEST~jW1MhFtQBPPGtEp3XIyogrKOhm4UAYfz2BP6k5D0Enek3D': {
+                '/TEST/~TEST~NewHashIdDoNotMatch': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~jW1MhFtQBPPGtEp3XIyogrKOhm4UAYfz2BP6k5D0Enek3D',
-                        altId: '~TEST~A0VRXPz02B4PKJ1fy0Zt2Bcb3R32Btf1wEdcH8~sxyLH4Q3D',
+                        id: '~TEST~NewHashIdDoNotMatch',
+                        altId: [
+                            '~TEST~OldHashIdDoNotMatch',
+                            '~TEST~ShouldMatchAltId'
+                        ],
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -2936,12 +2939,15 @@ describe('fetch', () => {
                     },
                     ignore: []
                 },
-                '/TEST/~TEST~fdrh3r~4AhPwQxs7ssq2Bz~OOzvtiTKlcjj3XAl~oG3M3D': {
+                '/TEST/~TEST~BrandNewTaskShouldBeCreated': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~fdrh3r~4AhPwQxs7ssq2Bz~OOzvtiTKlcjj3XAl~oG3M3D',
-                        altId: '~TEST~2BKLCJXUV5kkPExol2ER4lxpFUqyBNHb9aDZhTJ8WlrQ3D',
+                        id: '~TEST~BrandNewTaskShouldBeCreated',
+                        altId: [
+                            '~TEST~NewTaskVeryOldHash',
+                            '~TEST~NewTaskOldHashDoNotMatch'
+                        ],
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -2975,12 +2981,15 @@ describe('fetch', () => {
                     },
                     ignore: []
                 },
-                '/TEST/~TEST~qZ9UsBdyXxNMwzf~rmUq0DRzvfgdBUweo4ka0FBQj8E3D': {
+                '/TEST/~TEST~KeepThisTask': {
                     command: 'mgmt shared service-discovery task',
                     properties: {
                         schemaVersion: '1.0.0',
-                        id: '~TEST~qZ9UsBdyXxNMwzf~rmUq0DRzvfgdBUweo4ka0FBQj8E3D',
-                        altId: '~TEST~Nojx2BhfxJTwQXXbtNu8CMn5RetQYNAtyB0ES9tovlHQ3D',
+                        id: '~TEST~KeepThisTask',
+                        altId: [
+                            '~TEST~VeryOldHashId',
+                            '~TEST~OldHashId'
+                        ],
                         updateInterval: 10,
                         resources: {
                             0: {
@@ -3020,10 +3029,10 @@ describe('fetch', () => {
                 .then((diff) => {
                     assert.strictEqual(diff.length, 2);
                     assert.strictEqual(diff[0].kind, 'D');
-                    assert.deepStrictEqual(diff[0].path, ['/TEST/~TEST~~nbC2DRwihWmlDAm2DY63envq8Zmr0OKLxdASxOu84Y3D']);
+                    assert.deepStrictEqual(diff[0].path, ['/TEST/~TEST~ThisTaskShouldBeDeleted']);
                     assert.strictEqual(diff[0].lhs.command, 'mgmt shared service-discovery task');
                     assert.strictEqual(diff[1].kind, 'N');
-                    assert.deepStrictEqual(diff[1].path, ['/TEST/~TEST~fdrh3r~4AhPwQxs7ssq2Bz~OOzvtiTKlcjj3XAl~oG3M3D']);
+                    assert.deepStrictEqual(diff[1].path, ['/TEST/~TEST~BrandNewTaskShouldBeCreated']);
                     assert.strictEqual(diff[1].rhs.command, 'mgmt shared service-discovery task');
                 });
         });
