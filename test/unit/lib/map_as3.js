@@ -12400,4 +12400,1107 @@ describe('map_as3', () => {
             );
         });
     });
+
+    describe('Certificate_Validator_OCSP', () => {
+        it('should handle Certificate_Validator_OCSP config', () => {
+            const item = {
+                class: 'Certificate_Validator_OCSP',
+                dnsResolver: {
+                    bigip: '/Common/resolver'
+                },
+                responderUrl: 'http://responder.url',
+                signingCertificate: {
+                    bigip: '/Common/signingCert'
+                },
+                signingHashAlgorithm: 'sha256',
+                timeout: 10
+            };
+            const decl = {
+                tenantId: {}
+            };
+            const result = mapAs3.translate.Certificate_Validator_OCSP(defaultContext, 'tenantId', 'appId', 'itemId', item, decl);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'sys crypto cert-validator ocsp',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'dns-resolver': '/Common/resolver',
+                        'responder-url': 'http://responder.url',
+                        'sign-hash': 'sha256',
+                        'signer-cert': '/Common/signingCert',
+                        'signer-key': '/Common/signingCert',
+                        'signer-key-passphrase': 'none',
+                        timeout: 10
+                    }
+                }
+            );
+        });
+    });
+
+    describe('DNS_Nameserver', () => {
+        it('should handle DNS_Nameserver config', () => {
+            const item = {
+                address: '127.0.0.1',
+                port: 53,
+                routeDomain: {
+                    bigip: '/Common/0'
+                }
+            };
+            const result = mapAs3.translate.DNS_Nameserver(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm dns nameserver',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        address: '127.0.0.1',
+                        port: 53,
+                        'route-domain': '/Common/0'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('DNS_Profile', () => {
+        it('should handle DNS_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/dns'
+                },
+                rapidResponseEnabled: false,
+                hardwareQueryValidationEnabled: false,
+                hardwareResponseCacheEnabled: false,
+                dnssecEnabled: true,
+                globalServerLoadBalancingEnabled: true,
+                dnsExpressEnabled: true,
+                cacheEnabled: false,
+                cache: {
+                    bigip: '/Common/cache'
+                },
+                dns64Mode: 'disabled',
+                dns64Prefix: '0:0:0:0:0:0:0:0',
+                dns64AdditionalSectionRewrite: 'disabled',
+                unhandledQueryAction: 'allow',
+                localBindServerEnabled: true,
+                zoneTransferEnabled: false,
+                recursionDesiredEnabled: true,
+                securityEnabled: true,
+                securityProfile: {
+                    bigip: '/Common/securityProfile'
+                },
+                loggingEnabled: true,
+                statisticsSampleRate: 0
+            };
+            const result = mapAs3.translate.DNS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile dns',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'avr-dnsstat-sample-rate': 0,
+                        cache: '/Common/cache',
+                        'defaults-from': '/Common/dns',
+                        description: 'none',
+                        'dns-security': '/Common/securityProfile',
+                        dns64: 'disabled',
+                        'dns64-additional-section-rewrite': 'disabled',
+                        'dns64-prefix': '0:0:0:0:0:0:0:0',
+                        'enable-cache': 'no',
+                        'enable-dns-express': 'yes',
+                        'enable-dns-firewall': 'yes',
+                        'enable-dnssec': 'yes',
+                        'enable-gtm': 'yes',
+                        'enable-hardware-query-validation': 'no',
+                        'enable-hardware-response-cache': 'no',
+                        'enable-logging': 'no',
+                        'enable-rapid-response': 'no',
+                        'log-profile': 'none',
+                        'process-rd': 'yes',
+                        'process-xfr': 'no',
+                        'unhandled-query-action': 'allow',
+                        'use-local-bind': 'yes'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('DNS_TSIG_KEY', () => {
+        it('should handle DNS_TSIG_KEY config', () => {
+            const item = {
+                algorithm: 'hmacmd5',
+                secret: {
+                    ciphertext: 'theSecret'
+                }
+            };
+            const result = mapAs3.translate.DNS_TSIG_Key(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm dns tsig-key',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        algorithm: 'hmacmd5',
+                        secret: '"�.�y��"'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('DNS_Zone', () => {
+        it('should handle DNS_Zone config', () => {
+            const item = {
+                dnsExpress: {
+                    bigip: '/Common/express'
+                },
+                responsePolicyEnabled: false,
+                serverTsigKey: {
+                    bigip: '/Common/key'
+                },
+                transferClients: [
+                    {
+                        bigip: 'nameserver'
+                    }
+                ]
+            };
+            const result = mapAs3.translate.DNS_Zone(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm dns zone',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'dns-express-allow-notify': {},
+                        'response-policy': 'no',
+                        'server-tsig-key': '/Common/key',
+                        'transfer-clients': {
+                            nameserver: {}
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('UDP_Profile', () => {
+        it('should handle UDP_Profile config', () => {
+            const item = {
+                allowNoPayload: false,
+                bufferMaxBytes: 655350,
+                bufferMaxPackets: 0,
+                datagramLoadBalancing: false,
+                idleTimeout: 60,
+                ipDfMode: 'pmtu',
+                ipTosToClient: 0,
+                linkQosToClient: 0,
+                proxyMSS: false,
+                ttlIPv4: 255,
+                ttlIPv6: 64,
+                ttlMode: 'proxy',
+                useChecksum: false
+            };
+            const result = mapAs3.translate.UDP_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile udp',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'allow-no-payload': 'disabled',
+                        'buffer-max-bytes': 655350,
+                        'buffer-max-packets': 0,
+                        'datagram-load-balancing': 'disabled',
+                        description: 'none',
+                        'idle-timeout': '60',
+                        'ip-df-mode': 'pmtu',
+                        'ip-tos-to-client': '0',
+                        'ip-ttl-mode': 'proxy',
+                        'ip-ttl-v4': 255,
+                        'ip-ttl-v6': 64,
+                        'link-qos-to-client': '0',
+                        'no-checksum': 'enabled',
+                        'proxy-mss': 'disabled'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('IP_Other_Profile', () => {
+        it('should handle IP_Other_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/ipother'
+                },
+                idleTimeout: 60
+            };
+            const result = mapAs3.translate.IP_Other_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile ipother',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'defaults-from': '/Common/ipother',
+                        description: 'none',
+                        'idle-timeout': '60'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Classification_Profile', () => {
+        it('should handle Classification_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/classification'
+                },
+                appDetectionEnabled: true,
+                urlCategorizationEnabled: false,
+                iRuleEventEnabled: false,
+                logPublisher: {
+                    bigip: '/Common/publisher'
+                },
+                logUnclassifiedDomain: false,
+                preset: {
+                    bigip: '/Common/ce'
+                },
+                statisticsCollectionEnabled: false,
+                statisticsPublisher: {
+                    bigip: '/Common/statpub'
+                }
+            };
+            const result = mapAs3.translate.Classification_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile classification',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'app-detection': 'on',
+                        'avr-publisher': '/Common/statpub',
+                        'avr-stat-collect': 'off',
+                        'defaults-from': '/Common/classification',
+                        description: 'none',
+                        'irule-event': 'off',
+                        'log-publisher': '/Common/publisher',
+                        'log-unclassified-domain': 'off',
+                        preset: '/Common/ce',
+                        urlcat: 'off'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('FIX_Profile', () => {
+        it('should handle FIX_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/fix'
+                },
+                errorAction: 'dont-forward',
+                fullLogonParsingEnabled: true,
+                messageLogPublisher: {
+                    bigip: '/Common/publisher'
+                },
+                reportLogPublisher: {
+                    bigip: '/Common/reportpub'
+                },
+                quickParsingEnabled: false,
+                responseParsingEnabled: false,
+                statisticsSampleInterval: 20,
+                senderTagMappingList: [
+                    {
+                        senderId: 'id',
+                        tagDataGroup: {
+                            bigip: '/Common/datagroup'
+                        }
+                    }
+                ]
+            };
+            const result = mapAs3.translate.FIX_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile fix',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'defaults-from': '/Common/fix',
+                        description: 'none',
+                        'error-action': 'dont-forward',
+                        'full-logon-parsing': 'true',
+                        'message-log-publisher': '/Common/publisher',
+                        'quick-parsing': 'false',
+                        'report-log-publisher': '/Common/reportpub',
+                        'response-parsing': 'false',
+                        'sender-tag-class': {
+                            id: {
+                                'sender-id': 'id',
+                                'tag-map-class': '/Common/datagroup'
+                            }
+                        },
+                        'statistics-sample-interval': 20
+                    }
+                }
+            );
+        });
+    });
+
+    describe('L4_Profile', () => {
+        it('should handle L4_Profile config', () => {
+            const item = {
+                clientTimeout: -1,
+                idleTimeout: -1,
+                keepAliveInterval: -1,
+                looseClose: false,
+                looseInitialization: false,
+                maxSegmentSize: -1,
+                resetOnTimeout: true,
+                synCookieAllowlist: false,
+                synCookieEnable: true,
+                tcpCloseTimeout: -1,
+                tcpHandshakeTimeout: -1
+            };
+            const result = mapAs3.translate.L4_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile fastl4',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        description: 'none',
+                        'client-timeout': 86400,
+                        'idle-timeout': 'indefinite',
+                        'keep-alive-interval': -1,
+                        'loose-close': 'disabled',
+                        'loose-initialization': 'disabled',
+                        'mss-override': 9162,
+                        'reset-on-timeout': 'enabled',
+                        'syn-cookie-enable': 'enabled',
+                        'syn-cookie-whitelist': 'disabled',
+                        'tcp-close-timeout': 'indefinite',
+                        'tcp-handshake-timeout': 'indefinite'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Analytics_Profile', () => {
+        it('should handle Analytics_Profile config', () => {
+            const item = {
+                captureFilter: {
+                    requestCapturedParts: 'none',
+                    responseCapturedParts: 'none',
+                    dosActivity: 'any',
+                    capturedProtocols: 'all',
+                    capturedReadyForJsInjection: 'disabled',
+                    virtualServers: [],
+                    nodeAddresses: [],
+                    responseCodes: [],
+                    methods: [],
+                    urlFilterType: 'all',
+                    urlPathPrefixes: [],
+                    userAgentSubstrings: [
+                        'substring1',
+                        'substring2'
+                    ],
+                    clientIps: [],
+                    requestContentFilterSearchPart: 'none',
+                    requestContentFilterSearchString: 'string',
+                    responseContentFilterSearchPart: 'none',
+                    responseContentFilterSearchString: 'string'
+                },
+                collectGeo: false,
+                collectClientSideStatistics: false,
+                collectUrl: false,
+                collectIp: false,
+                collectSubnet: false,
+                collectUserAgent: false,
+                collectOsAndBrowser: false,
+                collectResponseCode: true,
+                collectMethod: true,
+                collectMaxTpsAndThroughput: false,
+                collectPageLoadTime: false,
+                collectUserSession: false,
+                collectedStatsInternalLogging: true,
+                collectedStatsExternalLogging: false,
+                capturedTrafficInternalLogging: false,
+                capturedTrafficExternalLogging: false,
+                sessionCookieSecurity: 'ssl-only',
+                sessionTimeoutMinutes: 5,
+                externalLoggingPublisher: {
+                    bigip: '/Common/publisher'
+                },
+                notificationBySyslog: false,
+                notificationBySnmp: false,
+                notificationByEmail: false,
+                notificationEmailAddresses: [
+                    'user@example.com'
+                ],
+                publishIruleStatistics: false,
+                urlsForStatCollection: [
+                    'url1.stat.collection',
+                    'url2.stat.collection'
+                ],
+                countriesForStatCollection: [
+                    'United States',
+                    'Unknown'
+                ],
+                subnetsForStatCollection: [
+                    'subnet1',
+                    'subnet2'
+                ]
+            };
+            const result = mapAs3.translate.Analytics_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile analytics',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        description: 'none',
+                        'captured-traffic-external-logging': 'disabled',
+                        'captured-traffic-internal-logging': 'disabled',
+                        'collected-stats-external-logging': 'disabled',
+                        'collected-stats-internal-logging': 'enabled',
+                        'publish-irule-statistics': 'disabled',
+                        'notification-by-email': 'disabled',
+                        'notification-email-addresses': { 'user@example.com': {} },
+                        'notification-by-snmp': 'disabled',
+                        'notification-by-syslog': 'disabled',
+                        'external-logging-publisher': '/Common/publisher',
+                        'collect-max-tps-and-throughput': 'disabled',
+                        'collect-page-load-time': 'disabled',
+                        'collect-http-timing-metrics': 'disabled',
+                        'collect-user-sessions': 'disabled',
+                        'collect-url': 'disabled',
+                        'collect-geo': 'disabled',
+                        'collect-ip': 'disabled',
+                        'collect-subnets': 'disabled',
+                        'collect-response-codes': 'enabled',
+                        'collect-user-agent': 'disabled',
+                        'collect-methods': 'enabled',
+                        'collect-os-and-browser': 'disabled',
+                        'session-cookie-security': 'ssl-only',
+                        'session-timeout-minutes': '5',
+                        'traffic-capture': {
+                            'capture-for-f5-appsvcs': {
+                                'request-captured-parts': 'none',
+                                'response-captured-parts': 'none',
+                                'dos-activity': 'any',
+                                'captured-protocols': 'all',
+                                'captured-ready-for-js-injection': 'disabled',
+                                'virtual-servers': {},
+                                'node-addresses': {},
+                                'response-codes': {},
+                                methods: {},
+                                'url-path-prefixes': {},
+                                'user-agent-substrings': { '"substring1" "substring2"': {} },
+                                'client-ips': {},
+                                'request-content-filter-search-part': 'none',
+                                'request-content-filter-search-string': '"string"',
+                                'response-content-filter-search-part': 'none',
+                                'response-content-filter-search-string': '"string"'
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Persist', () => {
+        it('should handle Persist cookie config', () => {
+            const item = {
+                persistenceMethod: 'cookie',
+                matchAcrossPools: false,
+                matchAcrossVirtualPorts: false,
+                matchAcrossVirtualAddresses: false,
+                mirror: false,
+                overrideConnectionLimit: false,
+                duration: 0,
+                cookieMethod: 'insert',
+                cookieName: '',
+                ttl: 0,
+                httpOnly: true,
+                secure: true,
+                alwaysSet: false,
+                encrypt: false
+            };
+            const result = mapAs3.translate.Persist(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm persistence cookie',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'always-send': 'disabled',
+                        description: 'none',
+                        'cookie-name': 'none',
+                        'cookie-encryption': 'disabled',
+                        expiration: '0',
+                        httponly: 'enabled',
+                        'match-across-pools': 'disabled',
+                        'match-across-services': 'disabled',
+                        'match-across-virtuals': 'disabled',
+                        method: 'insert',
+                        mirror: 'disabled',
+                        'override-connection-limit': 'disabled',
+                        secure: 'enabled',
+                        timeout: 'indefinite'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Enforcement_Diameter_Endpoint_Profile', () => {
+        it('should handle Enforcement_Diameter_Endpoint_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/diameter-endpoint'
+                },
+                destinationHost: 'destHost',
+                destinationRealm: 'destRealm',
+                fatalGraceTime: 500,
+                messageMaxRetransmits: 2,
+                messageRetransmitDelay: 1500,
+                originHost: 'origHost',
+                originRealm: 'origRealm'
+            };
+            const result = mapAs3.translate.Enforcement_Diameter_Endpoint_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'pem profile diameter-endpoint',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'defaults-from': '/Common/diameter-endpoint',
+                        'destination-host': 'destHost',
+                        'destination-realm': 'destRealm',
+                        'fatal-grace-time': {
+                            enabled: 'yes',
+                            time: 500
+                        },
+                        'msg-max-retransmits': 2,
+                        'msg-retransmit-delay': 1500,
+                        'origin-host': 'origHost',
+                        'origin-realm': 'origRealm',
+                        'supported-apps': {}
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Enforcement_Radius_AAA_Profile', () => {
+        it('should handle Enforcement_Radius_AAA_Profile config', () => {
+            const item = {
+                parentProfile: {
+                    bigip: '/Common/radiusaaa'
+                },
+                retransmissionTimeout: 5,
+                sharedSecret: {
+                    ciphertext: 'sharedSecret',
+                    ignoreChanges: true
+                },
+                password: {
+                    ciphertext: 'password',
+                    ignoreChanges: true
+                },
+                transactionTimeout: 30
+            };
+            const result = mapAs3.translate.Enforcement_Radius_AAA_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'pem profile radius-aaa',
+                    ignore: [
+                        'shared-secret',
+                        'password'
+                    ],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'defaults-from': '/Common/radiusaaa',
+                        'retransmission-timeout': 5,
+                        'shared-secret': '"�.�yԞr��"',
+                        password: '"��,\x8A�"',
+                        'transaction-timeout': 30
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Bandwidth_Control_Policy', () => {
+        it('should handle Bandwidth_Control_Policy config', () => {
+            const item = {
+                dynamicControlEnabled: false,
+                maxBandwidth: 0,
+                maxBandwidthUnit: 'Mbps',
+                maxUserBandwidth: 0,
+                maxUserBandwidthUnit: 'Mbps',
+                maxUserPPS: 0,
+                maxUserPPSUnit: 'Mpps',
+                loggingEnabled: true,
+                logPublisher: {
+                    bigip: '/Common/publisher'
+                },
+                logPeriod: 0,
+                markIP: 'pass-through',
+                markL2: 'pass-through'
+            };
+            const result = mapAs3.translate.Bandwidth_Control_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'net bwc policy',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        dynamic: 'disabled',
+                        'max-rate': 0,
+                        'max-user-rate': 0,
+                        'max-user-rate-pps': 0,
+                        measure: 'enabled',
+                        'log-publisher': '/Common/publisher',
+                        'log-period': 0,
+                        'ip-tos': 'pass-through',
+                        'link-qos': 'pass-through',
+                        categories: {}
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Log_Publisher', () => {
+        it('should handle Log_Publisher config', () => {
+            const item = {
+                destinations: [
+                    {
+                        bigip: '/Common/dest'
+                    }
+                ]
+            };
+            const result = mapAs3.translate.Log_Publisher(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'sys log-config publisher',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        description: 'none',
+                        destinations: {
+                            '/Common/dest': {}
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Log_Destination', () => {
+        it('should handle Log_Destination config', () => {
+            const item = {
+                type: 'remote-high-speed-log',
+                distribution: 'adaptive',
+                protocol: 'tcp',
+                pool: {
+                    bigip: '/Common/pool'
+                }
+            };
+            const result = mapAs3.translate.Log_Destination(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'sys log-config destination remote-high-speed-log',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'pool-name': '/Common/pool',
+                        protocol: 'tcp',
+                        distribution: 'adaptive'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Enforcement_Policy', () => {
+        it('should handle Enforcement_Policy config', () => {
+            const item = {
+                enable: true,
+                allTransactions: false,
+                rules: [
+                    {
+                        dscpMarkingDownlink: 'pass-through',
+                        dscpMarkingUplink: 'pass-through',
+                        gateStatusEnabled: true,
+                        interceptionEndpoint: {
+                            bigip: '/Common/intercept'
+                        },
+                        iRule: {
+                            bigip: '/Common/iRule'
+                        },
+                        l2MarkingDownlink: 'pass-through',
+                        l2MarkingUplink: 'pass-through',
+                        name: 'policyRule',
+                        precedence: 123,
+                        qosBandwidthControllerUplink: {
+                            policy: {
+                                bigip: '/Common/policy1'
+                            },
+                            category: 'category1'
+                        },
+                        qosBandwidthControllerDownlink: {
+                            policy: {
+                                bigip: '/Common/policy2'
+                            },
+                            category: 'category2'
+                        },
+                        serviceChain: {
+                            bigip: '/Common/serviceChain'
+                        },
+                        tclFilter: 'filter',
+                        tcpAnalyticsEnabled: false,
+                        tcpOptimizationDownlink: {
+                            bigip: '/Common/tcp1'
+                        },
+                        tcpOptimizationUplink: {
+                            bigip: '/Common/tcp2'
+                        },
+                        classificationFilters: [
+                            {
+                                application: {
+                                    bigip: '/Common/classApp'
+                                },
+                                category: {
+                                    bigip: '/Common/category'
+                                },
+                                invertMatch: false,
+                                name: 'filter'
+                            }
+                        ],
+                        DTOSTethering: {
+                            detectDtos: false,
+                            detectTethering: false,
+                            reportDestinationHsl: {
+                                highSpeedLogPublisher: {
+                                    bigip: '/Common/publisher'
+                                },
+                                formatScript: {
+                                    bigip: '/Common/format'
+                                }
+                            }
+                        },
+                        flowInfoFilters: [
+                            {
+                                name: 'flowFilter',
+                                invertMatch: false,
+                                dscpMarking: 'disabled',
+                                destinationAddress: '0.0.0.0/0',
+                                destinationPort: 0,
+                                sourceVlan: {
+                                    bigip: '/Common/vlan'
+                                },
+                                sourceAddress: '0.0.0.0/32',
+                                sourcePort: 0,
+                                protocol: 'any',
+                                ipAddressType: 'any'
+                            }
+                        ],
+                        forwarding: {
+                            type: 'http',
+                            fallbackAction: 'drop',
+                            redirectsUrl: 'http://redirect.url'
+                        },
+                        insertContent: {
+                            duration: 123,
+                            frequency: 'always',
+                            position: 'append',
+                            tagName: 'tag',
+                            valueContent: 'content',
+                            valueType: 'string'
+                        },
+                        modifyHttpHeader: {
+                            headerName: 'header',
+                            operation: 'insert',
+                            valueContent: 'content',
+                            valueType: 'string'
+                        },
+                        qoeReporting: {
+                            highSpeedLogPublisher: {
+                                bigip: '/Common/publisher'
+                            },
+                            formatScript: {
+                                bigip: '/Common/script'
+                            }
+                        },
+                        quota: {
+                            ratingGroup: {
+                                bigip: '/Common/rating'
+                            },
+                            reportingLevel: 'rating-group'
+                        },
+                        ranCongestion: {
+                            threshold: 1000,
+                            reportDestinationHsl: {
+                                highSpeedLogPublisher: {
+                                    bigip: '/Common/publisher'
+                                },
+                                formatScript: {
+                                    bigip: '/Common/script'
+                                }
+                            }
+                        },
+                        usageReporting: {
+                            destination: 'gx',
+                            granularity: 'session',
+                            interval: 0,
+                            volume: {
+                                downlink: 0,
+                                total: 0,
+                                uplink: 0
+                            },
+                            transaction: {
+                                hostname: 0,
+                                uri: 256,
+                                userAgent: 0
+                            }
+                        },
+                        urlCategorizationFilters: [
+                            {
+                                category: {
+                                    bigip: '/Common/category'
+                                },
+                                invertMatch: false,
+                                name: 'urlCategoryFilter'
+                            }
+                        ]
+                    }
+                ]
+            };
+            const result = mapAs3.translate.Enforcement_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'pem policy',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        status: 'enabled',
+                        transactional: 'disabled',
+                        rules: {
+                            policyRule: {
+                                'dscp-marking-downlink': 'pass-through',
+                                'dscp-marking-uplink': 'pass-through',
+                                'gate-status': 'enabled',
+                                intercept: '/Common/intercept',
+                                irule: '/Common/iRule',
+                                'l2-marking-downlink': 'pass-through',
+                                'l2-marking-uplink': 'pass-through',
+                                precedence: 123,
+                                'qos-rate-pir-uplink': '/Common/policy1->category1',
+                                'qos-rate-pir-downlink': '/Common/policy2->category2',
+                                'classification-filters': {
+                                    filter: {
+                                        application: '/Common/classApp',
+                                        category: '/Common/category',
+                                        operation: 'match'
+                                    }
+                                },
+                                'dtos-tethering': {
+                                    'dtos-detect': 'disabled',
+                                    'tethering-detect': 'disabled',
+                                    report: {
+                                        dest: {
+                                            hsl: {
+                                                'format-script': '/Common/format',
+                                                publisher: '/Common/publisher'
+                                            }
+                                        }
+                                    }
+                                },
+                                'flow-info-filters': {
+                                    flowFilter: {
+                                        operation: 'match',
+                                        'dscp-code': 'disabled',
+                                        'dst-ip-addr': '0.0.0.0/0',
+                                        'dst-port': 0,
+                                        'from-vlan': '/Common/vlan',
+                                        'l2-endpoint': 'vlan',
+                                        'src-ip-addr': '0.0.0.0/32',
+                                        'src-port': 0,
+                                        proto: 'any',
+                                        'ip-addr-type': 'any'
+                                    }
+                                },
+                                forwarding: {
+                                    type: 'none',
+                                    'fallback-action': 'drop',
+                                    'icap-type': 'none'
+                                },
+                                'http-redirect': {
+                                    'fallback-action': 'drop'
+                                },
+                                'insert-content': {
+                                    duration: 123,
+                                    frequency: 'always',
+                                    position: 'append',
+                                    'tag-name': 'tag',
+                                    'value-content': 'content',
+                                    'value-type': 'string'
+                                },
+                                'modify-http-hdr': {
+                                    tmName: 'header',
+                                    operation: 'insert',
+                                    'value-content': 'content',
+                                    'value-type': 'string'
+                                },
+                                'qoe-reporting': {
+                                    dest: {
+                                        hsl: {
+                                            'format-script': '/Common/script',
+                                            publisher: '/Common/publisher'
+                                        }
+                                    }
+                                },
+                                quota: {
+                                    'rating-group': '/Common/rating',
+                                    'reporting-level': 'rating-group'
+                                },
+                                'ran-congestion': {
+                                    detect: 'enabled',
+                                    'lowerthreshold-bw': 1000,
+                                    report: {
+                                        dest: {
+                                            hsl: {
+                                                'format-script': '/Common/script',
+                                                publisher: '/Common/publisher'
+                                            }
+                                        }
+                                    }
+                                },
+                                reporting: {
+                                    dest: {
+                                        gx: {
+                                            'application-reporting': 'disabled'
+                                        },
+                                        hsl: {
+                                            'flow-reporting-fields': {},
+                                            publisher: 'none',
+                                            'session-reporting-fields': {},
+                                            'transaction-reporting-fields': {}
+                                        },
+                                        'radius-accounting': {
+                                            'radius-aaa-virtual': 'none'
+                                        },
+                                        sd: {
+                                            'application-reporting': 'disabled'
+                                        }
+                                    },
+                                    granularity: 'session',
+                                    interval: 0,
+                                    volume: {
+                                        downlink: 0,
+                                        total: 0,
+                                        uplink: 0
+                                    },
+                                    transaction: {
+                                        http: {
+                                            'hostname-len': 0,
+                                            'uri-len': 256,
+                                            'user-agent-len': 0
+                                        }
+                                    }
+                                },
+                                'service-chain': '/Common/serviceChain',
+                                'tcl-filter': 'filter',
+                                'tcp-analytics-enable': 'disabled',
+                                'tcp-optimization-downlink': '/Common/tcp1',
+                                'tcp-optimization-uplink': '/Common/tcp2',
+                                'url-categorization-filters': {
+                                    urlCategoryFilter: {
+                                        'url-category': '/Common/category',
+                                        operation: 'match'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Enforcement_Forwarding_Endpoint', () => {
+        it('should handle Enforcement_Forwarding_Endpoint config', () => {
+            const item = {
+                pool: {
+                    bigip: '/Common/pool'
+                },
+                SNATPool: {
+                    bigip: '/Common/snatPool'
+                },
+                sourcePortAction: 'preserve',
+                addressTranslationEnabled: false,
+                portTranslationEnabled: false,
+                defaultPersistenceType: 'dsiabled',
+                fallbackPersistenceType: 'disabled',
+                persistenceHashSettings: {
+                    length: 1024,
+                    offset: 0,
+                    tclScript: 'A tcl script'
+                }
+            };
+            const result = mapAs3.translate.Enforcement_Forwarding_Endpoint(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'pem forwarding-endpoint',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        pool: '/Common/pool',
+                        'snat-pool': '/Common/snatPool',
+                        'source-port': 'preserve',
+                        'translate-address': 'disabled',
+                        'translate-service': 'disabled',
+                        persistence: {
+                            fallback: 'disabled',
+                            'hash-settings': {
+                                length: 1024,
+                                offset: 0,
+                                source: 'tcl-snippet',
+                                'tcl-value': 'A tcl script'
+                            },
+                            type: 'dsiabled'
+                        }
+                    }
+                }
+            );
+        });
+    });
 });

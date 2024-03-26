@@ -115,7 +115,30 @@ describe('UpdaterTmsh', () => {
 
             updater.update([], [], []);
 
-            assert.deepEqual(updater.context.log.idScript, '');
+            assert.strictEqual(updater.context.log.idScript, '');
+        });
+    });
+
+    describe('.postProcessUpdate()', () => {
+        it('should handle post process update', () => {
+            const updater = makeUpdater(true);
+            const script = { script: '' };
+
+            sinon.stub(log, 'writeTraceFile').resolves();
+            sinon.stub(update, 'submit').resolves();
+            sinon.stub(fetch, 'postProcessUpdateScript').callsFake(() => script);
+
+            updater.postProcessUpdate();
+
+            assert.strictEqual(updater.context.log.idScript, '');
+        });
+
+        it('should return null when there is no tenantUpdate', () => {
+            const updater = makeUpdater(true);
+            sinon.stub(fetch, 'postProcessUpdateScript').callsFake(() => false);
+
+            const result = updater.postProcessUpdate();
+            assert.deepStrictEqual(result, null);
         });
     });
 });

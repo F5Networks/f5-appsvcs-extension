@@ -438,6 +438,43 @@ describe('fetchUtil', () => {
                         });
                 });
             });
+
+            it('should throw error if the schema is unsupported', () => {
+                const fetch = {
+                    schemaData: 'unsupported',
+                    data: { url: 'this is unsupported' },
+                    instancePath: '/tenant/app/item/unsupported',
+                    parentData: {},
+                    parentDataProperty: 'url'
+                };
+                const decl = {};
+
+                assert.throws(
+                    () => fetchUtil.fetchValue(context, decl, fetch),
+                    /unimplemented schema=unsupported in fetchValue()/,
+                    'should reject when the polymorphism is unsupported'
+                );
+            });
+
+            it('should throw error if unable to fetch value from url', () => {
+                const fetch = {
+                    schemaData: 'string',
+                    data: { url: cert1.url },
+                    instancePath: '/Tenant1/Application1/cert1/url',
+                    parentData: cert1,
+                    parentDataProperty: 'data'
+                };
+
+                nock('https://test.example.com')
+                    .get('/foo/bar')
+                    .reply(400, 'Hello World');
+
+                assert.isRejected(
+                    fetchUtil.fetchValue(context, declaration, fetch),
+                    /Unable to fetch value./,
+                    'should reject when a url fetch fails'
+                );
+            });
         });
 
         describe('pkcs12', () => {

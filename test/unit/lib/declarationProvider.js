@@ -28,6 +28,8 @@ const DeclarationProvider = require('../../../src/lib/declarationProvider');
 const Context = require('../../../src/lib/context/context');
 const Tracer = require('../../../src/lib/tracer').Tracer;
 const log = require('../../../src/lib/log');
+const dataGroupUtil = require('../../../src/lib/util/dataGroupUtil');
+const util = require('../../../src/lib/util/util');
 
 describe('DeclarationProvider', () => {
     let context;
@@ -357,6 +359,94 @@ describe('DeclarationProvider', () => {
             return provider.getBigipDeclaration(context, 0, true)
                 .then((result) => {
                     assert.deepStrictEqual(result, fakeDecl);
+                });
+        });
+
+        it('should error if unable to parse response', () => {
+            const provider = new DeclarationProvider();
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                .reply(200, {
+                    items: [
+                        {
+                            name: '____appsvcs_declaration-1554498345530',
+                            timestamp: 1554498345530,
+                            date: '2019-04-05T21:16:07.217Z',
+                            age: 0
+                        }
+                    ]
+                });
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                .reply(200, '');
+
+            return assert.isRejected(
+                provider.getBigipDeclaration(context, 0),
+                /cannot JSON.parse/
+            );
+        });
+    });
+
+    describe('.storeBigipDeclaration', () => {
+        it('should reject when unable to strigify declaration', () => {
+            const provider = new DeclarationProvider();
+            const a = {};
+            const b = { a };
+            a.b = b;
+
+            assert.isRejected(
+                provider.storeBigipDeclaration(context, a, 1),
+                /cannot stringify declaration/
+            );
+        });
+
+        it('should reject when unable to prepare declaration for storage', () => {
+            const provider = new DeclarationProvider();
+            const decl = {
+                class: 'ADC'
+            };
+            sinon.stub(dataGroupUtil, 'stringToRecords').throws(new Error());
+
+            assert.throws(
+                () => provider.storeBigipDeclaration(context, decl, 1),
+                /cannot prepare declaration/
+            );
+        });
+
+        it('should handle storing declaration to existing data-group', () => {
+            const provider = new DeclarationProvider();
+            const decl = {
+                tenant1: {
+                    class: 'Tenant'
+                },
+                tenant2: {
+                    class: 'Tenant'
+                }
+            };
+            context.control.timeSlip = 1;
+            sinon.stub(util, 'iControlRequest').resolves({ statusCode: 200 });
+
+            return provider.storeBigipDeclaration(context, decl, 1)
+                .then((results) => {
+                    assert.ok(results);
+                });
+        });
+
+        it('should handle storing declaration to new data-group', () => {
+            const provider = new DeclarationProvider();
+            const decl = {
+                tenant: {
+                    class: 'Tenant'
+                }
+            };
+            context.control.timeSlip = 1;
+            sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
+
+            return provider.storeBigipDeclaration(context, decl, 1)
+                .then((results) => {
+                    assert.ok(results);
                 });
         });
     });
