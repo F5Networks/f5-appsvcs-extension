@@ -1547,7 +1547,7 @@ describe('map_cli', () => {
         });
 
         describe('ltm dns cache', () => {
-            ['resolver', 'validating-resolver'].forEach((type) => {
+            ['resolver', 'validating-resolver', 'transparent'].forEach((type) => {
                 it(`should handle forward-zones property for ${type}`, () => {
                     const diff = {
                         kind: 'N',
@@ -1591,7 +1591,11 @@ describe('map_cli', () => {
                     };
                     const currentConfig = {};
                     const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
-                    assert.deepStrictEqual(result.commands, [`tmsh::create ltm dns cache ${type} /tenant/app/service allowed-query-time 201 local-zones none max-concurrent-queries 2048 max-concurrent-tcp 24 max-concurrent-udp 8193 msg-cache-size 0 nameserver-cache-count 16537 prefetch-key yes forward-zones replace-all-with \\{ singleRecord \\{ nameservers replace-all-with \\{ 10.0.0.1:53 \\} \\} \\} route-domain /Common/0 rrset-cache-size 1 rrset-rotate query-id unwanted-query-reply-threshold 1`]);
+                    if (type === 'transparent') {
+                        assert.deepStrictEqual(result.commands, [`tmsh::create ltm dns cache ${type} /tenant/app/service allowed-query-time 201 local-zones none max-concurrent-queries 2048 max-concurrent-tcp 24 max-concurrent-udp 8193 msg-cache-size 0 nameserver-cache-count 16537 prefetch-key yes forward-zones \\{ singleRecord \\{ nameservers \\{ 10.0.0.1:53 \\} \\} \\} route-domain /Common/0 rrset-cache-size 1 rrset-rotate query-id unwanted-query-reply-threshold 1`]);
+                    } else {
+                        assert.deepStrictEqual(result.commands, [`tmsh::create ltm dns cache ${type} /tenant/app/service allowed-query-time 201 local-zones none max-concurrent-queries 2048 max-concurrent-tcp 24 max-concurrent-udp 8193 msg-cache-size 0 nameserver-cache-count 16537 prefetch-key yes forward-zones replace-all-with \\{ singleRecord \\{ nameservers replace-all-with \\{ 10.0.0.1:53 \\} \\} \\} route-domain /Common/0 rrset-cache-size 1 rrset-rotate query-id unwanted-query-reply-threshold 1`]);
+                    }
                 });
 
                 it(`should handle local-zones property for ${type}`, () => {
@@ -1993,6 +1997,72 @@ describe('map_cli', () => {
                 assert.deepStrictEqual(
                     result.commands,
                     []
+                );
+            });
+        });
+
+        describe('ltm policy', () => {
+            it('should have a modify and a delete command', () => {
+                const diff = {
+                    kind: 'D',
+                    path: ['/tenant/app/policy'],
+                    lhsCommand: 'ltm policy',
+                    lhs: {},
+                    ignore: []
+                };
+                const result = mapCli.tmshDelete(context, diff);
+                assert.deepStrictEqual(
+                    result.commands,
+                    [
+                        'tmsh::modify ltm policy /tenant/app/policy legacy rules none strategy best-match',
+                        'tmsh::delete ltm policy /tenant/app/policy'
+                    ]
+                );
+            });
+        });
+
+        describe('sys config merge file', () => {
+            it('should return delete commands', () => {
+                const diff = {
+                    kind: 'D',
+                    path: ['/tenant/app/mergeFile'],
+                    lhsCommand: 'sys config merge file',
+                    lhs: {
+                        properties: {
+                            scriptName: 'theScript'
+                        }
+                    },
+                    ignore: []
+                };
+                const result = mapCli.tmshDelete(context, diff);
+                assert.deepStrictEqual(
+                    result.commands,
+                    [
+                        'tmsh::delete sys icall handler periodic /tenant/app/theScript',
+                        'tmsh::delete sys icall script /tenant/app/theScript',
+                        'tmsh::delete ltm data-group internal /Common/appsvcs/SD_mergeFile',
+                        'tmsh::delete ltm data-group internal /Common/appsvcs/SD_mergeFile_disabled'
+                    ]
+                );
+            });
+        });
+
+        describe('gtm topology', () => {
+            it('should return a delete and modify command', () => {
+                const diff = {
+                    kind: 'D',
+                    path: ['/Common/gtmTopology'],
+                    lhsCommand: 'gtm topology',
+                    lhs: {},
+                    ignore: []
+                };
+                const result = mapCli.tmshDelete(context, diff);
+                assert.deepStrictEqual(
+                    result.commands,
+                    [
+                        'tmsh::delete gtm topology all',
+                        'tmsh::modify gtm global-settings load-balancing topology-longest-match yes'
+                    ]
                 );
             });
         });

@@ -76,4 +76,32 @@ describe('log', () => {
                 assert.ok(spy.calledOnceWith('/tmp/Common_2_desired.json', {}));
             }));
     });
+
+    describe('log', () => {
+        log.updateGlobalSettings({ logLevel: 'critical' });
+
+        it('should handle null values', () => Promise.resolve()
+            .then(() => log.debug(null))
+            .then((result) => {
+                assert.deepStrictEqual(result, { message: '(unrecognized type null)' });
+            }));
+
+        it('should handle undefined values', () => Promise.resolve()
+            .then(() => log.debug(undefined))
+            .then((result) => {
+                assert.deepStrictEqual(result, { message: '(undefined)' });
+            }));
+
+        it('should handle empty strings', () => Promise.resolve()
+            .then(() => log.debug(''))
+            .then((result) => {
+                assert.deepStrictEqual(result, { message: '(empty)' });
+            }));
+
+        it('should handle empty objects', () => Promise.resolve()
+            .then(() => log.debug({}))
+            .then((result) => {
+                assert.deepStrictEqual(result, { message: '(empty object)' });
+            }));
+    });
 });
