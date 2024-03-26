@@ -236,6 +236,126 @@ describe('UpdaterRest', () => {
                 }));
         });
 
+        it('should only PATCH service-discovery task once, if they share a task id', () => {
+            const updater = makeUpdater();
+            const properties = {
+                schemaVersion: '1.0.0',
+                id: '~TEST~testId',
+                updateInterval: 0,
+                resources: {
+                    0: {
+                        type: 'pool',
+                        path: '/TEST/Application/testPool',
+                        options: {
+                            servicePort: 80,
+                            state: 'user-up',
+                            session: 'user-enabled'
+                        }
+                    }
+                },
+                provider: 'consul',
+                providerOptions: {
+                    addressRealm: 'private',
+                    uri: 'example.com',
+                    rejectUnauthorized: true
+                },
+                nodePrefix: '/TEST/',
+                metadata: {
+                    configuredBy: 'AS3'
+                },
+                routeDomain: 0
+            };
+
+            const diff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/TEST/~TEST~testId',
+                        'properties',
+                        'resources',
+                        '0',
+                        'options',
+                        'state'
+                    ],
+                    lhs: 'user-up',
+                    rhs: 'user-down',
+                    tags: [
+                        'rest'
+                    ],
+                    command: 'mgmt shared service-discovery task'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/TEST/~TEST~testId',
+                        'properties',
+                        'resources',
+                        '0',
+                        'options',
+                        'session'
+                    ],
+                    lhs: 'user-enabled',
+                    rhs: 'user-disabled',
+                    tags: [
+                        'rest'
+                    ],
+                    command: 'mgmt shared service-discovery task'
+                }
+            ];
+
+            const current = {
+                '/TEST/~TEST~testId': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: util.simpleCopy(properties)
+                }
+            };
+
+            const desired = {
+                '/TEST/~TEST~testId': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: util.simpleCopy(properties)
+                }
+            };
+            desired['/TEST/~TEST~testId'].properties.resources['0'].options = {
+                state: 'user-down',
+                session: 'user-disabled'
+            };
+
+            let body = 'request not received';
+            nock('http://localhost:8100')
+                .patch('/mgmt/shared/service-discovery/task/~TEST~testId')
+                .reply(200, (_, _body) => {
+                    // Nock only handles 1 command at a time, if multiple were received
+                    // it would fail.
+                    body = _body;
+                });
+            return updater.update(desired, current, diff)
+                .then(() => assert.deepStrictEqual(body, {
+                    schemaVersion: '1.0.0',
+                    id: '~TEST~testId',
+                    updateInterval: 0,
+                    resources: [{
+                        type: 'pool',
+                        path: '/TEST/Application/testPool',
+                        options: {
+                            session: 'user-disabled',
+                            state: 'user-down'
+                        }
+                    }],
+                    provider: 'consul',
+                    providerOptions: {
+                        addressRealm: 'private',
+                        rejectUnauthorized: true,
+                        uri: 'example.com'
+                    },
+                    nodePrefix: '/TEST/',
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    routeDomain: 0
+                }));
+        });
+
         it('should resolve when doing a dryRun', () => {
             const updater = makeUpdater();
             updater.context.tasks[updater.context.currentIndex].dryRun = true;
