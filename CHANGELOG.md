@@ -21,6 +21,8 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Changed
 - AUTOTOOL-4292: Update new SD task hash collision checks to minimize task churn, when updating from most AS3 versions.
+- Updates to Service Discovery 1.19.0-1
+  - Improve task discovery performance
 
 ### Removed
 
