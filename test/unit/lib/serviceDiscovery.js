@@ -35,6 +35,40 @@ describe('serviceDiscovery', () => {
             const def = {};
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
             assert.strictEqual(task.nodePrefix, '/Test_Tenant/');
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~j7DX2Ktq9~Jg1SlT1amXRQmotVMEdNdtluOD1lM~Tgs3D',
+                    altId: [
+                        '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D',
+                        '~tenant~jW7~YtK9kxiASiR2Ycl6Tbg4aD9uGmPRcVyN6QOIiM43D'
+                    ],
+                    ignore: {},
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: undefined,
+                    providerOptions: {},
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: undefined,
+                                session: undefined,
+                                state: undefined
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: undefined
+                });
         });
 
         it('should not prefix fqdn', () => {
@@ -82,15 +116,56 @@ describe('serviceDiscovery', () => {
                 encodedToken: 'secret',
                 trustCA: 'something',
                 rejectUnauthorized: true,
-                jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}'
+                jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}',
+                state: 'user-up',
+                session: 'user-enabled'
             };
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
-            assert.strictEqual(task.providerOptions.addressRealm, def.addressRealm);
-            assert.strictEqual(task.providerOptions.uri, def.uri);
-            assert.strictEqual(task.providerOptions.encodedToken, def.encodedToken);
-            assert.strictEqual(task.providerOptions.trustCA, def.trustCA);
-            assert.strictEqual(task.providerOptions.rejectUnauthorized, def.rejectUnauthorized);
-            assert.strictEqual(task.providerOptions.jmesPathQuery, def.jmesPathQuery);
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~WhJjLBRlmxeu3ARazJ5Q2Pq0l3w3w6SQVvdWe6hPKqM3D',
+                    altId: [
+                        '~tenant~EulxT8KHd2B6FVCDzAHpdZhGsEYBFEnCWDJAMqHms9Ic3D',
+                        '~tenant~xbvw1lVgA4kI3Y2QsD02RsKnx7eer4~t~d4QAixdbUU3D'
+                    ],
+                    ignore: {
+                        providerOptions: {
+                            encodedToken: 'secret'
+                        }
+                    },
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: 'consul',
+                    providerOptions: {
+                        addressRealm: 'addressRealm',
+                        encodedToken: 'secret',
+                        jmesPathQuery: '[*].{id:Node.Node,ip: {private:Node.Node}}',
+                        rejectUnauthorized: true,
+                        trustCA: 'something',
+                        uri: 'https://example.com/api'
+                    },
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: undefined,
+                                session: 'user-enabled',
+                                state: 'user-up'
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: undefined
+                });
         });
 
         it('should give correct id for Address_Discovery case for event addressDiscovery', () => {
@@ -114,7 +189,7 @@ describe('serviceDiscovery', () => {
                 path: '/tenant/app/item'
             };
             const task = serviceDiscovery.createTask(sdItem, 'tenant', []);
-            assert.strictEqual(task.id, '~tenant~kTTUt6yCc2BiuSWkaqdOIZZ8uCEFdyuw2ri6uG3CxbHc3D');
+            assert.strictEqual(task.id, '~tenant~6Ky1JwY9UUAjKyh8iK02BAP8z78bfvTA7bV98OTa~v2BE3D');
         });
 
         it('should setup a gce provider task', () => {
@@ -128,17 +203,57 @@ describe('serviceDiscovery', () => {
                 addressRealm: 'private',
                 region: 'us-west1',
                 encodedCredentials: 'base 64 encoded credentials',
-                credentialUpdate: false
+                credentialUpdate: false,
+                state: 'user-down',
+                session: 'user-disabled'
             };
 
             const task = serviceDiscovery.createTask(def, 'Test_Tenant', [createResourceDef()]);
-            assert.strictEqual(task.provider, 'gce');
-            assert.strictEqual(task.nodePrefix, '/Test_Tenant/');
-            assert.strictEqual(task.providerOptions.projectId, 'id-of-first-project');
-            assert.strictEqual(task.providerOptions.tagKey, 'foo');
-            assert.strictEqual(task.providerOptions.tagValue, 'bar');
-            assert.strictEqual(task.providerOptions.encodedCredentials, 'base 64 encoded credentials');
-            assert.strictEqual(task.ignore.providerOptions.encodedCredentials, 'base 64 encoded credentials');
+            assert.deepStrictEqual(task,
+                {
+                    id: '~tenant~VpMhaXh4x8im2BBHPwarEfId0OyUearnGwmiiLGhykZk3D',
+                    altId: [
+                        '~tenant~46nl1TYNTeCj4iRvHi7pCSq3gepCq~CU4N7bLy3yAG43D',
+                        '~tenant~Iw4jSkQw05TmqvbPJAums1N9Xu0YgHXevF5RaoO8W0Q3D'
+                    ],
+                    ignore: {
+                        providerOptions: {
+                            encodedCredentials: 'base 64 encoded credentials'
+                        }
+                    },
+                    metadata: {
+                        configuredBy: 'AS3'
+                    },
+                    nodePrefix: '/Test_Tenant/',
+                    provider: 'gce',
+                    providerOptions: {
+                        addressRealm: 'private',
+                        encodedCredentials: 'base 64 encoded credentials',
+                        projectId: 'id-of-first-project',
+                        region: 'us-west1',
+                        tagKey: 'foo',
+                        tagValue: 'bar'
+                    },
+                    resources: [
+                        {
+                            options: {
+                                connectionLimit: undefined,
+                                dynamicRatio: undefined,
+                                monitor: 'default',
+                                priorityGroup: undefined,
+                                rateLimit: undefined,
+                                ratio: undefined,
+                                servicePort: 80,
+                                state: 'user-down',
+                                session: 'user-disabled'
+                            },
+                            path: '/tenant/app/item',
+                            type: 'pool'
+                        }
+                    ],
+                    routeDomain: 0,
+                    updateInterval: 10
+                });
         });
 
         it('should add routeDomain to task', () => {
@@ -181,7 +296,7 @@ describe('serviceDiscovery', () => {
             };
             const tenantId = 'Common';
             const result = serviceDiscovery.generateTaskId(task, tenantId);
-            assert.strictEqual(result, '~test~mMIvv0aXGmrDh7GGUfsuQpdhn1XWlt8cr5irplpsxxU3D');
+            assert.strictEqual(result, '~test~ZTLEoTH1iro2HJvs2BbLTv3WSK5ASckuxnnJ0nYsT1KM3D');
         });
 
         it('should encode uri without hashing when event provider', () => {
@@ -221,7 +336,7 @@ describe('serviceDiscovery', () => {
                         }
                     }
                 ],
-                nodePrefix: '/Common/',
+                nodePrefix: '/test/',
                 provider: 'aws',
                 providerOptions: {
                     tagKey: 'demo-key',
@@ -265,7 +380,7 @@ describe('serviceDiscovery', () => {
                 }
             };
             let result = serviceDiscovery.generateTaskId(task, 'Common');
-            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
+            assert.strictEqual(result, '~test~tNiMCU9y~p440QyQ3~OiRZZRAnDfrvhe3z9oMSYZe2BU3D');
 
             // update properties that should not affect hash
             task.resources[0].options.connectionLimit = 10;
@@ -297,7 +412,7 @@ describe('serviceDiscovery', () => {
             task.providerOptions.rejectUnauthorized = false;
 
             result = serviceDiscovery.generateTaskId(task, 'Common');
-            assert.strictEqual(result, '~test~ysTI96BUFaKiLusoITfgPFwPT3WMUYbg3jfZPYODP383D');
+            assert.strictEqual(result, '~test~tNiMCU9y~p440QyQ3~OiRZZRAnDfrvhe3z9oMSYZe2BU3D');
         });
     });
 

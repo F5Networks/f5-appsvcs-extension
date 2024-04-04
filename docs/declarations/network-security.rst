@@ -393,6 +393,24 @@ This declaration creates only the following objects on the BIG-IP:
 
 |
 
+.. _afmP:
+
+
+Apply AFM Policies on the Route Domains
+```````````````````````````````````````
+In this example, we show how you can enforce AFM Policies on a list of Route Domain objects in a BIG-IP AS3 declaration. In the example, we only show one Route Domain, but you can add as many Route Domains as you wish to the list. 
+
+.. NOTE:: AS3 does not create Route Domains, hence only bigip pointer which references an existing object on the BIG-IP can be used. So, Route Domains should already be available.
+
+See |afmrd| in Appendix A: Schema Reference for BIG-IP AS3.
+
+.. literalinclude:: ../../examples/declarations//example-firewall-policy-route-domain-enforcement.json
+   :language: json
+
+
+:ref:`Back to top<net-sec-examples>`
+
+|
 
 .. |br| raw:: html
 
@@ -401,6 +419,10 @@ This declaration creates only the following objects on the BIG-IP:
 .. |algp| raw:: html
 
    <a href="https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations/using-alg-profiles.html" target="_blank">Using ALG profiles</a>
+
+.. |afmrd| raw:: html
+
+   <a href="https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/schema-reference.html#firewall-policy" target="_blank">Firewall_Policy</a>
 
 .. |alg| raw:: html
 

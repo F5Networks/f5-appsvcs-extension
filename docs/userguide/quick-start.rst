@@ -8,6 +8,9 @@ up and running with BIG-IP AS3.
 If you are not familiar with the BIG-IP and REST APIs, or want more detailed instructions, continue with :doc:`best-practices`.
 
 #. Download the latest RPM package from |github|.
+
+.. IMPORTANT:: Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
+
 #. Upload and install the RPM package on the using the BIG-IP GUI:
 
    - :guilabel:`Main tab > iApps > Package Management LX > Import`

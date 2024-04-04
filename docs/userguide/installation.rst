@@ -5,6 +5,7 @@ Downloading and installing the BIG-IP AS3 package
 
 The BIG-IP AS3 package is an RPM file you download, and then upload to the BIG-IP system using the iControl/iApp LX framework. Alternatively, you can see our :doc:`quick-start`.
 
+.. IMPORTANT:: Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
 .. NOTE:: You must use the **admin** user (and not just a user with administrator privileges) to install BIG-IP AS3.
 
 To uninstall BIG-IP AS3, see :ref:`uninstall`.
@@ -226,7 +227,10 @@ Upgrading BIG-IP versions when BIG-IP AS3 is installed
 ------------------------------------------------------
 This section contains information about upgrading the BIG-IP system itself when BIG-IP AS3 is installed, and how that affects the BIG-IP AS3 installation.  For information on updating BIG-IP software, see https://support.f5.com/csp/article/K84554955.
 
-.. IMPORTANT:: If you upgrade a BIG-IP and no longer see BIG-IP AS3 installed, see :ref:`iclx`
+.. IMPORTANT:: 
+   If you upgrade a BIG-IP and no longer see BIG-IP AS3 installed, see :ref:`iclx`
+
+   Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
 
 .. TIP:: Before upgrading a BIG-IP, we recommend you send a GET request to the **/declare** endpoint, which will return BIG-IP AS3's current configuration. Copy and save the response, and then in the unlikely event something goes wrong, you will have the BIG-IP AS3 configuration.
 

@@ -1,7 +1,31 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.50.2
+
+### Added
+
+### Fixed
+
+### Changed
+- AUTOTOOL-4292: Update new SD task hash collision checks to minimize task churn, when updating from most AS3 versions.
+
+### Removed
+
+## 3.50.1
+
+### Added
+
+### Fixed
+- AUTOTOOL-4238: ([GitHub Issue 802](https://github.com/F5Networks/f5-appsvcs-extension/issues/802)): Endpoint_Policy action clientSsl does not error or set the false value when 'enable' is specified instead of 'enabled'. To help users who have 'enable' in production either property name will be accepted and work.
+
+### Changed
+- AUTOTOOL-4292: Update task hash collision checks to minimize task churn, for AS3 v3.48.X and v3.49.X.
+
+### Removed
+
 ## 3.50.0
+**Important**: Starting from BIG-IP AS3 version 3.50.0, BIG-IP AS3 no longer supports BIG-IP 13.1 to 14.1.x. However, if you are still using the BIG-IP 13.1 to 14.1.x versions, you can use BIG-IP AS3 3.49.0 or earlier.
 
 ### Added
 
@@ -10,7 +34,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3941: ([GitHub Issue 740](https://github.com/F5Networks/f5-appsvcs-extension/issues/740)): Unable to use 10.0.0.0/8 as a virtual address.
 - AUTOTOOL-4135: Topology Records created in /Common/Shared are being unintentionally deleted.
 - AUTOTOOL-4134: ([GitHub Issue 791](https://github.com/F5Networks/f5-appsvcs-extension/issues/791)): Topology Records created in places other than /Common/Shared are being unintentionally deleted.
- - AUTOTOOL-4116: `dryRun` does not work when specified in Tenant level controls.
+- AUTOTOOL-4116: `dryRun` does not work when specified in Tenant level controls.
 
 ### Changed
 - Removed node 4 testing due to the end of support for BIG-IP 13.1 : ([Supported BIG-IP Versions](https://my.f5.com/manage/s/article/K5903)).
@@ -19,9 +43,9 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4160: Record first and second passes of Common in separate trace files.
 - AUTOTOOL-4177: A DELETE to a Tenant or an Application with per-app will now use the previous declarations `schemaVersion` as the saved `schemaVersion`.
 - AUTOTOOL-4115: `declarationId` response and logging values in non-POST requests.
-- Updated to Service Discovery 1.18.0-2
-  - AUTOTOOL-4147: Update packages to latest available versions
-  - AUTOTOOL-4136: Tasks are updated immediately after a PATCH request
+- Updates to Service Discovery 1.18.0-2
+  - AUTOTOOL-4147: Update packages to latest available versions.
+  - AUTOTOOL-4136: Tasks are updated immediately after a PATCH request.
 
 ### Removed
 

@@ -2779,6 +2779,263 @@ describe('fetch', () => {
                     );
                 });
         });
+
+        it('should detect the old hash in the current config and not delete it', () => {
+            const currentConfig = {
+                '/TEST/~TEST~KeepThisTask': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~KeepThisTask',
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-up',
+                                    session: 'user-enabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false,
+                            jmesPathQuery: '[?Node==`consul-client`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                },
+                '/TEST/~TEST~ShouldMatchAltId': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~ShouldMatchAltId',
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-up',
+                                    session: 'user-enabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                },
+                '/TEST/~TEST~ThisTaskShouldBeDeleted': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~ThisTaskShouldBeDeleted',
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-down',
+                                    session: 'user-disabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false,
+                            jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                }
+            };
+
+            const desiredConfig = {
+                '/TEST/~TEST~NewHashIdDoNotMatch': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~NewHashIdDoNotMatch',
+                        altId: [
+                            '~TEST~OldHashIdDoNotMatch',
+                            '~TEST~ShouldMatchAltId'
+                        ],
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-up',
+                                    session: 'user-enabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                },
+                '/TEST/~TEST~BrandNewTaskShouldBeCreated': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~BrandNewTaskShouldBeCreated',
+                        altId: [
+                            '~TEST~NewTaskVeryOldHash',
+                            '~TEST~NewTaskOldHashDoNotMatch'
+                        ],
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-up',
+                                    session: 'user-enabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false,
+                            jmesPathQuery: '[?Node==`consul-server`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                },
+                '/TEST/~TEST~KeepThisTask': {
+                    command: 'mgmt shared service-discovery task',
+                    properties: {
+                        schemaVersion: '1.0.0',
+                        id: '~TEST~KeepThisTask',
+                        altId: [
+                            '~TEST~VeryOldHashId',
+                            '~TEST~OldHashId'
+                        ],
+                        updateInterval: 10,
+                        resources: {
+                            0: {
+                                type: 'pool',
+                                path: '/TEST/Application/testPool',
+                                options: {
+                                    servicePort: 8080,
+                                    connectionLimit: 0,
+                                    rateLimit: 'disabled',
+                                    dynamicRatio: 1,
+                                    ratio: 1,
+                                    priorityGroup: 0,
+                                    monitor: 'default',
+                                    state: 'user-up',
+                                    session: 'user-enabled'
+                                }
+                            }
+                        },
+                        provider: 'consul',
+                        providerOptions: {
+                            addressRealm: 'private',
+                            uri: `http://${process.env.CONSUL_URI}:8500/v1/catalog/nodes`,
+                            rejectUnauthorized: false,
+                            jmesPathQuery: '[?Node==`consul-client`].{id:ID||Node,ip:{private:Address,public:Address}}'
+                        },
+                        nodePrefix: '/TEST/',
+                        metadata: {
+                            configuredBy: 'AS3'
+                        },
+                        routeDomain: 0
+                    },
+                    ignore: []
+                }
+            };
+
+            return fetch.getDiff(context, currentConfig, desiredConfig, {}, 'TEST')
+                .then((diff) => {
+                    assert.strictEqual(diff.length, 2);
+                    assert.strictEqual(diff[0].kind, 'D');
+                    assert.deepStrictEqual(diff[0].path, ['/TEST/~TEST~ThisTaskShouldBeDeleted']);
+                    assert.strictEqual(diff[0].lhs.command, 'mgmt shared service-discovery task');
+                    assert.strictEqual(diff[1].kind, 'N');
+                    assert.deepStrictEqual(diff[1].path, ['/TEST/~TEST~BrandNewTaskShouldBeCreated']);
+                    assert.strictEqual(diff[1].rhs.command, 'mgmt shared service-discovery task');
+                });
+        });
     });
 
     describe('.tmshUpdateScript', () => {
@@ -5130,7 +5387,7 @@ describe('fetch', () => {
                         lhs: {
                             command: 'ltm virtual',
                             properties: {
-                                destination: '/Tenant/192.0.2.1%1:80",'
+                                destination: '/Tenant/192.0.2.1%1:80'
                             }
                         },
                         command: 'ltm virtual',

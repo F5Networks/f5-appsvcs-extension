@@ -495,6 +495,31 @@ This declaration creates the following objects on the BIG-IP:
 
 |
 
+.. _handshaketimeout:
+
+Configuring a handshake timeout in SSL (TLS) profiles
+``````````````````````````````````````````````````
+This example shows how you can configure a handshake timeout in Client and Server SSL profiles (TLS_Client and TLS_Server). This setting specifies the timeout value (in seconds) of the SSL session.
+
+See |servertls| and |clienttls| in Appendix A: Schema Reference for BIG-IP AS3.
+
+This declaration creates the following objects on the BIG-IP:
+
+- Partition (tenant) named **AS3_Tenant**.
+- An Application named **AS3_App**.
+- A virtual server named **service** that includes the Client and Server SSL profiles.
+- A Client SSL profile (TLS_Server in AS3) that references a certificate, and has handshake timeout value of 100.
+- A Server SSL profile (TLS_Client in AS3) that references a certificate, and has handshake timeout value of 100 (time in seconds).
+- A certificate which includes the cert and key.
+
+.. literalinclude:: ../../examples/declarations//example-tls-client-and-server-handshake-timeout.json
+   :language: json
+
+
+:ref:`Back to top<ck-examples>` 
+
+|
+
 .. _renegotiate:
 
 Configuring the renegotiation property on TLS classes

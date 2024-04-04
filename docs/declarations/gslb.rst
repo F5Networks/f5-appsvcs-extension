@@ -71,6 +71,10 @@ The following list describes changes to this example since it was published:
         - Property
         - Description
 
+      * - 3.49
+        - **loadBalancingDecisionLogVerbosity**
+        - Added the ability to enable each log decision individually via BIG-IP AS3 declaration using Load-Balancing Decision Log parameters in GSLB_Domain class.
+      
       * - 3.46
         - 
         - Added members to the Prober pool in the example declaration. This did not change the functionality of the example. Prober pools are created in /Common.

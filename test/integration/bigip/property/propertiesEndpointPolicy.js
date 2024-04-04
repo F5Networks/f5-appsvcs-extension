@@ -128,6 +128,13 @@ const actionTemplates = [
         ]
     },
     {
+        type: 'clientSsl',
+        events: ['request'],
+        actions: [
+            { enable: false }
+        ]
+    },
+    {
         type: 'persist',
         events: PERSIST_EVENTS,
         actions: [
