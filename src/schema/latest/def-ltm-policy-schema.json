@@ -645,7 +645,14 @@
                     "default": true
                 }
             },
-            "required": []
+            "required": [],
+            "$comment": "AUTOTOOL-4238 BNPP",
+            "f5PostProcess": {
+                "tag": "aliases",
+                "data": {
+                    "enable": "enabled"
+                }
+            }
         },
 
         "Policy_Action_Persist": {

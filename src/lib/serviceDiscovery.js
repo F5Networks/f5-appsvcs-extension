@@ -48,6 +48,10 @@ function createTask(sdItem, tenantId, resources) {
     task.routeDomain = sdItem.routeDomain || 0;
 
     // ADD ANY NEW PROPERTIES ABOVE THIS LINE (task ID is a hash of the properties in the task)
+    const taskCpy = util.simpleCopy(task);
+    task.altId = [];
+    task.altId.push(generateAltTaskId(util.simpleCopy(taskCpy), sdItem)); // As these modify the task
+    task.altId.push(generate36AltTaskId(util.simpleCopy(taskCpy), sdItem));
     task.id = generateTaskId(task, sdItem);
     return task;
 }
@@ -180,6 +184,46 @@ function createTaskProvider(sdItem) {
     return provObj;
 }
 
+// Calculate the hash without adminState property values (state and session) see AUTOTOOL-4292
+function generate36AltTaskId(task, sdItem) {
+    const resourceOptions = util.getDeepValue(task, 'resources.0.options') || {};
+    if (typeof resourceOptions.state !== 'undefined') {
+        delete resourceOptions.state; // Not available in 3.36
+    }
+    if (typeof resourceOptions.session !== 'undefined') {
+        delete resourceOptions.session; // Not available in 3.36
+    }
+
+    return generateAltTaskId(task, sdItem);
+}
+
+function generateAltTaskId(task, sdItem) {
+    const primaryResource = task.resources[0];
+    const resourcePath = (primaryResource && sdItem.class !== 'Address_Discovery') ? primaryResource.path : sdItem.path;
+
+    if (task.provider === 'event') {
+        return encodeURIComponent(resourcePath.replace(/\//g, '~'));
+    }
+
+    const taskCpy = util.simpleCopy(task);
+
+    delete taskCpy.ignore;
+    if (taskCpy.provider === 'aws') {
+        delete taskCpy.providerOptions.secretAccessKey;
+    } else if (taskCpy.provider === 'azure') {
+        delete taskCpy.providerOptions.apiAccessKey;
+    } else if (taskCpy.provider === 'gce') {
+        delete taskCpy.providerOptions.encodedCredentials;
+    } else if (taskCpy.provider === 'consul') {
+        delete taskCpy.providerOptions.encodedToken;
+    }
+
+    const tenant = resourcePath.split('/')[1];
+    return encodeURIComponent(util.mcpPath(tenant, null, hashUtil.hashTenant(JSON.stringify(taskCpy)))
+        .replace(/\//g, '~'))
+        .replace(/['%]/g, '');
+}
+
 function generateTaskId(task, sdItem) {
     const resourceHashProperties = [ // These are the property names we use to hash the taskId
         'path',
@@ -205,7 +249,8 @@ function generateTaskId(task, sdItem) {
         'addressFamily',
         'resourceType',
         'resourceId',
-        'environment'
+        'environment',
+        'nodePrefix'
     ];
 
     const flattenObject = function (obj, flattened) { // iterate through task to grab desired property values

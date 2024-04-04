@@ -48,6 +48,7 @@ class UpdaterRest {
             return Promise.resolve();
         }
 
+        const hasPatched = {};
         const promises = diff.map((entry) => {
             const xhs = entry.rhs || entry.lhs;
             const options = {
@@ -62,6 +63,14 @@ class UpdaterRest {
                 options.method = 'DELETE';
                 options.path += `/${xhs.properties.id}`;
             } else if (entry.kind === 'E') {
+                if (hasPatched[entry.path[0]] === true
+                    && entry.command === 'mgmt shared service-discovery task') {
+                    // Only vetted for "mgmt shared service-discovery task". Might be used
+                    // elsewhere if testing is done ahead of time for it.
+                    // Do NOT run more than 1 PATCH against the same SD task
+                    return () => Promise.resolve();
+                }
+                hasPatched[entry.path[0]] = true;
                 options.method = 'PATCH';
                 const properties = desired[entry.path[0]].properties;
                 options.path += `/${properties.id}`;
