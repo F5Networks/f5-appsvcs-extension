@@ -5937,10 +5937,80 @@ describe('fetch', () => {
                     ];
                 });
 
-                it('should add a wait between transactions if needed', () => {
+                it('should add a wait between transactions if ltm virtual exists', () => {
                     context.target.tmosVersion = '14.1.0';
                     context.currentIndex = 0;
                     context.tasks = [{ metadata: { gslbPool: { needsWait: true } } }];
+                    desiredConfig = {
+                        '/Common/gtmPool': {
+                            command: 'gtm pool a',
+                            ignore: [],
+                            properties: {
+                                members: [
+                                    {
+                                        server: '/Common/myGslbServer',
+                                        virtualServer: '/Tenant/Shared/service'
+                                    }
+                                ]
+                            }
+                        },
+                        '/Tenant/Shared/service': {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                destination: '/Tenant/192.0.2.3:80',
+                                mask: '255.255.255.255'
+                            },
+                            ignore: []
+                        }
+                    };
+                    configDiff = [
+                        {
+                            kind: 'N',
+                            path: [
+                                '/Common/gtmPool'
+                            ],
+                            rhs: {
+                                command: 'gtm pool a',
+                                properties: {
+                                    membes: [
+                                        {
+                                            server: '/Common/myGslbServer',
+                                            virtualServer: '/Tenant/Shared/service'
+                                        }
+                                    ]
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'gtm pool a',
+                            lhsCommand: '',
+                            rhsCommand: 'gtm pool a'
+                        },
+                        {
+                            kind: 'N',
+                            path: [
+                                '/Tenant/Shared/service'
+                            ],
+                            rhs: {
+                                command: 'ltm virtual',
+                                properties: {
+                                    enabled: true,
+                                    destination: '/Tenant/192.0.2.3:80',
+                                    mask: '255.255.255.255'
+                                },
+                                ignore: []
+                            },
+                            tags: [
+                                'tmsh'
+                            ],
+                            command: 'ltm virtual',
+                            lhsCommand: '',
+                            rhsCommand: 'ltm virtual'
+                        }
+                    ];
 
                     const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
                     assert.strictEqual(
@@ -5954,8 +6024,36 @@ describe('fetch', () => {
                         + 'if { [catch {\n'
                         + 'tmsh::begin_transaction\n'
                         + 'tmsh::modify auth partition Common description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n'
+                        + 'tmsh::create ltm virtual /Tenant/Shared/service enabled  destination /Tenant/192.0.2.3:80 mask 255.255.255.255\n'
+                        + 'tmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n'
                         + 'tmsh::commit_transaction\n'
                         + 'after 20000\n'
+                        + 'tmsh::begin_transaction\n'
+                        + 'tmsh::create gtm pool a /Common/gtmPool members replace-all-with \\{ 0 \\{ server /Common/myGslbServer virtualServer /Tenant/Shared/service enabled  \\} \\} enabled \n'
+                        + 'tmsh::commit_transaction\n'
+                        + '} err] } {\n'
+                        + 'catch { tmsh::cancel_transaction } e\n'
+                        + 'regsub -all {"} $err {\\"} err\n'
+                        + 'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
+                    );
+                });
+                it('should not add a wait between transactions if ltm virtual not exists', () => {
+                    context.target.tmosVersion = '14.1.0';
+                    context.currentIndex = 0;
+                    context.tasks = [{ metadata: { gslbPool: { needsWait: true } } }];
+                    const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                    assert.strictEqual(
+                        result.script,
+                        'cli script __appsvcs_update {\n'
+                        + 'proc script::run {} {\n'
+                        + 'if {[catch {\n'
+                        + 'tmsh::modify ltm data-group internal __appsvcs_update records none\n'
+                        + '} err]} {\n'
+                        + 'tmsh::create ltm data-group internal __appsvcs_update type string records none\n}\n'
+                        + 'if { [catch {\n'
+                        + 'tmsh::begin_transaction\n'
+                        + 'tmsh::modify auth partition Common description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\n'
+                        + 'tmsh::commit_transaction\n'
                         + 'tmsh::begin_transaction\n'
                         + 'tmsh::create gtm pool a /Common/gtmPool members replace-all-with \\{ 0 \\{ server /Common/myGslbServer virtualServer /Common/myHttpsService enabled  \\} \\} enabled \n'
                         + 'tmsh::commit_transaction\n'
@@ -5969,7 +6067,6 @@ describe('fetch', () => {
                 it('should not add a wait between transactions if not needed', () => {
                     context.target.tmosVersion = '14.1.0';
                     context.currentIndex = 0;
-
                     const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
                     assert.strictEqual(
                         result.script,

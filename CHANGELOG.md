@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-4257: SNAT translation address is still referenced by SNAT 
+- AUTOTOOL-4325: Improve performance in GTM processing when no ltm virtual are present
 
 ### Changed
 

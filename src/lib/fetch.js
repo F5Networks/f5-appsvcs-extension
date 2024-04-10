@@ -2460,7 +2460,14 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     } else if (diffUpdates.commands.indexOf('create gtm pool a') > -1) {
                         // This will trigger on 'create gtm pool a' as well as 'create gtm pool aaaa'
                         if (util.getDeepValue(context.tasks[context.currentIndex], 'metadata.gslbPool.needsWait')) {
-                            preTrans2.push('after 20000'); // allow time for virtuals to be discovered
+                            // Add delay only once
+                            const delayTime = 'after 20000';
+                            // Avoid adding delay for non-existence of LTM virtual config
+                            const virtualSearch = configDiff.filter((cmd) => cmd.command === 'ltm virtual');
+                            if (!preTrans2.includes(delayTime) && virtualSearch.length > 0) {
+                                preTrans2.push(delayTime);
+                                // allow time for virtuals to be discovered
+                            }
                         }
                         trans2.push(diffUpdates.commands);
                     } else if (isModifyGtmServer(diffUpdates)) {
