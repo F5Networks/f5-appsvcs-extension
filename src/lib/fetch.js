@@ -2240,6 +2240,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     };
 
     const protocolInspectionProfilesToModify = [];
+    const virtualAddressToCreate = {};
+    const virtualAddressTrackDelete = {};
     const partitionList = [];
     const createFirstDeleteLast = ['auth partition'];
     const createSecondDeleteSecondToLast = ['sys folder'];
@@ -2326,9 +2328,19 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         return false;
     }
 
+    function isDefaultRouteDomainInDesiredConfig(config, diff) {
+        if (config && diff && diff[0]) {
+            const partition = diff[0].path[0].split('/')[1];
+            const tenantConfig = desiredConfig[`/${partition}/`];
+            const routeDomain = tenantConfig ? tenantConfig.properties['default-route-domain'] : null;
+            return routeDomain ? routeDomain !== '0' : false;
+        }
+        return false;
+    }
+
     const destinationsDeletedInTrans = [];
     const redirectVirtualsDeletedInTrans = [];
-
+    const isNonDefaultRouteDomainSet = isDefaultRouteDomainInDesiredConfig(desiredConfig, configDiff);
     configDiff.forEach((diff) => {
         const partition = diff.path[0].split('/')[1];
         // when creating nodes in common we set this during the diff
@@ -2337,6 +2349,51 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         }
         diff.rhsCommand = (desiredConfig[diff.path[0]] || {}).command || '';
         component = diff.rhsCommand || diff.lhsCommand;
+        // Track virtual servers that are created and their corresponding destination virtual address
+        if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
+            && diff.kind === 'N') {
+            const virtualConfig = desiredConfig[diff.path[0]];
+            let virtualAddress = virtualConfig.properties.destination;
+            if (virtualAddress) {
+                virtualAddress = virtualAddress.split(':');
+                if (virtualAddressToCreate[virtualAddress[0]] === undefined) {
+                    virtualAddressToCreate[virtualAddress[0]] = 0;
+                }
+                // Track the VA that is required for this VS
+                // eslint-disable-next-line no-plusplus
+                virtualAddressToCreate[virtualAddress[0]]++;
+            }
+        }
+        // Track virtual addresses that are auto-deleted by BIGIP on deleting the virtual servers.
+        if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
+            && diff.kind === 'D'
+            && diff.path.length === 1) {
+            const virtualConfigDel = currentConfig[diff.path[0]];
+            let virtualAddressDel = virtualConfigDel.properties.destination;
+            if (virtualAddressDel) {
+                virtualAddressDel = virtualAddressDel.split(':');
+                if (virtualAddressTrackDelete[virtualAddressDel[0]] === undefined) {
+                    virtualAddressTrackDelete[virtualAddressDel[0]] = 0;
+                }
+                // eslint-disable-next-line no-plusplus
+                virtualAddressTrackDelete[virtualAddressDel[0]]++;
+            }
+        }
+        // Track virtual addresses that are being created or edited
+        if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual-address'
+            && (diff.kind === 'N' || diff.kind === 'E')) {
+            const vaConfig = desiredConfig[diff.path[0]];
+            const virtualAdr = vaConfig.properties.address;
+            const tenantId = diff.path[0].split('/')[1];
+            const virtualAddressPath = `/${tenantId}/${virtualAdr}`;
+
+            if (virtualAddressToCreate[virtualAddressPath] === undefined) {
+                virtualAddressToCreate[virtualAddressPath] = 0;
+            }
+            // New/Mod of VS is done, so we don't have it anymore/
+            // eslint-disable-next-line no-plusplus
+            virtualAddressToCreate[virtualAddressPath]--;
+        }
 
         const diffUpdates = mapCli.generate(context, diff, desiredConfig, currentConfig);
 
@@ -2373,6 +2430,65 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             && diff.kind === 'D'
             && protocolInspectionProfilesToModify.indexOf(diff.path[0]) === -1) {
             protocolInspectionProfilesToModify.push(diff.path[0]);
+        }
+        /**
+         * Get the virtual address path from the current configuration of a virtual server
+         * @param {*} currentConf
+         * @param {*} virtualAddress
+         * @returns
+         */
+        function getVirtualAddressPath(currentConf, virtualAddress) {
+            let address = virtualAddress.split('/');
+
+            if (address.length > 0) {
+                address = address[address.length - 1];
+            }
+
+            return Object.keys(currentConf).find((config) => {
+                if (currentConf[config].command === 'ltm virtual-address'
+                    && currentConf[config].properties.address === address) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
+            && diff.kind === 'N') {
+            const virtualConfig = desiredConfig[diff.path[0]];
+            let virtualAddressDest = virtualConfig.properties.destination;
+            if (virtualAddressDest) {
+                virtualAddressDest = virtualAddressDest.split(':')[0];
+                Object.keys(virtualAddressToCreate).forEach((virtualAddress) => {
+                    // Fetch the virtual address config of the new VS from the current config.
+                    // The new virtual server is referring the existing VA.
+                    const currentVirtualAddressConfig = getVirtualAddressPath(currentConfig, virtualAddress);
+                    /**
+                     * Disable auto-deletion for the old virtual address because it is being referred by the
+                     * `new` virtual server otherwise BIGIP will create a new VA with default values.
+                     */
+                    if (currentVirtualAddressConfig && virtualAddressTrackDelete[virtualAddress] > 0
+                        && virtualAddressToCreate[virtualAddress] > 0 && virtualAddressDest === virtualAddress) {
+                        const virtualAddressPath = currentVirtualAddressConfig.replace('Service_Address-', '');
+                        const preTransVa = `tmsh::modify ltm virtual-address ${virtualAddressPath} auto-delete false`;
+                        const postTransVa = `tmsh::modify ltm virtual-address ${virtualAddressPath} auto-delete true`;
+                        if (preTrans.indexOf(preTransVa) === -1) {
+                            preTrans.push(preTransVa);
+                        }
+
+                        if (postTrans.indexOf(postTransVa) === -1) {
+                            postTrans.push(postTransVa);
+                        }
+
+                        if (rollback.indexOf(postTransVa) === -1) {
+                            rollback.push(postTransVa);
+                        }
+
+                        virtualAddressToCreate[virtualAddress] = 0;
+                        virtualAddressTrackDelete[virtualAddress] = 0;
+                    }
+                });
+            }
         }
 
         /* BIG-IP < v14.1 does not allow protocol inspection profiles to be assigned to a Service via DELETE+CREATE
@@ -2759,6 +2875,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
     /* Add TMSH::MODIFY commands for any Protocol Inspection Profiles to postTrans. Any Profiles that remove 'checks'
     from the Profile's Service block needs additional handling, since a TMSH replace-all-with will not reliably remove
     every Service 'check' from the Profile. */
+
     const tmshPipCommand = 'security protocol-inspection profile';
     protocolInspectionProfilesToModify.forEach((profileName) => {
         // First, force a Deletion of the whole services block

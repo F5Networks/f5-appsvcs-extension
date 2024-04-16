@@ -6676,6 +6676,576 @@ describe('fetch', () => {
                 );
             });
         });
+
+        describe('verify virtual address auto-delete property', () => {
+            it('should set virtual address auto-delete property to false when virtual server name is changed for non default route domain', () => {
+                const desiredConfig = {
+                    '/Sample/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample/Service_Address-va--192.0.2.0': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.0%2',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/Sample-Server-tcp--8080': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app0"',
+                            destination: '/Sample/192.0.2.0%2:8080',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0%2/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 2
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 2
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/Sample-Server-http--8080': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app0"',
+                            destination: '/Sample/192.0.2.0%2:8080',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Common/http': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0%2/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/Service_Address-va--192.0.2.0': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.0%2',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample/app0/Sample-Server-http--8080'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: '"app0"',
+                                destination: '/Sample/192.0.2.0%2:8080',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: '255.255.255.255',
+                                mirror: 'disabled',
+                                persist: {
+                                    '/Common/cookie': {
+                                        default: 'yes'
+                                    }
+                                },
+                                policies: {},
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    },
+                                    '/Common/http': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '0.0.0.0%2/0',
+                                'source-address-translation': {
+                                    type: 'automap'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'enabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/app0/Sample-Server-tcp--8080'
+                        ],
+                        rhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: '"app0"',
+                                destination: '/Sample/192.0.2.0%2:8080',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: '255.255.255.255',
+                                mirror: 'disabled',
+                                persist: {
+                                    '/Common/source_addr': {
+                                        default: 'yes'
+                                    }
+                                },
+                                policies: {},
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '0.0.0.0%2/0',
+                                'source-address-translation': {
+                                    type: 'automap'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'enabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::modify ltm virtual-address /Sample/va--192.0.2.0 auto-delete false',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm virtual /Sample/app0/Sample-Server-http--8080',
+                    'tmsh::modify auth partition Sample description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm virtual /Sample/app0/Sample-Server-tcp--8080 enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \\"app0\\" destination /Sample/192.0.2.0%2:8080 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/source_addr \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/f5-tcp-progressive \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0%2/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none',
+                    'tmsh::commit_transaction',
+                    'tmsh::modify ltm virtual-address /Sample/va--192.0.2.0 auto-delete true',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'tmsh::modify ltm virtual-address /Sample/va--192.0.2.0 auto-delete true',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+
+            it('should not set virtual address auto-delete property to false when virtual server name is changed with default route domain 0', () => {
+                const desiredConfig = {
+                    '/Sample/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample/Service_Address-va--192.0.2.0': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.0',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/Sample-Server-http--8080': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app0"',
+                            destination: '/Sample/va--192.0.2.0:8080',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/Sample-Server-tcp--8080': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app0"',
+                            destination: '/Sample/va--192.0.2.0:8080',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/Service_Address-va--192.0.2.0': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.0',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample/app0/Sample-Server-tcp--8080'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: '"app0"',
+                                destination: '/Sample/va--192.0.2.0:8080',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: '255.255.255.255',
+                                mirror: 'disabled',
+                                persist: {
+                                    '/Common/source_addr': {
+                                        default: 'yes'
+                                    }
+                                },
+                                policies: {},
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '0.0.0.0/0',
+                                'source-address-translation': {
+                                    type: 'automap'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'enabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/app0/Sample-Server-http--8080'
+                        ],
+                        rhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: '"app0"',
+                                destination: '/Sample/va--192.0.2.0:8080',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: '255.255.255.255',
+                                mirror: 'disabled',
+                                persist: {
+                                    '/Common/cookie': {
+                                        default: 'yes'
+                                    }
+                                },
+                                policies: {},
+                                profiles: {
+                                    '/Common/http': {
+                                        context: 'all'
+                                    },
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '0.0.0.0/0',
+                                'source-address-translation': {
+                                    type: 'automap'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'enabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    }
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm virtual /Sample/app0/Sample-Server-tcp--8080',
+                    'tmsh::modify auth partition Sample description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm virtual /Sample/app0/Sample-Server-http--8080 enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \\"app0\\" destination /Sample/va--192.0.2.0:8080 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/cookie \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/http \\{ context all \\} /Common/f5-tcp-progressive \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+        });
     });
 
     describe('.gatherAccessProfileItems', () => {
