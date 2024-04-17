@@ -220,6 +220,94 @@ describe('serviceAddress', function () {
                 .then(() => deleteBigipItems(bigipItems)));
     });
 
+    it('changing VirtualServer name should not change VirtualAddress properties.', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '4' }
+            }
+        ];
+
+        const decl0 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample--socks--8080': {
+                        class: 'Service_TCP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample-http--8080': {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Sample~va--192.0.2.25'))
+            .then((response) => {
+                assert.strictEqual(response.routeAdvertisement, 'selective');
+                assert.strictEqual(response.address, '192.0.2.25%4');
+            })
+            .then(() => postDeclaration(decl0, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
     describe('per-app', () => {
         let Shared;
         let serviceApp;
@@ -290,85 +378,6 @@ describe('serviceAddress', function () {
                     /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,
                     'virtual-address should have been deleted'
                 ));
-        });
-
-        it('changing VirtualServer name should not change VirtualAddress properties.', () => {
-            const decl0 = {
-                class: 'ADC',
-                Sample: {
-                    app0: {
-                        class: 'Application',
-                        'va--192.0.2.10': {
-                            class: 'Service_Address',
-                            routeAdvertisement: 'selective',
-                            virtualAddress: '192.0.2.10'
-                        },
-                        'Sample--socks--8080': {
-                            class: 'Service_TCP',
-                            virtualAddresses: [
-                                {
-                                    use: 'va--192.0.2.10'
-                                }
-                            ],
-                            virtualPort: 8080
-                        }
-                    },
-                    class: 'Tenant',
-                    defaultRouteDomain: 2
-                },
-                schemaVersion: '3.49.0',
-                updateMode: 'selective'
-            };
-
-            const decl1 = {
-                class: 'ADC',
-                Sample: {
-                    app0: {
-                        class: 'Application',
-                        'va--192.0.2.10': {
-                            class: 'Service_Address',
-                            routeAdvertisement: 'selective',
-                            virtualAddress: '192.0.2.10'
-                        },
-                        'Sample-http--8080': {
-                            class: 'Service_HTTP',
-                            virtualAddresses: [
-                                {
-                                    use: 'va--192.0.2.10'
-                                }
-                            ],
-                            virtualPort: 8080
-                        }
-                    },
-                    class: 'Tenant',
-                    defaultRouteDomain: 2
-                },
-                schemaVersion: '3.49.0',
-                updateMode: 'selective'
-            };
-
-            return Promise.resolve()
-                .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
-                .then((response) => {
-                    assert.strictEqual(response.results[0].code, 200);
-                    assert.strictEqual(response.results[0].message, 'success');
-                })
-                .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
-                .then((response) => {
-                    assert.strictEqual(response.results[0].code, 200);
-                    assert.strictEqual(response.results[0].message, 'success');
-                })
-                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Sample~va--192.0.2.10'))
-                .then((response) => {
-                    assert.strictEqual(response.routeAdvertisement, 'selective');
-                    assert.strictEqual(response.address, '192.0.2.10%2');
-                })
-                .then(() => postDeclaration(decl0, { declarationIndex: 2 }))
-                .then((response) => {
-                    assert.strictEqual(response.results[0].code, 200);
-                    assert.strictEqual(response.results[0].message, 'success');
-                })
-                .finally(() => deleteDeclaration());
         });
     });
 });
