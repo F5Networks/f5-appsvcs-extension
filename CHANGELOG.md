@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4325: Improve performance in GTM processing when no ltm virtual are present
 - AUTOTOOL-4278: Changing VirtualServer name causes changes on VirtualAddress properties
 - AUTOTOOL-4321: The requested Pool Member already exists in partition
+- AUTOTOOL-4319: Handle matching monitorNames properly
 
 ### Changed
 
