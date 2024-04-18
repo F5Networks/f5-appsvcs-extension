@@ -186,6 +186,83 @@ describe('Pool', function () {
             });
     });
 
+    it('should handle iRule containing special characters with VS having both pool and monitor config', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    virtual_service: {
+                        class: 'Service_HTTP',
+                        iRules: [
+                            '/tenant/app/myIrule'
+                        ],
+                        shareAddresses: true,
+                        virtualAddresses: [
+                            '192.0.2.1'
+                        ],
+                        virtualPort: 45324,
+                        pool: 'pool'
+                    },
+                    myIrule: {
+                        class: 'iRule',
+                        iRule: `# Hi test iRule with Special Characters at (end)
+                                # [test1]
+                                # (test2)
+                                # {test3}
+                                # <test4>
+                                # "test5"
+                                # 'test6'
+                                when HTTP_REQUEST {
+                                set path [HTTP::path]
+                                set requestPath [lrange [split $path ";"] 0 0]
+                                # !test7!
+                                # @test8@
+                                # $test9$
+                            }`
+                    },
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '198.51.100.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'testMonitor'
+                            }
+                        ]
+                    },
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /tenant/app/testMonitor }');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~virtual_service/'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'virtual_service');
+                assert.strictEqual(response.rules[0], '/tenant/app/myIrule');
+                assert.strictEqual(response.pool, '/tenant/app/pool');
+            });
+    });
     it('should cleanup ephemeral nodes', () => {
         const declaration = {
             class: 'ADC',

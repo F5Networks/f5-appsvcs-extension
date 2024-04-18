@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 /**
  * Copyright 2024 F5, Inc.
  *
@@ -9308,15 +9309,15 @@ describe('fetch', () => {
                     command: 'ltm pool',
                     properties: {
                         members: {
-                            '/Common/10.70.61.10:9021': {
+                            '/Common/192.0.2.10:9021': {
                                 minimumMonitors: 1,
                                 monitor: { '/tenant/app/tenant_mon2': {} }
                             },
-                            '/Common/10.70.61.11:9021': {
+                            '/Common/192.0.2.11:9021': {
                                 minimumMonitors: 1,
                                 monitor: { default: {} }
                             },
-                            '/Common/10.70.61.9:9021': {
+                            '/Common/192.0.2.9:9021': {
                                 minimumMonitors: 1,
                                 monitor: {
                                     '/Common/gateway_icmp': {}
@@ -9380,15 +9381,15 @@ describe('fetch', () => {
                     command: 'ltm pool',
                     properties: {
                         members: {
-                            '/Common/10.70.61.10:9021': {
+                            '/Common/192.0.2.10:9021': {
                                 minimumMonitors: 1,
                                 monitor: { '/tenant/app/tenant_mon2': {} }
                             },
-                            '/Common/10.70.61.11:9021': {
+                            '/Common/192.0.2.11:9021': {
                                 minimumMonitors: 1,
                                 monitor: { default: {} }
                             },
-                            '/Common/10.70.61.9:9021': {
+                            '/Common/192.0.2.9:9021': {
                                 minimumMonitors: 1,
                                 monitor: {
                                     '/Common/gateway_icmp': {}
@@ -9419,12 +9420,12 @@ describe('fetch', () => {
                 },
                 {
                     kind: 'D',
-                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', '/tenant/app/tenant_mon2'],
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', '/tenant/app/tenant_mon2'],
                     lhs: {}
                 },
                 {
                     kind: 'N',
-                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', 'default'],
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', 'default'],
                     rhs: {}
                 },
                 {
@@ -9453,7 +9454,7 @@ describe('fetch', () => {
                             'tmsh::create ltm data-group internal __appsvcs_update type string records none',
                             '}',
                             'if { [catch {',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool members delete \\{ "/Common/10.70.61.10:9021" \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members delete \\{ "/Common/192.0.2.10:9021" \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
                             'tmsh::begin_transaction',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
@@ -9464,7 +9465,7 @@ describe('fetch', () => {
                             'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/10.70.61.10:9021 \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\}',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
                             'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::commit_transaction',
@@ -9472,7 +9473,202 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/10.70.61.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
+                });
+        });
+        it('should add pool and irule diff/commands if monitor is ref by pool or poolMember and if special characters are included in irules', () => {
+            const desiredConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon1': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:911',
+                        interval: 10
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon2': {
+                    command: 'ltm monitor https',
+                    properties: {
+                        destination: '*:119',
+                        interval: 20
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_mon3': {
+                    command: 'ltm monitor radius',
+                    properties: {
+                        destination: '*:*',
+                        interval: 30
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_irule': {
+                    command: 'ltm rule',
+                    properties: {
+                        // eslint-disable-next-line no-template-curly-in-string
+                        'api-anonymous': '###########################################################################\n    # iRule Name: (test_irule)\n    #\n    # Description:\n    # Date: (01/01/2x)\n    # Purpose:  This iRule handles setup and logging for test_vpc_as3\n    #\n    # Dependencies:-\n    # Libraries:\n    # LBGLOG\n    #\n    # Data Groups:\n    # p_test_as3_client_ssl_cn_dg\n    #\n    #########################\n    # Build : test_build\n    # Version : 1\n    # Date: 202x-01-01\n    #\n    ###########################################################################\n\n    when CLIENT_ACCEPTED priority 10 {\n        # Added partitionWithApp as we can\'t use __partition.name__ token, the AS3 Jenkins release job will replace this token with ${partitionWithApp} to fetch the /partitionName/appName/ dynamically i.e. call ${partitionWithApp}LBGLOG. So made this $partitionWithApp variable available\n        set partitionWithApp [URI::path [virtual name]]\n\n        call ${partitionWithApp}LBGLOG::setupLogging "logpublisher_dg" "loglevel_dg" "logfilter_dg"\n        call ${partitionWithApp}LBGLOG::logDebug "msg=\'Setting up logging for test_vpc_as3 irule\'"\n        set allowedClientCnDg "p_test_vpc_as3_client_ssl_cn_dg"\n        set compareUsingEquals 1\n    }\n\n    when HTTP_REQUEST priority 10 {\n        set uri [HTTP::uri]\n    }'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/tenant_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        members: {
+                            '/Common/192.0.2.10:9021': {
+                                minimumMonitors: 1,
+                                monitor: { '/tenant/app/tenant_mon2': {} }
+                            },
+                            '/Common/192.0.2.11:9021': {
+                                minimumMonitors: 1,
+                                monitor: { default: {} }
+                            },
+                            '/Common/192.0.2.9:9021': {
+                                minimumMonitors: 1,
+                                monitor: {
+                                    '/Common/gateway_icmp': {}
+                                }
+                            }
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/tenant/app/tenant_mon1': {},
+                            '/Common/gateway_icmp': {}
+                        }
+                    },
+                    ignore: []
+                }
+            };
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: ['/tenant/app/tenant_mon1', 'properties', 'destination'],
+                    lhs: '*:*',
+                    rhs: '*:911'
+                },
+                {
+                    kind: 'E',
+                    path: ['/tenant/app/tenant_mon2', 'properties', 'destination'],
+                    lhs: '*:*',
+                    rhs: '*:119'
+                },
+                {
+                    kind: 'D',
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', '/tenant/app/tenant_mon2'],
+                    lhs: {}
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', 'default'],
+                    rhs: {}
+                },
+                {
+                    kind: 'N',
+                    path: ['/tenant/app/tenant_pool', 'properties', 'monitor', '/tenant/app/tenant_mon1'],
+                    rhs: {}
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/tenant_irule'
+                    ],
+                    rhs: {
+                        command: 'ltm rule',
+                        ignore: [],
+                        properties: {
+                            // eslint-disable-next-line no-template-curly-in-string
+                            'api-anonymous': '###########################################################################\n    # iRule Name: (test_irule)\n    #\n    # Description:\n    # Date: (01/01/2x)\n    # Purpose:  This iRule handles setup and logging for test_vpc_as3\n    #\n    # Dependencies:-\n    # Libraries:\n    # LBGLOG\n    #\n    # Data Groups:\n    # p_test_as3_client_ssl_cn_dg\n    #\n    #########################\n    # Build : test_build\n    # Version : 1\n    # Date: 202x-01-01\n    #\n    ###########################################################################\n\n    when CLIENT_ACCEPTED priority 10 {\n        # Added partitionWithApp as we can\'t use __partition.name__ token, the AS3 Jenkins release job will replace this token with ${partitionWithApp} to fetch the /partitionName/appName/ dynamically i.e. call ${partitionWithApp}LBGLOG. So made this $partitionWithApp variable available\n        set partitionWithApp [URI::path [virtual name]]\n\n        call ${partitionWithApp}LBGLOG::setupLogging "logpublisher_dg" "loglevel_dg" "logfilter_dg"\n        call ${partitionWithApp}LBGLOG::logDebug "msg=\'Setting up logging for test_vpc_as3 irule\'"\n        set allowedClientCnDg "p_test_vpc_as3_client_ssl_cn_dg"\n        set compareUsingEquals 1\n    }\n\n    when HTTP_REQUEST priority 10 {\n        set uri [HTTP::uri]\n    }'
+                        }
+                    }
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+
+                    // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConf, currConf, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members delete \\{ "/Common/192.0.2.10:9021" \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool monitor none',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon1',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon1 destination *:911 interval 10',
+                            'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
+                            'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\}',
+                            'tmsh::delete ltm pool /tenant/app/tenant_pool',
+                            'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
+                            'tmsh::create ltm rule /tenant/app/tenant_irule {',
+                            '###########################################################################',
+                            '    # iRule Name: (test_irule)',
+                            '    #',
+                            '    # Description:',
+                            '    # Date: (01/01/2x)',
+                            '    # Purpose:  This iRule handles setup and logging for test_vpc_as3',
+                            '    #',
+                            '    # Dependencies:-',
+                            '    # Libraries:',
+                            '    # LBGLOG',
+                            '    #',
+                            '    # Data Groups:',
+                            '    # p_test_as3_client_ssl_cn_dg',
+                            '    #',
+                            '    #########################',
+                            '    # Build : test_build',
+                            '    # Version : 1',
+                            '    # Date: 202x-01-01',
+                            '    #',
+                            '    ###########################################################################',
+                            '',
+                            '    when CLIENT_ACCEPTED priority 10 {',
+                            '        # Added partitionWithApp as we can\'t use __partition.name__ token, the AS3 Jenkins release job will replace this token with ${partitionWithApp} to fetch the /partitionName/appName/ dynamically i.e. call ${partitionWithApp}LBGLOG. So made this $partitionWithApp variable available',
+                            '        set partitionWithApp [URI::path [virtual name]]',
+                            '',
+                            '        call ${partitionWithApp}LBGLOG::setupLogging "logpublisher_dg" "loglevel_dg" "logfilter_dg"',
+                            '        call ${partitionWithApp}LBGLOG::logDebug "msg=\'Setting up logging for test_vpc_as3 irule\'"',
+                            '        set allowedClientCnDg "p_test_vpc_as3_client_ssl_cn_dg"',
+                            '        set compareUsingEquals 1',
+                            '    }',
+                            '',
+                            '    when HTTP_REQUEST priority 10 {',
+                            '        set uri [HTTP::uri]',
+                            '    }',
+                            '}',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
                             '}}',
                             '}'
@@ -9518,15 +9714,15 @@ describe('fetch', () => {
                     command: 'ltm pool',
                     properties: {
                         members: {
-                            '/Common/10.70.61.10:9021': {
+                            '/Common/192.0.2.10:9021': {
                                 minimumMonitors: 1,
                                 monitor: { '/tenant/app/tenant_mon2': {} }
                             },
-                            '/Common/10.70.61.11:9021': {
+                            '/Common/192.0.2.11:9021': {
                                 minimumMonitors: 1,
                                 monitor: { default: {} }
                             },
-                            '/Common/10.70.61.9:9021': {
+                            '/Common/192.0.2.9:9021': {
                                 minimumMonitors: 1,
                                 monitor: {
                                     '/Common/gateway_icmp': {}
@@ -9636,15 +9832,15 @@ describe('fetch', () => {
                     command: 'ltm pool',
                     properties: {
                         members: {
-                            '/Common/10.70.61.10:9021': {
+                            '/Common/192.0.2.10:9021': {
                                 minimumMonitors: 1,
                                 monitor: { '/tenant/app/tenant_mon2': {} }
                             },
-                            '/Common/10.70.61.11:9021': {
+                            '/Common/192.0.2.11:9021': {
                                 minimumMonitors: 1,
                                 monitor: { default: {} }
                             },
-                            '/Common/10.70.61.9:9021': {
+                            '/Common/192.0.2.9:9021': {
                                 minimumMonitors: 1,
                                 monitor: {
                                     '/Common/gateway_icmp': {}
@@ -9663,7 +9859,7 @@ describe('fetch', () => {
                     command: 'ltm pool',
                     properties: {
                         members: {
-                            '/Common/10.70.61.10:9021': {}
+                            '/Common/192.0.2.10:9021': {}
                         },
                         minimumMonitors: 1,
                         monitor: {
@@ -9685,11 +9881,11 @@ describe('fetch', () => {
                 {
                     kind: 'D',
                     lhs: {},
-                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', '/tenant/app/tenant_mon2']
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', '/tenant/app/tenant_mon2']
                 },
                 {
                     kind: 'N',
-                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/10.70.61.10:9021', 'monitor', 'default'],
+                    path: ['/tenant/app/tenant_pool', 'properties', 'members', '/Common/192.0.2.10:9021', 'monitor', 'default'],
                     rhs: {}
                 },
                 {
@@ -9700,7 +9896,7 @@ describe('fetch', () => {
                         ignore: [],
                         properties: {
                             members: {
-                                '/Common/10.70.61.10:9021': {}
+                                '/Common/192.0.2.10:9021': {}
                             },
                             minimumMonitors: 1,
                             monitor: {
