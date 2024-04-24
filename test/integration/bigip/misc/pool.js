@@ -186,6 +186,107 @@ describe('Pool', function () {
             });
     });
 
+    it('should ref poolMonitor by pool using @ special character', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: '/@/@/testMonitor'
+                            }
+                        ]
+                    },
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            }
+        };
+
+        const declaration1 = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testRefMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https',
+                        targetPort: 9631
+                    }
+                },
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: '/@/Shared/testRefMonitor'
+                            }
+                        ]
+                    },
+                    pool1: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                addressDiscovery: 'static',
+                                serverAddresses: [
+                                    '192.0.2.2'
+                                ],
+                                servicePort: 443
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: '/@/Shared/testRefMonitor'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /tenant/app/testMonitor }');
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 1 }))
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool1/'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /tenant/Shared/testRefMonitor }');
+            });
+    });
+
     it('should handle iRule containing special characters with VS having both pool and monitor config', function () {
         const declaration = {
             class: 'ADC',
