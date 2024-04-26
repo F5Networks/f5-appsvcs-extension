@@ -27,6 +27,8 @@ const {
     postDeclaration,
     deleteDeclaration,
     getPath,
+    postBigipItems,
+    deleteBigipItems,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
@@ -274,5 +276,115 @@ describe('Pool', function () {
                 assert.strictEqual(fqdnNode[0].metadata.length, 2);
                 assert.deepStrictEqual(fqdnNode[0].metadata[1], expectedReferences);
             });
+    });
+
+    it('should modify pool, existing pool member and create new pool member in single declaration', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2' }
+            }
+        ];
+        const decl0 = {
+            class: 'ADC',
+            id: 'abc',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 2,
+                app: {
+                    class: 'Application',
+                    label: '5599f0fe-3ad1-42ee-a761-7f86674a34d5',
+                    pool: {
+                        class: 'Pool',
+                        loadBalancingMode: 'ratio-member',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 20,
+                                serverAddresses: [
+                                    '192.0.2.25'
+                                ],
+                                servicePort: 80
+                            }
+                        ]
+                    },
+                    template: 'generic'
+                }
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            id: 'abc',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 2,
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        loadBalancingMode: 'dynamic-ratio-node',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 20,
+                                priorityGroup: 10,
+                                serverAddresses: [
+                                    '192.0.2.25'
+                                ],
+                                servicePort: 80
+                            },
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 20,
+                                serverAddresses: [
+                                    '192.0.2.26'
+                                ],
+                                servicePort: 81
+                            }
+                        ]
+                    },
+                    template: 'generic'
+                }
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/'))
+            .then((response) => {
+                assert.strictEqual(response.loadBalancingMode, 'dynamic-ratio-node');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 2);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.25%252:80'))
+            .then((response) => {
+                assert.strictEqual(response.priorityGroup, 10);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.26%252:81'))
+            .then((response) => {
+                assert.strictEqual(response.address, '192.0.2.26%2');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
     });
 });

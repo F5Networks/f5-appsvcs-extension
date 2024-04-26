@@ -2338,6 +2338,34 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         return false;
     }
 
+    /**
+     * @param {*} diff instance of configDiff
+     * @param {*} config alias of configDiff - array of all the diff between desired and current config
+     * @returns return true or false
+     */
+    function isPoolMemberCreateRequired(diff, config) {
+        // Check if we are creating a pool member
+        if (diff.kind === 'N'
+            && diff.command === 'ltm pool'
+            && diff.path.length > 1
+            && diff.path[diff.path.length - 2] === 'members') {
+            // Find if there is already a edit diff for pool members
+            // if found, we implicity re-create all PMs,along with the new PM, because edit is delete followed by create
+            // so no need to create new PM again
+            const editPoolMemberFound = config.find((x) => {
+                if (x.kind === 'E'
+                    && x.command === 'ltm pool'
+                    && x.path.indexOf('properties') > -1
+                    && x.path.indexOf('members') > -1) {
+                    return true;
+                }
+                return false;
+            });
+            return !(editPoolMemberFound !== undefined);
+        }
+        return true;
+    }
+
     const destinationsDeletedInTrans = [];
     const redirectVirtualsDeletedInTrans = [];
     const isNonDefaultRouteDomainSet = isDefaultRouteDomainInDesiredConfig(desiredConfig, configDiff);
@@ -2346,6 +2374,9 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         // when creating nodes in common we set this during the diff
         if (typeof diff.lhsCommand === 'undefined') {
             diff.lhsCommand = (currentConfig[diff.path[0]] || {}).command || '';
+        }
+        if (!isPoolMemberCreateRequired(diff, configDiff)) {
+            return;
         }
         diff.rhsCommand = (desiredConfig[diff.path[0]] || {}).command || '';
         component = diff.rhsCommand || diff.lhsCommand;

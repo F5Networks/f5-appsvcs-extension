@@ -7246,6 +7246,453 @@ describe('fetch', () => {
                 assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
             });
         });
+
+        describe('verify pool members modify and creation', () => {
+            it('should ignore explicit new pool member, if any, creation when there is a modify property of existing pool member', () => {
+                const desiredConfig = {
+                    '/Sample/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.1': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.1',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.2': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.2',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'dynamic-ratio-node',
+                            members: {
+                                '/Sample/192.0.2.1:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 10,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                },
+                                '/Sample/192.0.2.2:79': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 7,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+                const currentConfig = {
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.1': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.1',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'dynamic-ratio-node',
+                            members: {
+                                '/Sample/192.0.2.1:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 0,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/Sample/app/pool',
+                            'properties',
+                            'members',
+                            '/Sample/192.0.2.1:80',
+                            'priority-group'
+                        ],
+                        lhs: 0,
+                        rhs: 10,
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/app/pool',
+                            'properties',
+                            'members',
+                            '/Sample/192.0.2.2:79'
+                        ],
+                        rhs: {
+                            'connection-limit': 0,
+                            'dynamic-ratio': 1,
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            minimumMonitors: 1,
+                            monitor: {
+                                default: {}
+                            },
+                            'priority-group': 7,
+                            'rate-limit': 'disabled',
+                            ratio: 20,
+                            state: 'user-up',
+                            session: 'user-enabled',
+                            metadata: {}
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/192.0.2.2'
+                        ],
+                        rhs: {
+                            command: 'ltm node',
+                            properties: {
+                                address: '192.0.2.2',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm node'
+                    }
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::modify ltm pool /Sample/app/pool members delete \\{ "/Sample/192.0.2.1:80" \\}',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm pool /Sample/app/pool',
+                    'tmsh::create ltm pool /Sample/app/pool load-balancing-mode dynamic-ratio-node members replace-all-with \\{ /Sample/192.0.2.1:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 10 rate-limit disabled ratio 20 state user-up session user-enabled metadata none \\} /Sample/192.0.2.2:79 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 7 rate-limit disabled ratio 20 state user-up session user-enabled metadata none \\} \\} min-active-members 1 reselect-tries 0 service-down-action none slow-ramp-time 10 allow-nat yes allow-snat yes metadata none',
+                    'tmsh::modify auth partition Sample description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm node /Sample/192.0.2.2 address 192.0.2.2 metadata none',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'tmsh::modify ltm pool /Sample/app/pool members add \\{ /Sample/192.0.2.1:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 20 state user-up session user-enabled metadata none \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+
+            it('should explicity create new pool member, if any, when there is no modify property of existing pool members', () => {
+                const desiredConfig = {
+                    '/Sample/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.1': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.1',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.2': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.2',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'dynamic-ratio-node',
+                            members: {
+                                '/Sample/192.0.2.1:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 10,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                },
+                                '/Sample/192.0.2.2:79': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 7,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/Sample/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/Sample/192.0.2.1': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.1',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'dynamic-ratio-node',
+                            members: {
+                                '/Sample/192.0.2.1:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 10,
+                                    'rate-limit': 'disabled',
+                                    ratio: 20,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {}
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/Sample/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/app/pool',
+                            'properties',
+                            'members',
+                            '/Sample/192.0.2.2:79'
+                        ],
+                        rhs: {
+                            'connection-limit': 0,
+                            'dynamic-ratio': 1,
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            minimumMonitors: 1,
+                            monitor: {
+                                default: {}
+                            },
+                            'priority-group': 7,
+                            'rate-limit': 'disabled',
+                            ratio: 20,
+                            state: 'user-up',
+                            session: 'user-enabled',
+                            metadata: {}
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample/192.0.2.2'
+                        ],
+                        rhs: {
+                            command: 'ltm node',
+                            properties: {
+                                address: '192.0.2.2',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm node'
+                    }
+                ];
+
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify ltm pool /Sample/app/pool members add \\{ /Sample/192.0.2.2:79 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 7 rate-limit disabled ratio 20 state user-up session user-enabled metadata none \\} \\}',
+                    'tmsh::modify auth partition Sample description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm node /Sample/192.0.2.2 address 192.0.2.2 metadata none',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+        });
     });
 
     describe('.gatherAccessProfileItems', () => {
