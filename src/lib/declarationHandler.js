@@ -34,6 +34,7 @@ const hash = require('./util/hashUtil');
 const constants = require('./constants');
 const declartionUtil = require('./util/declarationUtil');
 const perAppUtil = require('./util/perAppUtil');
+const { getAffectedTenant } = require('./util/extractUtil');
 
 const STATUS_CODES = require('./constants').STATUS_CODES;
 const DEVICE_TYPES = require('./constants').DEVICE_TYPES;
@@ -965,13 +966,24 @@ class DeclarationHandler {
                 const body = {
                     code: statusCode,
                     errors: e.errors,
-                    declarationFullId,
-                    message: e.message
+                    message: e.message,
+                    host: context.target.host
                 };
-
+                const tenants = fetch.tenantList(decl).list;
+                if (tenants.length === 1) {
+                    body.tenant = tenants;
+                } else if (tenants.length > 1) {
+                    if (body.code === 422 && typeof body.errors !== 'undefined' && body.errors.length > 0) {
+                        body.tenant = getAffectedTenant(body.errors, tenants);
+                    }
+                }
+                if (declarationFullId) {
+                    body.declarationFullId = declarationFullId;
+                }
                 if (decl && decl.id) {
                     body.declarationId = decl.id;
                 }
+                log.info(body);
 
                 const result = DeclarationHandler.buildResult(statusCode, e.message, body);
 

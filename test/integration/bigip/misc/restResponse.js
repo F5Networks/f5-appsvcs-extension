@@ -255,5 +255,119 @@ describe('REST Response Single (__smoke)', function () {
         ];
 
         testCases.forEach((test) => runCase('TEST_UnprocEntity', 422, test));
+        it('Should print host, declarationID and tenant information in response body for a single tenant', function () {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.51.0',
+                sample_02: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.3.1'
+                            ],
+                            pool: 'testPool4'
+                        },
+                        testpool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'static',
+                                    serverAddresses: [
+                                        '192.0.2.1'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ],
+                            monitors: [
+                                'http'
+                            ]
+                        }
+                    }
+                }
+            };
+            return postDeclaration(declaration, { declarationIndex: 0 })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 422);
+                    assert.strictEqual(response.results[0].message, 'declaration is invalid');
+                    assert.strictEqual(response.results[0].errors[0], '/sample_02/app/service/pool: contains path to non-existent object testPool4');
+                    assert.strictEqual(response.results[0].host, 'localhost');
+                    assert.strictEqual(response.results[0].tenant[0], 'sample_02');
+                    assert.match(response.results[0].declarationId, /autogen_([0-9a-z]{4,}[-]){3,}/);
+                });
+        });
+        it('Should print host, declarationID and tenant information in response body for multiple tenants', function () {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.51.0',
+                sample_02: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.3.1'
+                            ],
+                            pool: 'testPool4'
+                        },
+                        testpool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'static',
+                                    serverAddresses: [
+                                        '192.0.2.1'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ],
+                            monitors: [
+                                'http'
+                            ]
+                        }
+                    }
+                },
+                sample_01: {
+                    class: 'Tenant',
+                    app01: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: [
+                                '192.0.3.11'
+                            ],
+                            pool: 'testPool1'
+                        },
+                        testpool5: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    addressDiscovery: 'static',
+                                    serverAddresses: [
+                                        '192.0.2.15'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ],
+                            monitors: [
+                                'http'
+                            ]
+                        }
+                    }
+                }
+            };
+            return postDeclaration(declaration, { declarationIndex: 0 })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 422);
+                    assert.strictEqual(response.results[0].message, 'declaration is invalid');
+                    assert.strictEqual(response.results[0].errors[0], '/sample_02/app/service/pool: contains path to non-existent object testPool4');
+                    assert.strictEqual(response.results[0].host, 'localhost');
+                    assert.strictEqual(response.results[0].tenant[0], 'sample_02');
+                    assert.match(response.results[0].declarationId, /autogen_([0-9a-z]{4,}[-]){3,}/);
+                });
+        });
     });
 });
