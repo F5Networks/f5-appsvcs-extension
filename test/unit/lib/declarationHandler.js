@@ -2107,7 +2107,7 @@ describe('DeclarationHandler', () => {
                 });
         });
 
-        it('should return epected error response', () => {
+        it('should return expected error response', () => {
             context.tasks[0].declaration = {
                 class: 'ADC',
                 schemaVersion: '3.50',
@@ -2125,6 +2125,7 @@ describe('DeclarationHandler', () => {
                                 errors: undefined,
                                 declarationFullId: 'declId',
                                 message: 'Error',
+                                host: undefined,
                                 declarationId: 'declId'
                             },
                             errorMessage: 'Error',

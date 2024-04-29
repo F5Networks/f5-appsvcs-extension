@@ -460,6 +460,18 @@ describe('extractUtil', () => {
                     'http'
                 );
             });
+            it('should get affected Tenants from AS3 error message', () => {
+                const tests = [
+                    { input: ['/Sample_02/A2/service/pool: contains path to non-existent object web_pool'], tenants: ['Sample_01', 'Sample_02', 'test_01'], expected: ['Sample_02'] },
+                    { input: ['/Sample_02/A2/service/pool: contains path to non-existent object web_pool', '/Sample_01/A1/service/pool: contains path to non-existent object web_pool'], tenants: ['Sample_01', 'Sample_02', 'test_01'], expected: ['Sample_02', 'Sample_01'] },
+                    { input: ['/Sample_02/A2/service/pool: /Sample_01/A1/service/pool: contains path to non-existent object web_pool'], tenants: '', expected: ['Sample_02'] },
+                    { input: ['contains path to non-existent object web_pool'], tenants: ['Sample_01', 'Sample_02', 'test_01'], expected: ['Sample_01', 'Sample_02', 'test_01'] } // Assuming empty string if no match
+                ];
+                tests.forEach((test) => {
+                    const input = extractUtil.getAffectedTenant(test.input, test.tenants);
+                    assert.deepStrictEqual(input, test.expected);
+                });
+            });
         });
     });
 });

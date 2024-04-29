@@ -355,8 +355,28 @@ const extractPkcs12 = function (context, value, dest) {
             throw error;
         });
 };
+const getAffectedTenant = function (errors, tenants) {
+    const affectedTenants = [];
+    errors.forEach((error) => {
+        const affectedTenant = error.split(/\s+/);
+        for (let i = 0; i < affectedTenant.length; i += 1) {
+            if (affectedTenant[i].includes('/')) {
+                const parts = affectedTenant[i].split('/');
+                if (parts.length > 1) {
+                    affectedTenants.push(parts[1]);
+                    break;
+                }
+            }
+        }
+    });
+    if (affectedTenants.length > 0) {
+        return affectedTenants;
+    }
+    return tenants;
+};
 
 module.exports = {
     getAs3Object,
-    extractPkcs12
+    extractPkcs12,
+    getAffectedTenant
 };
