@@ -3991,7 +3991,7 @@ const translate = {
 
         props.any = ['class', 'description', 'destination', 'interval', 'timeout', 'probe-timeout', 'ignore-down-response'];
         props.http = props.any.concat(['reverse', 'send', 'recv', 'recv-status-code', 'transparent']);
-        props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name']);
+        props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name', 'key']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
