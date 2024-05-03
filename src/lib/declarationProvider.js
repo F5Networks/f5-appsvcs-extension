@@ -17,9 +17,12 @@
 'use strict';
 
 const dataGroupUtil = require('./util/dataGroupUtil');
+const certUtils = require('./util/certUtil');
 const util = require('./util/util');
 const declarationUtil = require('./util/declarationUtil');
 const log = require('./log');
+
+const methodsAllowedForEncryptDecrypt = ['Post', 'Patch'];
 
 // This is a result of refactoring validate.js
 // The core logic was preserved with minimal changes (method extractions).
@@ -145,7 +148,6 @@ class DeclarationProvider {
                     }
                     return undefined;
                 }
-                // otherwise
 
                 iControlOpts.path += list[age].name;
                 return util.iControlRequest(context, iControlOpts)
@@ -159,7 +161,6 @@ class DeclarationProvider {
                             e.statusCode = resp.statusCode;
                             throw e;
                         }
-                        // otherwise
 
                         try {
                             resp = JSON.parse(resp.body);
@@ -213,6 +214,46 @@ class DeclarationProvider {
 
                         try {
                             textDecl = dataGroupUtil.recordsToString(records, '', 1);
+                            if (methodsAllowedForEncryptDecrypt.includes(context.request.method)) {
+                                textDecl = JSON.parse(textDecl);
+                                return certUtils.checkIfClassCertExist(textDecl, 'decrypt')
+                                    .then((declCerts) => {
+                                        textDecl = JSON.stringify(declCerts);
+                                        try {
+                                            declToReturn = JSON.parse(textDecl);
+                                        } catch (e) {
+                                            e.message = `cannot JSON.parse() stored declaration (${e.message})`;
+                                            log.info(e);
+                                            if (includeMetadata) {
+                                                return declToReturnOnError;
+                                            }
+                                            throw e;
+                                        }
+
+                                        log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
+                                        return (includeMetadata) ? {
+                                            metadata,
+                                            declaration: declToReturn
+                                        } : declToReturn;
+                                    });
+                            }
+
+                            try {
+                                declToReturn = JSON.parse(textDecl);
+                            } catch (e) {
+                                e.message = `cannot JSON.parse() stored declaration (${e.message})`;
+                                log.info(e);
+                                if (includeMetadata) {
+                                    return declToReturnOnError;
+                                }
+                                throw e;
+                            }
+
+                            log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
+                            return (includeMetadata) ? {
+                                metadata,
+                                declaration: declToReturn
+                            } : declToReturn;
                         } catch (e) {
                             e.message = `cannot decompress stored declaration (${e.message})`;
                             log.info(e);
@@ -221,22 +262,6 @@ class DeclarationProvider {
                             }
                             throw e;
                         }
-                        try {
-                            declToReturn = JSON.parse(textDecl);
-                        } catch (e) {
-                            e.message = `cannot JSON.parse() stored declaration (${e.message})`;
-                            log.info(e);
-                            if (includeMetadata) {
-                                return declToReturnOnError;
-                            }
-                            throw e;
-                        }
-
-                        log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
-                        return (includeMetadata) ? {
-                            metadata,
-                            declaration: declToReturn
-                        } : declToReturn;
                     });
             });
     } // getBigipDeclaration()
@@ -333,61 +358,64 @@ class DeclarationProvider {
             }
         });
 
-        try {
-            textDecl = JSON.stringify(decl);
-        } catch (e) {
-            e.message = `cannot stringify declaration (${e.message})`;
-            return Promise.reject(e);
-        }
-
         let records = [];
-        try {
-            records = records.concat(dataGroupUtil.stringToRecords('', textDecl, 1));
-        } catch (e) {
-            e.message = `cannot prepare declaration for record storage (${e.message})`;
-            throw e;
-        }
-
-        meta = (`date^${(new Date(stamp)).toISOString()}|`
-                + `id^${decl.id}|`
-                + `tenants^${tenants.join(',')}|`
-                + `blocks^${records.length}`);
-
-        records.unshift({
-            name: '0',
-            data: meta
-        });
-
-        // will datagroup name collide?  (odds are slim, but...)
-        // (life would be easier if TMOS had create-or-update)
-        log.debug(`store decl on target, blocks=${records.length - 1}`);
-        return util.iControlRequest(context, opts)
-            .then((resp) => {
-                opts.crude = false;
-
-                if (resp.statusCode === 200) {
-                // update existing dg
-                    opts.method = 'PUT';
-                    opts.send = JSON.stringify({
-                        records
-                    });
-                } else {
-                // create new dg
-                    opts.path = path;
-                    opts.method = 'POST';
-                    opts.send = JSON.stringify({
-                        name: (dg + stamp),
-                        partition: 'Common',
-                        description: 'f5 AS3 declaration (see info in record 0)',
-                        type: 'integer',
-                        records
-                    });
+        return certUtils.checkIfClassCertExist(decl, 'encrypt')
+            .then((declCerts) => {
+                try {
+                    textDecl = JSON.stringify(declCerts);
+                } catch (e) {
+                    e.message = `cannot stringify declaration (${e.message})`;
+                    return Promise.reject(e);
                 }
-                return util.iControlRequest(context, opts);
-            })
-            .then(() => {
-                log.debug(`next purge stored decls in excess of ${limit}`);
-                return this.trimDeclarations(context, limit, context.control);
+
+                try {
+                    records = records.concat(dataGroupUtil.stringToRecords('', textDecl, 1));
+                } catch (e) {
+                    e.message = `cannot prepare declaration for record storage (${e.message})`;
+                    return Promise.reject(e);
+                }
+
+                meta = (`date^${(new Date(stamp)).toISOString()}|`
+                    + `id^${decl.id}|`
+                    + `tenants^${tenants.join(',')}|`
+                    + `blocks^${records.length}`);
+
+                records.unshift({
+                    name: '0',
+                    data: meta
+                });
+
+                // will datagroup name collide?  (odds are slim, but...)
+                // (life would be easier if TMOS had create-or-update)
+                log.debug(`store decl on target, blocks=${records.length - 1}`);
+                return util.iControlRequest(context, opts)
+                    .then((resp) => {
+                        opts.crude = false;
+
+                        if (resp.statusCode === 200) {
+                            // update existing dg
+                            opts.method = 'PUT';
+                            opts.send = JSON.stringify({
+                                records
+                            });
+                        } else {
+                            // create new dg
+                            opts.path = path;
+                            opts.method = 'POST';
+                            opts.send = JSON.stringify({
+                                name: (dg + stamp),
+                                partition: 'Common',
+                                description: 'f5 AS3 declaration (see info in record 0)',
+                                type: 'integer',
+                                records
+                            });
+                        }
+                        return util.iControlRequest(context, opts);
+                    })
+                    .then(() => {
+                        log.debug(`next purge stored decls in excess of ${limit}`);
+                        return this.trimDeclarations(context, limit, context.control);
+                    });
             });
     } // storeBigipDeclaration()
 

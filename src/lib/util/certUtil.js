@@ -18,6 +18,8 @@
 
 const forge = require('node-forge');
 
+const util = require('./util');
+const LongSecretTag = require('../tag/longSecretTag');
 const declarationUtil = require('./declarationUtil');
 
 // PFX (Personal inFormation eXchange)
@@ -279,6 +281,52 @@ const checkIfSelfSigned = function (cert) {
     return addedCert.isIssuer(addedCert);
 };
 
+// Ensures class certificate in decl and private key does not have passphrase/url/bigip to encode/decode keys
+const checkIfClassCertExist = function (declCerts, convertionType) {
+    const tenants = Object.keys(declCerts).filter((key) => declarationUtil.isTenant(declCerts[key]));
+    const allTenantsPromises = tenants.map((tenant) => {
+        const applications = Object.keys(declCerts[tenant]).filter((key) => declarationUtil.isApplication(
+            declCerts[tenant][key]
+        ));
+
+        const allApplicationPromises = applications.map((application) => {
+            const certificatesData = Object.keys(declCerts[tenant][application]);
+            const appCertInfo = declCerts[tenant][application].useCert;
+            if (certificatesData.includes('useCert')
+                && declarationUtil.isCertificate(appCertInfo)
+                && appCertInfo.privateKey
+                && !appCertInfo.privateKey.bigip
+                && !appCertInfo.privateKey.url
+                && !appCertInfo.passphrase) {
+                const convertPrivateKeys = appCertInfo.privateKey;
+                if (convertionType === 'encrypt'
+                    && !appCertInfo.privateKey.ciphertext) {
+                    return LongSecretTag.encryptLongSecretKey(convertPrivateKeys)
+                        .then((res) => {
+                            declCerts[tenant][application].useCert.privateKey = res;
+                            return declCerts;
+                        });
+                }
+                if (convertionType === 'decrypt'
+                    && appCertInfo.privateKey.ciphertext) {
+                    const encryptedKey = appCertInfo.privateKey.ciphertext;
+                    const decodeEncryptedKey = util.base64Decode(encryptedKey).toString();
+                    return LongSecretTag.decryptLongSecretKey(decodeEncryptedKey)
+                        .then((res) => {
+                            declCerts[tenant][application].useCert.privateKey = res;
+                            return declCerts;
+                        });
+                }
+            }
+            return declCerts;
+        });
+        return Promise.all(allApplicationPromises)
+            .then(() => declCerts); // promises of applications
+    });
+    return Promise.all(allTenantsPromises)
+        .then(() => declCerts); // promises of tenants
+};
+
 const validateCertificates = function (decl, errors) {
     Object.keys(decl).forEach((key) => {
         if (declarationUtil.isClass(decl[key], 'Certificate')
@@ -301,5 +349,6 @@ const validateCertificates = function (decl, errors) {
 module.exports = {
     parsePkcs12,
     validateCertificates,
-    checkIfSelfSigned
+    checkIfSelfSigned,
+    checkIfClassCertExist
 };

@@ -13,6 +13,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4321: The requested Pool Member already exists in partition
 - AUTOTOOL-4319: Handle matching monitorNames properly
 - AUTOTOOL-4316: Add host, DeclarationID and tenant info to a failed declaration response
+- AUTOTOOL-4297: AS3 to configure secrets will potentially leak those secrets when a qkview/ucs (cert private keys) is shared
 
 ### Changed
 

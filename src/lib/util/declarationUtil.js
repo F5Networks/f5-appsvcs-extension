@@ -36,10 +36,15 @@ function isTenant(obj) {
     return isClass(obj, 'Tenant');
 }
 
+function isCertificate(obj) {
+    return isClass(obj, 'Certificate');
+}
+
 module.exports = {
     isClass,
     isADC,
     isAS3,
     isApplication,
-    isTenant
+    isTenant,
+    isCertificate
 };

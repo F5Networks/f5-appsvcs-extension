@@ -17,7 +17,9 @@
 'use strict';
 
 const assert = require('assert');
+const sinon = require('sinon');
 const certUtil = require('../../../../src/lib/util/certUtil');
+const LongSecretTag = require('../../../../src/lib/tag').LongSecretTag;
 
 describe('certUtil', () => {
     describe('.validateCertificates', () => {
@@ -131,6 +133,215 @@ describe('certUtil', () => {
 
             const options = { keyFormat: 'pkcs8' };
             assert.deepStrictEqual(certUtil.parsePkcs12(certificate, options), expected);
+        });
+    });
+
+    describe('.checkIfClassCertExist', () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        const getDeclIfClassCert = () => ({
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            id: 'anId',
+            TEST_Certificate: {
+                class: 'Tenant',
+                exampleApp: {
+                    class: 'Application',
+                    useCert: {
+                        class: 'Certificate',
+                        certificate: '-----BEGIN CERTIFICATE-----\nMIIDRjCCAi6gAwIBAgIBATALBgkqhkiG9w0BAQswODE2MAkGA1UEBhMCVVMwKQYD\nVQQDHiIAUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMB4XDTEzMDEz\nMTIxMDAwMFoXDTE2MDEzMTIxMDAwMFowODE2MAkGA1UEBhMCVVMwKQYDVQQDHiIA\nUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1\nYxi0BjRuDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYp\nEUj/o7cykNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKl\ngZsx8395UNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJD\nMfUSiWT5cFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCc\nDOAmVSfUAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABo10wWzAMBgNV\nHRMEBTADAQH/MAsGA1UdDwQEAwIA/zAdBgNVHQ4EFgQU5QmA6U960XL4SII2SEhC\ncxij0JYwHwYDVR0jBBgwFoAU5QmA6U960XL4SII2SEhCcxij0JYwDQYJKoZIhvcN\nAQELBQADggEBACKRCWzcuFjythAJn7yNet1pFNjcvkndLbHOgCh+QSdA3M0wKVpa\ntltj8pD6AbbkwgXA85Zmf+5hQoHaPTIdNEw8QCn+/nBrBKozYGR2eQY/ivkS3H2l\n7eaiDbE1QGpJ6ik022jtCBXSjXJge24wpCE0DNwUHUIbPbn6Ve/xW65TU+hg2tOO\nKmuSMsOA+6s1dSNSH0BmXTr4JqSh7vksSS5pkq4FAgw0skVwzZlIr9AABojQTUOi\n9ywJy1bzH/pCTl9jA27SNwh2eD13MphfK3NXnf44bF0rmaV3IEGTK9Ots7xtbBhP\ndz7B4HWG42mCelEckozPnFWPRtt2ceKvq5w=\n-----END CERTIFICATE-----\n',
+                        privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n', // gitleaks:allow
+                        chainCA: {
+                            use: '/Common/Shared/ca_example_bundle'
+                        }
+                    }
+                }
+            }
+        });
+
+        it('should encrypt the private key so the response will be encrypted', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: '-----BEGIN CERTIFICATE-----\nMIIDRjCCAi6gAwIBAgIBATALBgkqhkiG9w0BAQswODE2MAkGA1UEBhMCVVMwKQYD\nVQQDHiIAUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMB4XDTEzMDEz\nMTIxMDAwMFoXDTE2MDEzMTIxMDAwMFowODE2MAkGA1UEBhMCVVMwKQYDVQQDHiIA\nUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1\nYxi0BjRuDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYp\nEUj/o7cykNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKl\ngZsx8395UNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJD\nMfUSiWT5cFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCc\nDOAmVSfUAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABo10wWzAMBgNV\nHRMEBTADAQH/MAsGA1UdDwQEAwIA/zAdBgNVHQ4EFgQU5QmA6U960XL4SII2SEhC\ncxij0JYwHwYDVR0jBBgwFoAU5QmA6U960XL4SII2SEhCcxij0JYwDQYJKoZIhvcN\nAQELBQADggEBACKRCWzcuFjythAJn7yNet1pFNjcvkndLbHOgCh+QSdA3M0wKVpa\ntltj8pD6AbbkwgXA85Zmf+5hQoHaPTIdNEw8QCn+/nBrBKozYGR2eQY/ivkS3H2l\n7eaiDbE1QGpJ6ik022jtCBXSjXJge24wpCE0DNwUHUIbPbn6Ve/xW65TU+hg2tOO\nKmuSMsOA+6s1dSNSH0BmXTr4JqSh7vksSS5pkq4FAgw0skVwzZlIr9AABojQTUOi\n9ywJy1bzH/pCTl9jA27SNwh2eD13MphfK3NXnf44bF0rmaV3IEGTK9Ots7xtbBhP\ndz7B4HWG42mCelEckozPnFWPRtt2ceKvq5w=\n-----END CERTIFICATE-----\n',
+                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n', // gitleaks:allow
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+            const reponseLongSecret = {
+                ciphertext: 'JE0kaFMkN3Fyc3lSQk1PbWZsYW1qQmFhYWozL0lZNWptUXR3OUVXZUE2R2FZazNCV3l5eWJyUlZtd3lVbWtxV0xPbVU0VSwkTSRrSyQzY1JqV1h3TUtLWXU4d2VOWjVmbmJpU1g1ZUxFVmtsZDZRM2ZSNThSYzlXNVhGdnNyWDY1VlFRV3RvdEZwWlhuVExLWVFBR1pUMGtjK2EzTHAvL2tRQ1Zuc2F5THVmUjVNUEorY3lwWTlUOD0sJE0kYXAkSkc0aXRLWUNSRDFEZWszSnBoMnVxT0hJajFqeDgrMVlyMEZLNm9iR3U5RmJDQlNUNk45d0F3VFAzb0lEdk5pZWZUbGl1OWdUeU93N1lDaVc2VXh5RkhNSWcvWEdCc3NPOXhoUmJWc2tydzA9LCRNJDQwJERuOWU4cmNObCtnN1JHM216bmdkR2VCNHNPY1VVWTE0M1JWbFI1RkkvVGN4VlY5Q1VzZFNHY0YzcXhhNEsxY1NXM0hTQ2Z5ZndIdkFEeXgxU2Q2TTNGM29IZnRBUmc5YjBFL2V4OHp3S1ZFPSwkTSRXRCRvVnRWNlpIeGdpbW5pSUV3ckE4c1Ava0ptajYrWHVHSjFyVmRBcCt4c3B4eEVhTllKVkFOZXFMUTBEOWxRN29aNHB4SlFrdjBTN2lFYXNGQzJJdHFJajlxNCtmRE1ud3hsSEJweWxYZjhmbz0sJE0kTXUkL0hWbUF0OUlJTmljaXFYZ2dSdkxSS3h3d2s0TDVjVEkrVmdLbG5STUpzRGVoQXlvUG5EMmdZTVA0VlB1cW44S0tOdmhMeGxScWtIYUg0N1BNMzI0S09nNUdFa0VZWG9pVGJkRmxRRjR0MkU9LCRNJGxPJHdZQ2xzTlJNTXFhRUxQREpWVkM3a3pVU0toK3JTUjE0RjhEWUNXbU1FSTY4eG11TTRwTDNla3pWVWsvUnRXYUNIS05Ic1U4MmpyOEpVMHJNeXlBbU82clovVVFUL0ZzTEV4SFNqLzFuMVlFPSwkTSRWeSROY09IbjZyTHJ2bldrWk1TdzlwMzJCVGt5cHkyckR4VXZYVVo2VWV5bWw0SDNOVG5YdmhtbiswZDNhTWhodHlnTlBXLzdZWjNIYmw1bEFSUThQTlJSTDlWdXZPZUgrbUFNbFpmVW10YXpkbz0sJE0kb28kaUhjVUpHbGtIVmMwNkUxQ0FIOW05UnlsTytjTUY3aDBEY3p3dHpyWXN6UU1pbkhvYnFSb1hDTlVoMElRdzh0ZkJvTmtmbEMvM0l0UUxDaVFrcjhoN0ZNd0J1TzRYQnl5d1dLMUM1K2VTNUk9LCRNJHpPJE91aHU0ajRUbFNEQXNVZ3VpQXdTUDFCbHcrWmt6eVdCK3V5dFErSTdaMmhDcDhIamsrdGx2TjZwNUhVOVpWZjdPb2lQMXk0ZHlkN1FyMjFjcjZ4ekEySkN6TnM4Y0VBc3I0NDFpKzNNZ3lRPSwkTSRjMCRWSEpBZENzQjFlUmxvTXdWbk9WeGtTblozZTQ2QXBGUUN2ek82bERPQ3dhQ29vb3M5b0VCMzRvLzdKWU1LZ0JqMXM4MTFvMEU5RjJVY1Rrc2UyWkd2V1hJaTAwUHZiNStzcjRhRDV5M0hubz0sJE0kQWgkNm1CZk5JSGRJcEpTRmhCdVFFejBvT0FiOEpEYytvRExHK1BreHJibzE2R3A5cjBLZUl1NmpPUFhxYVBmcGlTUFp5YzErOWY3bG1RZ04wWUVIUTE3MGhzVXBoWlB1WldQYjAwWXJSUWhYT289LCRNJFF5JHA5UENaeGpBQXd4U3JZUGJoVHloVFNwNHdzN3RwMFExdjNiYUFlWUIyN1lGOHdjMS9WS1RITUlFcWc2aXA5TXhETjl5OUgyR05SMG9ZMG13R3lXZjdBV2wzdzRHdHdNTmVpTE55a1MyU21BPSwkTSRQeCRrdURRSE1OenJBQ3FFa1JsQUlmNjVzbkJqSXBET3RkbTV1QmxBMFhVeForK0NubWsvNjM1OGNOQnMvT2g5QitLZkZhVGhUUGxvRnhQSjA2Zi9UTzQ1TytYLy9odEhyTlBXSUNiTldTZldzVT0sJE0kcnYkaVluZHlENHFxdW5waFhWa3kwYVBZTVZvUERIUXgyZUw0N2Rqb2tFdy91Ly9aemZnRSszQWRaNG01V2NBN1YrQXN3UE9laEozeSt1djB2S291dC9yYjB4L3lyNEFKZnJTU3VzNjcrM0JkeW89LCRNJFBFJEVJcFFoZWZxMFhPY0VoTnZKZXlmb1lPRHJqZHB6RTM4azVBK0dienRQdzBnL29oZzIxK1FaTE5JYjAvdDFjQlZvWWp4UTViclZLUzkzRmxOVjEvaUpITUlnL1hHQnNzTzl4aFJiVnNrcncwPSwkTSRxUSR0OTVSRHZ0UmxGdmZ3VHhHZk50SldwWVFONitVRTViZk1uM1hkdVpDMGRoVnFETFJCWUozK3pBbHhGZ3BlRnZSVVNzVkFkQXhacU9zOStrSVp4M3I2eGNYbENJMVdsd2s1UnN3dEhxWlhtUT0sJE0kTXMkMGpHNWl4WlZWd1VaUFR2cDBteDN2a2ZSUTdISEhOaGhGUHJ6QTRyYzBOMWNzcHREZFhjVHJUOCtiNDMrakpPREYzR2UrSWJWcUhCUU9EYU5oUjUwbU03N0J5RXZEeVY5aUI2NHlWdXAyS0E9LCRNJDhWJENvUHhQZE9qYUo4M29LOENGUVNyMVV5ZEtySE1jR2NHa3UrY3hPdU9sQlZtekpLQmdrZTVnNmFJdFRWVkMzL0JqNC9JWDVISVo1YU5iOVpFZDRFS0ZaNXgzQ20ybEhNeFZDL0R4VUNzeHhVPSwkTSRMNSRWS01mQUU3QmJjR2xNeTQreTlXbVJFa1JEdFphd1psS2F4UmR0K1dxYUpJUXdIMlNjbHF0RE0zOU9ZZ1hzdTV0SlBEbTFyaVUrWDBxTDlZcFdQSHRka1JIVHEvbStkUWxSVjV3ZmpxT3pQOD0sJE0kbXMkakF0aDJDakFBbXY3Zlh1UXZFM1NkRE4zTkV5VHVHSGJ0dnpsTnEvc2c3YmpscEhsUDR1UDhCSWFya3RXVmNFWDROOGs1N2VFTjZ6Ky9Eb1czdCtCQWNqWGVVU3ZILzlBaTkxNXQ2c1pKd1U9LCRNJHo0JFBSQ256WE9EZ2JkeXdUUEZLc3NXazVmZmVCSHVVdnRkSUd1WjJvOUpOdjJsRHFHV3I3bklnWnVrd0c5RUtwMTF0NDlRelorZGM3ckZxcjUxMERoT2U1UDZSbzNVMDZtYk9MMzEwWktlMFVzPSwkTSQ1SCRhTHlvQ0dYQThrZGFlV3pvOVorZmlhanpaU3NXZFRHOXlCUWxNS0wvSGZ6UEhOcnA0YWFhc0Y2WVpVclU0VkRYR3ZaL3U1cWZjMisxTUFYdHg1RmFiZlk1anp2b1BXRWFPSW51ejJKTHpxST0sJE0kc2QkUzlDeExjdHF3ektzOUJSaDRuVHNBc3dZTFJqYkNiNkhlQ1hLUUZnbEFwSjRnWFJENC9SVm1hamRiMHBLYndtODRlaVBDbWJrWE5YMEVmbU4vR3ZJSlNrVTdnQVRLS2NnaGlsR2lMM1FheVU9LCRNJFJZJHVYQXdYQlAzYnV4L1lWK3FFWG9GcDdnaWo2cml6K05ZVVNYaXlSVG9aRGFQRDNEOFc5NFlOSTZKSm5oZ0NNdzdQV2hEM2xmcE1lWTlKMElKclB5UEwvckVEd0M5WHROVTh2NnBkWnUzZHdVPSwkTSRObCRnQjA2cFFNY09ISStLQ29MQ3p5WnA2YmFWVytFQnUyd1p3YXdTTlRMRERDazVIcmd5aHYya2cxMzRRK21YL2hTcFhHTEQwTVlsNmdZM1l2TnpjTUI0RDdwN0YxVHVPZ3pDb3p0UVNqQ3Jubz0sJE0kOU4kRXBiTHl3MzZodzZQYkQ5NkNJMkhOd0hNVmlVVTZROHNsUUp1WjFqWG5SWT0sJE0kTnckREhIU0xDZUFjWThHSno4YzRsMmxCNW0yMFhtSk9wTE9RYmFrN3o4Z3h3dz0=',
+                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                miniJWE: true
+            };
+            sinon.stub(LongSecretTag, 'encryptLongSecretKey').resolves(reponseLongSecret);
+            return certUtil.checkIfClassCertExist(getDeclIfClassCert(), 'encrypt')
+                .then((result) => {
+                    assert.notEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should not encrypt the private key(supplied path for cert keys) so the response will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: {
+                    bigip: '/Common/default.crt'
+                },
+                privateKey: {
+                    bigip: '/Common/default.key'
+                },
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+
+            sinon.stub(LongSecretTag, 'encryptLongSecretKey').resolves(expected.privateKey);
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'encrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should not encrypt the private key(supplied url for cert keys) so the response will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: {
+                    url: {
+                        url: `https://${process.env.TEST_RESOURCES_URL}/certs/cert`
+                    }
+                },
+                privateKey: {
+                    url: {
+                        url: `https://${process.env.TEST_RESOURCES_URL}/certs/key`
+                    }
+                }
+            };
+
+            sinon.stub(LongSecretTag, 'encryptLongSecretKey').resolves(expected.privateKey);
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'encrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should not encrypt the private key(supplied passphrase to protect cert keys) so the keys will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: '-----BEGIN CERTIFICATE-----\nMIICnDCCAgWgAwIBAgIJAJ5n2b0OCEjwMA0GCSqGSIb3DQEBCwUAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMRQwEgYDVQQKDAtmNV9OZXR3b3JrczEbMBkGA1UEAwwSc2FtcGxlLmV4YW1wbGUubmV0MB4XDTE3MTEyNjE5NTAyNFoXDTE4MDIyNTE5NTAyNFowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxFDASBgNVBAoMC2Y1X05ldHdvcmtzMRswGQYDVQQDDBJzYW1wbGUuZXhhbXBsZS5uZXQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALEsuXmSXVQpYjrZPW+WiTBjn491mwZYT7Q92V1HlSBtM6WdWlK1aZN5sovfKtOX7Yrm8xa+e4o/zJ2QYLyyv5O+t2EGN/4qUEjEAPY9mwJdfzRQy6Hyzm84J0QkTuUJ/EjNuPji3D0QJRALUTzu1UqqDCEtiN9OGyXEkh7uvb7BAgMBAAGjUDBOMB0GA1UdDgQWBBSVHPNrGWrjWyZvckQxFYWO59FRFjAfBgNVHSMEGDAWgBSVHPNrGWrjWyZvckQxFYWO59FRFjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAJeJ9SEckEwPhkXOm+IuqfbUS/RcziifBCTmVyE+Fa/j9pKSYTgiEBNdbJeBEa+gPMlQtbV7Y2dy8TKx/8axVBHiXC5geDML7caxOrAyHYBpnx690xJTh5OIORBBM/a/NvaR+P3CoVebr/NPRh9oRNxnntnqvqD7SW0U3ZPe3tJc\n-----END CERTIFICATE-----',
+                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-256-CBC,D8FFCE6B255601587CB54EC29B737D31\n\nkv4Fc3Jn0Ujkj0yRjt+gQQfBLSNF2aRLUENXnlr7Xpzqu0Ahr3jS1bAAnd8IWnsR\nyILqVmKsYF2DoHh0tWiEAQ7/y/fe5DTFhK7N4Wml6kp2yVMkP6KC4ssyYPw27kjK\nDBwBZ5O8Ioej08A5sgsLCmglbmtSPHJUn14pQnMTmLOpEtOsu6S+2ibPgSNpdg0b\nCAJNG/KHe+Vkx59qNDyDeKb7FZOlsX30+y67zUq9GQqJEDuysPJ2BUNP0IJXAjst\nFIt1qNoZew+5KDYs7u/lPxcMGTirUhgI84Jy4WcDvSOsP/tKlxj04TbIE3epmSKy\n+TihHkwY7ngIGtcm3Sfqk5jz2RXoj1/Ac3SW8kVTYaOUogBhn7zAq4Wju6Et4hQG\nRGapsJp1aCeZ/a4RCDTxspcKoMaRa97/URQb0hBRGx3DGUhzpmX9zl7JI2Xa5D3R\nmdBXtjLKYJTdIMdd27prBEKhMUpae2rz5Mw4J907wZeBq/wu+zp8LAnecfTe2nGY\nE32x1U7gSEdYOGqnwxsOexb1jKgCa67Nw9TmcMPV8zmH7R9qdvgxAbAtwBl1F9OS\nfcGaC7epf1AjJLtaX7krWmzgASHl28Ynh9lmGMdv+5QYMZvKG0LOg/n3m8uJ6sKy\nIzzvaJswwn0j5P5+czyoV5CvvdCfKnNb+3jUEN8I0PPwjBGKr4B1ojwhogTM248V\nHR69D6TxFVMfGpyJhCPkbGEGbpEpcffpgKuC/mEtMqyDQXJNaV5HO6HgAJ9F1P6v\n5ehHHTMRvzCCFiwndHdlMXUjqSNjww6me6dr6LiAPbejdzhL2vWx1YqebOcwQx3G\n-----END RSA PRIVATE KEY-----', // gitleaks:allow
+                passphrase: {
+                    ciphertext: 'JE0kaHQkRWxrWDUvY1RadFJRb2tvSk5nc09NZz09',
+                    protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
+                    miniJWE: true
+                },
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+
+            sinon.stub(LongSecretTag, 'encryptLongSecretKey').resolves(expected.privateKey);
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'encrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should decrypt the private key so the response will be decrypted', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: '-----BEGIN CERTIFICATE-----\nMIIDRjCCAi6gAwIBAgIBATALBgkqhkiG9w0BAQswODE2MAkGA1UEBhMCVVMwKQYD\nVQQDHiIAUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMB4XDTEzMDEz\nMTIxMDAwMFoXDTE2MDEzMTIxMDAwMFowODE2MAkGA1UEBhMCVVMwKQYDVQQDHiIA\nUABlAGMAdQBsAGkAYQByACAAVgBlAG4AdAB1AHIAZQBzMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1\nYxi0BjRuDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYp\nEUj/o7cykNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKl\ngZsx8395UNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJD\nMfUSiWT5cFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCc\nDOAmVSfUAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABo10wWzAMBgNV\nHRMEBTADAQH/MAsGA1UdDwQEAwIA/zAdBgNVHQ4EFgQU5QmA6U960XL4SII2SEhC\ncxij0JYwHwYDVR0jBBgwFoAU5QmA6U960XL4SII2SEhCcxij0JYwDQYJKoZIhvcN\nAQELBQADggEBACKRCWzcuFjythAJn7yNet1pFNjcvkndLbHOgCh+QSdA3M0wKVpa\ntltj8pD6AbbkwgXA85Zmf+5hQoHaPTIdNEw8QCn+/nBrBKozYGR2eQY/ivkS3H2l\n7eaiDbE1QGpJ6ik022jtCBXSjXJge24wpCE0DNwUHUIbPbn6Ve/xW65TU+hg2tOO\nKmuSMsOA+6s1dSNSH0BmXTr4JqSh7vksSS5pkq4FAgw0skVwzZlIr9AABojQTUOi\n9ywJy1bzH/pCTl9jA27SNwh2eD13MphfK3NXnf44bF0rmaV3IEGTK9Ots7xtbBhP\ndz7B4HWG42mCelEckozPnFWPRtt2ceKvq5w=\n-----END CERTIFICATE-----\n',
+                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n', // gitleaks:allow
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+            const reponseLongSecret = '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA4qEnCuFxZqTEM/8cYcaYxexT6+fAHan5/eGCFOe1Yxi0BjRu\nDooWBPX71+hmWK/MKrKpWTpA3ZDeWrQR2WIcaf/ypd6DAEEWWzlQgBYpEUj/o7cy\nkNwIvZReU9JXCbZu0EmeZXzBm1mIcWYRdk17UdneIRUkU379wVJcKXKlgZsx8395\nUNeOMk11G5QaHzAafQ1ljEKB/x2xDgwFxNaKpSIq3LQFq0PxoYt/PBJDMfUSiWT5\ncFh1FdKITXQzxnIthFn+NVKicAWBRaSZCRQxcShX6KHpQ1Lmk0/7QoCcDOAmVSfU\nAaBl2w8bYpnobFSStyY0RJHBqNtnTV3JonGAHwIDAQABAoIBAQDTDtX3ciFUQFph\nOlLKVFPu77rwVjI67hPddujYYzowAc+Wf7mHXN5I3HUgjFTUf1Qa56yDZpcGQWZy\n/oQo+RARP8ZQ5zsFP5h8eJIZ14mDiYJai8BR3DlfpQ977MYWS4pD/GvBhEAiV22U\nfkQA8wPIJKiUEsZz5C6angMqrpSob4kNpatmcXglyPomb1EUD00pvOvrMwpcIM69\nrlujUpTSinnixzCC3neJq8GzzncobrZ6r1e/RlGB98mHc2xG28ORjmre+/sTy7d9\n3Hywi+6YOZRg6yhKJruldXeSpgTob9CvIBjyn8T66XlBuZ9aufJP9qLgosgGilqV\naDlpp28xAoGBAP1MwBmdjfGBPpAvOTZdMEKH/llZvkVA7L+gty9rz1IbdxsJ28Uk\nzJePjYsWwlhuOrnVYbDNse2c2GNXgey7ZwZ4712U2FOMKmbRkf/l9kcOaLvqFpte\nvzoHBLhYz9s6ULa/a/26SocgVfiHUp4Jy8tNEbnihlC+p77XnEZJRIUNAoGBAOUL\nnpPnNdqjLa5oOc5xz0Au7ronmUc1C/Y05ULbmTOZuAdwHwfzf9KiEEtOjx0tYo3h\n0PUsRJhu9sHmplGAtEj4vBsSYqBc2iRA1YrdEWt/IH9Al0L3GE9Fw9QsGP5vow1w\n1i+S9QgiK+tAMzYzN1hHxjuFR2jbKL1S59Rb8ubbAoGBAOGThFBLm6lDrG/DXnQn\nsV7OtZjk7ynFlBFkEz9MB6nbg8q0kN+U0g73bNo9Pn56TBpLCWDnDlnJoHt35uDo\nU+vTr3fromtlHC3M3PTD2vuUvXj8E33yduI6dd2mWhWmbVMSTh371XtZNLbL7KuJ\nldBLpkmgjnVCFSlD4oxFm5vRAoGAaRWvp8QInUsIhmAjRWhJ4fSmapoIZPcdidQy\n6z29SENaf28djZRWLNlWCHb+ijBsaxQTvqiUwCsI42VjITmffWtBQlppDZIMM13b\nm15Zw6wLyNZlj7+2U4h6lDm3LeUiNeRzIFiYOycSZ1iJJnDRD5u+g0hevujuBA6p\ndnDJPMkCgYBea6I/pfdJX8CJq+ldTSaNyeVQovcE0+cfXpz2PVkXH0skY6lOyVsu\nodAviavgGAMa5EFY0Lr9QDoTvFIXOmpjORQPoH4ORyij58Ljnu6+wePCxRfHkY2E\nbR5q0FKxWNIx+jvrddnRECPu6hPkn31EnLGVgkRF+0GBCv7bs57/1A==\n-----END RSA PRIVATE KEY-----\n'; // gitleaks:allow
+
+            sinon.stub(LongSecretTag, 'decryptLongSecretKey').resolves(reponseLongSecret);
+            return certUtil.checkIfClassCertExist(getDeclIfClassCert(), 'decrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+        it('should not decrypt the private key(supplied path for cert keys) so the response will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: {
+                    bigip: '/Common/default.crt'
+                },
+                privateKey: {
+                    bigip: '/Common/default.key'
+                },
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            const reponseLongSecret = expected.privateKey;
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            sinon.stub(LongSecretTag, 'decryptLongSecretKey').resolves(reponseLongSecret);
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'decrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should not decrypt the private key(supplied url for cert keys) so the response will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: {
+                    url: {
+                        url: `https://${process.env.TEST_RESOURCES_URL}/certs/cert`
+                    }
+                },
+                privateKey: {
+                    url: {
+                        url: `https://${process.env.TEST_RESOURCES_URL}/certs/key`
+                    }
+                }
+            };
+
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            const reponseLongSecret = expected.privateKey;
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            sinon.stub(LongSecretTag, 'decryptLongSecretKey').resolves(reponseLongSecret);
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'decrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
+        });
+
+        it('should not decrypt the private key(supplied passphrase to protect cert keys) so the keys will remain same', () => {
+            const expected = {
+                class: 'Certificate',
+                certificate: '-----BEGIN CERTIFICATE-----\nMIICnDCCAgWgAwIBAgIJAJ5n2b0OCEjwMA0GCSqGSIb3DQEBCwUAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMRQwEgYDVQQKDAtmNV9OZXR3b3JrczEbMBkGA1UEAwwSc2FtcGxlLmV4YW1wbGUubmV0MB4XDTE3MTEyNjE5NTAyNFoXDTE4MDIyNTE5NTAyNFowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxFDASBgNVBAoMC2Y1X05ldHdvcmtzMRswGQYDVQQDDBJzYW1wbGUuZXhhbXBsZS5uZXQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALEsuXmSXVQpYjrZPW+WiTBjn491mwZYT7Q92V1HlSBtM6WdWlK1aZN5sovfKtOX7Yrm8xa+e4o/zJ2QYLyyv5O+t2EGN/4qUEjEAPY9mwJdfzRQy6Hyzm84J0QkTuUJ/EjNuPji3D0QJRALUTzu1UqqDCEtiN9OGyXEkh7uvb7BAgMBAAGjUDBOMB0GA1UdDgQWBBSVHPNrGWrjWyZvckQxFYWO59FRFjAfBgNVHSMEGDAWgBSVHPNrGWrjWyZvckQxFYWO59FRFjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAJeJ9SEckEwPhkXOm+IuqfbUS/RcziifBCTmVyE+Fa/j9pKSYTgiEBNdbJeBEa+gPMlQtbV7Y2dy8TKx/8axVBHiXC5geDML7caxOrAyHYBpnx690xJTh5OIORBBM/a/NvaR+P3CoVebr/NPRh9oRNxnntnqvqD7SW0U3ZPe3tJc\n-----END CERTIFICATE-----',
+                privateKey: '-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-256-CBC,D8FFCE6B255601587CB54EC29B737D31\n\nkv4Fc3Jn0Ujkj0yRjt+gQQfBLSNF2aRLUENXnlr7Xpzqu0Ahr3jS1bAAnd8IWnsR\nyILqVmKsYF2DoHh0tWiEAQ7/y/fe5DTFhK7N4Wml6kp2yVMkP6KC4ssyYPw27kjK\nDBwBZ5O8Ioej08A5sgsLCmglbmtSPHJUn14pQnMTmLOpEtOsu6S+2ibPgSNpdg0b\nCAJNG/KHe+Vkx59qNDyDeKb7FZOlsX30+y67zUq9GQqJEDuysPJ2BUNP0IJXAjst\nFIt1qNoZew+5KDYs7u/lPxcMGTirUhgI84Jy4WcDvSOsP/tKlxj04TbIE3epmSKy\n+TihHkwY7ngIGtcm3Sfqk5jz2RXoj1/Ac3SW8kVTYaOUogBhn7zAq4Wju6Et4hQG\nRGapsJp1aCeZ/a4RCDTxspcKoMaRa97/URQb0hBRGx3DGUhzpmX9zl7JI2Xa5D3R\nmdBXtjLKYJTdIMdd27prBEKhMUpae2rz5Mw4J907wZeBq/wu+zp8LAnecfTe2nGY\nE32x1U7gSEdYOGqnwxsOexb1jKgCa67Nw9TmcMPV8zmH7R9qdvgxAbAtwBl1F9OS\nfcGaC7epf1AjJLtaX7krWmzgASHl28Ynh9lmGMdv+5QYMZvKG0LOg/n3m8uJ6sKy\nIzzvaJswwn0j5P5+czyoV5CvvdCfKnNb+3jUEN8I0PPwjBGKr4B1ojwhogTM248V\nHR69D6TxFVMfGpyJhCPkbGEGbpEpcffpgKuC/mEtMqyDQXJNaV5HO6HgAJ9F1P6v\n5ehHHTMRvzCCFiwndHdlMXUjqSNjww6me6dr6LiAPbejdzhL2vWx1YqebOcwQx3G\n-----END RSA PRIVATE KEY-----', // gitleaks:allow
+                passphrase: {
+                    ciphertext: 'JE0kaHQkRWxrWDUvY1RadFJRb2tvSk5nc09NZz09',
+                    protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
+                    miniJWE: true
+                },
+                chainCA: {
+                    use: '/Common/Shared/ca_example_bundle'
+                }
+            };
+
+            const storeDeclIfClassCert = getDeclIfClassCert();
+            const reponseLongSecret = expected.privateKey;
+            storeDeclIfClassCert.TEST_Certificate.exampleApp.useCert = expected;
+            sinon.stub(LongSecretTag, 'decryptLongSecretKey').resolves(reponseLongSecret);
+            return certUtil.checkIfClassCertExist(storeDeclIfClassCert, 'decrypt')
+                .then((result) => {
+                    assert.deepStrictEqual(result.TEST_Certificate.exampleApp.useCert, expected);
+                });
         });
     });
 });
