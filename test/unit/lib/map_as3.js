@@ -9771,6 +9771,7 @@ describe('map_as3', () => {
                         properties: {
                             cert: 'none',
                             description: 'none',
+                            key: 'none',
                             recv: 'none',
                             send: 'none'
                         },
@@ -9814,6 +9815,7 @@ describe('map_as3', () => {
                             cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
                             destination: '*:*',
                             interval: 30,
+                            key: 'webcert.key',
                             'probe-timeout': 5,
                             'recv-status-code': '"200 302"',
                             'sni-server-name': 'test.example.com',
@@ -9840,6 +9842,7 @@ describe('map_as3', () => {
                         properties: {
                             cert: 'none',
                             description: 'none',
+                            key: 'none',
                             recv: 'none',
                             send: 'none'
                         },
@@ -9863,6 +9866,7 @@ describe('map_as3', () => {
                         properties: {
                             cert: 'none',
                             description: 'none',
+                            key: 'none',
                             recv: 'none',
                             'recv-status-code': 'none',
                             send: 'none'
