@@ -25,6 +25,7 @@ const assert = chai.assert;
 const {
     postDeclaration,
     deleteDeclaration,
+    getPath,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 
@@ -166,6 +167,240 @@ describe('certificates', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => deleteDeclaration());
+    });
+
+    it('should encrypt the private key if passphrase/bigip/url not set under class certificate', () => {
+        const declaration = {
+            action: 'deploy',
+            class: 'AS3',
+            persist: true,
+            declaration: {
+                class: 'ADC',
+                id: 't1a1-0001',
+                schemaVersion: '3.30.0',
+                Common: {
+                    class: 'Tenant',
+                    Shared: {
+                        class: 'Application',
+                        template: 'shared',
+                        ca_example_bundle: {
+                            bundle: '-----BEGIN CERTIFICATE-----\nMIID9TCCAt2gAwIBAgIJALxQA/NW2bpRMA0GCSqGSIb3DQEBCwUAMIGQMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHU2VhdHRsZTELMAkGA1UECgwCRjUxDTALBgNVBAsMBFRlc3QxFzAVBgNVBAMMDnRlc3RfQ0FfYnVuZGxlMSUwIwYJKoZIhvcNAQkBFhZzb21lYm9keUBzb21ld2hlcmUub3JnMB4XDTE4MDIyNzE5MjEyNVoXDTE4MDMyOTE5MjEyNVowgZAxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMQswCQYDVQQKDAJGNTENMAsGA1UECwwEVGVzdDEXMBUGA1UEAwwOdGVzdF9DQV9idW5kbGUxJTAjBgkqhkiG9w0BCQEWFnNvbWVib2R5QHNvbWV3aGVyZS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjhUZmbwwuMMFTNic73t0mfJ/pyM3BnEs0riv6lbrF5znFKBlAM2pxWBfkQvr92gUwitij7BqMagnR26/C7GcJJNJQGNK482vgSPhUpGeN0t4W71Dv5SpwJN+0do6gV0eXPwvcgA/XZxXqZAePwXTp36YMrNTgw49OWZpHoNXfYCZ+1KUL032RdQ/Ik2wO/UwV0csL1Rwuu2L8/NI9VtrThCAr8dsMsDJ53jDh7xQdP3K2V9NYtAHk66697kk7TpzR1moqTJxSVaPKo2eDuKNke1BRbjYWoamu0hfC5YG6l5P9i8QaVklbtmDcmoLpU9fLVSSW6CWHkrtdifQiCOChAgMBAAGjUDBOMB0GA1UdDgQWBBRv7/Q0VoBgDYzgJOKLz4GsgXP27zAfBgNVHSMEGDAWgBRv7/Q0VoBgDYzgJOKLz4GsgXP27zAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQA9r6+6hGVlQ188l+wLFJ1wI83y27BdtE0ZsZGdFv98qi9kcUm17Z0tprEwypODZ1/syt9b1JhD4RgU30qwgeF4kec8UpoG49UkQImRD3AqfsiYSdjZeBpcpEl3n8lkjKGoVY7GB2lMGoWDxv/1A0CSjVTmWgQSFGHoMtzOW1tCr9yGXVEdy691l7PVC1kK5ekwkO8YbSO6hvV/u83KuUiGcIoY1PIzAK301i9YXWUNxybIVfHregoQ11QzjhfdfpOLBTtW1B4QZqZz8qFGIr1remmQK3ljEcct9bWjMLOx2QYMvk6uRFzh+V5L2UnhldNy5wQYMXRDz6SU3LdTJ2OA\n-----END CERTIFICATE-----',
+                            class: 'CA_Bundle'
+                        }
+                    }
+                },
+                exampleTenant1: {
+                    class: 'Tenant',
+                    exampleApp: {
+                        class: 'Application',
+                        httpsVirtual: {
+                            class: 'Service_HTTPS',
+                            redirect80: false,
+                            clientTLS: 'as3_tls_client',
+                            serverTLS: 'as3_tls_server',
+                            snat: 'self',
+                            pool: 'poolPool',
+                            virtualAddresses: [
+                                '1.1.1.2'
+                            ],
+                            virtualPort: 443
+                        },
+                        useCert: {
+                            class: 'Certificate',
+                            certificate: '-----BEGIN CERTIFICATE-----\nMIIDeTCCAmGgAwIBAgIJAM6s50VhmehaMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJNQTEPMA0GA1UEBwwGQm9zdG9uMQswCQYDVQQKDAJG\nNTELMAkGA1UECwwCRVMxDDAKBgNVBAMMA0FTMzAeFw0yNDAzMTkxNjM0MTNaFw0y\nNTAzMTkxNjM0MTNaMFMxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJNQTEPMA0GA1UE\nBwwGQm9zdG9uMQswCQYDVQQKDAJGNTELMAkGA1UECwwCRVMxDDAKBgNVBAMMA0FT\nMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKKNG4uPUEM8WtosRCw/\nJj7o39exnqa6hlPoCexbyh2p1AtJXZEQotrRojXbEkzwKbVpXSfAuXpN8AXoyDA4\nn37bHafC3gc+kaa+bjdS8K0zNDRe0mfIN4s9oBq41czjHGLdXW2PgaIXqOBgB1Yb\n8IkjgcwdhRb2wNN7pzJBzwcqDYOCJHXh0mDc6PDNV8nwwZjuPrksWKZ2UbuyEjCU\ns3J0R04mApHpMGdSlDQVCSCXcOFXYohGe7OI8i9QWKko+clYkHslTrjreq7d2D1I\nAmW4TlJvA9A4BO2F0w+jpizhBuv2G0J0fiZI6XwRQk9lZ9qOZhxVRY/o6untr301\njm0CAwEAAaNQME4wHQYDVR0OBBYEFFF36jdkUOriWBFdkjWygjtQk7ZZMB8GA1Ud\nIwQYMBaAFFF36jdkUOriWBFdkjWygjtQk7ZZMAwGA1UdEwQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggEBAELqKjYIrDmiWbSSIQN4Yjk6rmVvXzqc+QZQ3qdhE9PDC9Ov\nTe5e1Y+2YBjI1HbF6lc+nLRQfyTkBpY5eo8KtcPiUkJUxGpVYtg+zttNn1OXUu3a\nAU4w2u5NNklsSrZwGwwtQFXXZIcd3Ov5jaq/penvcjjModJtuA4qX2K26tkDJdE7\nfDkMWkbr6e1yxeofcmy2kYM9r7ayAEP8mVlBeeBoWKtgIzW9AXe7vLZmkBTylGTU\nEWAQSfVkVUirWDDwlZU7ru0y2SyxILRVxzrFsknsGkxHmJWjNH9Bh2RjFqulXFhz\nVuTVC6t7OW9oOTeX3FivB7mOlqTYdIF4tvkS6pM=\n-----END CERTIFICATE-----',
+                            privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCijRuLj1BDPFra\nLEQsPyY+6N/XsZ6muoZT6AnsW8odqdQLSV2REKLa0aI12xJM8Cm1aV0nwLl6TfAF\n6MgwOJ9+2x2nwt4HPpGmvm43UvCtMzQ0XtJnyDeLPaAauNXM4xxi3V1tj4GiF6jg\nYAdWG/CJI4HMHYUW9sDTe6cyQc8HKg2DgiR14dJg3OjwzVfJ8MGY7j65LFimdlG7\nshIwlLNydEdOJgKR6TBnUpQ0FQkgl3DhV2KIRnuziPIvUFipKPnJWJB7JU6463qu\n3dg9SAJluE5SbwPQOATthdMPo6Ys4Qbr9htCdH4mSOl8EUJPZWfajmYcVUWP6Orp\n7a99NY5tAgMBAAECggEAH4GvxNt0oG+eoXqihRwBXwC2wGFAYcs2FaXcZIh/EsRT\n4hMolGFP2491/C/X6ntDblL7mCSyHrtkClUuFjCnc4hnhViPPgK56wKurMEB/uQ1\nmnAFotGLOI0rjvpkEGg13JDRFtcRtpgU5taeHWnhc8di1WwkW4jc47DsPaDFTrsg\nGp8l6oU0D6Z0X9mkGLKwEpQ8kPK9r34RsDuu6GLAVfTJaUQqYSNe8ycBblZISYtG\nM2/EmbKgCIf4rS5QCThhrPYsySMmHtCaSDq+zXZ4qqqGLdA8ua69D5cZFcLWh508\n4ewQ0I9DgRTdUBPwaqU7MDSxRCnVmjbWUp71W9KAYQKBgQDMBpNRT04y+UkUK0xJ\nhPaMQcyfjlONQ/1yKtsu7nRQ0NiJ/Ij+Ri4D7WXUe/oI06PppvLXR+kwxnuMAWnF\nyE6hPC1egHd0ZnBbpx1jgLfCEJz2dCZ9peEzY+9Tib+Ch9vrD057KAWaRMyxcCAS\ncOy1/1/lVMJQ6xC0LyXW1ElnjQKBgQDL9cvQI7KH52sfEJq6Eq32svfH7F78gNAF\nlWWHVWEtmWYGKUKd9lZcbNOAGp6jig8wQMl1vmMsODVQMG4b8a1pXgnkay9peb1g\nrrRmFMDHA1ELWaWyOgyZiQ+KDQJgz26MzUOOLK4jsZgQBhKPh3UYgeFsSB+rXwpa\nn4cpB6UaYQKBgQDJ8Wg3fuvEAIKY+BJWYsk2IprLAzEoDjf6nPi+B0ASDeWHDvL5\n27UIJh44p03hFrqTNq/+7iqeIJeBCJUNMyrA5LNzamzSReLIlSy9pFY+O/tg5a6D\nh4DUQQJOCXYJWTgP/eKMfByviZGhv32/Qw7JRbBBahe7yC+MaW5mqVDOsQKBgQCn\nNK9MyCcRUT+5bORbzPp+94M4i+fm+zcOjMZ6Jx2Ow2YngOXTF+L+zFyrdac+DO2c\nslA2TcmBs+bJAZsTH5L5gZV8g/6ParU9MJxF35eWz3o+YtT7AqnXqMxrcXTUptlL\nZu+N+8UbD/nIkSHgNr1hRQDnw0zrMfQMDSJCGblZoQKBgAVhp9NbrI7VRM+rf8VG\nNxy+4tGhb+kfWjagTEFcL61+4/7tHUyuaThzy/EFFwqqatIiBBFIPZyoNFZi5aQo\n3fI4Cy9W8RlCp8iM0ToAVys3z6LbBG4PJZBvHKNsPOY/30f5nlc6W20YJ+EWnumL\nWjNUPjCq+ZxGqVpEbbBzzaxy\n-----END RSA PRIVATE KEY-----', // gitleaks:allow
+                            chainCA: {
+                                use: '/Common/Shared/ca_example_bundle'
+                            }
+                        },
+                        as3_tls_client: {
+                            class: 'TLS_Client',
+                            clientCertificate: 'useCert'
+                        },
+                        as3_tls_server: {
+                            class: 'TLS_Server',
+                            certificates: [
+                                {
+                                    certificate: 'useCert'
+                                }
+                            ]
+                        },
+                        poolPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    serverAddresses: [
+                                        '192.0.2.1'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isFulfilled(
+                getPath('/mgmt/shared/appsvcs/declare')
+            ))
+            .then((response) => {
+                const requestPrivateKey = declaration.declaration.exampleTenant1.exampleApp.useCert.privateKey;
+                const responsePrivateKey = response.exampleTenant1.exampleApp.useCert.privateKey;
+                assert.notEqual(responsePrivateKey, requestPrivateKey);
+            })
+            .then(() => deleteDeclaration());
+    });
+
+    it('contains multiple tenant one with encrypted private key with passphrase another has plain private key', () => {
+        const declaration = {
+            action: 'deploy',
+            class: 'AS3',
+            persist: true,
+            declaration: {
+                class: 'ADC',
+                id: 't1a1-0001',
+                schemaVersion: '3.30.0',
+                Common: {
+                    class: 'Tenant',
+                    Shared: {
+                        class: 'Application',
+                        template: 'shared',
+                        ca_example_bundle: {
+                            bundle: '-----BEGIN CERTIFICATE-----\nMIID9TCCAt2gAwIBAgIJALxQA/NW2bpRMA0GCSqGSIb3DQEBCwUAMIGQMQswCQYDVQQGEwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjEQMA4GA1UEBwwHU2VhdHRsZTELMAkGA1UECgwCRjUxDTALBgNVBAsMBFRlc3QxFzAVBgNVBAMMDnRlc3RfQ0FfYnVuZGxlMSUwIwYJKoZIhvcNAQkBFhZzb21lYm9keUBzb21ld2hlcmUub3JnMB4XDTE4MDIyNzE5MjEyNVoXDTE4MDMyOTE5MjEyNVowgZAxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMQswCQYDVQQKDAJGNTENMAsGA1UECwwEVGVzdDEXMBUGA1UEAwwOdGVzdF9DQV9idW5kbGUxJTAjBgkqhkiG9w0BCQEWFnNvbWVib2R5QHNvbWV3aGVyZS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCjhUZmbwwuMMFTNic73t0mfJ/pyM3BnEs0riv6lbrF5znFKBlAM2pxWBfkQvr92gUwitij7BqMagnR26/C7GcJJNJQGNK482vgSPhUpGeN0t4W71Dv5SpwJN+0do6gV0eXPwvcgA/XZxXqZAePwXTp36YMrNTgw49OWZpHoNXfYCZ+1KUL032RdQ/Ik2wO/UwV0csL1Rwuu2L8/NI9VtrThCAr8dsMsDJ53jDh7xQdP3K2V9NYtAHk66697kk7TpzR1moqTJxSVaPKo2eDuKNke1BRbjYWoamu0hfC5YG6l5P9i8QaVklbtmDcmoLpU9fLVSSW6CWHkrtdifQiCOChAgMBAAGjUDBOMB0GA1UdDgQWBBRv7/Q0VoBgDYzgJOKLz4GsgXP27zAfBgNVHSMEGDAWgBRv7/Q0VoBgDYzgJOKLz4GsgXP27zAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQA9r6+6hGVlQ188l+wLFJ1wI83y27BdtE0ZsZGdFv98qi9kcUm17Z0tprEwypODZ1/syt9b1JhD4RgU30qwgeF4kec8UpoG49UkQImRD3AqfsiYSdjZeBpcpEl3n8lkjKGoVY7GB2lMGoWDxv/1A0CSjVTmWgQSFGHoMtzOW1tCr9yGXVEdy691l7PVC1kK5ekwkO8YbSO6hvV/u83KuUiGcIoY1PIzAK301i9YXWUNxybIVfHregoQ11QzjhfdfpOLBTtW1B4QZqZz8qFGIr1remmQK3ljEcct9bWjMLOx2QYMvk6uRFzh+V5L2UnhldNy5wQYMXRDz6SU3LdTJ2OA\n-----END CERTIFICATE-----',
+                            class: 'CA_Bundle'
+                        }
+                    }
+                },
+                exampleTenant1: {
+                    class: 'Tenant',
+                    exampleApp: {
+                        class: 'Application',
+                        httpsVirtual: {
+                            class: 'Service_HTTPS',
+                            redirect80: false,
+                            clientTLS: 'as3_tls_client',
+                            serverTLS: 'as3_tls_server',
+                            snat: 'self',
+                            pool: 'poolPool',
+                            virtualAddresses: [
+                                '1.1.1.2'
+                            ],
+                            virtualPort: 443
+                        },
+                        useCert: {
+                            class: 'Certificate',
+                            certificate: '-----BEGIN CERTIFICATE-----\nMIIDeTCCAmGgAwIBAgIJAM6s50VhmehaMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNV\nBAYTAlVTMQswCQYDVQQIDAJNQTEPMA0GA1UEBwwGQm9zdG9uMQswCQYDVQQKDAJG\nNTELMAkGA1UECwwCRVMxDDAKBgNVBAMMA0FTMzAeFw0yNDAzMTkxNjM0MTNaFw0y\nNTAzMTkxNjM0MTNaMFMxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJNQTEPMA0GA1UE\nBwwGQm9zdG9uMQswCQYDVQQKDAJGNTELMAkGA1UECwwCRVMxDDAKBgNVBAMMA0FT\nMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKKNG4uPUEM8WtosRCw/\nJj7o39exnqa6hlPoCexbyh2p1AtJXZEQotrRojXbEkzwKbVpXSfAuXpN8AXoyDA4\nn37bHafC3gc+kaa+bjdS8K0zNDRe0mfIN4s9oBq41czjHGLdXW2PgaIXqOBgB1Yb\n8IkjgcwdhRb2wNN7pzJBzwcqDYOCJHXh0mDc6PDNV8nwwZjuPrksWKZ2UbuyEjCU\ns3J0R04mApHpMGdSlDQVCSCXcOFXYohGe7OI8i9QWKko+clYkHslTrjreq7d2D1I\nAmW4TlJvA9A4BO2F0w+jpizhBuv2G0J0fiZI6XwRQk9lZ9qOZhxVRY/o6untr301\njm0CAwEAAaNQME4wHQYDVR0OBBYEFFF36jdkUOriWBFdkjWygjtQk7ZZMB8GA1Ud\nIwQYMBaAFFF36jdkUOriWBFdkjWygjtQk7ZZMAwGA1UdEwQFMAMBAf8wDQYJKoZI\nhvcNAQELBQADggEBAELqKjYIrDmiWbSSIQN4Yjk6rmVvXzqc+QZQ3qdhE9PDC9Ov\nTe5e1Y+2YBjI1HbF6lc+nLRQfyTkBpY5eo8KtcPiUkJUxGpVYtg+zttNn1OXUu3a\nAU4w2u5NNklsSrZwGwwtQFXXZIcd3Ov5jaq/penvcjjModJtuA4qX2K26tkDJdE7\nfDkMWkbr6e1yxeofcmy2kYM9r7ayAEP8mVlBeeBoWKtgIzW9AXe7vLZmkBTylGTU\nEWAQSfVkVUirWDDwlZU7ru0y2SyxILRVxzrFsknsGkxHmJWjNH9Bh2RjFqulXFhz\nVuTVC6t7OW9oOTeX3FivB7mOlqTYdIF4tvkS6pM=\n-----END CERTIFICATE-----',
+                            privateKey: '-----BEGIN RSA PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCijRuLj1BDPFra\nLEQsPyY+6N/XsZ6muoZT6AnsW8odqdQLSV2REKLa0aI12xJM8Cm1aV0nwLl6TfAF\n6MgwOJ9+2x2nwt4HPpGmvm43UvCtMzQ0XtJnyDeLPaAauNXM4xxi3V1tj4GiF6jg\nYAdWG/CJI4HMHYUW9sDTe6cyQc8HKg2DgiR14dJg3OjwzVfJ8MGY7j65LFimdlG7\nshIwlLNydEdOJgKR6TBnUpQ0FQkgl3DhV2KIRnuziPIvUFipKPnJWJB7JU6463qu\n3dg9SAJluE5SbwPQOATthdMPo6Ys4Qbr9htCdH4mSOl8EUJPZWfajmYcVUWP6Orp\n7a99NY5tAgMBAAECggEAH4GvxNt0oG+eoXqihRwBXwC2wGFAYcs2FaXcZIh/EsRT\n4hMolGFP2491/C/X6ntDblL7mCSyHrtkClUuFjCnc4hnhViPPgK56wKurMEB/uQ1\nmnAFotGLOI0rjvpkEGg13JDRFtcRtpgU5taeHWnhc8di1WwkW4jc47DsPaDFTrsg\nGp8l6oU0D6Z0X9mkGLKwEpQ8kPK9r34RsDuu6GLAVfTJaUQqYSNe8ycBblZISYtG\nM2/EmbKgCIf4rS5QCThhrPYsySMmHtCaSDq+zXZ4qqqGLdA8ua69D5cZFcLWh508\n4ewQ0I9DgRTdUBPwaqU7MDSxRCnVmjbWUp71W9KAYQKBgQDMBpNRT04y+UkUK0xJ\nhPaMQcyfjlONQ/1yKtsu7nRQ0NiJ/Ij+Ri4D7WXUe/oI06PppvLXR+kwxnuMAWnF\nyE6hPC1egHd0ZnBbpx1jgLfCEJz2dCZ9peEzY+9Tib+Ch9vrD057KAWaRMyxcCAS\ncOy1/1/lVMJQ6xC0LyXW1ElnjQKBgQDL9cvQI7KH52sfEJq6Eq32svfH7F78gNAF\nlWWHVWEtmWYGKUKd9lZcbNOAGp6jig8wQMl1vmMsODVQMG4b8a1pXgnkay9peb1g\nrrRmFMDHA1ELWaWyOgyZiQ+KDQJgz26MzUOOLK4jsZgQBhKPh3UYgeFsSB+rXwpa\nn4cpB6UaYQKBgQDJ8Wg3fuvEAIKY+BJWYsk2IprLAzEoDjf6nPi+B0ASDeWHDvL5\n27UIJh44p03hFrqTNq/+7iqeIJeBCJUNMyrA5LNzamzSReLIlSy9pFY+O/tg5a6D\nh4DUQQJOCXYJWTgP/eKMfByviZGhv32/Qw7JRbBBahe7yC+MaW5mqVDOsQKBgQCn\nNK9MyCcRUT+5bORbzPp+94M4i+fm+zcOjMZ6Jx2Ow2YngOXTF+L+zFyrdac+DO2c\nslA2TcmBs+bJAZsTH5L5gZV8g/6ParU9MJxF35eWz3o+YtT7AqnXqMxrcXTUptlL\nZu+N+8UbD/nIkSHgNr1hRQDnw0zrMfQMDSJCGblZoQKBgAVhp9NbrI7VRM+rf8VG\nNxy+4tGhb+kfWjagTEFcL61+4/7tHUyuaThzy/EFFwqqatIiBBFIPZyoNFZi5aQo\n3fI4Cy9W8RlCp8iM0ToAVys3z6LbBG4PJZBvHKNsPOY/30f5nlc6W20YJ+EWnumL\nWjNUPjCq+ZxGqVpEbbBzzaxy\n-----END RSA PRIVATE KEY-----', // gitleaks:allow
+                            chainCA: {
+                                use: '/Common/Shared/ca_example_bundle'
+                            }
+                        },
+                        as3_tls_client: {
+                            class: 'TLS_Client',
+                            clientCertificate: 'useCert'
+                        },
+                        as3_tls_server: {
+                            class: 'TLS_Server',
+                            certificates: [
+                                {
+                                    certificate: 'useCert'
+                                }
+                            ]
+                        },
+                        poolPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    serverAddresses: [
+                                        '192.0.2.1'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ]
+                        }
+                    }
+                },
+                exampleTenant2: {
+                    class: 'Tenant',
+                    exampleApp2: {
+                        class: 'Application',
+                        httpsVirtual: {
+                            class: 'Service_HTTPS',
+                            redirect80: false,
+                            clientTLS: 'as3_tls_client',
+                            serverTLS: 'as3_tls_server',
+                            snat: 'self',
+                            pool: 'poolPool',
+                            virtualAddresses: [
+                                '1.1.1.3'
+                            ],
+                            virtualPort: 443
+                        },
+                        useCert: {
+                            class: 'Certificate',
+                            certificate: {
+                                bigip: '/Common/default.crt'
+                            },
+                            privateKey: {
+                                bigip: '/Common/default.key'
+                            },
+
+                            chainCA: {
+                                use: '/Common/Shared/ca_example_bundle'
+                            }
+                        },
+                        as3_tls_client: {
+                            class: 'TLS_Client',
+                            clientCertificate: 'useCert'
+                        },
+                        as3_tls_server: {
+                            class: 'TLS_Server',
+                            certificates: [
+                                {
+                                    certificate: 'useCert'
+                                }
+                            ]
+                        },
+                        poolPool: {
+                            class: 'Pool',
+                            members: [
+                                {
+                                    serverAddresses: [
+                                        '192.0.2.2'
+                                    ],
+                                    servicePort: 443
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isFulfilled(
+                getPath('/mgmt/shared/appsvcs/declare')
+            ))
+            .then((response) => {
+                const requestPrivateKey = declaration.declaration.exampleTenant1.exampleApp.useCert.privateKey;
+                const requestPrivateKeyTenant2 = '/Common/default.key';
+                const responsePrivateKey = response.exampleTenant1.exampleApp.useCert.privateKey;
+                const responsePrivateKeyTenant2 = response.exampleTenant2.exampleApp2.useCert.privateKey.bigip;
+                assert.notEqual(responsePrivateKey, requestPrivateKey);
+                assert.strictEqual(responsePrivateKeyTenant2, requestPrivateKeyTenant2);
             })
             .then(() => deleteDeclaration());
     });

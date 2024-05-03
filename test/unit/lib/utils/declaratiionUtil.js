@@ -40,7 +40,8 @@ describe('declarationUtil', () => {
             'isADC',
             'isAS3',
             'isApplication',
-            'isTenant'
+            'isTenant',
+            'isCertificate'
         ];
 
         methodsToTest.forEach((method) => {

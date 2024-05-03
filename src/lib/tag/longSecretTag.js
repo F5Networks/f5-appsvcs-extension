@@ -125,7 +125,34 @@ function encryptLongSecret(context, data) {
         });
 }
 
+function encryptLongSecretKey(data) {
+    return secureVault.encrypt(data)
+        .then((response) => {
+            data = {
+                ciphertext: util.base64Encode(response),
+                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0',
+                miniJWE: true
+            };
+            return data;
+        })
+        .catch((e) => {
+            e.message = `Failed encrypting credential with secureVault: ${e.message}`;
+            throw e;
+        });
+}
+
+function decryptLongSecretKey(data) {
+    return secureVault.decrypt(data)
+        .then((response) => response)
+        .catch((e) => {
+            e.message = `Failed decrypting credential with secureVault: ${e.message}`;
+            throw e;
+        });
+}
+
 module.exports = {
     process,
+    encryptLongSecretKey,
+    decryptLongSecretKey,
     TAG
 };
