@@ -3953,8 +3953,8 @@ const translate = {
 
         if (item.monitorType === 'https') {
             const cert = item.clientCertificate;
-            item.clientCertificate = cert ? `${cert}.crt` : 'none';
             item.key = cert ? `${cert}.key` : 'none';
+            item.clientCertificate = cert ? `${cert}.crt` : 'none';
         }
 
         if ((['http', 'https'].indexOf(item.monitorType) >= 0)) {
