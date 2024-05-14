@@ -3442,6 +3442,7 @@ describe('map_mcp', () => {
                         recv: 'none',
                         send: 'none',
                         cert: 'none',
+                        key: 'none',
                         'recv-status-code': 'none',
                         'sni-server-name': 'none'
                     });
@@ -3456,6 +3457,7 @@ describe('map_mcp', () => {
                         fullPath: '/Tenant/Application/myMonitor',
                         remark: 'Test HTTPS props',
                         clientCertificate: 'webcert',
+                        key: 'webcert.key',
                         ciphers: 'DEFAULT:TLS1.2:!SSLv3',
                         target: '*:*',
                         interval: 30,
@@ -3471,6 +3473,7 @@ describe('map_mcp', () => {
                     const result = translate[obj.kind](defaultContext, obj);
                     assert.deepStrictEqual(result[0].properties, {
                         cert: 'webcert',
+                        key: 'webcert.key',
                         cipherlist: 'DEFAULT:TLS1.2:!SSLv3',
                         /* eslint-disable no-useless-escape */
                         description: '\"Test HTTPS props\"',
@@ -3502,7 +3505,8 @@ describe('map_mcp', () => {
                         recv: 'none',
                         'recv-status-code': 'none',
                         send: 'none',
-                        cert: 'none'
+                        cert: 'none',
+                        key: 'none'
                     });
                 });
 
@@ -3519,7 +3523,8 @@ describe('map_mcp', () => {
                         description: 'none',
                         recv: 'none',
                         send: 'none',
-                        cert: 'none'
+                        cert: 'none',
+                        key: 'none'
                     });
                 });
             });

@@ -1682,6 +1682,7 @@ const translate = {
     },
     'tm:gtm:monitor:https:httpsstate': function (context, obj) {
         obj.cert = obj.cert ? obj.cert : 'none';
+        obj.key = obj.key ? obj.key : 'none';
         obj.recvStatusCode = obj.recvStatusCode ? obj.recvStatusCode : 'none';
         obj.sniServerName = obj.sniServerName ? obj.sniServerName : 'none';
         return monitor(context, obj, 'gtm monitor', 'https');
