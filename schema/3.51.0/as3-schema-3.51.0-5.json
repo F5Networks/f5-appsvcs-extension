@@ -54,11 +54,11 @@
           "anyOf": [
             {
               "description": "Any version of AS3.",
-              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0])($|[.][0-9]+$)"
+              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-1])($|[.][0-9]+$)"
             },
             {
               "description": "The current version of AS3.",
-              "const": "3.50.0"
+              "const": "3.51.0"
             }
           ]
         },
@@ -198,7 +198,7 @@
             },
             "optimisticLockKey": {
               "title": "Optimistic lock key",
-              "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key BIG-IP AS3 computes for the most-recent previous declaration, then BIG-IP AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by BIG-IP AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
+              "description": "Note: The optimisticLockKey does NOT work when using per-app. When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key BIG-IP AS3 computes for the most-recent previous declaration, then BIG-IP AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by BIG-IP AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
               "type": "string",
               "maxLength": 128,
               "default": ""
@@ -594,7 +594,7 @@
         },
         "optimisticLockKey": {
           "title": "Optimistic lock key",
-          "description": "When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key BIG-IP AS3 computes for the most-recent previous declaration, then BIG-IP AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by BIG-IP AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
+          "description": "Note: The optimisticLockKey does NOT work when using per-app. When you deploy a declaration with a non-empty 'key' value here, that activates an optimistic lock on changes to this Tenant.  If the key in your declaration does not match the key BIG-IP AS3 computes for the most-recent previous declaration, then BIG-IP AS3 will NOT update this Tenant and will return an error code.  To use optimistic locking, first retrieve a declaration using option 'showHash=true' to get the current per-Tenant keys.  Make any changes you desire, then deploy your updated declaration.  Deployment of each Tenant with a key will succeed only if that Tenant has not been modified since the time you retrieved the declaration.  (To overwrite all previous changes to a Tenant simply do NOT include any opportunistic-lock key for that Tenant when you deploy a declaration.  That is the default.)  Note that only keys computed by BIG-IP AS3 may be used here-- you cannot generate your own. If 'showHash=true' is used on a POST then the optimisticLockKey will be shown as a part of the output (This helps to avoid the need to do a GET request).",
           "type": "string",
           "maxLength": 128,
           "default": ""
@@ -4766,6 +4766,17 @@
           ],
           "default": "enable"
         },
+        "serverScope": {
+          "title": "Enable server scope",
+          "description": "Specifies when the virtual address is considered available. When a virtual address is available and Route Advertisement is enabled or selective, the BIG-IP system advertises the route for the virtual address. The default value is 'any'.  'any'  When any virtual server is available: Advertises the route when any virtual server is available. 'all'  When all virtual servers are available: Advertises the route when all virtual servers are available. 'none' Always advertises the route regardless of the virtual servers available.",
+          "type": "string",
+          "enum": [
+            "any",
+            "all",
+            "none"
+          ],
+          "default": "any"
+        },
         "routeAdvertisement": {
           "title": "Enable route advertisement",
           "description": "If true, the route is advertised",
@@ -7355,7 +7366,7 @@
         },
         "sniDefault": {
           "title": "Default SNI",
-          "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. The default value is false",
+          "description": "When true, this profile is the default SSL profile when a client connection does not specify a known server name, or does not specify any server name at all. When you have two or more TLS_Server certificates but there is no sniDefault set, by default 1st certificate is set as sniDefault. Otherwise, you can manually set either one of these certificate as default by setting sniDefault = true. The default value is false",
           "type": "boolean",
           "default": false
         },
@@ -21917,7 +21928,14 @@
           "default": true
         }
       },
-      "required": []
+      "required": [],
+      "$comment": "AUTOTOOL-4238 BNPP",
+      "f5PostProcess": {
+        "tag": "aliases",
+        "data": {
+          "enable": "enabled"
+        }
+      }
     },
     "Policy_Action_Persist": {
       "type": "object",
@@ -32959,7 +32977,7 @@
         },
         "protected": {
           "title": "JOSE header",
-          "description": "JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64 url-encoded into 'ciphertext'). If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram",
+          "description": "NOTE: F5 recommends you leave the property protected empty or not modify the default value. This property protected is a marker. Changing this value from the default indicates that your secrets have been encrypted with SecureVault. E.g. default value `eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0` becomes `eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0. If you see 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0', 'ciphertext' contains base64url-encoded SecureVault cryptogram. JOSE header: alg=dir, enc=(none|f5sv); default enc=none (encoded default is 'protected'='eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0', use with secret simply base64 url-encoded into 'ciphertext').",
           "type": "string",
           "minLength": 2,
           "allOf": [
@@ -36927,7 +36945,8 @@
       "then": {
         "$ref": "#/definitions/Pointer_BIGIP"
       },
-      "else": false
+      "else": false,
+      "errorMessage": "must have one of the required properties 'bigip' or 'cm'. And the value must satisfy the property constraints"
     },
     "Pointer_System_All_Condition": {
       "title": "System reference pointers condition check",
@@ -37080,7 +37099,7 @@
       "title": "Property Use",
       "description": "Path to object in declaration",
       "type": "string",
-      "pattern": "^[A-Za-z-￿/][0-9A-Za-z-￿_./-]*$",
+      "pattern": "^[@A-Za-z-￿/][@0-9A-Za-z-￿_./-]*$",
       "maxLength": 573,
       "minLength": 1
     },
