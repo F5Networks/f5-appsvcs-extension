@@ -17,6 +17,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4322: SSL key is not applied for DNS https monitor
 
 ### Changed
+- Updated to Service Discovery 1.20.0-1
 
 ### Removed
 
