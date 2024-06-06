@@ -19,7 +19,7 @@
     "misc": "mocha test/integration/bigip/misc --require test/integration/bigip/property/mochaHooks.js"
   },
   "devDependencies": {
-    "@automation-toolchain/f5-appsvcs-schema": "^0.42.4",
+    "@automation-toolchain/f5-appsvcs-schema": "^0.46.1",
     "@f5devcentral/atg-shared-utilities-dev": "^0.2.18",
     "@f5devcentral/eslint-config-f5-atg": "^0.1.8",
     "@redocly/cli": "^1.12.2",

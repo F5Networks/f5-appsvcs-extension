@@ -95,7 +95,8 @@ describe('def-log-schema.json', () => {
                         },
                         enable: true,
                         defaultRouteDomain: 0,
-                        optimisticLockKey: ''
+                        optimisticLockKey: '',
+                        useCommonRouteDomainTenant: true
                     },
                     updateMode: 'selective'
                 });
@@ -148,7 +149,8 @@ describe('def-log-schema.json', () => {
                         },
                         enable: true,
                         defaultRouteDomain: 0,
-                        optimisticLockKey: ''
+                        optimisticLockKey: '',
+                        useCommonRouteDomainTenant: true
                     },
                     updateMode: 'selective'
                 });

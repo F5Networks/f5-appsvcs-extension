@@ -723,6 +723,109 @@ describe('map_as3', () => {
                 );
             });
 
+            it('should add route domain to addresses for static members with useCommonRouteDomainTenant set to false', () => {
+                defaultContext.tasks = [
+                    {
+                        declaration:
+                        {
+                            tenantId:
+                            { useCommonRouteDomainTenant: false }
+                        }
+                    }
+                ];
+                const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+                assert.deepEqual(
+                    config,
+                    {
+                        command: 'ltm node',
+                        ignore: [],
+                        path: '/tenantId/192.0.2.4%100',
+                        properties: {
+                            address: '192.0.2.4',
+                            metadata: {}
+                        }
+                    }
+                );
+            });
+
+            it('should use route domain in serverAddresses if specified in address and routeDomain property is also used with useCommonRouteDomainTenant set to false', () => {
+                defaultContext.tasks = [
+                    {
+                        declaration:
+                        {
+                            tenantId:
+                            { useCommonRouteDomainTenant: false }
+                        }
+                    }
+                ];
+                // defaultContext.tasks[0].declaration.tenantId.useCommonRouteDomainTenant = false;
+                item.members[0].serverAddresses[0] = '192.0.2.4%123';
+                const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+                assert.deepEqual(
+                    config,
+                    {
+                        command: 'ltm node',
+                        ignore: [],
+                        path: '/tenantId/192.0.2.4%123',
+                        properties: {
+                            address: '192.0.2.4',
+                            metadata: {}
+                        }
+                    }
+                );
+            });
+
+            it('should add route domain to addresses for static members with useCommonRouteDomainTenant set to true', () => {
+                defaultContext.tasks = [
+                    {
+                        declaration:
+                        {
+                            tenantId:
+                            { useCommonRouteDomainTenant: true }
+                        }
+                    }
+                ];
+                const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+                assert.deepEqual(
+                    config,
+                    {
+                        command: 'ltm node',
+                        ignore: [],
+                        path: '/tenantId/192.0.2.4%100',
+                        properties: {
+                            address: '192.0.2.4%100',
+                            metadata: {}
+                        }
+                    }
+                );
+            });
+
+            it('should use route domain in serverAddresses if specified in address and routeDomain property is also used with useCommonRouteDomainTenant set to true', () => {
+                defaultContext.tasks = [
+                    {
+                        declaration:
+                        {
+                            tenantId:
+                            { useCommonRouteDomainTenant: true }
+                        }
+                    }
+                ];
+                item.members[0].serverAddresses[0] = '192.0.2.4%123';
+                const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+                assert.deepEqual(
+                    config,
+                    {
+                        command: 'ltm node',
+                        ignore: [],
+                        path: '/tenantId/192.0.2.4%123',
+                        properties: {
+                            address: '192.0.2.4%123',
+                            metadata: {}
+                        }
+                    }
+                );
+            });
+
             it('should use route domain in serverAddresses if specified in address and routeDomain property is also used', () => {
                 item.members[0].serverAddresses[0] = '192.0.2.4%123';
                 const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
