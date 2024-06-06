@@ -4,6 +4,7 @@ Changes to this project are documented in this file. More detail (including info
 ## 3.52.0
 
 ### Added
+- AUTOTOOL-4360: Add Support for RouteDomain created manually under custom Tenant, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-useCommonRouteDomainTenant.json)
 
 ### Fixed
 

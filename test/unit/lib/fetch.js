@@ -9267,6 +9267,139 @@ describe('fetch', () => {
         });
     });
 
+    describe('filterPartitionConfig', () => {
+        const tenantId = 'tenant';
+        const partitionConfig = [
+            {
+                kind: 'tm:auth:partition:partitionstate',
+                name: 'Tenant',
+                fullPath: 'Tenant'
+            },
+            {
+                kind: 'tm:sys:folder:folderstate',
+                name: 'Application',
+                partition: 'Tenant'
+            },
+            {
+                kind: 'tm:net:route-domain:route-domainstate',
+                name: 'Tenant'
+            },
+            {
+                kind: 'tm:security:log:profile:profilestate',
+                name: 'Tenant'
+            }
+        ];
+        const contextTest = {
+            tasks: [{
+                declaration: {
+                    tenant: {
+                        class: 'Tenant',
+                        defaultRouteDomain: 2,
+                        app: {
+                            class: 'Application',
+                            label: '5599f0fe-3ad1-42ee-a761-7f86674a34d5',
+                            pool: {
+                                class: 'Pool',
+                                loadBalancingMode: 'ratio-member',
+                                members: [
+                                    {
+                                        adminState: 'enable',
+                                        enable: true,
+                                        ratio: 20,
+                                        serverAddresses: [
+                                            '192.0.2.25'
+                                        ],
+                                        servicePort: 80
+                                    }
+                                ]
+                            },
+                            template: 'generic'
+                        }
+                    },
+                    class: 'ADC',
+                    schemaVersion: '3.51.0',
+                    id: '1716469774760',
+                    updateMode: 'complete',
+                    controls: {
+                        archiveTimestamp: '2024-05-23T13:09:37.308Z'
+                    }
+                }
+
+            }],
+            currentIndex: 0
+        };
+
+        it('should return partition config along with the tm:net:route-domain:route-domainstate kind when useCommonRouteDomainTenant not set', () => {
+            const result = fetch.filterPartitionConfig(contextTest, tenantId, partitionConfig);
+            assert.deepStrictEqual(result, [
+                {
+                    kind: 'tm:auth:partition:partitionstate',
+                    name: 'Tenant',
+                    fullPath: 'Tenant'
+                },
+                {
+                    kind: 'tm:sys:folder:folderstate',
+                    name: 'Application',
+                    partition: 'Tenant'
+                },
+                {
+                    kind: 'tm:net:route-domain:route-domainstate',
+                    name: 'Tenant'
+                },
+                {
+                    kind: 'tm:security:log:profile:profilestate',
+                    name: 'Tenant'
+                }
+            ]);
+        });
+
+        it('should return partition config filtering the tm:net:route-domain:route-domainstate when useCommonRouteDomainTenant set to false ', () => {
+            contextTest.tasks[0].declaration.tenant.useCommonRouteDomainTenant = false;
+            const result = fetch.filterPartitionConfig(contextTest, tenantId, partitionConfig);
+            assert.deepStrictEqual(result, [
+                {
+                    kind: 'tm:auth:partition:partitionstate',
+                    name: 'Tenant',
+                    fullPath: 'Tenant'
+                },
+                {
+                    kind: 'tm:sys:folder:folderstate',
+                    name: 'Application',
+                    partition: 'Tenant'
+                },
+                {
+                    kind: 'tm:security:log:profile:profilestate',
+                    name: 'Tenant'
+                }
+            ]);
+        });
+
+        it('should return partition config along with the tm:net:route-domain:route-domainstate kind when useCommonRouteDomainTenant set to true', () => {
+            contextTest.tasks[0].declaration.tenant.useCommonRouteDomainTenant = true;
+            const result = fetch.filterPartitionConfig(contextTest, tenantId, partitionConfig);
+            assert.deepStrictEqual(result, [
+                {
+                    kind: 'tm:auth:partition:partitionstate',
+                    name: 'Tenant',
+                    fullPath: 'Tenant'
+                },
+                {
+                    kind: 'tm:sys:folder:folderstate',
+                    name: 'Application',
+                    partition: 'Tenant'
+                },
+                {
+                    kind: 'tm:net:route-domain:route-domainstate',
+                    name: 'Tenant'
+                },
+                {
+                    kind: 'tm:security:log:profile:profilestate',
+                    name: 'Tenant'
+                }
+            ]);
+        });
+    });
+
     describe('updateWildcardMonitorDiffs', () => {
         const commonConf = { nodeList: [] };
         let currConf;

@@ -1276,6 +1276,42 @@ const pathReferenceLinks = function (context, referredList, tenantId, partitionC
 };
 
 /**
+ * Filters PartitionConfig based on route-domain and useCommonRouteDomainTenant property inputs.
+ * If useCommonRouteDomainTenant is false, then the route-domain kind is removed from the partitionConfig.
+ * @public
+ * @param {object} context
+ * @param {string} tenantId
+ * @param {list} partitionConfig
+ * @returns {list} partitionConfig
+ */
+const filterPartitionConfig = function (context, tenantId, partitionConfig) {
+    const partitionConfigKeys = Object.keys(partitionConfig);
+    const newPartitionConfig = [];
+    if (context && context.tasks
+        && context.tasks.length > 0
+        && context.tasks[context.currentIndex]
+        && context.tasks[context.currentIndex].declaration) {
+        const declaration = context.tasks[context.currentIndex].declaration;
+        const useCommonRouteDomainTenant = declaration[tenantId]
+        && declaration[tenantId].useCommonRouteDomainTenant !== undefined
+            ? declaration[tenantId].useCommonRouteDomainTenant
+            : true;
+        partitionConfigKeys.forEach((index) => {
+            if (partitionConfig[index].kind === 'tm:net:route-domain:route-domainstate') {
+                if ((tenantId !== 'Common' && useCommonRouteDomainTenant === true)) {
+                // delete partitionConfig[index];
+                    newPartitionConfig.push(partitionConfig[index]);
+                }
+            } else {
+                newPartitionConfig.push(partitionConfig[index]);
+            }
+        });
+        return newPartitionConfig;
+    }
+    return partitionConfig;
+};
+
+/**
  * Pull the current BIG-IP configuration for a given
  * partition (AS3 tenant).  This uses iControl-REST
  * in two stages. The first stage captures the parent
@@ -1321,6 +1357,7 @@ const getTenantConfig = function (context, tenantId, commonConfig) {
             return getBigipConfig(context, paths.root, tenantId, commonConfig)
                 .then((config) => {
                     partitionConfig = config || [];
+                    partitionConfig = filterPartitionConfig(context, tenantId, partitionConfig);
                     return pathReferenceLinks(context, paths.referred, tenantId, partitionConfig);
                 })
                 .then((config) => {
@@ -2993,6 +3030,7 @@ module.exports = {
     tenantList,
     getDesiredConfig,
     getBigipConfig,
+    filterPartitionConfig,
     getTenantConfig,
     getDiff,
     checkDesiredForReferencedProfiles,

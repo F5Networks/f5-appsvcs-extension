@@ -970,6 +970,10 @@ const translate = {
      */
     Node(context, tenantId, appId, addr, name) {
         const def = { address: addr };
+        const declaration = context.tasks[context.currentIndex].declaration;
+        if (tenantId !== 'Common' && util.getDeepValue(declaration, [tenantId, 'useCommonRouteDomainTenant']) === false) {
+            def.address = addr.split('%')[0];
+        }
         return { configs: normalize.actionableMcp(context, def, 'ltm node', util.mcpPath(tenantId, appId, name)) };
     },
 

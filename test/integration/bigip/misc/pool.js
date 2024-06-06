@@ -565,4 +565,107 @@ describe('Pool', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+
+    it('TEST useCommonRouteDomainTenant property', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/auth/partition',
+                data: { name: 'tenant' }
+            },
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2', partition: 'tenant', id: 2 }
+            }
+        ];
+        const deleteRouteDomain = [
+
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '~tenant~2', partition: 'tenant' }
+            }
+
+        ];
+
+        const decl0 = {
+            class: 'ADC',
+            id: 'abc',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 2,
+                useCommonRouteDomainTenant: false,
+                app: {
+                    class: 'Application',
+                    label: '5599f0fe-3ad1-42ee-a761-7f86674a34d5',
+                    pool: {
+                        class: 'Pool',
+                        loadBalancingMode: 'ratio-member',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 20,
+                                serverAddresses: [
+                                    '192.0.2.25'
+                                ],
+                                servicePort: 80
+                            }
+                        ]
+                    },
+                    template: 'generic'
+                }
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+        const setDefaultRouteDomainDecl = {
+            class: 'ADC',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 0,
+                useCommonRouteDomainTenant: false,
+                app: {
+                    class: 'Application',
+                    template: 'generic'
+                }
+            },
+            schemaVersion: '3.51.0'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/'))
+            .then((response) => {
+                assert.strictEqual(response.loadBalancingMode, 'ratio-member');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.25%252:80'))
+            .then((response) => {
+                assert.strictEqual(response.priorityGroup, 0);
+                assert.strictEqual(response.address, '192.0.2.25%2');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node/~tenant~192.0.2.25%252'))
+            .then((response) => {
+                assert.strictEqual(response.address, '192.0.2.25%2');
+            })
+            .finally(() => postDeclaration(setDefaultRouteDomainDecl, { declarationIndex: 1 })
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                    assert.strictEqual(response.results[0].message, 'success');
+                }))
+            .then(() => deleteBigipItems(deleteRouteDomain))
+            .then(() => deleteDeclaration());
+    });
 });

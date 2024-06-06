@@ -258,6 +258,12 @@
                         "data": ["query net route-domain"]
                     }
                 },
+                "useCommonRouteDomainTenant": {
+                    "title": "Route Domain Tenant Info",
+                    "description": "Used to ascertain whether a Route Domain has been created within a custom partition/Tenant or within the /Common partition.",
+                    "type": "boolean",
+                    "default": true
+                },
                 "Shared": { "$ref": "#/definitions/Application_Shared" },
 
                 "constants": { "$ref": "#/definitions/Constants" },

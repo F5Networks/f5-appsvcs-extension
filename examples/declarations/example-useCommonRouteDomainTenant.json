@@ -1,0 +1,29 @@
+{
+    "tenant": {
+        "class": "Tenant",
+        "defaultRouteDomain": 2,
+        "useCommonRouteDomainTenant": false,
+        "app": {
+            "class": "Application",
+            "pool": {
+                "class": "Pool",
+                "loadBalancingMode": "ratio-member",
+                "members": [
+                    {
+                        "adminState": "enable",
+                        "enable": true,
+                        "ratio": 20,
+                        "serverAddresses": [
+                            "192.0.2.25"
+                        ],
+                        "servicePort": 80
+                    }
+                ]
+            },
+            "template": "generic"
+        }
+    },
+    "class": "ADC",
+    "schemaVersion": "3.51.0",
+    "id": "declarationId"
+}
