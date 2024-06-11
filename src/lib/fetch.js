@@ -1956,7 +1956,7 @@ const doesDestinationMatchVirtualAddress = function (destination, virtualAddress
     return destinationWithoutPort === virtualAddressName;
 };
 
-const updateWildcardMonitorCommands = function (trans) {
+const updateWildcardMonitorCommands = function (trans, currentConfig, desiredConfig, rollback, context) {
     // need to rearrange commands when a monitor that is referenced is being updated
     // (these diffs are triggered depending on destination change, see updateWildcardMonitorDiffs)
 
@@ -1973,6 +1973,46 @@ const updateWildcardMonitorCommands = function (trans) {
     const monitorEntries = trans.filter((t) => t.indexOf(delMon) > -1 && t.indexOf(createMon) > -1);
 
     let updatedTrans = [];
+    const allPoolPreTransCmds = [];
+    // Function to generate monitors so that we can re-attach them to monitor
+    const pushMonitors = function (obj) {
+        const objCopy = util.simpleCopy(obj);
+        if (typeof objCopy.monitor === 'object') {
+            if (objCopy.monitor.default === undefined) {
+                if (objCopy.minimumMonitors === 'all') {
+                    objCopy.monitor = `${Object.keys(objCopy.monitor).join(' and ')}`;
+                } else {
+                    objCopy.monitor = `min ${objCopy.minimumMonitors} of \\{ ${Object.keys(objCopy.monitor).join(' ')} \\}`;
+                }
+            } else {
+                delete objCopy.monitor;
+            }
+        }
+        delete objCopy.minimumMonitors;
+        return objCopy;
+    };
+    /**
+     * Function to generate monitor rollback commands (create) because delete monitor is
+     * handled in a seperate transaction
+     * @param {*} monitorPath
+     * @returns
+     */
+    const rollbackMonitorCmds = function (monitorPath) {
+        const mockedDiff = {
+            kind: 'N',
+            path: [monitorPath],
+            rhs: {
+                command: 'ltm monitor',
+                properties: currentConfig[monitorPath].properties,
+                ignore: []
+            },
+            tags: ['tmsh'],
+            command: 'ltm monitor',
+            rhsCommand: 'ltm monitor'
+        };
+        const pipConfig = mapCli.generate(context, mockedDiff, desiredConfig, currentConfig);
+        return pipConfig.commands;
+    };
 
     const getDetachFromPoolCmds = function (poolCmds) {
         return poolCmds.map((p) => {
@@ -1982,11 +2022,43 @@ const updateWildcardMonitorCommands = function (trans) {
         }).join('\n');
     };
 
+    const getDetachFromMonitorCmds = function (monitorName) {
+        const poolCmds = {};
+        poolCmds.preMonitorDelete = [];
+        poolCmds.rollback = [];
+        poolCmds.postMonitorCreate = [];
+        Object.keys(currentConfig).forEach((config) => {
+            if (currentConfig[config].command === 'ltm pool' && currentConfig[config].properties.monitor) {
+                Object.keys(currentConfig[config].properties.monitor).forEach((monitorPath) => {
+                    const poolMonitor = monitorPath.split('/').slice(-1)[0];
+                    if (monitorName === poolMonitor) {
+                        // make sure no duplicate cmds are pushed into poolCmds for pools
+                        if (allPoolPreTransCmds.length === 0 || allPoolPreTransCmds.filter((cmd) => `tmsh::modify ltm pool ${config} monitor none` === cmd).length === 0) {
+                            const rollbackMonitors = pushMonitors(currentConfig[config].properties).monitor;
+
+                            poolCmds.preMonitorDelete.push(`tmsh::modify ltm pool ${config} monitor none`);
+                            // Cmds to re-attach the monitors to pools after delete and create monitor is done
+                            if (rollbackMonitors) {
+                                poolCmds.rollback.push(`tmsh::modify ltm pool ${config} monitor ${rollbackMonitors}`);
+                                poolCmds.postMonitorCreate.push(`tmsh::modify ltm pool ${config} monitor ${rollbackMonitors}`);
+                            }
+                            allPoolPreTransCmds.push(`tmsh::modify ltm pool ${config} monitor none`);
+                        }
+                    }
+                });
+            }
+        });
+        return poolCmds;
+    };
+
     if (poolEntries.length && monitorEntries.length) {
         const newTransCmds = [];
+        const monitorRollbackCmd = [];
+
         trans.forEach((transItem) => {
             const existingTransCmds = [];
-
+            const poolMonitorReattachCmds = [];
+            const poolMonitotReattachRollbackCmds = [];
             const commands = transItem.split('\n');
             commands.forEach((cmd, index) => {
                 const isDeleteCmd = cmd.indexOf(delMon) > -1;
@@ -1996,19 +2068,35 @@ const updateWildcardMonitorCommands = function (trans) {
                 const matchingPools = poolEntries.filter((poolCmd) => poolCmd.includes(` ${monName} `));
                 if (isDeleteCmd && isNextCreate && matchingPools.length) {
                     // separate delete and detach monitor into its own transaction
+                    const poolName = monName.split('/').slice(-1)[0];
                     newTransCmds.push(getDetachFromPoolCmds(matchingPools));
+                    const matchingPoolsCmds = getDetachFromMonitorCmds(poolName);
+                    if (matchingPoolsCmds.preMonitorDelete.length > 0) {
+                        newTransCmds.push(matchingPoolsCmds.preMonitorDelete.join('\n'));
+                        poolMonitorReattachCmds.push(matchingPoolsCmds.postMonitorCreate.join('\n'));
+                        poolMonitotReattachRollbackCmds.push(matchingPoolsCmds.rollback.join('\n'));
+                    }
                     newTransCmds.push(cmd);
+                    monitorRollbackCmd.push(rollbackMonitorCmds(monName));
                 } else {
                     existingTransCmds.push(cmd);
                 }
             });
             updatedTrans.push(existingTransCmds.join('\n'));
+            if (poolMonitorReattachCmds.length > 0) {
+                updatedTrans.push(poolMonitorReattachCmds.join('\n'));
+            }
+            if (poolMonitotReattachRollbackCmds.length > 0) {
+                rollback.push(poolMonitotReattachRollbackCmds.join('\n'));
+            }
         });
         if (newTransCmds.length > 0) {
             newTransCmds.splice(0, 0, BEGIN_TRANS);
             newTransCmds.push(COMMIT_TRANS);
             updatedTrans = newTransCmds.concat(updatedTrans);
         }
+        const indexOfFirstPoolCreate = rollback.findIndex((t) => t.indexOf('tmsh::modify ltm pool') > -1);
+        rollback.splice(indexOfFirstPoolCreate, 0, monitorRollbackCmd.join('\n'));
     } else {
         updatedTrans = trans;
     }
@@ -2968,7 +3056,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         }
     });
 
-    trans = updateWildcardMonitorCommands(trans);
+    trans = updateWildcardMonitorCommands(trans, currentConfig, desiredConfig, rollback, context);
     updatePools(trans);
     updatePortAndAddressLists(trans, preTrans, rollback);
     updatePostTransVirtuals(

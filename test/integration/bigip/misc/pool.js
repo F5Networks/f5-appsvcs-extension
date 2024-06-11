@@ -668,4 +668,175 @@ describe('Pool', function () {
             .then(() => deleteBigipItems(deleteRouteDomain))
             .then(() => deleteDeclaration());
     });
+
+    it('should edit monitor and attach it to a pool in a single declaration', () => {
+        const decl0 = {
+            Sample_Tenant: {
+                class: 'Tenant',
+                app0: {
+                    class: 'Application',
+                    template: 'generic',
+                    sample_http: {
+                        class: 'Service_HTTP',
+                        shareAddresses: true,
+                        virtualAddresses: [
+                            '192.0.2.1'
+                        ],
+                        virtualPort: 45314,
+                        redirect80: false,
+                        pool: 'sample_pool'
+                    },
+                    sample_pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 10410,
+                                shareNodes: true,
+                                serverAddresses: [
+                                    '192.0.2.2'
+                                ]
+                            }
+                        ]
+                    },
+                    sample_pool1: {
+                        class: 'Pool',
+                        monitors: [
+                            {
+                                use: 'sample_monitor_tcp'
+                            }
+                        ],
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 10410,
+                                shareNodes: true,
+                                serverAddresses: [
+                                    '192.0.2.2'
+                                ]
+                            }
+                        ]
+                    },
+                    sample_monitor_tcp: {
+                        class: 'Monitor',
+                        monitorType: 'tcp',
+                        interval: 30,
+                        timeout: 91,
+                        adaptiveDivergencePercentage: 25
+                    },
+                    sample_monitor_tcp1: {
+                        class: 'Monitor',
+                        monitorType: 'tcp',
+                        interval: 30,
+                        timeout: 91
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0',
+            updateMode: 'selective'
+        };
+
+        const decl1 = {
+            Sample_Tenant: {
+                class: 'Tenant',
+                app0: {
+                    class: 'Application',
+                    template: 'generic',
+                    sample_http: {
+                        class: 'Service_HTTP',
+                        shareAddresses: true,
+                        virtualAddresses: [
+                            '192.0.2.1'
+                        ],
+                        virtualPort: 45314,
+                        redirect80: false,
+                        pool: 'sample_pool'
+                    },
+                    sample_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            {
+                                use: 'sample_monitor_tcp'
+                            },
+                            {
+                                use: 'sample_monitor_tcp1'
+                            }
+                        ],
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 10410,
+                                shareNodes: true,
+                                serverAddresses: [
+                                    '192.0.2.2'
+                                ]
+                            }
+                        ]
+                    },
+                    sample_pool1: {
+                        class: 'Pool',
+                        monitors: [
+                            {
+                                use: 'sample_monitor_tcp1'
+                            }
+                        ],
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 10410,
+                                shareNodes: true,
+                                serverAddresses: [
+                                    '192.0.2.2'
+                                ]
+                            }
+                        ]
+                    },
+                    sample_monitor_tcp: {
+                        class: 'Monitor',
+                        monitorType: 'tcp',
+                        interval: 30,
+                        timeout: 91,
+                        adaptiveDivergencePercentage: 30
+                    },
+                    sample_monitor_tcp1: {
+                        class: 'Monitor',
+                        monitorType: 'tcp',
+                        interval: 30,
+                        timeout: 70,
+                        adaptiveDivergencePercentage: 30
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0',
+            updateMode: 'selective'
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl0, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/tcp/~Sample_Tenant~app0~sample_monitor_tcp1'))
+            .then((response) => {
+                assert.strictEqual(response.adaptiveDivergenceValue, 30);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~Sample_Tenant~app0~sample_pool'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /Sample_Tenant/app0/sample_monitor_tcp /Sample_Tenant/app0/sample_monitor_tcp1 }');
+            })
+            .finally(() => deleteDeclaration());
+    });
 });

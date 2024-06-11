@@ -767,7 +767,9 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         if (diff.path[2] === 'monitor') {
             commandObj.preTrans.push(`tmsh::modify ltm pool ${diff.path[0]} monitor none`);
             const rollbackMonitors = pushMonitors(currentConfig[diff.path[0]].properties).monitor;
-            commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} monitor ${rollbackMonitors}`);
+            if (rollbackMonitors) {
+                commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} monitor ${rollbackMonitors}`);
+            }
         }
         if ((typeof targetConfig.members === 'object') && (targetConfig.members !== null)) {
             Object.keys(targetConfig.members).forEach((member) => {
