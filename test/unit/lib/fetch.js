@@ -9606,6 +9606,7 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::create ltm monitor /tenant/app/tenant_mon1 destination *:911 interval 10',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
                             '}}',
@@ -9801,6 +9802,7 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::create ltm monitor /tenant/app/tenant_mon1 destination *:911 interval 10',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\{ monitor min 1 of \\{ /tenant/app/tenant_mon2 \\} \\} \\}',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
                             '}}',
@@ -10161,6 +10163,7 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::create ltm monitor /tenant/app/tenant_mon1 destination *:911 interval 10',
                             'tmsh::modify ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /Common/gateway_icmp \\}',
                             '}}',
                             '}'
@@ -10347,6 +10350,422 @@ describe('fetch', () => {
                             'catch { tmsh::cancel_transaction } e',
                             'regsub -all {"} $err {\\"} err',
                             'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
+                });
+        });
+        it('should handle monitors when its property is edits and attached to a pool', () => {
+            currConf = {
+                '/Sample_Tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_monitor_tcp': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 25,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 30,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 91,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_monitor_tcp1': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 100,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 30,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 91,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/Common/192.0.2.2:10410': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Sample_Tenant/app0/sample_monitor_tcp': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_http': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"app0"',
+                        destination: '/Common/192.0.2.1:45314',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        pool: '/Sample_Tenant/app0/sample_pool',
+                        policies: {},
+                        profiles: {
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            },
+                            '/Common/http': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/global-settings': {
+                    command: 'gtm global-settings load-balancing',
+                    properties: {
+                        'topology-longest-match': 'yes'
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.2': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.2',
+                        metadata: {
+                            references: {
+                                value: 1
+                            }
+                        }
+                    },
+                    ignore: []
+                }
+            };
+
+            const desiredConf = {
+                '/Sample_Tenant/app0/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_http': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"app0"',
+                        destination: '/Common/192.0.2.1:45314',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        pool: '/Sample_Tenant/app0/sample_pool',
+                        policies: {},
+                        profiles: {
+                            '/Common/http': {
+                                context: 'all'
+                            },
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/Common/192.0.2.2': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.2',
+                        metadata: {
+                            references: {
+                                value: 1
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/Common/192.0.2.2:10410': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Sample_Tenant/app0/sample_monitor_tcp': {},
+                            '/Sample_Tenant/app0/sample_monitor_tcp1': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_monitor_tcp': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 30,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 30,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 91,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/app0/sample_monitor_tcp1': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 30,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 30,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 70,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/Sample_Tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                }
+            };
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/Sample_Tenant/app0/sample_monitor_tcp',
+                        'properties',
+                        'adaptive-divergence-value'
+                    ],
+                    lhs: 25,
+                    rhs: 30
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/Sample_Tenant/app0/sample_monitor_tcp1',
+                        'properties',
+                        'adaptive-divergence-value'
+                    ],
+                    lhs: 100,
+                    rhs: 30
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/Sample_Tenant/app0/sample_monitor_tcp1',
+                        'properties',
+                        'timeout'
+                    ],
+                    lhs: 91,
+                    rhs: 70
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_Tenant/app0/sample_pool',
+                        'properties',
+                        'monitor',
+                        '/Sample_Tenant/app0/sample_monitor_tcp1'
+                    ],
+                    rhs: {}
+                }
+            ];
+
+            return fetch.getDiff(context, currConf, desiredConf, commonConf, {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+
+                    // Note: the /tenant/app/tenant_mon1 is removed from the currConf during getDiff
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConf, currConf, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor none',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor none',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor none',
+                            'tmsh::delete ltm monitor tcp /Sample_Tenant/app0/sample_monitor_tcp',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor none',
+                            'tmsh::delete ltm monitor tcp /Sample_Tenant/app0/sample_monitor_tcp1',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::create ltm monitor tcp /Sample_Tenant/app0/sample_monitor_tcp adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 30 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 30 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 91 time-until-up 0 transparent disabled up-interval 0',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor min 1 of \\{ /Sample_Tenant/app0/sample_monitor_tcp \\}',
+                            'tmsh::modify auth partition Sample_Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::create ltm monitor tcp /Sample_Tenant/app0/sample_monitor_tcp1 adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 30 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 30 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 70 time-until-up 0 transparent disabled up-interval 0',
+                            'tmsh::delete ltm pool /Sample_Tenant/app0/sample_pool',
+                            'tmsh::create ltm pool /Sample_Tenant/app0/sample_pool load-balancing-mode round-robin min-active-members 1 monitor min 1 of \\{ /Sample_Tenant/app0/sample_monitor_tcp /Sample_Tenant/app0/sample_monitor_tcp1 \\} reselect-tries 0 service-down-action none slow-ramp-time 10 allow-nat yes allow-snat yes metadata none',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            'tmsh::create ltm monitor /Sample_Tenant/app0/sample_monitor_tcp adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 30 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 30 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 91 time-until-up 0 transparent disabled up-interval 0',
+                            'tmsh::create ltm monitor /Sample_Tenant/app0/sample_monitor_tcp1 adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 30 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 30 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 70 time-until-up 0 transparent disabled up-interval 0',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor min 1 of \\{ /Sample_Tenant/app0/sample_monitor_tcp \\}',
+                            'tmsh::modify ltm pool /Sample_Tenant/app0/sample_pool monitor min 1 of \\{ /Sample_Tenant/app0/sample_monitor_tcp \\}',
                             '}}',
                             '}'
                         ]
