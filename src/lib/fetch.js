@@ -1285,6 +1285,9 @@ const pathReferenceLinks = function (context, referredList, tenantId, partitionC
  * @returns {list} partitionConfig
  */
 const filterPartitionConfig = function (context, tenantId, partitionConfig) {
+    if (tenantId === 'Common') {
+        return partitionConfig;
+    }
     const partitionConfigKeys = Object.keys(partitionConfig);
     const newPartitionConfig = [];
     if (context && context.tasks
@@ -1298,7 +1301,7 @@ const filterPartitionConfig = function (context, tenantId, partitionConfig) {
             : true;
         partitionConfigKeys.forEach((index) => {
             if (partitionConfig[index].kind === 'tm:net:route-domain:route-domainstate') {
-                if ((tenantId !== 'Common' && useCommonRouteDomainTenant === true)) {
+                if (useCommonRouteDomainTenant === true) {
                 // delete partitionConfig[index];
                     newPartitionConfig.push(partitionConfig[index]);
                 }
