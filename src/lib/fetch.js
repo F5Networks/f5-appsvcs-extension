@@ -2522,8 +2522,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         }
         // Track virtual addresses that are auto-deleted by BIGIP on deleting the virtual servers.
         if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
-            && diff.kind === 'D'
-            && diff.path.length === 1) {
+             && (diff.kind === 'E' || (diff.kind === 'D'
+            && diff.path.length === 1))) {
             const virtualConfigDel = currentConfig[diff.path[0]];
             let virtualAddressDel = virtualConfigDel.properties.destination;
             if (virtualAddressDel) {
@@ -2610,12 +2610,12 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         }
 
         if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
-            && diff.kind === 'N') {
+            && (diff.kind === 'N' || diff.kind === 'E')) {
             const virtualConfig = desiredConfig[diff.path[0]];
             let virtualAddressDest = virtualConfig.properties.destination;
             if (virtualAddressDest) {
                 virtualAddressDest = virtualAddressDest.split(':')[0];
-                Object.keys(virtualAddressToCreate).forEach((virtualAddress) => {
+                Object.keys(virtualAddressTrackDelete).forEach((virtualAddress) => {
                     // Fetch the virtual address config of the new VS from the current config.
                     // The new virtual server is referring the existing VA.
                     const currentVirtualAddressConfig = getVirtualAddressPath(currentConfig, virtualAddress);
@@ -2624,7 +2624,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                      * `new` virtual server otherwise BIGIP will create a new VA with default values.
                      */
                     if (currentVirtualAddressConfig && virtualAddressTrackDelete[virtualAddress] > 0
-                        && virtualAddressToCreate[virtualAddress] > 0 && virtualAddressDest === virtualAddress) {
+                        && virtualAddressDest === virtualAddress) {
                         const virtualAddressPath = currentVirtualAddressConfig.replace('Service_Address-', '');
                         const preTransVa = `tmsh::modify ltm virtual-address ${virtualAddressPath} auto-delete false`;
                         const postTransVa = `tmsh::modify ltm virtual-address ${virtualAddressPath} auto-delete true`;
@@ -2887,7 +2887,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);
                     }
-                // handle delete
+                    // handle delete
                 } else if (diffUpdates.commands.includes('delete ltm virtual ')) {
                     const virtualName = diff.path[0];
                     const virtualConfig = currentConfig[virtualName];
@@ -2956,7 +2956,18 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     postTrans.push(diffUpdates.commands);
                 } else if (diffUpdates.commands.indexOf('tmsh::modify ltm pool') > -1) {
                     const commands = diffUpdates.commands.split('\n');
-                    preTrans.push(commands[1]);
+                    if (diffUpdates.commands.indexOf('members modify')) {
+                        const indexOfFirstPoolModify = preTrans.findIndex((cmd) => cmd.indexOf('tmsh::modify ltm pool') > -1
+                            && cmd.indexOf('members delete') > -1);
+
+                        if (indexOfFirstPoolModify > -1) {
+                            preTrans.splice(indexOfFirstPoolModify, 0, commands[1]);
+                        } else {
+                            preTrans.push(commands[1]);
+                        }
+                    } else {
+                        preTrans.push(commands[1]);
+                    }
                 } else if (diffUpdates.commands.indexOf('sys file ssl-') > -1) {
                     const commands = diffUpdates.commands.split('\n');
                     commands.forEach((command) => {
