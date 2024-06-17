@@ -219,6 +219,110 @@ describe('serviceAddress', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+    it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1,
+                App1rd0: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%0'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                },
+                App1rd2: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%2'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '1', id: 1 }
+            },
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2', id: 2 }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
 
     it('changing VirtualServer name should not change VirtualAddress properties.', () => {
         const bigipItems = [

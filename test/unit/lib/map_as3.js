@@ -2427,6 +2427,139 @@ describe('map_as3', () => {
             };
             results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
         });
+
+        it('should return a config using the non-default route domain', () => {
+            const item = {
+                class: 'Service_Address',
+                virtualAddress: '192.0.2.123%0/24',
+                arpEnabled: true,
+                icmpEcho: 'enable',
+                routeAdvertisement: 'disable',
+                spanningEnabled: false,
+                trafficGroup: 'default',
+                serverScope: 'all'
+            };
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.51.0',
+                id: 'Service_Address',
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug'
+                },
+                tenantId: {
+                    class: 'Tenant',
+                    defaultRouteDomain: 222,
+                    appId: {
+                        class: 'Application',
+                        template: 'generic',
+                        itemId: {
+                            class: 'Service_Address',
+                            virtualAddress: '192.0.2.123%0/24',
+                            arpEnabled: true,
+                            icmpEcho: 'enable',
+                            routeAdvertisement: 'disable',
+                            spanningEnabled: false,
+                            trafficGroup: 'default',
+                            serverScope: 'all'
+                        },
+                        enable: true
+                    },
+                    enable: true,
+                    optimisticLockKey: ''
+                },
+                updateMode: 'selective'
+            };
+            const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const expected = {
+                ip: '192.0.2.123%0',
+                mask: '255.255.255.0'
+            };
+            results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
+        });
+
+        it('should return a config using the non-default route domains using multipleApps', () => {
+            const item = {
+                class: 'Service_Address',
+                virtualAddress: '192.0.2.123%0/24',
+                arpEnabled: true,
+                icmpEcho: 'enable',
+                routeAdvertisement: 'disable',
+                spanningEnabled: false,
+                trafficGroup: 'default',
+                serverScope: 'all'
+            };
+            const item2 = {
+                class: 'Service_Address',
+                virtualAddress: '192.0.2.123%2/24',
+                arpEnabled: true,
+                icmpEcho: 'enable',
+                routeAdvertisement: 'disable',
+                spanningEnabled: false,
+                trafficGroup: 'default',
+                serverScope: 'all'
+            };
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.11.0',
+                id: 'Service_Address',
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug'
+                },
+                tenantId: {
+                    class: 'Tenant',
+                    defaultRouteDomain: 1,
+                    appId1: {
+                        class: 'Application',
+                        template: 'generic',
+                        itemId: {
+                            class: 'Service_Address',
+                            virtualAddress: '192.0.2.123%0/24',
+                            arpEnabled: true,
+                            icmpEcho: 'enable',
+                            routeAdvertisement: 'disable',
+                            spanningEnabled: false,
+                            trafficGroup: 'default',
+                            serverScope: 'all'
+                        },
+                        enable: true
+                    },
+                    appId2: {
+                        class: 'Application',
+                        template: 'generic',
+                        itemId2: {
+                            class: 'Service_Address',
+                            virtualAddress: '192.0.2.123%2/24',
+                            arpEnabled: true,
+                            icmpEcho: 'enable',
+                            routeAdvertisement: 'disable',
+                            spanningEnabled: false,
+                            trafficGroup: 'default',
+                            serverScope: 'all'
+                        },
+                        enable: true
+                    },
+                    enable: true,
+                    optimisticLockKey: ''
+                },
+                updateMode: 'selective'
+            };
+            const results = translate.Service_Address(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const expected = {
+                ip: '192.0.2.123%0',
+                mask: '255.255.255.0'
+            };
+            results.configs.forEach((result) => compareServiceAddressResults(result, item, expected));
+            const results2 = translate.Service_Address(defaultContext, 'tenantId', 'appId2', 'itemId2', item2, declaration);
+            const expected2 = {
+                ip: '192.0.2.123%2',
+                mask: '255.255.255.0'
+            };
+            results2.configs.forEach((result) => compareServiceAddressResults(result, item2, expected2));
+        });
         it('should not change declaration', () => {
             // AUTOTOOL-1244
             const declaration = {

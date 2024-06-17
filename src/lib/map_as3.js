@@ -651,6 +651,26 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
 };
 
 /**
+ * To return the non-defaultRouteDomain if specified in AS3 declaration for a given virtual address
+ * with a route domain of 0.
+ * @param {string} defaultAS3RouteDomain
+ * @param {string} parsedAddress
+ * @returns {string}
+ */
+const getRouteDomainForZero = function (defaultAS3RouteDomain, parsedAddress, initalRouteDomain) {
+    if (initalRouteDomain.includes('%')) {
+        initalRouteDomain = initalRouteDomain.split('%')[1].split('/')[0];
+    }
+    if (defaultAS3RouteDomain.includes('%')) {
+        const routeDomainNumber = defaultAS3RouteDomain.split('%')[1].split('/')[0];
+        if (parsedAddress.routeDomain === '' && Number(routeDomainNumber) > 0 && initalRouteDomain === '0') {
+            return '%0';
+        }
+    }
+    return parsedAddress.routeDomain;
+};
+
+/**
  * The translate function array handles AS3 class customizations.
  * Schema-validated input is translated to actionable desired config.
  * Returns an object containing an array of config items, and optional
@@ -2225,6 +2245,11 @@ const translate = {
             newAppId = undefined;
         }
 
+        // To fix the issue with the route domain in the virtualAddress
+        // other than the default-route-domain in AS3 declaration
+        const defaultRouteDomain = getDefaultRouteDomain(declaration, tenantId);
+        parsedAddress.routeDomain = getRouteDomainForZero(defaultRouteDomain, parsedAddress, itemCopy.virtualAddress);
+
         const routeDomain = (parsedAddress.routeDomain !== '')
             ? parsedAddress.routeDomain
             : getDefaultRouteDomain(declaration, tenantId);
@@ -2603,6 +2628,9 @@ const translate = {
                     ipUtil.parseIpAddress(arrUtil.ensureArray(addr)[1])
                 ];
                 msk = parsAddr[0].netmask;
+                // To fix the issue with the route domain in the virtualAddress
+                // other than the default-route-domain in AS3 declaration
+                parsAddr[0].routeDomain = getRouteDomainForZero(routeDomain, parsAddr[0], arrUtil.ensureArray(addr)[0]);
                 routeDomain = (parsAddr[0].routeDomain !== '') ? parsAddr[0].routeDomain : routeDomain;
 
                 if (item.shareAddresses) {
