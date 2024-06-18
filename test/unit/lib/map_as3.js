@@ -164,6 +164,10 @@ describe('map_as3', () => {
                     expected: 'shutdown proxy-request connection'
                 },
                 {
+                    input: { type: 'drop', event: 'client-accepted' },
+                    expected: 'shutdown client-accepted connection'
+                },
+                {
                     input: { type: 'httpRedirect', location: '10.10.10.10' },
                     expected: 'http-reply request redirect location 10.10.10.10'
                 },

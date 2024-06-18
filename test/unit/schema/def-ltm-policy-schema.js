@@ -623,6 +623,62 @@ describe('def-ltm-policy-schema.json', () => {
                 });
             });
         });
+        describe('Policy_Action_Drop', () => {
+            beforeEach(() => {
+                data.Tenant.Application.test1.rules.push(
+                    {
+                        name: 'default',
+                        actions: [
+                            {
+                                type: 'drop',
+                                event: 'client-accepted'
+                            }
+                        ]
+                    }
+                );
+            });
+
+            describe('valid', () => {
+                it('should validate with required properties', () => assert.ok(validate(data), getErrorString(validate)));
+
+                it('should validate updating event to a valid event type: proxy-request', () => {
+                    data.Tenant.Application.test1.rules[1].actions[0].event = 'proxy-request';
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate updating event to a valid event type: request', () => {
+                    data.Tenant.Application.test1.rules[1].actions[0].event = 'request';
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate updating event to a valid event type: ssl-client-hello', () => {
+                    data.Tenant.Application.test1.rules[1].actions[0].event = 'ssl-client-hello';
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate when missing event type with default event type', () => {
+                    delete data.Tenant.Application.test1.rules[1].actions[0].event;
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate updating event to a valid event type: client-accepted', () => {
+                    data.Tenant.Application.test1.rules[1].actions[0].event = 'client-accepted';
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+            });
+
+            describe('invalid', () => {
+                it('should invalidate invalid event type', () => {
+                    data.Tenant.Application.test1.rules[1].actions[0].event = 'invalid-event';
+                    assert.strictEqual(validate(data), false);
+                });
+
+                it('should invalidate when missing type', () => {
+                    delete data.Tenant.Application.test1.rules[1].actions[0].type;
+                    assert.strictEqual(validate(data), false);
+                });
+            });
+        });
     });
 });
 

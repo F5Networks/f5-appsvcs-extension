@@ -5,6 +5,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Added
 - AUTOTOOL-4360: Add Support for RouteDomain created manually under custom Tenant, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-useCommonRouteDomainTenant.json)
+- AUTOTOOL-4293: Add Support for “client-accepted” value under "Policy_Action_Drop" object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-endpoint-policy-with-client-accepted-option.json)
 
 ### Fixed
 - AUTOTOOL-4371: The requested Pool Member was not found 

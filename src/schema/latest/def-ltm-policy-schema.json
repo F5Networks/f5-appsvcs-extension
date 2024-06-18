@@ -303,7 +303,8 @@
                     "enum": [
                         "proxy-request",
                         "request",
-                        "ssl-client-hello"
+                        "ssl-client-hello",
+                        "client-accepted"
                     ],
                     "default": "ssl-client-hello"
                 }

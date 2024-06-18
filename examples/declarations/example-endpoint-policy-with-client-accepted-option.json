@@ -1,0 +1,83 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.52.0",
+    "id": "Endpoint_Policy",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_Application": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.25"
+                ],
+                "policyEndpoint": {
+                    "use": "test_EP"
+                }
+            },
+            "uriDataGroup": {
+                "class": "Data_Group",
+                "label": "URI Example",
+                "storageType": "internal",
+                "name": "URI Example",
+                "keyDataType": "string",
+                "records": [
+                    {
+                        "key": "test.com"
+                    }
+                ]
+            },
+            "test_EP": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "replace",
+                        "actions": [
+                            {
+                                "type": "httpUri",
+                                "event": "request",
+                                "replace": {
+                                    "value": "http://127.0.0.1"
+                                }
+                            }
+                        ],
+                        "conditions": [
+                            {
+                                "type": "httpMethod",
+                                "event": "request",
+                                "all": {
+                                    "operand": "equals",
+                                    "values": [
+                                        "GET",
+                                        "POST",
+                                        "PATCH"
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "httpUri",
+                                "event": "request",
+                                "host": {
+                                    "operand": "contains",
+                                    "datagroup": {
+                                        "use": "uriDataGroup"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "name": "default",
+                        "actions": [
+                            {
+                                "type": "drop",
+                                "event": "client-accepted"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+  }
+  
