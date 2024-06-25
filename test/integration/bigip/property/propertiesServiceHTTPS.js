@@ -457,6 +457,90 @@ describe('Service_HTTPS', function () {
         return assertServiceHTTPSClass(properties);
     });
 
+    it('HTTP2 ingress and egress profile', function () {
+        if (util.versionLessThan(getBigIpVersion(), '14.1')) {
+            this.skip();
+        }
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [123],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['1.1.1.1']],
+                skipAssert: true
+            },
+            {
+                name: 'serverTLS',
+                inputValue: ['theTlsServer'],
+                expectedValue: ['theTlsServer'],
+                extractFunction: extractProfile,
+                referenceObjects: {
+                    theTlsServer: {
+                        class: 'TLS_Server',
+                        renegotiationEnabled: false,
+                        certificates: [
+                            {
+                                matchToSNI: '',
+                                certificate: 'theCert'
+                            }
+                        ],
+                        requireSNI: false,
+                        ciphers: 'DEFAULT',
+                        authenticationMode: 'ignore',
+                        authenticationFrequency: 'one-time',
+                        authenticationTrustCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        },
+                        authenticationInviteCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    theCert: {
+                        class: 'Certificate',
+                        certificate: { bigip: '/Common/default.crt' },
+                        privateKey: { bigip: '/Common/default.key' }
+                    }
+                }
+            },
+            {
+                name: 'clientTLS',
+                inputValue: ['theTlsClient'],
+                expectedValue: ['theTlsClient'],
+                extractFunction: extractProfile,
+                referenceObjects: {
+                    theTlsClient: {
+                        class: 'TLS_Client',
+                        clientCertificate: 'theCert',
+                        renegotiationEnabled: false
+                    }
+                }
+            },
+            {
+                name: 'httpMrfRoutingEnabled',
+                inputValue: [true],
+                skipAssert: true
+            },
+            {
+                name: 'profileHTTP2',
+                inputValue: [{ egress: { use: 'http2Profile' }, ingress: { bigip: '/Common/http2' } }],
+                expectedValue: [undefined, 'http2Profile', '/Common/http2'],
+                extractFunction: extractProfile,
+                referenceObjects: {
+                    http2Profile: {
+                        class: 'HTTP2_Profile',
+                        enforceTlsRequirements: false
+                    }
+                }
+            }
+        ];
+
+        return assertServiceHTTPSClass(properties);
+    });
+
     it('Server TLS certificate naming scheme', function () {
         const properties = [
             {

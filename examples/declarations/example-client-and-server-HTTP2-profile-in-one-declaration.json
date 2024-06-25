@@ -1,0 +1,50 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.52.0",
+  "test": {
+      "class": "Tenant",
+      "APPLICATION_1": {
+          "class": "Application",
+          "webtls": {
+              "class": "TLS_Server",
+              "certificates": [
+                  {
+                      "certificate": "webcert"
+                  }
+              ],
+              "renegotiationEnabled": false
+          },
+          "tlsClient": {
+              "class": "TLS_Client",
+              "clientCertificate": "webcert",
+              "renegotiationEnabled": false
+          },
+          "service": {
+              "class": "Service_HTTPS",
+              "httpMrfRoutingEnabled": true,
+              "profileHTTP2": {
+                  "egress": {
+                      "bigip": "/Common/http2egress"
+                  },
+                  "ingress": {
+                      "bigip": "/Common/http2ingress"
+                  }
+              },
+              "serverTLS": "webtls",
+              "clientTLS": "tlsClient",
+              "virtualAddresses": [
+                  "192.0.2.25"
+              ]
+          },
+          "webcert": {
+              "class": "Certificate",
+              "certificate": {
+                  "bigip": "/Common/default.crt"
+              },
+              "privateKey": {
+                  "bigip": "/Common/default.key"
+              }
+          }
+      }
+  }
+}

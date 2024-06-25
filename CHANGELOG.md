@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4371: The requested Pool Member was not found 
 - AUTOTOOL-4324: Declaration failed with default_mon_tcp is in use
 - AUTOTOOL-4354: ([GitHub Issue 829](https://github.com/F5Networks/f5-appsvcs-extension/issues/829)) Support virtualAddresses having suffix of routeDomain 0 in Tenant with non-zero defaultRouteDomain, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-use-nonDefaultRouteDomain-virtualAddresses.json)
+- AUTOTOOL-4179: ([GitHub Issue 793](https://github.com/F5Networks/f5-appsvcs-extension/issues/793)) Add support for setting both client and server http2 profile at the same time, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-client-and-server-HTTP2-profile-in-one-declaration.json)
 
 
 ### Changed

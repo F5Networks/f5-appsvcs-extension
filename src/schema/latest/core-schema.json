@@ -642,7 +642,7 @@
                             "properties": {
                                 "ingress": {
                                     "type": "object",
-                                    "description": "Ingress (client-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
+                                    "description": "Ingress (client-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above. Note: Ingress and Egress profiles should not be the same.",
                                     "allOf": [
                                         {
                                             "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -651,7 +651,7 @@
                                 },
                                 "egress": {
                                     "type": "object",
-                                    "description": "Egress (server-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
+                                    "description": "Egress (server-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above. Note: Ingress and Egress profiles should not be the same.",
                                     "allOf": [
                                         {
                                             "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -660,7 +660,7 @@
                                 }
                             },
                             "minProperties": 1,
-                            "maxProperties": 1,
+                            "maxProperties": 2,
                             "additionalProperties": false
                         }
                     ]
