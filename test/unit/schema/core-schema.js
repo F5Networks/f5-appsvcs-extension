@@ -2632,7 +2632,7 @@ describe('core-schema.json', () => {
                 assert.strictEqual(validate(data), false, 'serverTLS has a minLength of 1');
             });
 
-            it('should invalidate ingress and egress profileHTTP2 specified at the same time', () => {
+            it('should validate ingress and egress profileHTTP2 specified at the same time', () => {
                 data.theTenant.application.service = {
                     class: 'Service_HTTPS',
                     virtualAddresses: ['192.0.2.3'],
@@ -2644,11 +2644,11 @@ describe('core-schema.json', () => {
                             bigip: '/Common/http2'
                         },
                         egress: {
-                            bigip: '/Common/http2'
+                            bigip: '/Common/http2egress'
                         }
                     }
                 };
-                assert.strictEqual(validate(data), false, 'profileHTTP2 cannot be both ingress and egress');
+                assert.strictEqual(validate(data), true, 'Failed to set both Ingress and Egress at the same time');
             });
 
             it('should invalidate when required property serverTLS is not specified', () => {
