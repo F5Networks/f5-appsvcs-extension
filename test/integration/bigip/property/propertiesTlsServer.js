@@ -249,6 +249,12 @@ describe('TLS_Server', function () {
                 extractFunction: (o) => o.ocspStapling
             },
             {
+                name: 'notifyCertStatusToVirtualServer',
+                inputValue: [undefined, true, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'enabled', 'disabled'],
+                extractFunction: (o) => o.ocspStapling
+            },
+            {
                 name: 'renegotiationEnabled',
                 inputValue: [undefined, false, false, undefined],
                 expectedValue: ['enabled', 'disabled', 'disabled', 'enabled']

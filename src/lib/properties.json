@@ -623,6 +623,7 @@
     { "id":"mode",                          "altId": "enabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"options",                       "extend": "array" },
     { "id":"ocsp-stapling",                 "altId": "staplerOCSPEnabled", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"notify-cert-status-to-virtual-server",                 "altId": "notifyCertStatusToVirtualServer", "truth": "enabled", "falsehood": "disabled" },
     { "id":"peer-cert-mode",                "altId": "authenticationMode" },
     { "id":"proxy-ca-cert" },
     { "id":"proxy-ca-key" },
