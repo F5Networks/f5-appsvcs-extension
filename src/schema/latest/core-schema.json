@@ -4404,6 +4404,11 @@
                     "type": "boolean",
                     "default": false
                 },
+                "notifyCertStatusToVirtualServer": {
+                    "description": "Specifies whether to enable certificate status to virtual server.",
+                    "type": "boolean",
+                    "default": false
+                },
                 "insertEmptyFragmentsEnabled": {
                     "title": "Insert Empty Fragments Enabled",
                     "description": "Enables a countermeasure against an SSL 3.0/TLS 1.0 protocol vulnerability affecting CBC ciphers. These ciphers cannot be handled by certain broken SSL implementations.",
