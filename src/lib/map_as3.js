@@ -1242,6 +1242,7 @@ const translate = {
         if (item.cipherGroup) {
             item.ciphers = 'none';
         }
+        item.authenticationDepth = item.authenticationDepth || 9;
 
         item.cipherGroup = item.cipherGroup || 'none';
 
@@ -1377,6 +1378,7 @@ const translate = {
         item.authenticationFrequency = item.authenticationFrequency
             .replace('one-time', 'once')
             .replace('every-time', 'always');
+        item.authenticationDepth = item.authenticationDepth || 9;
         item.c3dOCSP = bigipPath(item, 'c3dOCSP', 'none');
         item.crlFile = bigipPath(item, 'crlFile', 'none');
         item.forwardProxyBypassAllowlist = item.forwardProxyBypassAllowlist || 'none';

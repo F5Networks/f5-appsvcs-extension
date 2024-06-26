@@ -8724,6 +8724,60 @@ describe('map_as3', () => {
                 const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
                 assert.deepEqual(profile2.properties['sni-default'], 'false');
             });
+
+            it('should set authenticationDepth to custom value for class TLSServer', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    authenticationDepth: 10,
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['authenticate-depth'], 10);
+            });
+
+            it('should set authenticationDepth to default value for class TLSServer', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['authenticate-depth'], 9);
+            });
         });
 
         describe('TLS Client', () => {
@@ -8984,6 +9038,79 @@ describe('map_as3', () => {
                 assert.strictEqual(profile.cert, 'webcert.crt');
                 assert.strictEqual(profile.key, 'webcert.key');
                 assert.strictEqual(profile.chain, 'webcert-bundle.crt');
+            });
+            it('should set authenticationDepth to default value for class TLSClient', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Client',
+                    authenticationFrequency: '',
+                    certificates: [
+                        {
+                            certificate: 'webcert1'
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    insertEmptyFragmentsEnabled: true,
+                    singleUseDhEnabled: true,
+                    tls1_3Enabled: true,
+                    tls1_2Enabled: false,
+                    tls1_1Enabled: false,
+                    tls1_0Enabled: false,
+                    sslEnabled: false,
+                    ssl3Enabled: false,
+                    dtlsEnabled: false,
+                    dtls1_2Enabled: false
+                };
+                const results = translate.TLS_Client(context, 'tenantId', 'appId', 'tlsClient', item, declaration);
+                const profile = results.configs[0].properties;
+                assert.strictEqual(profile['authenticate-depth'], 9);
+            });
+            it('should set authenticationDepth to custom value for class TLSClient', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Client',
+                    authenticationFrequency: '',
+                    authenticationDepth: 10,
+                    certificates: [
+                        {
+                            certificate: 'webcert1'
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    insertEmptyFragmentsEnabled: true,
+                    singleUseDhEnabled: true,
+                    tls1_3Enabled: true,
+                    tls1_2Enabled: false,
+                    tls1_1Enabled: false,
+                    tls1_0Enabled: false,
+                    sslEnabled: false,
+                    ssl3Enabled: false,
+                    dtlsEnabled: false,
+                    dtls1_2Enabled: false
+                };
+                let results = translate.TLS_Client(context, 'tenantId', 'appId', 'tlsClient', item, declaration);
+                let profile = results.configs[0].properties;
+                assert.strictEqual(profile['authenticate-depth'], 10);
+                item.authenticationDepth = 11;
+                console.log(item);
+                results = translate.TLS_Client(context, 'tenantId', 'appId', 'tlsClient', item, declaration);
+                profile = results.configs[0].properties;
+                console.log(profile);
+                assert.strictEqual(profile['authenticate-depth'], 11);
             });
         });
 

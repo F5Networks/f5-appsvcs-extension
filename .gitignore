@@ -1,6 +1,12 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/
 .vscode/
+.DS_Store
+f5-appsvcs-extension.code-workspace
+jsconfig.json
+test/.DS_Store
+test/integration/.DS_Store
+test/integration/bigip/.DS_Store
 *.swp
 rpmbuild
 docs/_build/

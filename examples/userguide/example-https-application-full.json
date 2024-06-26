@@ -77,7 +77,8 @@
           "requireSNI": false,
           "ciphers": "DEFAULT",
           "authenticationMode": "ignore",
-          "authenticationFrequency": "one-time"
+          "authenticationFrequency": "one-time",
+          "authenticationDepth": 9
         },
         "webcert": {
           "class": "Certificate",
