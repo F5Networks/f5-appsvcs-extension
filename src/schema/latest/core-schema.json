@@ -4256,10 +4256,18 @@
                 },
                 "authenticationFrequency": {
                     "title": "Authentication frequency",
-                    "description": "Client certificate authentication frequency",
+                    "description": "Server certificate authentication frequency",
                     "type": "string",
                     "enum": [ "one-time", "every-time" ],
                     "default": "one-time"
+                },
+                "authenticationDepth": {
+                    "title": "Authentication Depth",
+                    "description": "Sets the server certificate chain maximum traversal depth. This must be 0 (infinite) or between 1 and 15 inclusive. The default value is 9",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 15,
+                    "default": 9
                 },
                 "authenticationTrustCA": {
                     "title": "Authentication trust CA",
@@ -4777,6 +4785,14 @@
                     "type": "string",
                     "enum": [ "one-time", "every-time" ],
                     "default": "one-time"
+                },
+                "authenticationDepth": {
+                    "title": "Authentication Depth",
+                    "description": "Sets the client certificate chain maximum traversal depth. This must be 0 (infinite) or between 1 and 15 inclusive. The default value is 9",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 15,
+                    "default": 9
                 },
                 "serverName": {
                     "title": "Server name",

@@ -115,6 +115,11 @@ describe('TLS_Client', function () {
                 expectedValue: ['once', 'always', 'once']
             },
             {
+                name: 'authenticationDepth',
+                inputValue: [undefined, 10, undefined],
+                expectedValue: [9, 10, 9]
+            },
+            {
                 name: 'validateCertificate',
                 inputValue: [undefined, true, undefined],
                 expectedValue: ['ignore', 'require', 'ignore']

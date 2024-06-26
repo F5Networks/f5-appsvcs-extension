@@ -178,6 +178,11 @@ describe('TLS_Server', function () {
                 expectedValue: ['once', 'always', 'always', 'once']
             },
             {
+                name: 'authenticationDepth',
+                inputValue: [undefined, 1, 11, undefined],
+                expectedValue: [9, 1, 11, 9]
+            },
+            {
                 name: 'authenticationTrustCA',
                 inputValue: [undefined, { bigip: '/Common/ca-bundle.crt' }, { bigip: '/Common/ca-bundle.crt' }, undefined],
                 expectedValue: ['none', '/Common/ca-bundle.crt', '/Common/ca-bundle.crt', 'none'],
