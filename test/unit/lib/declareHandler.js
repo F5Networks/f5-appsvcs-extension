@@ -48,6 +48,7 @@ describe('DeclareHandler', () => {
         { results: [], declaration: {} }
     );
     const mockNewUuid = 'new-uuid-xxxx';
+    const mockDeclIdRes = { id: 'GoAsync' };
     const msgServDiscInstall = 'Installing service discovery components. The results of your request may be retrieved by sending a GET request to selfLink provided.';
     const msgServDiscUninstall = 'Uninstalling service discovery components. The results of your request may be retrieved by sending a GET request to selfLink provided.';
     const msgDeclSubmitted = 'Declaration successfully submitted';
@@ -1714,6 +1715,95 @@ describe('DeclareHandler', () => {
                                 mockNewUuid,
                                 null,
                                 msgServDiscUninstall
+                            ]);
+                        // assert async record updated with result from handleRequest
+                        assert.deepStrictEqual(asyncRecordSpy.getCall(1).args,
+                            [
+                                context,
+                                'PATCH',
+                                mockNewUuid,
+                                {
+                                    status: STATUS_CODES.OK,
+                                    response: {
+                                        declaration: context.tasks[0].declaration,
+                                        results: []
+                                    }
+                                }
+                            ]);
+                        assert.strictEqual(context.tasks[0].asyncUuid, 'new-uuid-xxxx');
+                    });
+            });
+
+            it('should check if context have body declarartion while doing POST call', () => {
+                context.request = {
+                    // simulate case when we need to install during POST
+                    subPath: 'TenantDeleteMe',
+                    method: 'Post',
+                    action: 'deploy',
+                    pathName: 'declare',
+                    body: { declaration: { id: 'GoAsync' } },
+                    tracer: new Tracer('test tracer', { enabled: false })
+                };
+                context.tasks = [
+                    {
+                        targetHost: '192.0.2.8',
+                        targetPort: 8100,
+                        protocol: 'http',
+                        urlPrefix: 'http:admin:@localhost:8100',
+                        targetTokens: { 'X-F5-Auth-Token': 'test' },
+                        timeSlip: 0,
+                        action: 'deploy',
+                        declaration: {
+                            class: 'ADC',
+                            schemaVersion: '3.0.0',
+                            id: 'GoAsync',
+                            TenantDeleteMe: {
+                                class: 'Tenant'
+                            }
+                        }
+                    }
+                ];
+
+                cloudlibsUtil.getIsInstalled.restore();
+                sinon.stub(cloudlibsUtil, 'getIsInstalled').resolves(false);
+
+                const asyncRecordSpy = sinon.spy(asyncHandler, 'handleRecord');
+
+                const expResult = {
+                    id: mockNewUuid,
+                    results: [{
+                        code: 0,
+                        declarationId: 'GoAsync',
+                        host: '',
+                        message: msgServDiscInstall,
+                        runTime: 0,
+                        tenant: ''
+                    }],
+                    declaration: {},
+                    selfLink: `https://localhost/mgmt/shared/appsvcs/task/${mockNewUuid}`
+                };
+
+                return assertResultAndRestComplete(context, restOp, expResult, code)
+                    .then(() => {
+                        // assert controls set
+                        assert.deepStrictEqual(controlsUsed, {
+                            targetHost: context.tasks[0].targetHost,
+                            targetPort: context.tasks[0].targetPort,
+                            protocol: context.tasks[0].protocol,
+                            targetTokens: context.tasks[0].targetTokens,
+                            timeSlip: context.tasks[0].timeSlip,
+                            urlPrefix: context.tasks[0].urlPrefix
+                        });
+                        assert.ok(context.tasks[0].installServiceDiscovery);
+                        assert.ok(!context.tasks[0].uninstallServiceDiscovery);
+                        // assert async record created
+                        assert.deepStrictEqual(asyncRecordSpy.getCall(0).args,
+                            [
+                                context,
+                                'POST',
+                                mockNewUuid,
+                                mockDeclIdRes,
+                                msgServDiscInstall
                             ]);
                         // assert async record updated with result from handleRequest
                         assert.deepStrictEqual(asyncRecordSpy.getCall(1).args,

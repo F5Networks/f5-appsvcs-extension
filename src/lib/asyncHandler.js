@@ -95,8 +95,9 @@ class AsyncHandler {
                 message: record.status === 'cancelled' ? 'task cancelled' : 'in progress',
                 tenant: '',
                 host: '',
-                runtTime: 0,
-                code: 0
+                runTime: 0,
+                code: 0,
+                declarationId: record.declarationId
             }];
         }
 
@@ -120,6 +121,7 @@ class AsyncHandler {
             id: r.name,
             results: getResults(r),
             declaration: getDeclaration(r),
+            selfLink: `https://localhost/mgmt/shared/appsvcs/task/${r.name}`,
             traces: getTraces(r)
         }));
 
@@ -173,11 +175,20 @@ class AsyncHandler {
     handleRecord(context, method, asyncUuid, results, customMessage) {
         if (shouldTakeAction(context)) {
             if (method === 'POST') {
-                this.records.unshift({
-                    name: asyncUuid,
-                    timestamp: Date.now(),
-                    status: 'pending'
-                });
+                if (results && results.id) {
+                    this.records.unshift({
+                        name: asyncUuid,
+                        timestamp: Date.now(),
+                        status: 'pending',
+                        declarationId: results.id
+                    });
+                } else {
+                    this.records.unshift({
+                        name: asyncUuid,
+                        timestamp: Date.now(),
+                        status: 'pending'
+                    });
+                }
             } else if (method === 'PATCH') {
                 const record = this.records.find((r) => r.name === asyncUuid);
                 record.status = 'complete';
