@@ -666,6 +666,7 @@ const translate = {
         if (typeof obj.keepAliveInterval !== 'undefined') {
             obj.keepAliveInterval = parseInt(obj.keepAliveInterval, 10);
         }
+        obj.pvaAcceleration = obj.pvaAcceleration || 'full';
         return profile(context, obj, 'ltm profile fastl4', '');
     },
     'tm:ltm:profile:analytics:analyticsstate': function (context, obj, referenceConfig) {

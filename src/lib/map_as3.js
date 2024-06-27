@@ -1835,6 +1835,7 @@ const translate = {
      */
     L4_Profile(context, tenantId, appId, itemId, item) {
         item.remark = item.remark || 'none';
+        item.pvaAcceleration = item.pvaAcceleration || 'full';
         if (item.clientTimeout === -1) item.clientTimeout = 86400;
         if (item.idleTimeout === -1) item.idleTimeout = 'indefinite';
         if (item.maxSegmentSize === -1) item.maxSegmentSize = 9162;

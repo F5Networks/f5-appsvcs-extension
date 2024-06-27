@@ -736,7 +736,7 @@
     { "id":"untrusted-cert-response-control", "truth": "ignore", "falsehood": "drop", "altId": "ignoreUntrusted" }
   ],
   "ltm profile tcp": [
-    { "id":"abc",                       "truth": "enabled", "falsehood": "disabled" },
+    { "id":"abc",                       "truth": "enabled", "falsehood": "disabled",  "nextId": "appropriateByteCounting" },
     { "id":"ack-on-push",               "truth": "enabled", "falsehood": "disabled" },
     { "id":"auto-proxy-buffer-size",    "truth": "enabled", "falsehood": "disabled" },
     { "id":"auto-receive-window-size",  "truth": "enabled", "falsehood": "disabled" },
@@ -751,7 +751,7 @@
     { "id":"dsack",                     "truth": "enabled", "falsehood": "disabled" },
     { "id":"description",               "altId": "remark", "quotedString": true },
     { "id":"early-retransmit",          "truth": "enabled", "falsehood": "disabled" },
-    { "id":"ecn",                       "truth": "enabled", "falsehood": "disabled" },
+    { "id":"ecn",                       "truth": "enabled", "falsehood": "disabled", "nextId": "explicitCongestionNotification" },
     { "id":"enhanced-loss-recovery",    "truth": "enabled", "falsehood": "disabled" },
     { "id":"fast-open",                 "truth": "enabled", "falsehood": "disabled" },
     { "id":"fast-open-cookie-expiration" },
@@ -837,6 +837,7 @@
   ],
   "ltm profile fastl4": [
     { "id":"description",               "altId": "remark", "quotedString": true },
+    { "id":"pva-acceleration",           "altId": "pvaAcceleration" },
     { "id":"client-timeout" },
     { "id":"idle-timeout",              "intToString": true },
     { "id":"keep-alive-interval" },

@@ -27,7 +27,8 @@
                 "synCookieEnable": false,
                 "synCookieAllowlist": false,
                 "tcpCloseTimeout": 43200,
-                "tcpHandshakeTimeout": 43200
+                "tcpHandshakeTimeout": 43200,
+                "pvaAcceleration": "dedicated"
             }
         }
     }
