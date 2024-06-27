@@ -17,7 +17,7 @@
                     "title": "Monitor Type",
                     "description": "Specifies the type of monitor",
                     "type": "string",
-                    "enum" : [ "http", "https", "gateway-icmp", "tcp", "udp", "external" ]
+                    "enum" : [ "http", "https", "gateway-icmp", "tcp-half-open", "tcp", "udp", "external" ]
                 },
                 "target": {
                     "title": "Target (Address:Port)",
@@ -73,6 +73,10 @@
                 {
                     "if": { "properties": { "monitorType": { "const": "gateway-icmp" } } },
                     "then": { "$ref": "#/definitions/GSLB_Monitor_ICMP" }
+                },
+                {
+                    "if": { "properties": { "monitorType": { "const": "tcp-half-open" } } },
+                    "then": { "$ref": "#/definitions/GSLB_Monitor_TCP_Half_Open" }
                 },
                 {
                     "if": { "properties": { "monitorType": { "const": "udp" } } },
@@ -254,6 +258,33 @@
 
         "GSLB_Monitor_ICMP": {
             "description": "Additional Monitor class properties available when monitorType = gateway-icmp",
+            "type": "object",
+            "properties": {
+                "probeInterval": {
+                    "title": "Probe Interval",
+                    "description": "Specifies the frequency at which the BIG-IP system probes the host server",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 1
+                },
+                "probeAttempts": {
+                    "title": "Probe Attempts",
+                    "description": "Specifies the number of times the BIG-IP system attempts to probe the host server, after which the BIG-IP system considers the host server down or unavailable",
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 3
+                },
+                "transparent": {
+                    "title": "Transparent",
+                    "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+                    "type": "boolean",
+                    "default": false
+                }
+            }
+        },
+
+        "GSLB_Monitor_TCP_Half_Open": {
+            "description": "Additional Monitor class properties available when monitorType = tcp-half-open",
             "type": "object",
             "properties": {
                 "probeInterval": {

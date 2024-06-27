@@ -196,6 +196,39 @@ describe('GSLB Monitors', function () {
         return assertGSLBMonitorClass(properties);
     });
 
+    it('GSLB TCP HALF OPEN Monitor', () => {
+        const properties = [
+            {
+                name: 'monitorType',
+                inputValue: ['tcp-half-open'],
+                expectedValue: ['/Common/tcp_half_open'],
+                extractFunction: (o) => o.defaultsFrom
+            },
+            {
+                name: 'probeAttempts',
+                inputValue: [undefined, 25, undefined],
+                expectedValue: [3, 25, 3]
+            },
+            {
+                name: 'probeInterval',
+                inputValue: [undefined, 33, undefined],
+                expectedValue: [1, 33, 1]
+            },
+            {
+                name: 'transparent',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
+            },
+            {
+                name: 'target',
+                inputValue: [undefined, '1.1.1.1:80', undefined],
+                expectedValue: ['*:*', '1.1.1.1:80', '*:*'],
+                extractFunction: (o) => o.destination
+            }
+        ];
+        return assertGSLBMonitorClass(properties);
+    });
+
     it('GSLB TCP Monitor', () => {
         const properties = [
             {
