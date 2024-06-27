@@ -1690,6 +1690,9 @@ const translate = {
     'tm:gtm:monitor:gateway-icmp:gateway-icmpstate': function (context, obj) {
         return profile(context, obj, 'gtm monitor', 'gateway-icmp');
     },
+    'tm:gtm:monitor:tcp-half-open:tcp-half-openstate': function (context, obj) {
+        return profile(context, obj, 'gtm monitor', 'tcp-half-open');
+    },
     'tm:gtm:monitor:tcp:tcpstate': function (context, obj) {
         return monitor(context, obj, 'gtm monitor', 'tcp');
     },

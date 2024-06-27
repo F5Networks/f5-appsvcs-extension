@@ -4025,6 +4025,7 @@ const translate = {
         props.http = props.any.concat(['reverse', 'send', 'recv', 'recv-status-code', 'transparent']);
         props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name', 'key']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
+        props['tcp-half-open'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
         props.external = props.any.concat(['run', 'api-anonymous', 'args', 'user-defined']);

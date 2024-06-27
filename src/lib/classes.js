@@ -128,6 +128,7 @@ module.exports = {
             'gtm monitor http',
             'gtm monitor https',
             'gtm monitor gateway-icmp',
+            'gtm monitor tcp-half-open',
             'gtm monitor tcp',
             'gtm monitor udp',
             'gtm monitor external'

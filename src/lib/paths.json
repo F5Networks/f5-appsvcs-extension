@@ -469,6 +469,10 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/monitor/tcp-half-open",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/monitor/tcp",
             "modules": ["gtm"]
         },
