@@ -150,7 +150,8 @@ describe('asyncHandler', () => {
                         }
                     ],
                     TEST_PoolScript: 'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::create auth partition TEST_Pool default-route-domain 0\ntmsh::create sys folder /TEST_Pool/Application/\ntmsh::begin_transaction\ntmsh::modify auth partition TEST_Pool description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::create ltm pool /TEST_Pool/Application/testItem load-balancing-mode round-robin members none min-active-members 1 reselect-tries 0 service-down-action none slow-ramp-time 10\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ncatch { tmsh::delete sys folder /TEST_Pool/Application/ } e\ncatch { tmsh::delete auth partition TEST_Pool } e\n}}\n}'
-                }
+                },
+                selfLink: 'https://localhost/mgmt/shared/appsvcs/task/'
             }
         };
     }
@@ -515,6 +516,17 @@ describe('asyncHandler', () => {
                 assert.equal(operation.getStatusCode(), 200);
                 body.items.forEach((item) => {
                     assert.deepStrictEqual(item.traces, createResponse().response.traces);
+                });
+            };
+            assertResponse(undefined, [createRecord(0), createRecord(1)], check, done);
+        });
+        it('should return selfLink', (done) => {
+            const check = (operation) => {
+                const body = operation.getBody();
+                assert.equal(body.items.length, 2);
+                assert.equal(operation.getStatusCode(), 200);
+                body.items.forEach((item) => {
+                    assert.deepStrictEqual(item.selfLink, createResponse().response.selfLink.concat(item.id));
                 });
             };
             assertResponse(undefined, [createRecord(0), createRecord(1)], check, done);

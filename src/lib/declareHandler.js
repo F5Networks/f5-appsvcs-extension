@@ -627,6 +627,11 @@ function processRequest(context) {
 }
 
 function createAsyncRecord(logPrefix, context, index) {
+    let requestBody = null;
+    if (context && context.request && context.request.body && context.request.body.declaration
+        && context.request.body.declaration.id) {
+        requestBody = context.request.body.declaration;
+    }
     let message = 'Declaration successfully submitted';
     if (context.tasks[index].installServiceDiscovery || context.tasks[index].uninstallServiceDiscovery) {
         message = `${context.tasks[index].installServiceDiscovery ? 'Installing' : 'Uninstalling'}`
@@ -635,7 +640,7 @@ function createAsyncRecord(logPrefix, context, index) {
     }
     log.debug(`${logPrefix}: creating data-group async task ${context.tasks[index].asyncUuid} and responding with 202 while we continue processing.`);
 
-    return context.host.asyncHandler.handleRecord(context, 'POST', context.tasks[index].asyncUuid, null, message)
+    return context.host.asyncHandler.handleRecord(context, 'POST', context.tasks[index].asyncUuid, requestBody, message)
         .then((result) => restUtil.buildOpResult(result.statusCode, result.message, result.body));
 }
 
