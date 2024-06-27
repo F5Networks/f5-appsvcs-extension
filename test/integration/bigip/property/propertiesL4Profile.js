@@ -66,6 +66,11 @@ describe('L4_Profile', function () {
                 expectedValue: [0, 4096, 0]
             },
             {
+                name: 'pvaAcceleration',
+                inputValue: [undefined, 'none', 'partial', 'full', 'dedicated', undefined],
+                expectedValue: ['full', 'none', 'partial', 'full', 'dedicated', 'full']
+            },
+            {
                 name: 'resetOnTimeout',
                 inputValue: [undefined, false, undefined],
                 expectedValue: ['enabled', 'disabled', 'enabled']

@@ -9,6 +9,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4293: Add Support for “client-accepted” value under "Policy_Action_Drop" object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-endpoint-policy-with-client-accepted-option.json)
 - AUTOTOOL-4402: Add Support for GSLB monitor TCP Half open monitor type, [GitHub Issue 841](https://github.com/F5Networks/f5-appsvcs-extension/issues/841), [Example](https://github.com/F5Networks/f5-appsvcs-extension/examples/declarations/example-gslb-TCP-half-monitor-type.json)
 - AUTOTOOL-4405: Add support for authentication-depth property under TLS_Server and TLS_Client Object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/example-tls-server-and-client-authentication-depth.json)
+- AUTOTOOL-4408: Add support for pvaAcceleration property under L4_Profile Object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-l4-profile.json)
 
 ### Fixed
 - AUTOTOOL-4371: The requested Pool Member was not found 

@@ -13216,10 +13216,58 @@ describe('map_as3', () => {
                         'syn-cookie-enable': 'enabled',
                         'syn-cookie-whitelist': 'disabled',
                         'tcp-close-timeout': 'indefinite',
-                        'tcp-handshake-timeout': 'indefinite'
+                        'tcp-handshake-timeout': 'indefinite',
+                        'pva-acceleration': 'full'
                     }
                 }
             );
+        });
+        it('should handle L4_Profile pvaAcceleration property properly', () => {
+            function testPvaAcceleration(expectedValue) {
+                const item = {
+                    clientTimeout: -1,
+                    idleTimeout: -1,
+                    keepAliveInterval: -1,
+                    looseClose: false,
+                    looseInitialization: false,
+                    maxSegmentSize: -1,
+                    resetOnTimeout: true,
+                    synCookieAllowlist: false,
+                    synCookieEnable: true,
+                    tcpCloseTimeout: -1,
+                    tcpHandshakeTimeout: -1,
+                    pvaAcceleration: expectedValue
+                };
+                const result = mapAs3.translate.L4_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(
+                    result.configs[0],
+                    {
+                        command: 'ltm profile fastl4',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            description: 'none',
+                            'client-timeout': 86400,
+                            'idle-timeout': 'indefinite',
+                            'keep-alive-interval': -1,
+                            'loose-close': 'disabled',
+                            'loose-initialization': 'disabled',
+                            'mss-override': 9162,
+                            'reset-on-timeout': 'enabled',
+                            'syn-cookie-enable': 'enabled',
+                            'syn-cookie-whitelist': 'disabled',
+                            'tcp-close-timeout': 'indefinite',
+                            'tcp-handshake-timeout': 'indefinite',
+                            'pva-acceleration': expectedValue
+                        }
+                    }
+                );
+            }
+            testPvaAcceleration('full');
+            testPvaAcceleration('none');
+            testPvaAcceleration('partial');
+            testPvaAcceleration('dedicated');
+            testPvaAcceleration('full');
         });
     });
 

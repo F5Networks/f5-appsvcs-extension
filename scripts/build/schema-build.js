@@ -323,6 +323,7 @@ function buildSharedSchema() {
         'Property_Reset_On_Timeout',
         'Property_TCP_Close_Timeout',
         'Property_TCP_Handshake_Timeout',
+        'Property_PVA_Acceleration',
         'Property_Text',
         'Property_Use',
         'Resource_Base64',
