@@ -393,6 +393,7 @@ describe('Test Tenants (__smoke)', function () {
             .then((response) => {
                 response.declaration.controls = checkAndDelete([response.declaration.controls], 'archiveTimestamp', 'string')[0];
                 response.declaration = checkAndDelete([response.declaration], 'id', 'string')[0];
+                response = checkAndDelete([response], 'selfLink', 'string')[0];
                 response = checkAndDelete([response], 'id', 'string')[0];
                 assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
                 response.results = checkAndDelete(response.results, 'declarationId', 'string');
@@ -566,6 +567,7 @@ describe('Test Tenants (__smoke)', function () {
             .then((response) => {
                 response.declaration.controls = checkAndDelete([response.declaration.controls], 'archiveTimestamp', 'string')[0];
                 response.declaration = checkAndDelete([response.declaration], 'id', 'string')[0];
+                response = checkAndDelete([response], 'selfLink', 'string')[0];
                 response = checkAndDelete([response], 'id', 'string')[0];
                 assert.isTrue(response.results[0].declarationId.startsWith('autogen_'), `${response.results[0].declarationId} should have started with 'autogen_'`);
                 response.results = checkAndDelete(response.results, 'declarationId', 'string');
