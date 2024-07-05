@@ -713,8 +713,7 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/Pointer_GSLB_Monitor"
-                    },
-                    "default": [{ "bigip": "/Common/bigip" }]
+                    }
                 },
 
                 "bpsLimit": {
@@ -830,7 +829,8 @@
                             "cpuUsageLimit": { "default": 0 },
                             "cpuUsageLimitEnabled": { "default": false },
                             "memoryLimit": { "default": 0 },
-                            "memoryLimitEnabled": { "default": false }
+                            "memoryLimitEnabled": { "default": false },
+                            "monitors": { "default": [] }
                         }
                     }
                 },
@@ -843,7 +843,8 @@
                         "properties": {
                             "serviceCheckProbeEnabled": { "default": true },
                             "pathProbeEnabled": { "default": true },
-                            "snmpProbeEnabled": { "default": true }
+                            "snmpProbeEnabled": { "default": true },
+                            "monitors": { "default": [{ "bigip": "/Common/bigip" }]}
                         }
                     }
                 }
