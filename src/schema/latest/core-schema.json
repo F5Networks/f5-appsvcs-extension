@@ -669,14 +669,7 @@
 
             "allOf": [
                 { "$ref": "#/definitions/Service_HTTP_Core" }
-            ],
-
-            "dependencies": {
-                "serverTLS": {
-                    "properties": { "serverTLS": { "minLength": 1 } }
-                }
-            },
-            "required": [ "class", "serverTLS" ]
+            ]
         },
 
         "Service_HTTP_Core": {

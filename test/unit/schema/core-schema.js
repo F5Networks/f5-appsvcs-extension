@@ -2620,6 +2620,14 @@ describe('core-schema.json', () => {
                 };
                 assert.ok(validate(data), getErrorString(validate));
             });
+
+            it('should validate when property serverTLS is not specified', () => {
+                data.theTenant.application.service = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: ['192.0.2.3']
+                };
+                assert.ok(validate(data), getErrorString(validate));
+            });
         });
 
         describe('invalid', () => {
@@ -2649,14 +2657,6 @@ describe('core-schema.json', () => {
                     }
                 };
                 assert.strictEqual(validate(data), true, 'Failed to set both Ingress and Egress at the same time');
-            });
-
-            it('should invalidate when required property serverTLS is not specified', () => {
-                data.theTenant.application.service = {
-                    class: 'Service_HTTPS',
-                    virtualAddresses: ['192.0.2.3']
-                };
-                assert.strictEqual(validate(data), false, 'serverTLS is required');
             });
 
             it('should invalidate when required property virtualAddresses is not specified', () => {

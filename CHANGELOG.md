@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4405: Add support for authentication-depth property under TLS_Server and TLS_Client Object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/example-tls-server-and-client-authentication-depth.json)
 - AUTOTOOL-4389: ([Github Issue 836] (https://github.com/F5Networks/f5-appsvcs-extension/issues/836)) Enable support for a null monitor when the server type is set to generic-host for GSLB_Server.
 - AUTOTOOL-4408: Add support for pvaAcceleration property under L4_Profile Object, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-l4-profile.json)
+- AUTOTOOL-4416: Eliminated the need for an SSL profile for virtual servers utilizing passthrough termination for Service_HTTPS.
 
 ### Fixed
 - AUTOTOOL-4371: The requested Pool Member was not found 
