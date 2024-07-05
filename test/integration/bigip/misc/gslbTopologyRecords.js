@@ -430,4 +430,46 @@ describe('GSLB_Topology_Records', function () {
                 assert.strictEqual(response.topologyLongestMatch, 'no');
             });
     });
+
+    it('should set monitor as none if serverType is generic-host ', () => {
+        const declTenant = {
+            class: 'ADC',
+            schemaVersion: '3.52.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        devices: [
+                            {
+                                address: '192.0.0.1'
+                            }
+                        ],
+                        virtualServerDiscoveryMode: 'enabled-no-delete',
+                        exposeRouteDomainsEnabled: true,
+                        serverType: 'generic-host'
+                    }
+                }
+            }
+        };
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, undefined);
+            });
+    });
 });
