@@ -472,4 +472,117 @@ describe('GSLB_Topology_Records', function () {
                 assert.strictEqual(response.monitor, undefined);
             });
     });
+
+    it('should set member order for gslb pools members', () => {
+        const declTenant0 = {
+            class: 'ADC',
+            schemaVersion: '3.52.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        devices: [
+                            {
+                                address: '192.0.0.2'
+                            }
+                        ],
+                        virtualServerDiscoveryMode: 'enabled-no-delete',
+                        exposeRouteDomainsEnabled: true
+                    }
+                }
+            }
+        };
+        const declTenant1 = {
+            class: 'AS3',
+            declaration: {
+                class: 'ADC',
+                controls: {
+                    trace: true,
+                    logLevel: 'debug'
+                },
+                schemaVersion: '3.52.0',
+                Common: {
+                    class: 'Tenant',
+                    Shared: {
+                        class: 'Application',
+                        template: 'shared',
+                        testDataCenter: {
+                            class: 'GSLB_Data_Center'
+                        },
+                        testServer: {
+                            class: 'GSLB_Server',
+                            dataCenter: {
+                                use: 'testDataCenter'
+                            },
+                            devices: [
+                                {
+                                    address: '192.0.0.2'
+                                }
+                            ],
+                            virtualServerDiscoveryMode: 'enabled-no-delete',
+                            exposeRouteDomainsEnabled: true,
+                            virtualServers: [
+                                {
+                                    address: '192.0.0.2',
+                                    port: 5050
+                                },
+                                {
+                                    address: '192.0.0.4',
+                                    port: 5051
+                                }
+                            ]
+                        },
+                        testPool: {
+                            members: [
+                                {
+                                    server: {
+                                        bigip: '/Common/testServer'
+                                    },
+                                    virtualServer: '0',
+                                    memberOrder: 1
+                                },
+                                {
+                                    server: {
+                                        bigip: '/Common/testServer'
+                                    },
+                                    virtualServer: '1',
+                                    memberOrder: 0
+                                }
+                            ],
+                            class: 'GSLB_Pool',
+                            resourceRecordType: 'A'
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant0, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant1, { declarationIndex: 1 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/pool/a/~Common~Shared~testPool/members'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].memberOrder, 1);
+                assert.strictEqual(response.items[1].memberOrder, 0);
+            });
+    });
 });

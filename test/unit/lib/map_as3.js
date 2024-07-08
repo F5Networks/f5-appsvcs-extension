@@ -10927,7 +10927,8 @@ describe('map_as3', () => {
                             use: '/Common/Shared/testServer'
                         },
                         virtualServer: '0',
-                        dependsOn: 'none'
+                        dependsOn: 'none',
+                        memberOrder: 1
                     },
                     {
                         ratio: 15,
@@ -10938,7 +10939,8 @@ describe('map_as3', () => {
                         dependsOn: [
                             '/Common/Shared/testServer:1',
                             '/Common/Shared/testServer:2'
-                        ]
+                        ],
+                        memberOrder: 0
                     }
                 ]
             };
@@ -10954,7 +10956,7 @@ describe('map_as3', () => {
                             members: {
                                 '/Common/testServer:0': {
                                     'depends-on': 'none',
-                                    'member-order': 0,
+                                    'member-order': 1,
                                     ratio: 10
                                 },
                                 '/Common/testServer:funky': {
@@ -10962,7 +10964,7 @@ describe('map_as3', () => {
                                         '/Common/testServer:1': {},
                                         '/Common/testServer:2': {}
                                     },
-                                    'member-order': 1,
+                                    'member-order': 0,
                                     ratio: 15
                                 }
                             },
@@ -11002,7 +11004,8 @@ describe('map_as3', () => {
                         virtualServer: {
                             use: 'virtual0'
                         },
-                        dependsOn: 'none'
+                        dependsOn: 'none',
+                        memberOrder: 0
                     },
                     {
                         ratio: 10,
@@ -11012,7 +11015,8 @@ describe('map_as3', () => {
                         virtualServer: {
                             bigip: 'virtual1'
                         },
-                        dependsOn: 'none'
+                        dependsOn: 'none',
+                        memberOrder: 1
                     }
                 ]
             };

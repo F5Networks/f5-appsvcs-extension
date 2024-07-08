@@ -373,6 +373,14 @@
                         }
                     ]
                 },
+                "memberOrder": {
+                    "title": "Pool Member Order",
+                    "description": "Specifies the order in which this server appears in the pool",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0,
+                    "maximum": 65535
+                },
                 "ratio": {
                     "title": "Ratio",
                     "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing.",
