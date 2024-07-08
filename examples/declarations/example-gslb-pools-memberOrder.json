@@ -1,0 +1,60 @@
+{
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.52.0",
+        "Common": {
+            "class": "Tenant",
+            "Shared": {
+                "class": "Application",
+                "template": "shared",
+                "testDataCenter": {
+                    "class": "GSLB_Data_Center"
+                },
+                "testServer": {
+                    "class": "GSLB_Server",
+                    "dataCenter": {
+                        "use": "testDataCenter"
+                    },
+                    "devices": [
+                        {
+                            "address": "192.0.0.2"
+                        }
+                    ],
+                    "virtualServerDiscoveryMode": "enabled-no-delete",
+                    "exposeRouteDomainsEnabled": true,
+                    "virtualServers": [
+                        {
+                            "address": "192.0.0.2",
+                            "port": 5050
+                        },
+                        {
+                            "address": "192.0.0.4",
+                            "port": 5051
+                        }
+                    ]
+                },
+                "testPoolA": {
+                    "members": [
+                        {
+                            "server": {
+                                "bigip": "/Common/testServer"
+                            },
+                            "virtualServer": "0",
+                            "memberOrder": 1
+                        },
+                        {
+                            "server": {
+                                "bigip": "/Common/testServer"
+                            },
+                            "virtualServer": "1",
+                            "memberOrder": 0
+                        }
+                    ],
+                    "class": "GSLB_Pool",
+                    "resourceRecordType": "A"
+                }
+            }
+        }
+    }
+}

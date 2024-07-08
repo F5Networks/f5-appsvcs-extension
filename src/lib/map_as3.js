@@ -4528,7 +4528,10 @@ const translate = {
         item.qosVirtualServerScore = item.qosVirtualServerScore || 0;
 
         (item.members || []).forEach((member, index) => {
-            member.memberOrder = index;
+            if (item.resourceRecordType !== 'A') {
+                member.memberOrder = index;
+            }
+
             if (item.resourceRecordType !== 'CNAME') {
                 delete member.isDomainNameStatic;
             }
