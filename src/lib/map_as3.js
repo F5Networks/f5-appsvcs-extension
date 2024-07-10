@@ -4526,9 +4526,18 @@ const translate = {
         item.qosTopology = item.qosTopology || 0;
         item.qosVirtualServerCapacity = item.qosVirtualServerCapacity || 0;
         item.qosVirtualServerScore = item.qosVirtualServerScore || 0;
+        let indexForRecordTypeA = false;
+
+        if (item.resourceRecordType === 'A') {
+            if (item.members && item.members.length > 1) {
+                if (item.members[0].memberOrder === 0 && item.members[1].memberOrder === 0) {
+                    indexForRecordTypeA = true;
+                }
+            }
+        }
 
         (item.members || []).forEach((member, index) => {
-            if (item.resourceRecordType !== 'A') {
+            if (item.resourceRecordType !== 'A' || indexForRecordTypeA) {
                 member.memberOrder = index;
             }
 
