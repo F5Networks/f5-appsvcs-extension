@@ -54,11 +54,11 @@
           "anyOf": [
             {
               "description": "Any version of AS3.",
-              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-1])($|[.][0-9]+$)"
+              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-2])($|[.][0-9]+$)"
             },
             {
               "description": "The current version of AS3.",
-              "const": "3.51.0"
+              "const": "3.52.0"
             }
           ]
         },
@@ -582,6 +582,12 @@
               "query net route-domain"
             ]
           }
+        },
+        "useCommonRouteDomainTenant": {
+          "title": "Route Domain Tenant Info",
+          "description": "Used to ascertain whether a Route Domain has been created within a custom partition/Tenant or within the /Common partition.",
+          "type": "boolean",
+          "default": true
         },
         "Shared": {
           "$ref": "#/definitions/Application_Shared"
@@ -2360,7 +2366,7 @@
               "properties": {
                 "ingress": {
                   "type": "object",
-                  "description": "Ingress (client-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
+                  "description": "Ingress (client-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above. Note: Ingress and Egress profiles should not be the same.",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -2369,7 +2375,7 @@
                 },
                 "egress": {
                   "type": "object",
-                  "description": "Egress (server-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above.",
+                  "description": "Egress (server-side context) HTTP2 profile. This property is available on BIGIP 14.1 and above. Note: Ingress and Egress profiles should not be the same.",
                   "allOf": [
                     {
                       "$ref": "#/definitions/Pointer_HTTP2_Profile"
@@ -2378,7 +2384,7 @@
                 }
               },
               "minProperties": 1,
-              "maxProperties": 1,
+              "maxProperties": 2,
               "additionalProperties": false
             }
           ]
@@ -2388,19 +2394,6 @@
         {
           "$ref": "#/definitions/Service_HTTP_Core"
         }
-      ],
-      "dependencies": {
-        "serverTLS": {
-          "properties": {
-            "serverTLS": {
-              "minLength": 1
-            }
-          }
-        }
-      },
-      "required": [
-        "class",
-        "serverTLS"
       ]
     },
     "Service_HTTP_Core": {
@@ -6822,13 +6815,21 @@
         },
         "authenticationFrequency": {
           "title": "Authentication frequency",
-          "description": "Client certificate authentication frequency",
+          "description": "Server certificate authentication frequency",
           "type": "string",
           "enum": [
             "one-time",
             "every-time"
           ],
           "default": "one-time"
+        },
+        "authenticationDepth": {
+          "title": "Authentication Depth",
+          "description": "Sets the server certificate chain maximum traversal depth. This must be 0 (infinite) or between 1 and 15 inclusive. The default value is 9",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15,
+          "default": 9
         },
         "authenticationTrustCA": {
           "title": "Authentication trust CA",
@@ -7007,6 +7008,11 @@
         },
         "staplerOCSPEnabled": {
           "description": "Specifies whether to enable OCSP stapling",
+          "type": "boolean",
+          "default": false
+        },
+        "notifyCertStatusToVirtualServer": {
+          "description": "Specifies whether to enable certificate status to virtual server.",
           "type": "boolean",
           "default": false
         },
@@ -7421,6 +7427,14 @@
             "every-time"
           ],
           "default": "one-time"
+        },
+        "authenticationDepth": {
+          "title": "Authentication Depth",
+          "description": "Sets the client certificate chain maximum traversal depth. This must be 0 (infinite) or between 1 and 15 inclusive. The default value is 9",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15,
+          "default": 9
         },
         "serverName": {
           "title": "Server name",
@@ -16727,6 +16741,7 @@
             "http",
             "https",
             "gateway-icmp",
+            "tcp-half-open",
             "tcp",
             "udp",
             "external"
@@ -16811,6 +16826,18 @@
           },
           "then": {
             "$ref": "#/definitions/GSLB_Monitor_ICMP"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "monitorType": {
+                "const": "tcp-half-open"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/GSLB_Monitor_TCP_Half_Open"
           }
         },
         {
@@ -17027,6 +17054,32 @@
     },
     "GSLB_Monitor_ICMP": {
       "description": "Additional Monitor class properties available when monitorType = gateway-icmp",
+      "type": "object",
+      "properties": {
+        "probeInterval": {
+          "title": "Probe Interval",
+          "description": "Specifies the frequency at which the BIG-IP system probes the host server",
+          "type": "integer",
+          "minimum": 0,
+          "default": 1
+        },
+        "probeAttempts": {
+          "title": "Probe Attempts",
+          "description": "Specifies the number of times the BIG-IP system attempts to probe the host server, after which the BIG-IP system considers the host server down or unavailable",
+          "type": "integer",
+          "minimum": 0,
+          "default": 3
+        },
+        "transparent": {
+          "title": "Transparent",
+          "description": "Enables monitoring of pool members through firewalls. The default value is false (disabled)",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "GSLB_Monitor_TCP_Half_Open": {
+      "description": "Additional Monitor class properties available when monitorType = tcp-half-open",
       "type": "object",
       "properties": {
         "probeInterval": {
@@ -17655,6 +17708,14 @@
             }
           ]
         },
+        "memberOrder": {
+          "title": "Pool Member Order",
+          "description": "Specifies the order in which this server appears in the pool",
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 65535
+        },
         "ratio": {
           "title": "Ratio",
           "description": "Specifies the ratio weight assigned to the pool member. This weight determines the frequency at which the pool member is selected for load balancing.",
@@ -18040,12 +18101,7 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Pointer_GSLB_Monitor"
-          },
-          "default": [
-            {
-              "bigip": "/Common/bigip"
-            }
-          ]
+          }
         },
         "bpsLimit": {
           "title": "Maximum Bits Per Second",
@@ -18234,6 +18290,9 @@
               },
               "memoryLimitEnabled": {
                 "default": false
+              },
+              "monitors": {
+                "default": []
               }
             }
           }
@@ -18259,6 +18318,13 @@
               },
               "snmpProbeEnabled": {
                 "default": true
+              },
+              "monitors": {
+                "default": [
+                  {
+                    "bigip": "/Common/bigip"
+                  }
+                ]
               }
             }
           }
@@ -21552,7 +21618,8 @@
           "enum": [
             "proxy-request",
             "request",
-            "ssl-client-hello"
+            "ssl-client-hello",
+            "client-accepted"
           ],
           "default": "ssl-client-hello"
         }
@@ -30593,8 +30660,8 @@
             "https",
             "http2",
             "icmp",
-            "tcp-half-open",
-            "tcp"
+            "tcp",
+            "tcp-half-open"
           ]
         },
         {
@@ -30987,7 +31054,7 @@
           ],
           "anyOf": [
             {
-              "$ref": "#/definitions/Pointer_F5_String_Or_BIGIP"
+              "$ref": "#/definitions/Pointer_System_All_Or_F5_String"
             },
             {
               "$ref": "#/definitions/Pointer_CA_Bundle"
@@ -33085,6 +33152,10 @@
         "tcpHandshakeTimeout": {
           "$ref": "#/definitions/Property_TCP_Handshake_Timeout",
           "default": 5
+        },
+        "pvaAcceleration": {
+          "$ref": "#/definitions/Property_PVA_Acceleration",
+          "default": "full"
         }
       },
       "required": [
@@ -37066,6 +37137,17 @@
         "tag": "secret",
         "errSchemaPath": "#/definitions/Property_Passphrase"
       }
+    },
+    "Property_PVA_Acceleration": {
+      "title": "PVA acceleration",
+      "description": "Specifies the preferred acceleration mode for the Packet Velocity ASIC (PVA) if the platform supports PVA acceleration. Full - Specifies the system applies full PVA acceleration when possible. Partial - Specifies the system applies partial PVA acceleration. None - Specifies the system does not use PVA acceleration. Dedicated - Unconditionally enables ePVA acceleration for all TCP FastL4 connections. Inactive, but established connections are not removed from the ePVA to guarantee low latency forwarding for future packets.",
+      "type": "string",
+      "enum": [
+        "full",
+        "partial",
+        "none",
+        "dedicated"
+      ]
     },
     "Property_Reset_On_Timeout": {
       "title": "Reset On Timeout",
