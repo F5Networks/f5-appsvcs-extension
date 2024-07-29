@@ -389,4 +389,174 @@ describe('SNAT Pools and SNAT Translations', function () {
                 .then(() => deleteBigipItems(bigipSnatItems))
                 .then(() => deleteBigipItems(bigipSnatPoolItems)));
     });
+
+    it('should create snat translation if an existing pool member is used as snat', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2549', id: 2549 }
+            }
+        ];
+        const dec0 = {
+            schemaVersion: '3.52.0',
+            updateMode: 'selective',
+            class: 'ADC',
+            SampleTenant: {
+                defaultRouteDomain: 2549,
+                class: 'Tenant',
+                SampleApp: {
+                    template: 'generic',
+                    class: 'Application',
+                    SampleServiceL4A: {
+                        virtualAddresses: [
+                            '192.168.0.1'
+                        ],
+                        virtualPort: 3200,
+                        persistenceMethods: [],
+                        iRules: [],
+                        policyEndpoint: [],
+                        label: '',
+                        pool: 'SamplePool',
+                        profileL4: {
+                            bigip: '/Common/cc_fastL4_profile'
+                        },
+                        snat: 'self',
+                        class: 'Service_L4'
+                    },
+                    SampleMonitor: {
+                        monitorType: 'tcp',
+                        send: '',
+                        receive: '',
+                        interval: 20,
+                        timeout: 61,
+                        class: 'Monitor'
+                    },
+                    SamplePool: {
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 31214,
+                                serverAddresses: [
+                                    '192.168.0.2'
+                                ],
+                                adminState: 'enable',
+                                ratio: 1
+                            },
+                            {
+                                enable: true,
+                                servicePort: 31214,
+                                serverAddresses: [
+                                    '192.168.0.3'
+                                ],
+                                adminState: 'enable',
+                                ratio: 1
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'SampleMonitor'
+                            }
+                        ],
+                        class: 'Pool'
+                    }
+                }
+            }
+        };
+        const dec1 = {
+            schemaVersion: '3.52.0',
+            updateMode: 'selective',
+            class: 'ADC',
+            SampleTenant: {
+                defaultRouteDomain: 2549,
+                class: 'Tenant',
+                SampleApp: {
+                    template: 'generic',
+                    class: 'Application',
+                    SampleServiceL4A: {
+                        virtualAddresses: [
+                            '192.168.0.1'
+                        ],
+                        virtualPort: 3200,
+                        persistenceMethods: [],
+                        iRules: [],
+                        policyEndpoint: [],
+                        label: '',
+                        pool: 'SamplePool',
+                        profileL4: {
+                            bigip: '/Common/cc_fastL4_profile'
+                        },
+                        snat: 'self',
+                        class: 'Service_L4'
+                    },
+                    SampleServiceL4B: {
+                        virtualAddresses: [
+                            '192.168.0.3'
+                        ],
+                        virtualPort: 3200,
+                        persistenceMethods: [],
+                        iRules: [],
+                        policyEndpoint: [],
+                        label: '',
+                        pool: 'SamplePool',
+                        profileL4: {
+                            bigip: '/Common/cc_fastL4_profile'
+                        },
+                        snat: 'self',
+                        class: 'Service_L4'
+                    },
+                    SampleMonitor: {
+                        monitorType: 'tcp',
+                        send: '',
+                        receive: '',
+                        interval: 20,
+                        timeout: 61,
+                        class: 'Monitor'
+                    },
+                    SamplePool: {
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                enable: true,
+                                servicePort: 31214,
+                                serverAddresses: [
+                                    '192.168.0.2'
+                                ],
+                                adminState: 'enable',
+                                ratio: 1
+                            }
+                        ],
+                        monitors: [
+                            {
+                                use: 'SampleMonitor'
+                            }
+                        ],
+                        class: 'Pool'
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(dec0, { declarationIndex: 0 }))
+            .then(() => postDeclaration(dec1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/snat-translation' }))
+            .then((response) => {
+                assert.strictEqual(response.body.items.length, 2);
+                let result = (response.body.items || [])
+                    .find((n) => n.fullPath === '/SampleTenant/192.168.0.1%2549');
+                assert(result);
+
+                result = (response.body.items || [])
+                    .find((n) => n.fullPath === '/SampleTenant/192.168.0.3%2549');
+                assert(result);
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
 });

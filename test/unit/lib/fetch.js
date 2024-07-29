@@ -4633,6 +4633,760 @@ describe('fetch', () => {
             );
         });
 
+        it('should create snat translation if an existing pool member is used as snat', () => {
+            const desiredConf = {
+                '/SampleTenant/SampleApp/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.1%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.1%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.1%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4A-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.3%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.3%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4B-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.3%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4B': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.3%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleMonitor': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 100,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 20,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 61,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.2%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.2%2549',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SamplePool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/SampleTenant/192.168.0.2%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/SampleTenant/SampleApp/SampleMonitor': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2549
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.1%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.3%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.3%2549',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                }
+            };
+            const currentConf = {
+                '/SampleTenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2549
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleMonitor': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 100,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 20,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 61,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.2%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.2',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.3%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.3',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SamplePool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/SampleTenant/192.168.0.2%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/SampleTenant/192.168.0.3%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/SampleTenant/SampleApp/SampleMonitor': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.1%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.1%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.1',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.1%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4A-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.1%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/global-settings': {
+                    command: 'gtm global-settings load-balancing',
+                    properties: {
+                        'topology-longest-match': 'yes'
+                    },
+                    ignore: []
+                }
+            };
+            const confDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.2%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.2',
+                    rhs: '192.168.0.2%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'command'
+                    ],
+                    lhs: 'ltm node',
+                    rhs: 'ltm snat-translation',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.3',
+                    rhs: '192.168.0.3%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'metadata'
+                    ],
+                    lhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'arp'
+                    ],
+                    rhs: 'enabled',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'connection-limit'
+                    ],
+                    rhs: 0,
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'enabled'
+                    ],
+                    rhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'ip-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'tcp-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'traffic-group'
+                    ],
+                    rhs: 'default',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'udp-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/SampleTenant/SampleApp/SamplePool',
+                        'properties',
+                        'members',
+                        '/SampleTenant/192.168.0.3%2549:31214'
+                    ],
+                    lhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.1%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.1',
+                    rhs: '192.168.0.1%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/Service_Address-192.168.0.3%2549'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.168.0.3%2549',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                    ],
+                    rhs: {
+                        command: 'ltm snatpool',
+                        properties: {
+                            members: {
+                                '/SampleTenant/192.168.0.3%2549': {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snatpool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/SampleApp/SampleServiceL4B'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"SampleApp"',
+                            destination: '/SampleTenant/192.168.0.3%2549:3200',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {},
+                            pool: '/SampleTenant/SampleApp/SamplePool',
+                            policies: {},
+                            profiles: {
+                                '/Common/cc_fastL4_profile': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0%2549/0',
+                            'source-address-translation': {
+                                type: 'snat',
+                                pool: '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConf, currentConf, confDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::modify ltm pool /SampleTenant/SampleApp/SamplePool members delete \\{ "/SampleTenant/192.168.0.3%2549:31214" \\}',
+                'tmsh::begin_transaction',
+                'tmsh::modify ltm node /SampleTenant/192.168.0.2%2549 metadata none',
+                'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::delete ltm node /SampleTenant/192.168.0.3%2549',
+                'tmsh::create ltm snat-translation /SampleTenant/192.168.0.3%2549 address 192.168.0.3%2549 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
+                'tmsh::delete ltm snat-translation /SampleTenant/192.168.0.1%2549',
+                'tmsh::create ltm snat-translation /SampleTenant/192.168.0.1%2549 address 192.168.0.1%2549 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
+                'tmsh::create ltm virtual-address /SampleTenant/192.168.0.3%2549 address 192.168.0.3%2549 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled server-scope any traffic-group default',
+                'tmsh::create ltm snatpool /SampleTenant/SampleApp/SampleServiceL4B-self members replace-all-with \\{ /SampleTenant/192.168.0.3%2549 \\}',
+                'tmsh::create ltm virtual /SampleTenant/SampleApp/SampleServiceL4B enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \\"SampleApp\\" destination /SampleTenant/192.168.0.3%2549:3200 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist none pool /SampleTenant/SampleApp/SamplePool policies none profiles replace-all-with \\{ /Common/cc_fastL4_profile \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0%2549/0 source-address-translation \\{ type snat pool /SampleTenant/SampleApp/SampleServiceL4B-self \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none throughput-capacity infinite',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                'tmsh::modify ltm pool /SampleTenant/SampleApp/SamplePool members add \\{ /SampleTenant/192.168.0.3%2549:31214 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
         describe('security firewall', () => {
             it('should properly setup preTrans, trans, and rollback during a delete', () => {
                 const desiredConfig = {};

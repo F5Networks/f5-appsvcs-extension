@@ -1259,9 +1259,13 @@ const tmshDelete = function (context, diff, currentConfig) {
         return commandObj;
     case 'ltm node':
         if (diff.kind === 'E') {
+            if (diff.path.length > 1 && diff.rhsCommand === 'ltm snat-translation') {
+                commandObj.commands = [deleteCommand];
+            }
             // Modifies are handled in tmshCreate
             return commandObj;
         }
+
         if (diff.kind === 'D' && diff.path.length === 1 && path.split('/')[1] === 'Common'
             && !context.tasks[context.currentIndex].firstPassNoDelete) {
             // A static node can fail to be deleted if an FQDN node has resolved to the
