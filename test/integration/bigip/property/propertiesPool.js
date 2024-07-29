@@ -121,6 +121,32 @@ describe('Pool', function () {
                             dynamicRatio: 50,
                             ratio: 50,
                             priorityGroup: 4,
+                            monitors: ['http', 'https'],
+                            minimumMonitors: 'all',
+                            adminState: 'disable',
+                            addressDiscovery: 'static',
+                            serverAddresses: ['5.5.5.5'],
+                            description: 'Test Description',
+                            routeDomain: 1,
+                            metadata: {
+                                example: {
+                                    value: 'test'
+                                },
+                                example1: {
+                                    value: '123',
+                                    persist: false
+                                }
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            servicePort: 400,
+                            connectionLimit: 1000,
+                            rateLimit: 100,
+                            dynamicRatio: 50,
+                            ratio: 50,
+                            priorityGroup: 4,
                             monitors: ['http'],
                             minimumMonitors: 1,
                             adminState: 'disable',
@@ -201,6 +227,40 @@ describe('Pool', function () {
                             ],
                             monitor: 'min 1 of { /Common/http }',
                             name: '3.3.3.3%1:400',
+                            partition: 'TEST_Pool',
+                            priorityGroup: 4,
+                            rateLimit: '100',
+                            ratio: 50,
+                            session: 'user-disabled',
+                            description: 'Test Description'
+                        }
+                    ],
+                    [
+                        {
+                            address: '5.5.5.5%1',
+                            connectionLimit: 1000,
+                            dynamicRatio: 50,
+                            ephemeral: 'false',
+                            fqdn: {
+                                autopopulate: 'disabled'
+                            },
+                            fullPath: '/TEST_Pool/5.5.5.5%1:400',
+                            inheritProfile: 'enabled',
+                            logging: 'disabled',
+                            metadata: [
+                                {
+                                    name: 'example',
+                                    persist: 'true',
+                                    value: 'test'
+                                },
+                                {
+                                    name: 'example1',
+                                    persist: 'false',
+                                    value: '123'
+                                }
+                            ],
+                            monitor: '/Common/http and /Common/https',
+                            name: '5.5.5.5%1:400',
                             partition: 'TEST_Pool',
                             priorityGroup: 4,
                             rateLimit: '100',

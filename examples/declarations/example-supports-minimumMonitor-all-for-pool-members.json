@@ -1,0 +1,32 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.43.0",
+    "id": "ALG_Log_Profile",
+    "Tenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "test.item-foo.6": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "connectionLimit": 1000,
+                        "rateLimit": 100,
+                        "dynamicRatio": 50,
+                        "ratio": 50,
+                        "addressDiscovery": "fqdn",
+                        "autoPopulate": true,
+                        "hostname": "example.com",
+                        "servicePort": 1344,
+                        "priorityGroup": 5,
+                        "minimumMonitors": "all",
+                        "monitors": [
+                            "https",
+                            "http"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

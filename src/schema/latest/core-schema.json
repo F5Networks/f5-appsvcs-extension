@@ -3703,9 +3703,17 @@
                 "minimumMonitors": {
                     "title": "Minimum monitors",
                     "description": "Member is down when fewer than minimum monitors report it healthy",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 63
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "all"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 63
+                        }
+                    ]
                 },
                 "metadata": {
                     "$ref": "#/definitions/Metadata"
