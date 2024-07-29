@@ -831,9 +831,6 @@
                     },
                     "then": {
                         "properties": {
-                            "devices": {
-                                "maxItems": 1
-                            },
                             "cpuUsageLimit": { "default": 0 },
                             "cpuUsageLimitEnabled": { "default": false },
                             "memoryLimit": { "default": 0 },

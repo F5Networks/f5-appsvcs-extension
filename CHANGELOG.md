@@ -23,6 +23,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4416: Eliminated the need for an SSL profile for virtual servers utilizing passthrough termination for HTTP/2.
 - AUTOTOOL-4389: ([Github Issue 836] (https://github.com/F5Networks/f5-appsvcs-extension/issues/836)) Enable support for a null monitor when the server type is set to generic-host for GSLB_Server.
 - AUTOTOOL-4373: Allow member order for GSLB_Pool Members of resource record type 'A'.
+- AUTOTOOL-4395: ([Github Issue 839](https://github.com/F5Networks/f5-appsvcs-extension/issues/839)) Allow multiple devices in GSLB_Server if the server type is generic-host, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-server-serverType.json)
 
 ### Fixed
 - AUTOTOOL-4371: The requested Pool Member was not found 
