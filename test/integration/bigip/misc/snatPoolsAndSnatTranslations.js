@@ -418,7 +418,7 @@ describe('SNAT Pools and SNAT Translations', function () {
                         label: '',
                         pool: 'SamplePool',
                         profileL4: {
-                            bigip: '/Common/cc_fastL4_profile'
+                            bigip: '/Common/fastL4'
                         },
                         snat: 'self',
                         class: 'Service_L4'
@@ -484,7 +484,7 @@ describe('SNAT Pools and SNAT Translations', function () {
                         label: '',
                         pool: 'SamplePool',
                         profileL4: {
-                            bigip: '/Common/cc_fastL4_profile'
+                            bigip: '/Common/fastL4'
                         },
                         snat: 'self',
                         class: 'Service_L4'
@@ -500,7 +500,7 @@ describe('SNAT Pools and SNAT Translations', function () {
                         label: '',
                         pool: 'SamplePool',
                         profileL4: {
-                            bigip: '/Common/cc_fastL4_profile'
+                            bigip: '/Common/fastL4'
                         },
                         snat: 'self',
                         class: 'Service_L4'
@@ -540,6 +540,10 @@ describe('SNAT Pools and SNAT Translations', function () {
         return Promise.resolve()
             .then(() => postBigipItems(bigipItems))
             .then(() => postDeclaration(dec0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
             .then(() => postDeclaration(dec1, { declarationIndex: 1 }))
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);

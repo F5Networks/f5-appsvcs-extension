@@ -2777,7 +2777,7 @@ const translate = {
      * Defines specific properties for HTTP virtual servers.
      * Service_Core properties are assumed.
      */
-    Service_HTTP(context, tenantId, appId, itemId, item, declaration) {
+    Service_HTTP(context, tenantId, appId, itemId, item, declaration, profileSecureHTTP2Flag) {
         let configs = [];
         // support for IAM policy attachment only
         if (item.policyIAM || item.profileAccess) {
@@ -2870,6 +2870,14 @@ const translate = {
         if (typeof item.profileHTTPAcceleration === 'string') {
             item.profileHTTPAcceleration = { bigip: '/Common/webacceleration' };
         }
+
+        if (!profileSecureHTTP2Flag && typeof item.profileHTTP2 === 'string') {
+            item.profileHTTP2 = { bigip: '/Common/http2' };
+        }
+        if (!profileSecureHTTP2Flag && item.profileHTTP2 && (item.profileHTTP2.use || item.profileHTTP2.bigip)) {
+            item = profile(item, 'profileHTTP2', 'all');
+        }
+
         item = profile(item, 'profileHTTP');
         item = profile(item, 'profileHTML');
         item = profile(item, 'profileHTTPCompression');
@@ -2962,24 +2970,30 @@ const translate = {
             adminState: item.adminState
         };
 
+        let profileSecureHTTP2Flag = false;
         if (typeof item.profileHTTP2 === 'string') {
             item.profileHTTP2 = { bigip: '/Common/http2' };
+            profileSecureHTTP2Flag = true;
         }
         if (item.profileHTTP2 && (item.profileHTTP2.use || item.profileHTTP2.bigip)) {
             item = profile(item, 'profileHTTP2', 'all');
+            profileSecureHTTP2Flag = true;
         }
         const profileHttp2Copy = util.simpleCopy(item.profileHTTP2);
         if (profileHttp2Copy && profileHttp2Copy.ingress) {
             item.profileHTTP2 = profileHttp2Copy.ingress;
             item = profile(item, 'profileHTTP2', 'clientside');
+            profileSecureHTTP2Flag = true;
         }
         if (profileHttp2Copy && profileHttp2Copy.egress) {
             item.profileHTTP2 = profileHttp2Copy.egress;
             item = profile(item, 'profileHTTP2', 'serverside');
+            profileSecureHTTP2Flag = true;
         }
 
-        let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration).configs;
-        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration).configs);
+        // eslint-disable-next-line max-len
+        let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration, profileSecureHTTP2Flag).configs;
+        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration, profileSecureHTTP2Flag).configs);
         return { configs };
     },
 

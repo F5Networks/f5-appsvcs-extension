@@ -2867,7 +2867,7 @@ describe('map_as3', () => {
                 virtualType: 'standard'
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration, false);
             assert.strictEqual(results.configs[0].path, '/dot.test/test_http/test_http-self');
             assert.strictEqual(results.configs[0].command, 'ltm snatpool');
             assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/10.204.64.249%2']).length, 0);
@@ -4860,7 +4860,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties['per-flow-request-access-policy'], '/tenantId/perRequestPolicy');
         });
 
@@ -4878,7 +4878,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties.profiles['/Common/requestadapt'].context, 'clientside');
             assert.strictEqual(results.configs[1].properties.profiles['/Common/responseadapt'].context, 'serverside');
         });
@@ -4894,7 +4894,7 @@ describe('map_as3', () => {
                 bigip: '/Common/vdi'
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/connectivityProfile'], { context: 'clientside' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/vdi'], { context: 'all' });
@@ -4916,7 +4916,7 @@ describe('map_as3', () => {
                 }
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], { context: 'all' });
@@ -4938,7 +4938,7 @@ describe('map_as3', () => {
                 }
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], undefined);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], undefined);
@@ -4952,7 +4952,7 @@ describe('map_as3', () => {
                 ssloCreated: false
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/tenantId/accessProfile'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], { context: 'all' });
@@ -4966,7 +4966,7 @@ describe('map_as3', () => {
                 ssloCreated: true
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/tenantId/accessProfile'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], undefined);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], undefined);
@@ -4979,7 +4979,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/apiProtectionProfile'], { context: 'all' });
         });
 
@@ -4990,7 +4990,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/apiProtectionProfile'], undefined);
         });
 
@@ -5055,7 +5055,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: 'dosProfile' };
             defaultContext.target.tmosVersion = '13.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5071,7 +5071,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5089,7 +5089,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileBotDefense = { use: '/tenantId/appId/bot-defense' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5103,7 +5103,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5140,7 +5140,7 @@ describe('map_as3', () => {
                     }
                 }
             };
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles,
                 {
                     '/Common/f5-tcp-progressive': { context: 'all' },
@@ -5150,7 +5150,7 @@ describe('map_as3', () => {
         });
 
         it('should handle adminState', () => {
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties.enabled, true);
         });
 
@@ -5207,7 +5207,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5244,7 +5244,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5278,7 +5278,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5316,7 +5316,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/Shared/myHTTP': { context: 'all' },
@@ -5357,7 +5357,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/Common/Shared/myHTTP': { context: 'all' },
@@ -5392,7 +5392,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(
                     results.configs[1].properties.profiles,
                     {
@@ -5433,7 +5433,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(
                     results.configs[1].properties.profiles,
                     {
@@ -5489,7 +5489,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/httpProfile': { context: 'all' },
@@ -5527,7 +5527,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/Common/Shared/httpProfile': { context: 'all' },

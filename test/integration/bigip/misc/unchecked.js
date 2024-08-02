@@ -25,6 +25,7 @@ chai.use(chaiAsPromised);
 const assert = chai.assert;
 
 const {
+    getPath,
     assertClass,
     postDeclaration,
     deleteDeclaration,
@@ -32,6 +33,7 @@ const {
     getBigIpVersion,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
+
 const gtmUtil = require('../../../../src/lib/util/gtmUtil');
 const util = require('../../../../src/lib/util/util');
 const { validateEnvVars } = require('../../../common/checkEnv');
@@ -761,5 +763,160 @@ describe('Unchecked mode', function () {
 
         ];
         return assertClass('GSLB_Topology_Records', properties, options);
+    });
+    it('should attach profileHTTP2 under Service_HTTP', () => {
+        const postDecl = {
+            class: 'ADC',
+            updateMode: 'selective',
+            TEST_Service_HTTP: {
+                class: 'Tenant',
+                SHARED: {
+                    'FREE_GLB_HTTP_80_Address_192.168.0.80': {
+                        spanningEnabled: false,
+                        class: 'Service_Address',
+                        virtualAddress: '192.168.0.80',
+                        arpEnabled: false,
+                        routeAdvertisement: 'selective',
+                        icmpEcho: 'enable'
+                    },
+                    httpCustom: {
+                        maxHeaderSize: 32768,
+                        maxHeaderCount: 128,
+                        xForwardedFor: true,
+                        enforceRFCCompliance: false,
+                        class: 'HTTP_Profile',
+                        unknownMethodAction: 'allow',
+                        viaResponse: 'preserve',
+                        responseChunking: 'sustain',
+                        pipelineAction: 'allow',
+                        allowBlankSpaceAfterHeaderName: false,
+                        trustXFF: true,
+                        rewriteRedirects: 'none',
+                        requestChunking: 'sustain',
+                        proxyType: 'reverse',
+                        knownMethods: [
+                            'CONNECT',
+                            'DELETE',
+                            'GET',
+                            'HEAD',
+                            'LOCK',
+                            'OPTIONS',
+                            'POST',
+                            'PROPFIND',
+                            'PUT',
+                            'TRACE',
+                            'UNLOCK'
+                        ],
+                        viaRequest: 'preserve',
+                        truncatedRedirects: false,
+                        serverHeaderValue: 'none',
+                        multiplexTransformations: true
+                    },
+                    template: 'shared',
+                    class: 'Application',
+                    http2Custom: {
+                        includeContentLength: false,
+                        headerTableSize: 4096,
+                        label: 'http2Custom',
+                        connectionIdleTimeout: 300,
+                        concurrentStreamsPerConnection: 10,
+                        insertHeader: false,
+                        activationMode: 'always',
+                        frameSize: 2048,
+                        writeSize: 16384,
+                        enforceTlsRequirements: false,
+                        class: 'HTTP2_Profile',
+                        receiveWindow: 32
+                    },
+                    webtls: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                certificate: 'webcert'
+                            }
+                        ],
+                        renegotiationEnabled: false
+                    },
+                    tlsClient: {
+                        class: 'TLS_Client',
+                        clientCertificate: 'webcert'
+                    },
+                    webcert: {
+                        class: 'Certificate',
+                        certificate: { bigip: '/Common/default.crt' },
+                        privateKey: { bigip: '/Common/default.key' }
+                    },
+                    FREE_GLB_HTTP: {
+                        class: 'Service_HTTP',
+                        profileHTTP2: {
+                            use: '/TEST_Service_HTTP/SHARED/http2Custom'
+                        },
+                        profileTCP: {
+                            bigip: '/Common/f5-tcp-progressive'
+                        },
+                        profileHTTP: {
+                            use: '/TEST_Service_HTTP/SHARED/httpCustom'
+                        },
+                        remark: 'FREE GLB HTTP VIP',
+                        translateServerPort: true,
+                        enable: true,
+                        layer4: 'tcp',
+                        translateServerAddress: true,
+
+                        redirect80: false,
+                        virtualPort: 80,
+                        rateLimit: 0,
+                        virtualAddresses: [
+                            {
+                                use: 'FREE_GLB_HTTP_80_Address_192.168.0.80'
+                            }
+                        ],
+                        persistenceMethods: [],
+                        translateClientPort: true
+                    }
+                }
+            },
+            id: 'autogen_cff031ba-2cf7-4f90-bc61-049cdf38e0d3',
+            label: 'Combined Declaration',
+            remark: 'Combined declaration of all components',
+            schemaVersion: '3.50.0',
+            controls: {
+                trace: true,
+                logLevel: 'error',
+                class: 'Controls',
+                dryRun: false,
+                traceResponse: true
+            }
+        };
+        function validateAs3Result(result, expectedTenantName) {
+            assert.strictEqual(result.code, 200);
+            assert.strictEqual(result.message, 'success');
+            assert.strictEqual(result.tenant, expectedTenantName);
+            assert.ok(result.declarationId.startsWith('autogen_'));
+        }
+
+        return Promise.resolve()
+            // POST initial declaration
+            .then(() => postDeclaration(postDecl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results.length, 1);
+                validateAs3Result(response.results[0], 'TEST_Service_HTTP');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~TEST_Service_HTTP~SHARED~FREE_GLB_HTTP'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/TEST_Service_HTTP/FREE_GLB_HTTP_80_Address_192.168.0.80:80');
+                assert.strictEqual(response.ipProtocol, 'tcp');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~TEST_Service_HTTP~SHARED~FREE_GLB_HTTP/profiles'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 3);
+                assert.strictEqual(response.items[0].fullPath, '/Common/f5-tcp-progressive');
+                assert.strictEqual(response.items[1].fullPath, '/TEST_Service_HTTP/SHARED/http2Custom');
+                assert.strictEqual(response.items[2].fullPath, '/TEST_Service_HTTP/SHARED/httpCustom');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/http2/~TEST_Service_HTTP~SHARED~http2Custom'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'http2Custom');
+            });
     });
 });
