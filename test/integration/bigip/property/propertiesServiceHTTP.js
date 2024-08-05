@@ -703,6 +703,69 @@ describe('Service_HTTP', function () {
         return assertServiceHTTPClass(properties, options);
     });
 
+    it('accessPingProfile', function () {
+        assertModuleProvisioned.call(this, 'apm');
+
+        const options = {
+            useTransaction: true,
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/shared/file-transfer/uploads/certOne',
+                    data: '-----BEGIN CERTIFICATE-----\nMIIDyTCCArGgAwIBAgIBADANBgkqhkiG9w0BAQUFADB/MQswCQYDVQQGEwJGUjET\nMBEGA1UECAwKU29tZS1TdGF0ZTEOMAwGA1UEBwwFUGFyaXMxDTALBgNVBAoMBERp\nbWkxDTALBgNVBAsMBE5TQlUxEDAOBgNVBAMMB0RpbWkgQ0ExGzAZBgkqhkiG9w0B\nCQEWDGRpbWlAZGltaS5mcjAeFw0xNDAxMjgyMDI2NDRaFw0yNDAxMjYyMDI2NDRa\nMH8xCzAJBgNVBAYTAkZSMRMwEQYDVQQIDApTb21lLVN0YXRlMQ4wDAYDVQQHDAVQ\nYXJpczENMAsGA1UECgwERGltaTENMAsGA1UECwwETlNCVTEQMA4GA1UEAwwHRGlt\naSBDQTEbMBkGCSqGSIb3DQEJARYMZGltaUBkaW1pLmZyMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEAuxuG4QeBIGXj/AB/YRLLtpgpTpGnDntVlgsycZrL\n3qqyOdBNlwnvcB9etfY5iWzjeq7YZRr6i0dIV4sFNBR2NoK+YvdD9j1TRi7njZg0\nd6zth0xlsOhCsDlV/YCL1CTcYDlKA/QiKeIQa7GU3Rhf0t/KnAkr6mwoDbdKBQX1\nD5HgQuXJiFdh5XRebxF1ZB3gH+0kCEaEZPrjFDApkOXNxEARZdpBLpbvQljtVXtj\nHMsvrIOc7QqUSOU3GcbBMSHjT8cgg8ssf492Go3bDQkIzTROz9QgDHaqDqTC9Hoe\nvlIpTS+q/3BCY5AGWKl3CCR6dDyK6honnOR/8srezaN4PwIDAQABo1AwTjAdBgNV\nHQ4EFgQUhMwqkbBrGp87HxfvwgPnlGgVR64wHwYDVR0jBBgwFoAUhMwqkbBrGp87\nHxfvwgPnlGgVR64wDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAVqYq\nvhm5wAEKmvrKXRjeb5kiEIp7oZAFkYp6sKODuZ1VdkjMDD4wv46iqAe1QIIsfGwd\nDmv0oqSl+iPPy24ATMSZQbPLO5K64Hw7Q8KPos0yD8gHSg2d4SOukj+FD2IjAH17\na8auMw7TTHu6976JprQQKtPADRcfodGd5UFiz/6ZgLzUE23cktJMc2Bt18B9OZII\nJ9ef2PZxZirJg1OqF2KssDlJP5ECo9K3EmovC5M5Aly++s8ayjBnNivtklYL1VOT\nZrpPgcndTHUA5KS/Duf40dXm0snCxLAKNP28pMowDLSYc6IjVrD4+qqw3f1b7yGb\nbJcFgxKDeg5YecQOSg==\n-----END CERTIFICATE-----',
+                    headers: {
+                        'Content-Range': '0-1373/1374',
+                        'Content-Type': 'text/plain'
+                    }
+                },
+                {
+                    endpoint: '/mgmt/tm/ltm/pool',
+                    data: {
+                        name: 'testPool',
+                        partition: 'Common'
+                    }
+                },
+                {
+                    endpoint: '/mgmt/tm/apm/aaa/ping-access-properties-file',
+                    data: {
+                        name: 'testProperties',
+                        partition: 'Common',
+                        sourcePath: 'file:///var/config/rest/downloads/certOne'
+                    }
+                },
+                {
+                    endpoint: '/mgmt/tm/apm/profile/ping-access',
+                    data: {
+                        name: 'accessPingProfile',
+                        pool: '/Common/testPool',
+                        pingAccessProperties: '/Common/testProperties',
+                        serversslProfile: '/Common/serverssl'
+                    }
+                }
+            ]
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [8080],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.1']],
+                skipAssert: true
+            },
+            {
+                name: 'profilePingAccess',
+                inputValue: [undefined, { bigip: '/Common/accessPingProfile' }, undefined],
+                expectedValue: [undefined, 'accessPingProfile', undefined],
+                extractFunction: (virtual) => extractProfile(virtual, 'accessPingProfile')
+            }
+        ];
+
+        return assertServiceHTTPClass(properties, options);
+    });
+
     it('policyIAM and perRequestAccessPolicy properties', function () {
         assertModuleProvisioned.call(this, 'apm');
 

@@ -4900,6 +4900,23 @@ describe('map_as3', () => {
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/vdi'], { context: 'all' });
         });
 
+        it('should add access profiles ping to service', () => {
+            item.profilePingAccess = {
+                bigip: '/Common/access'
+            };
+            item.profileConnectivity = {
+                bigip: '/Common/connectivityProfile'
+            };
+            item.profileVdi = {
+                bigip: '/Common/vdi'
+            };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
+            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/connectivityProfile'], { context: 'clientside' });
+            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/vdi'], { context: 'all' });
+        });
+
         it('should add rba and websso profiles with non-sslo bigip-ref', (() => {
             item.profileAccess = {
                 bigip: '/Common/access'

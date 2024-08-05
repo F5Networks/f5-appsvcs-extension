@@ -154,7 +154,7 @@ const profile = function profile(item, key, context, declaration) {
             item[key].forEach((profileDef) => {
                 let path = bigipPathFromSrc(profileDef);
 
-                if ((key === 'policyIAM' || key === 'profileAccess') && path.split('/').length === 4) {
+                if ((key === 'policyIAM' || key === 'profileAccess' || key === 'profilePingAccess') && path.split('/').length === 4) {
                     const splitPath = path.split('/');
                     path = `/${splitPath[1]}/${splitPath[3]}`;
                 }
@@ -170,7 +170,7 @@ const profile = function profile(item, key, context, declaration) {
         } else {
             let path = bigipPath(item, key);
 
-            if ((key === 'policyIAM' || key === 'profileAccess') && path.split('/').length === 4) {
+            if ((key === 'policyIAM' || key === 'profileAccess' || key === 'profilePingAccess') && path.split('/').length === 4) {
                 const splitPath = path.split('/');
                 path = `/${splitPath[1]}/${splitPath[3]}`;
             }
@@ -2780,7 +2780,7 @@ const translate = {
     Service_HTTP(context, tenantId, appId, itemId, item, declaration, profileSecureHTTP2Flag) {
         let configs = [];
         // support for IAM policy attachment only
-        if (item.policyIAM || item.profileAccess) {
+        if (item.policyIAM || item.profileAccess || item.profilePingAccess) {
             // add per-session policy's auto-generated apm profile with rba and websso
             let profilePath;
 
@@ -2798,6 +2798,13 @@ const translate = {
                 }
             }
 
+            if (item.profilePingAccess) {
+                item = profile(item, 'profilePingAccess');
+                if (item.profilePingAccess.use) {
+                    profilePath = item.profilePingAccess.use.split('/');
+                }
+            }
+
             if (profilePath) {
                 // profilePath should only be set here in the use-ref scenario
                 const profileDef = declaration[profilePath[1]][profilePath[2]][profilePath[3]];
@@ -2810,6 +2817,8 @@ const translate = {
                     profilePath = item.policyIAM.bigip;
                 } else if (item.profileAccess && item.profileAccess.bigip) {
                     profilePath = item.profileAccess.bigip;
+                } else if (item.profilePingAccess && item.profilePingAccess.bigip) {
+                    profilePath = item.profilePingAccess.bigip;
                 }
 
                 if (profilePath) {

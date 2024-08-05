@@ -1,0 +1,19 @@
+{
+    "EXAMPLE_PROFILE_PING_SERVER_HTTPS": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "test.item-foo.123": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "192.0.2.2"
+                ],
+                "profilePingAccess": {
+                    "bigip": "/Common/pingProfileAccess"
+                }
+            }
+        }
+    },
+    "class": "ADC",
+    "schemaVersion": "3.53.0"
+}
