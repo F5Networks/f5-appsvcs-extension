@@ -11,6 +11,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 - AUTOTOOL-4435: The requested SNAT Translation (<SNAT Name>) already exists in partition <Partition Name>
+- AUTOTOOL-4425: Handle empty values for class UpdaterRest
 
 ### Changed
 
