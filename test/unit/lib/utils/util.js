@@ -2505,4 +2505,33 @@ describe('util', () => {
             assert.strictEqual(util.capitalizeString('foo bar'), 'Foo bar');
         });
     });
+
+    describe('convertRouteDomainIDToRestAPI', () => {
+        it('should convert minimum value of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%0'), '/Common/192.0.2.100%250');
+        });
+        it('should convert RouteDomainID 1', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%1'), '/Common/192.0.2.100%251');
+        });
+
+        it('should convert mid value of RouteDomainID ', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%32534'), '/Common/192.0.2.100%2532534');
+        });
+
+        it('should convert max value of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65534'), '/Common/192.0.2.100%2565534');
+        });
+
+        it('should not convert above max limit of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65535'), '/Common/192.0.2.100%65535');
+        });
+
+        it('should identify and convert RouteDomainID only at last', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65535%10'), '/Common/192.0.2.100%65535%2510');
+        });
+
+        it('should convert RouteDomainID mixed with name', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/test_virtual.Address%10'), '/Common/test_virtual.Address%2510');
+        });
+    });
 });

@@ -1825,6 +1825,17 @@ class Util {
 
         return extraHeaders;
     }
+
+    static convertRouteDomainIDToRestAPI(routeDomain) {
+        const result = routeDomain.replace(/%(\d+)$/g, (match, p1) => {
+            const number = parseInt(p1, 10);
+            if (number >= 0 && number <= 65534) {
+                return `%25${number}`;
+            }
+            return match; // Return the original
+        });
+        return result; // Return the original
+    }
 }
 
 module.exports = Util;

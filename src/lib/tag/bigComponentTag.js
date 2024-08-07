@@ -124,6 +124,9 @@ function filterBigComponentTag(context, component, declaration, filteredComponen
             if (!isAsm) {
                 testUrl = `${testUrl}/${testName.replace(/\x2f/g, '~')}`;
             }
+            if (elems.length > 1 && elems[1] === 'virtual-address') {
+                testUrl = util.convertRouteDomainIDToRestAPI(testUrl);
+            }
         } else {
             payload = JSON.stringify({ name: testName });
         }
@@ -312,5 +315,6 @@ function handleBigComponents(context, components) {
 
 module.exports = {
     process,
+    filterBigComponentTag,
     TAG
 };

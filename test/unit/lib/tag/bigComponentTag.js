@@ -170,6 +170,23 @@ describe('bigComponentTag', () => {
             };
             break;
         }
+        case 'virtual-address-route-domain': {
+            component = {
+                tenant: 'Tenant',
+                instancePath: '/Tenant/A0/service/virtualAddresses/0',
+                parentDataProperty: '0',
+                schemaData: ['query ltm virtual-address'],
+                data: {
+                    bigip: '/Common/192.168.1.100%61'
+                },
+                parentData: [
+                    {
+                        bigip: '/Common/192.168.1.100%61'
+                    }
+                ]
+            };
+            break;
+        }
         case 'gslb-monitor': {
             component = {
                 tenant: 'Common',
@@ -735,6 +752,20 @@ describe('bigComponentTag', () => {
                         }
                     );
                 });
+        });
+
+        it('should fetch virtual-address routedomain ID and store the metadata', () => {
+            components.push(getComponent('virtual-address-route-domain'));
+            // loop through the declaration and add the route domain
+            declaration.Tenant.A0.service.virtualAddresses[0] = {
+                bigip: '/Common/192.168.1.100%61'
+            };
+            const filteredComponents = [];
+            components.forEach(
+                // eslint-disable-next-line max-len
+                (component) => BigComponentTag.filterBigComponentTag(context, component, declaration, filteredComponents)
+            );
+            assert.strictEqual(filteredComponents[0].testOptions.path, '/mgmt/tm/ltm/virtual-address/~Common~192.168.1.100%2561');
         });
     });
 });

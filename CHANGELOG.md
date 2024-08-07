@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 - AUTOTOOL-4435: The requested SNAT Translation (<SNAT Name>) already exists in partition <Partition Name>
 - AUTOTOOL-4425: Handle empty values for class UpdaterRest
+- AUTOTOOL-4448:([Github Issue 857] (https://github.com/F5Networks/f5-appsvcs-extension/issues/857)) Add support for RouteDomain identifer for virtual-address name, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-virtualserver-name-with-routedomainIdentifier.json)
 
 ### Changed
 

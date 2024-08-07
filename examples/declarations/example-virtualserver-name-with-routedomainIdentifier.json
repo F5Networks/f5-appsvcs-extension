@@ -1,0 +1,37 @@
+{
+    "class": "AS3",
+    "declaration": {
+      "class": "ADC",
+      "schemaVersion": "3.53.0",
+      "Tenant01": {
+        "class": "Tenant",
+        "defaultRouteDomain": 1,
+        "A1": {
+          "class": "Application",
+          "template": "generic",
+          "vs1": {
+            "class": "Service_UDP",
+            "sourceAddress": "0.0.0.0%1/0",
+            "virtualAddresses": [
+              { "bigip": "/Common/10.1.100.1%1" }
+            ],
+            "virtualPort": 80,
+            "pool": "web_pool"
+          },
+          "web_pool": {
+            "class": "Pool",
+            "monitors": [{
+              "bigip": "/Common/udp"
+            }],
+            "members": [
+              {
+                "servicePort": 80,
+                "serverAddresses": [
+                  "192.0.1.10"
+                ]
+              }]
+          }
+        }
+      }
+    }
+  }
