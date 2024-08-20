@@ -1924,8 +1924,8 @@ const translate = {
      */
     Persist(context, tenantId, appId, itemId, item) {
         item.ignore = item.ignore || {};
-        // convert ttl seconds to special bigip hh:mm:ss format
-        item.ttl = util.convertTtlToHourMinSec(item.ttl);
+        // convert ttl seconds to special bigip dd:hh:mm:ss format
+        item.ttl = util.convertTtlToDayHourMinSec(item.ttl);
         // replace zero value with special bigip string
         if (item.duration === 0) {
             item.duration = 'indefinite';
