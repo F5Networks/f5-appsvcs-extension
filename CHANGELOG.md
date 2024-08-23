@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4395: ([Github Issue 839](https://github.com/F5Networks/f5-appsvcs-extension/issues/839)) Allow multiple devices in GSLB_Server if the server type is generic-host, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-server-serverType.json)
 - AUTOTOOL-4437: Add support to assign HTTP/2 Profile without TLS to VIP, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-http2-notls.json)
 - AUTOTOOL-4463: ([Github Issue 860] (https://github.com/F5Networks/f5-appsvcs-extension/issues/860)) Added AS3 schema profilePingAccess for service_HTTP(S) classes similar to existing schema profileAccess, [Example1](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-profile-ping-access-http.json), [Example2](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-profile-ping-access-https.json).
+- AUTOTOOL-4390: ([Github Issue 837] (https://github.com/F5Networks/f5-appsvcs-extension/issues/837)) Added AS3 schema minimumMonitors support for GSLB_Servers and GSLB_Virtual_Server classes, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-service-virtual-server-minimum-monitor.json).
 
 ### Fixed
 - AUTOTOOL-4435: The requested SNAT Translation (<SNAT Name>) already exists in partition <Partition Name>

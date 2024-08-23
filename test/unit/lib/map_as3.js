@@ -10521,6 +10521,149 @@ describe('map_as3', () => {
             });
         });
 
+        it('should return a config with minimum item values(along with minimumMonitor) for 13+ versions', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                minimumMonitors: 1,
+                virtualServers: [
+                    {
+                        address: '192.0.2.4',
+                        port: 1000,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    },
+                    {
+                        address: '192.0.2.5',
+                        port: 1111,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    }
+                ],
+                monitors: [{ bigip: '/Common/bigip' }]
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                },
+                                'as3-virtuals': {
+                                    persist: 'true',
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
+                                }
+                            },
+                            monitor: 'min 1 of \\{ /Common/bigip \\}',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            },
+                            'virtual-servers': {
+                                0: {
+                                    destination: '192.0.2.4:1000',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                },
+                                1: {
+                                    destination: '192.0.2.5:1111',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a config with minimum item values(no monitor) for 13+ versions', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                minimumMonitors: 1,
+                virtualServers: [
+                    {
+                        address: '192.0.2.4',
+                        port: 1000,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    },
+                    {
+                        address: '192.0.2.5',
+                        port: 1111,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    }
+                ],
+                monitors: [],
+                serverType: 'bigip'
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                },
+                                'as3-virtuals': {
+                                    persist: 'true',
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
+                                }
+                            },
+                            monitor: 'min 1 of \\{ /Common/bigip \\}',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            },
+                            'virtual-servers': {
+                                0: {
+                                    destination: '192.0.2.4:1000',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                },
+                                1: {
+                                    destination: '192.0.2.5:1111',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+
         it('minimum set for two devices for 13+ versions', () => {
             const item = {
                 class: 'GSLB_Server',

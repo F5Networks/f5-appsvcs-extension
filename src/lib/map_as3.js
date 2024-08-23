@@ -3916,11 +3916,21 @@ const translate = {
 
         function mapMonitors(source) {
             if (source.monitors.length > 0) {
-                source.monitors = source.monitors
-                    .map((m, i) => bigipPath(source.monitors, i))
-                    .join(' and ');
+                if (source.minimumMonitors) {
+                    const monitorsList = source.monitors
+                        .map((m, i) => bigipPath(source.monitors, i))
+                        .join(' ');
+                    source.monitors = `min ${source.minimumMonitors} of \\{ ${monitorsList} \\}`;
+                } else {
+                    source.monitors = source.monitors
+                        .map((m, i) => bigipPath(source.monitors, i))
+                        .join(' and ');
+                }
             } else if (source.serverType === 'bigip') {
                 source.monitors = '/Common/bigip';
+                if (source.minimumMonitors) {
+                    source.monitors = `min ${source.minimumMonitors} of \\{ ${source.monitors} \\}`;
+                }
             }
         }
 

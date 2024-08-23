@@ -723,6 +723,13 @@
                         "$ref": "#/definitions/Pointer_GSLB_Monitor"
                     }
                 },
+                "minimumMonitors": {
+                    "title": "Minimum monitors",
+                    "description": "Member is down when fewer than minimum monitors report it healthy.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 63
+                },
 
                 "bpsLimit": {
                     "title": "Maximum Bits Per Second",
@@ -995,6 +1002,13 @@
                     "items": {
                         "$ref": "#/definitions/Pointer_GSLB_Monitor"
                     }
+                },
+                "minimumMonitors": {
+                    "title": "Minimum monitors",
+                    "description": "Member is down when fewer than minimum monitors report it healthy.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 63
                 },
                 "name": {
                     "title": "Name",
