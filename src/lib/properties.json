@@ -1801,11 +1801,15 @@
   "security firewall rule-list rules source": [
     { "id":"address-lists",             "extend": "array"},
     { "id":"port-lists",                "extend": "array"},
-    { "id":"vlans",                     "extend": "array"}
+    { "id":"vlans",                     "extend": "array"},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"ports",                     "extend": "array"}
   ],
   "security firewall rule-list rules destination": [
     { "id":"address-lists",             "extend": "array"},
-    { "id":"port-lists",                "extend": "array"}
+    { "id":"port-lists",                "extend": "array"},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"ports",                     "extend": "array"}
   ],
   "security nat policy": [
     { "id":"description",               "altId": "remark", "quotedString": true},

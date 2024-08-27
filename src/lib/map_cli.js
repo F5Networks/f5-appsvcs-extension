@@ -156,6 +156,8 @@ const prefix = {
     'security firewall rule-list port-lists': 'replace-all-with',
     'security firewall rule-list rules': 'replace-all-with',
     'security firewall rule-list vlans': 'replace-all-with',
+    'security firewall rule-list addresses': 'replace-all-with',
+    'security firewall rule-list ports': 'replace-all-with',
     'security nat policy address-lists': 'replace-all-with',
     'security nat policy port-lists': 'replace-all-with',
     'security nat policy rules': 'replace-all-with',

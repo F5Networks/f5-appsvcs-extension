@@ -1408,6 +1408,20 @@ const translate = {
     },
     'tm:security:firewall:rule-list:rule-liststate': function (context, obj, referenceConfig) {
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
+        referenceConfig.forEach((reference) => {
+            if (reference.destination && reference.destination.addresses) {
+                reference.destination.addresses = reference.destination.addresses.map((address) => address.name);
+            }
+            if (reference.destination && reference.destination.ports) {
+                reference.destination.ports = reference.destination.ports.map((port) => port.name);
+            }
+            if (reference.source && reference.source.addresses) {
+                reference.source.addresses = reference.source.addresses.map((address) => address.name);
+            }
+            if (reference.source && reference.source.ports) {
+                reference.source.ports = reference.source.ports.map((port) => port.name);
+            }
+        });
         obj = pushReferences(
             context,
             obj,

@@ -6688,6 +6688,13 @@ describe('map_as3', () => {
                                 {
                                     bigip: '/Common/external'
                                 }
+                            ],
+                            addresses: [
+                                '192.0.2.244-192.0.2.245',
+                                '192.0.2.0/25'
+                            ],
+                            ports: [
+                                '2192-3213'
                             ]
                         },
                         destination: {
@@ -6700,6 +6707,13 @@ describe('map_as3', () => {
                                 {
                                     use: 'portList'
                                 }
+                            ],
+                            addresses: [
+                                '192.0.2.244-192.0.2.245',
+                                '192.0.2.0/25'
+                            ],
+                            ports: [
+                                '2192-3213'
                             ]
                         },
                         loggingEnabled: true,
@@ -6727,6 +6741,13 @@ describe('map_as3', () => {
                                 },
                                 vlans: {
                                     '/Common/external': {}
+                                },
+                                addresses: {
+                                    '192.0.2.0/25': {},
+                                    '192.0.2.244-192.0.2.245': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             destination: {
@@ -6735,6 +6756,13 @@ describe('map_as3', () => {
                                 },
                                 'port-lists': {
                                     portList: {}
+                                },
+                                addresses: {
+                                    '192.0.2.0/25': {},
+                                    '192.0.2.244-192.0.2.245': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             log: 'yes',

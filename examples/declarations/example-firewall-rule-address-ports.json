@@ -1,0 +1,70 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.53.0",
+    "id": "Firewall_Rule_List",
+    "Example_Firewall_Rule_List": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "exampleFWRuleList": {
+                "class": "Firewall_Rule_List",
+                "remark": "description",
+                "rules": [
+                    {
+                        "remark": "description",
+                        "name": "theRule1",
+                        "action": "accept-decisively",
+                        "protocol": "tcp",
+                        "loggingEnabled": true
+                    },
+                    {
+                        "remark": "description",
+                        "name": "theRule2",
+                        "action": "reject",
+                        "protocol": "tcp",
+                        "loggingEnabled": true,
+                        "source": {
+                            "addressLists": [
+                                {
+                                    "use": "addList"
+                                }
+                            ],
+                            "vlans": [
+                                {
+                                    "bigip": "/Common/external"
+                                }
+                            ],
+                            "ports": [
+                                "2192-3213"
+                            ],
+                            "addresses": [
+                                "192.0.2.244-192.0.2.245",
+                                "192.0.2.0/25"
+                            ]
+                        },
+                        "destination": {
+                            "addressLists": [
+                                {
+                                    "use": "addList"
+                                }
+                            ],
+                            "ports": [
+                                "2192-3213"
+                            ],
+                            "addresses": [
+                                "192.0.2.244-192.0.2.245",
+                                "192.0.2.0/25"
+                            ]
+                        }
+                    }
+                ]
+            },
+            "addList": {
+                "class": "Firewall_Address_List",
+                "addresses": [
+                    "1.3.5.7"
+                ]
+            }
+        }
+    }
+}

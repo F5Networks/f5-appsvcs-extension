@@ -1920,6 +1920,19 @@ describe('map_mcp', () => {
                             ],
                             portLists: [
                                 '/TEST_Firewall_Rule_List/Application/portList'
+                            ],
+                            addresses: [
+                                {
+                                    name: '192.0.2.244-192.0.2.245'
+                                },
+                                {
+                                    name: '192.0.2.0/25'
+                                }
+                            ],
+                            ports: [
+                                {
+                                    name: '2192-3213'
+                                }
                             ]
                         },
                         source: {
@@ -1931,8 +1944,22 @@ describe('map_mcp', () => {
                             ],
                             vlans: [
                                 '/Common/external'
+                            ],
+                            addresses: [
+                                {
+                                    name: '192.0.2.244-192.0.2.245'
+                                },
+                                {
+                                    name: '192.0.2.0/25'
+                                }
+                            ],
+                            ports: [
+                                {
+                                    name: '2192-3213'
+                                }
                             ]
                         }
+
                     }
                 ];
                 const expected = {
@@ -1948,6 +1975,13 @@ describe('map_mcp', () => {
                                 },
                                 vlans: {
                                     '/Common/external': {}
+                                },
+                                addresses: {
+                                    '192.0.2.244-192.0.2.245': {},
+                                    '192.0.2.0/25': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             destination: {
@@ -1956,6 +1990,13 @@ describe('map_mcp', () => {
                                 },
                                 'port-lists': {
                                     '/TEST_Firewall_Rule_List/Application/portList': {}
+                                },
+                                addresses: {
+                                    '192.0.2.244-192.0.2.245': {},
+                                    '192.0.2.0/25': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             log: 'yes',
