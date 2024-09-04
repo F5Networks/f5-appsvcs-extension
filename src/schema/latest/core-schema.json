@@ -516,7 +516,7 @@
                             "properties": {
                                 "class": {
                                     "enum": [
-                                        "Access_Profile_Ping"
+                                        "Ping_Access_Profile"
                                     ]
                                 }
                             },

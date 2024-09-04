@@ -541,4 +541,89 @@ describe('Importing APM Policies', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+
+    it('should create Server HTTPS Profile with ping access profile reference', function () {
+        const declaration = {
+            SampleTenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    remark: 'test',
+                    label: 'test123',
+                    'test.item-foo.123': {
+                        class: 'Service_HTTPS',
+                        virtualPort: 8080,
+                        virtualAddresses: [
+                            '192.0.2.2'
+                        ],
+                        profilePingAccess: {
+                            use: 'testPingAccessProfile'
+                        }
+                    },
+                    testPingAccessProfile: {
+                        class: 'Ping_Access_Profile',
+                        pingAccessProperties: {
+                            use: 'testPingAccess'
+                        },
+                        pool: {
+                            use: 'testPool'
+                        },
+                        useHTTPS: true,
+                        serversslProfile: {
+                            use: 'testServerSSL'
+                        }
+                    },
+                    testServerSSL: {
+                        class: 'TLS_Client',
+                        trustCA: {
+                            bigip: '/Common/default.crt'
+                        }
+                    },
+                    testPool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                servicePort: 80,
+                                serverAddresses: [
+                                    '192.0.2.5'
+                                ],
+                                metadata: {
+                                    example: {
+                                        value: 'test'
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    testPingAccess: {
+                        class: 'Ping_Access_Agent_Properties',
+                        propertiesData: {
+                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                        },
+                        ignoreChanges: true,
+                        remark: 'test',
+                        label: 'test123'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.53.0'
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~SampleTenant~Application~test.item-foo.123/profiles/~SampleTenant~Application~testPingAccessProfile'))
+            .then((result) => {
+                assert.strictEqual(result.name, 'testPingAccessProfile');
+            });
+    });
 });

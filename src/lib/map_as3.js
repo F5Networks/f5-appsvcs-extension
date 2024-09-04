@@ -154,7 +154,7 @@ const profile = function profile(item, key, context, declaration) {
             item[key].forEach((profileDef) => {
                 let path = bigipPathFromSrc(profileDef);
 
-                if ((key === 'policyIAM' || key === 'profileAccess' || key === 'profilePingAccess') && path.split('/').length === 4) {
+                if ((key === 'policyIAM' || key === 'profileAccess') && path.split('/').length === 4) {
                     const splitPath = path.split('/');
                     path = `/${splitPath[1]}/${splitPath[3]}`;
                 }
@@ -170,7 +170,7 @@ const profile = function profile(item, key, context, declaration) {
         } else {
             let path = bigipPath(item, key);
 
-            if ((key === 'policyIAM' || key === 'profileAccess' || key === 'profilePingAccess') && path.split('/').length === 4) {
+            if ((key === 'policyIAM' || key === 'profileAccess') && path.split('/').length === 4) {
                 const splitPath = path.split('/');
                 path = `/${splitPath[1]}/${splitPath[3]}`;
             }
@@ -2832,6 +2832,7 @@ const translate = {
 
             if (item.profilePingAccess) {
                 item = profile(item, 'profilePingAccess');
+
                 if (item.profilePingAccess.use) {
                     profilePath = item.profilePingAccess.use.split('/');
                 }
