@@ -1917,6 +1917,17 @@
     { "id":"ignoreChanges" },
     { "id":"iControl_postFromRemote",   "extend": "object" }
   ],
+  "apm aaa ping-access-properties-file": [
+    { "id":"ignoreChanges" },
+    { "id":"local-path" },
+    { "id":"iControl_post",            "extend": "object" }
+  ],
+  "apm profile ping-access": [
+    { "id":"ping-access-properties", "altId": "pingAccessProperties" },
+    { "id":"pool"},
+    { "id":"serverssl-profile", "altId": "serversslProfile" },
+    { "id":"use-https", "truth": "true", "falsehood": "false", "altId": "useHTTPS"}
+  ],
   "iControl_post": [
     { "id":"reference" },
     { "id":"path" },

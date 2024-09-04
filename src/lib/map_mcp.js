@@ -1382,6 +1382,12 @@ const translate = {
     'tm:apm:policy:access-policy:access-policystate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'apm policy access-policy', obj.fullPath)];
     },
+    'tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'apm aaa ping-access-properties-file', obj.fullPath)];
+    },
+    'tm:apm:profile:ping-access:ping-accessstate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'apm profile ping-access', obj.fullPath)];
+    },
     'tm:security:firewall:address-list:address-liststate': function (context, obj) {
         if (obj.addresses) {
             obj.addresses = obj.addresses.map((addr) => addr.name);

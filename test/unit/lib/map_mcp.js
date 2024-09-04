@@ -5282,5 +5282,68 @@ describe('map_mcp', () => {
                 );
             });
         });
+
+        describe('tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate', () => {
+            it('should create tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate config', () => {
+                const obj = {
+                    kind: 'tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate',
+                    name: 'testPingAccess',
+                    partition: 'SampleTenant',
+                    subPath: 'Application',
+                    fullPath: '/SampleTenant/Application/testPingAccess'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'apm aaa ping-access-properties-file',
+                        ignore: [],
+                        path: '/SampleTenant/Application/testPingAccess',
+                        properties: {}
+                    }
+                );
+            });
+        });
+
+        describe('tm:apm:profile:ping-access:ping-accessstate', () => {
+            it('should create tm:apm:profile:ping-access:ping-accessstate config', () => {
+                const obj = {
+                    kind: 'tm:apm:profile:ping-access:ping-accessstate',
+                    name: 'testPingAccess',
+                    partition: 'SampleTenant',
+                    subPath: 'Application',
+                    fullPath: '/SampleTenant/Application/app',
+                    pingAccessProperties: '/SampleTenant/Application/testPingAccess',
+                    pingAccessPropertiesReference: {
+                        link: 'https://localhost/mgmt/tm/apm/aaa/ping-access-properties-file/~SampleTenant~Application~testPingAccess?ver=15.1.0'
+                    },
+                    pool: '/SampleTenant/Application/testPool',
+                    poolReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/pool/~SampleTenant~Application~testPool?ver=15.1.0'
+                    },
+                    serversslProfile: '/SampleTenant/Application/testServerSSL',
+                    serversslProfileReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/profile/server-ssl/~SampleTenant~Application~testServerSSL?ver=15.1.0'
+                    },
+                    useHttps: 'true'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                console.log(JSON.stringify(results[0]));
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'apm profile ping-access',
+                        ignore: [],
+                        path: '/SampleTenant/Application/app',
+                        properties: {
+                            'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                            pool: '/SampleTenant/Application/testPool',
+                            'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                            'use-https': 'true'
+                        }
+                    }
+                );
+            });
+        });
     });
 });

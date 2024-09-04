@@ -991,6 +991,19 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         commandObj.commands = cmd;
         return commandObj;
     }
+    case 'apm aaa ping-access-properties-file': {
+        const cmd = [];
+        const file = `/var/config/rest/downloads/${diff.path[0].split('/').pop()}`;
+
+        if (diff.rhs.properties.edit) {
+            cmd.push(`tmsh::modify apm aaa ping-access-properties-file ${diff.path[0]} local-path ${file}`);
+        } else {
+            cmd.push(`tmsh::create apm aaa ping-access-properties-file ${diff.path[0]} local-path ${file}`);
+        }
+
+        commandObj.commands = cmd;
+        return commandObj;
+    }
     case 'apm policy access-policy':
     case 'apm profile access': {
         const tParam = (diff.rhsCommand === 'apm policy access-policy') ? ' -t access_policy' : '';

@@ -3070,6 +3070,756 @@ describe('fetch', () => {
             assert.deepStrictEqual(result.script, expected);
         });
 
+        describe('apm ping access properties', () => {
+            it('should create ping access properties', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: true
+                                    }
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::create auth partition SampleTenant default-route-domain 0',
+                    'tmsh::create sys folder /SampleTenant/Application/',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'catch { tmsh::delete sys folder /SampleTenant/Application/ } e',
+                    'catch { tmsh::delete auth partition SampleTenant } e',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+
+            it('should modify ping access properties and ignoreChanges is set to false', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            ignoreChanges: false,
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: false
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'yes'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                ignoreChanges: false,
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: false
+                                    }
+                                },
+                                edit: true
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+
+            it('should not modify ping access properties and ignoreChanges is set to true', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            ignoreChanges: true,
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'yes'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [];
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
+        describe('apm ping access profile', () => {
+            it('should create ping access properties', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/app': {
+                        command: 'apm profile ping-access',
+                        properties: {
+                            'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                            pool: '/SampleTenant/Application/testPool',
+                            'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                            'use-https': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testServerSSL': {
+                        command: 'ltm profile server-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-expired-crl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'authenticate-name': 'none',
+                            'c3d-ca-cert': 'none',
+                            'c3d-ca-key': 'none',
+                            'c3d-cert-lifespan': 24,
+                            'c3d-cert-extension-includes': {
+                                'basic-constraints': {},
+                                'extended-key-usage': {},
+                                'key-usage': {},
+                                'subject-alternative-name': {}
+                            },
+                            'cache-timeout': 3600,
+                            'ca-file': '/Common/default.crt',
+                            cert: 'none',
+                            chain: 'none',
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            key: 'none',
+                            'expire-cert-response-control': 'drop',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require-strict',
+                            'server-name': 'none',
+                            'session-ticket': 'disabled',
+                            'sni-default': 'false',
+                            'sni-require': 'false',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled',
+                            'untrusted-cert-response-control': 'drop'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/192.0.2.5': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.5',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {
+                                '/SampleTenant/192.0.2.5:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 0,
+                                    'rate-limit': 'disabled',
+                                    ratio: 1,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {
+                                        example: {
+                                            value: 'test',
+                                            persist: 'true'
+                                        }
+                                    }
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true,
+                                    remark: 'test',
+                                    label: 'test123'
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/app'
+                        ],
+                        rhs: {
+                            command: 'apm profile ping-access',
+                            properties: {
+                                'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                                pool: '/SampleTenant/Application/testPool',
+                                'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                                'use-https': 'true'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm profile ping-access'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testServerSSL'
+                        ],
+                        rhs: {
+                            command: 'ltm profile server-ssl',
+                            properties: {
+                                'alert-timeout': 'indefinite',
+                                'allow-expired-crl': 'disabled',
+                                authenticate: 'once',
+                                'authenticate-depth': 9,
+                                'authenticate-name': 'none',
+                                'c3d-ca-cert': 'none',
+                                'c3d-ca-key': 'none',
+                                'c3d-cert-lifespan': 24,
+                                'c3d-cert-extension-includes': {
+                                    'basic-constraints': {},
+                                    'extended-key-usage': {},
+                                    'key-usage': {},
+                                    'subject-alternative-name': {}
+                                },
+                                'cache-timeout': 3600,
+                                'ca-file': '/Common/default.crt',
+                                cert: 'none',
+                                chain: 'none',
+                                ciphers: 'DEFAULT',
+                                'cipher-group': 'none',
+                                'crl-file': 'none',
+                                'data-0rtt': 'disabled',
+                                description: 'none',
+                                'handshake-timeout': 10,
+                                key: 'none',
+                                'expire-cert-response-control': 'drop',
+                                options: {
+                                    'dont-insert-empty-fragments': {},
+                                    'no-tlsv1.3': {}
+                                },
+                                'peer-cert-mode': 'ignore',
+                                'proxy-ssl': 'disabled',
+                                'proxy-ssl-passthrough': 'disabled',
+                                'renegotiate-period': 4294967295,
+                                'renegotiate-size': 4294967295,
+                                renegotiation: 'enabled',
+                                'retain-certificate': 'true',
+                                'secure-renegotiation': 'require-strict',
+                                'server-name': 'none',
+                                'session-ticket': 'disabled',
+                                'sni-default': 'false',
+                                'sni-require': 'false',
+                                'ssl-c3d': 'disabled',
+                                'ssl-forward-proxy': 'disabled',
+                                'ssl-forward-proxy-bypass': 'disabled',
+                                'ssl-sign-hash': 'any',
+                                'unclean-shutdown': 'enabled',
+                                'untrusted-cert-response-control': 'drop'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm profile server-ssl'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/192.0.2.5'
+                        ],
+                        rhs: {
+                            command: 'ltm node',
+                            properties: {
+                                address: '192.0.2.5',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm node'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPool'
+                        ],
+                        rhs: {
+                            command: 'ltm pool',
+                            properties: {
+                                'load-balancing-mode': 'round-robin',
+                                members: {
+                                    '/SampleTenant/192.0.2.5:80': {
+                                        'connection-limit': 0,
+                                        'dynamic-ratio': 1,
+                                        fqdn: {
+                                            autopopulate: 'disabled'
+                                        },
+                                        minimumMonitors: 1,
+                                        monitor: {
+                                            default: {}
+                                        },
+                                        'priority-group': 0,
+                                        'rate-limit': 'disabled',
+                                        ratio: 1,
+                                        state: 'user-up',
+                                        session: 'user-enabled',
+                                        metadata: {
+                                            example: {
+                                                value: 'test',
+                                                persist: 'true'
+                                            }
+                                        }
+                                    }
+                                },
+                                'min-active-members': 1,
+                                'reselect-tries': 0,
+                                'service-down-action': 'none',
+                                'slow-ramp-time': 10,
+                                'allow-nat': 'yes',
+                                'allow-snat': 'yes',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: true,
+                                        remark: 'test',
+                                        label: 'test123'
+                                    }
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::create auth partition SampleTenant default-route-domain 0',
+                    'tmsh::create sys folder /SampleTenant/Application/',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::create apm profile ping-access /SampleTenant/Application/app ping-access-properties /SampleTenant/Application/testPingAccess pool /SampleTenant/Application/testPool serverssl-profile /SampleTenant/Application/testServerSSL use-https true',
+                    'tmsh::create ltm profile server-ssl /SampleTenant/Application/testServerSSL alert-timeout indefinite allow-expired-crl disabled authenticate once authenticate-depth 9 authenticate-name none c3d-ca-cert none c3d-ca-key none c3d-cert-lifespan 24 c3d-cert-extension-includes \\{ basic-constraints extended-key-usage key-usage subject-alternative-name \\} cache-timeout 3600 ca-file /Common/default.crt cert none chain none ciphers DEFAULT cipher-group none crl-file none data-0rtt disabled description none handshake-timeout 10 key none expire-cert-response-control drop options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require-strict server-name none session-ticket disabled sni-default false sni-require false ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled untrusted-cert-response-control drop',
+                    'tmsh::create ltm node /SampleTenant/192.0.2.5 address 192.0.2.5 metadata none',
+                    'tmsh::create ltm pool /SampleTenant/Application/testPool load-balancing-mode round-robin members replace-all-with \\{ /SampleTenant/192.0.2.5:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata replace-all-with \\{ example \\{ value test persist true \\} \\} \\} \\} min-active-members 1 reselect-tries 0 service-down-action none slow-ramp-time 10 allow-nat yes allow-snat yes metadata none',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'catch { tmsh::delete sys folder /SampleTenant/Application/ } e',
+                    'catch { tmsh::delete auth partition SampleTenant } e',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
         describe('apm profile access', () => {
             it('should create catch blocks in script', () => {
                 const desiredConfig = {

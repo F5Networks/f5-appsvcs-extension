@@ -1755,6 +1755,161 @@
                 }
             },
             "additionalProperties": false
+        },
+
+        "Ping_Access_Agent_Properties": {
+            "title": "Ping_Access_Agent_Properties",
+            "description": "Ping access agent properties used for ping access",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Ping_Access_Agent_Properties"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "propertiesData": {
+                    "$ref": "#/definitions/F5string"
+                },
+                "ignoreChanges": {
+                    "title": "Ignore changes",
+                    "description":"If false (default), the system updates the ping access agent properties in every BIG-IP AS3 declaration deployment. If true, BIG-IP AS3 creates the properties on first deployment, and leaves it untouched afterwards",
+                    "type": "boolean",
+                    "default": false
+                }
+            },
+            "required": [
+                "class",
+                "propertiesData"
+            ],
+            "additionalProperties": false
+        },
+        "Ping_Access_Profile": {
+            "title": "Ping_Access_Profile",
+            "description": "Ping access profile",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Ping_Access_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "pingAccessProperties": {
+                    "type": "object",
+                    "description": "Specifies the name of the Ping Access Properties (by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to Ping Access Properties",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "Ping_Access_Agent_Properties" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP Ping Access Agent Properties",
+                            "description": "Pathname of existing BIG-IP Ping Access Properties",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1
+                },
+                "pool": {
+                    "type": "object",
+                    "description": "Specifies the name of the Pool (by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to Pool declaration",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "Pool" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP Pool",
+                            "description": "Pathname of existing BIG-IP Pool",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1
+                },
+                "useHTTPS": {
+                    "title": "use HTTPS",
+                    "description":"If true, use server SSL profile else ignore",
+                    "type": "boolean",
+                    "default": false                 
+                },
+                "serversslProfile": {
+                    "type": "object",
+                    "description": "Specifies the name of the server ssl profile (by BIG-IP AS3 pointer or BIG-IP pathname)",
+                    "properties": {
+                        "use": {
+                            "title": "Use",
+                            "description": "BIG-IP AS3 pointer to server ssl profile",
+                            "type": "string",
+                            "minLength": 1,
+                            "f5PostProcess": {
+                                "tag": "pointer",
+                                "data": {
+                                    "properties": {
+                                        "class": { "const": "TLS_Client" }
+                                    },
+                                    "required": [ "class" ]
+                                }
+                            }
+                        },
+                        "bigip": {
+                            "title": "BIG-IP Server SSL Profile",
+                            "description": "Pathname of existing BIG-IP server ssl profile",
+                            "type": "string",
+                            "format": "f5bigip"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "maxProperties": 1
+                }
+            },
+            "if": { 
+                "properties": { 
+                    "useHTTPS": { "const": true } 
+                }
+            },
+            "then": { 
+                "required": [
+                    "serversslProfile"
+                ]
+             },
+            "required": [
+                "class",
+                "pingAccessProperties",
+                "pool"
+            ],
+            "additionalProperties": false
         }
     }
 }

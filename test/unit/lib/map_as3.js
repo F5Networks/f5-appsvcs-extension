@@ -14116,49 +14116,110 @@ describe('map_as3', () => {
         });
     });
 
-    describe('Enforcement_Forwarding_Endpoint', () => {
-        it('should handle Enforcement_Forwarding_Endpoint config', () => {
+    describe('Ping_Access_Agent_Properties', () => {
+        it('should handle Ping_Access_Agent_Properties config', () => {
             const item = {
-                pool: {
-                    bigip: '/Common/pool'
+                propertiesData: {
+                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
                 },
-                SNATPool: {
-                    bigip: '/Common/snatPool'
-                },
-                sourcePortAction: 'preserve',
-                addressTranslationEnabled: false,
-                portTranslationEnabled: false,
-                defaultPersistenceType: 'dsiabled',
-                fallbackPersistenceType: 'disabled',
-                persistenceHashSettings: {
-                    length: 1024,
-                    offset: 0,
-                    tclScript: 'A tcl script'
-                }
+                ignoreChanges: true
             };
-            const result = mapAs3.translate.Enforcement_Forwarding_Endpoint(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            const result = mapAs3.translate.Ping_Access_Agent_Properties(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepStrictEqual(
                 result.configs[0],
                 {
-                    command: 'pem forwarding-endpoint',
-                    ignore: [],
                     path: '/tenantId/appId/itemId',
+                    command: 'apm aaa ping-access-properties-file',
+                    ignore: [],
                     properties: {
-                        pool: '/Common/pool',
-                        'snat-pool': '/Common/snatPool',
-                        'source-port': 'preserve',
-                        'translate-address': 'disabled',
-                        'translate-service': 'disabled',
-                        persistence: {
-                            fallback: 'disabled',
-                            'hash-settings': {
-                                length: 1024,
-                                offset: 0,
-                                source: 'tcl-snippet',
-                                'tcl-value': 'A tcl script'
-                            },
-                            type: 'dsiabled'
+                        iControl_post: {
+                            reference: '/tenantId/appId/itemId',
+                            path: '/mgmt/shared/file-transfer/uploads/itemId',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: 'agent.engine.configuration.scheme=http',
+                            why: 'upload ping access agent properties itemId',
+                            settings: {
+                                ignoreChanges: true,
+                                propertiesData:
+                                {
+                                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                                }
+                            }
                         }
+                    }
+                }
+            );
+        });
+
+        it('should handle Ping_Access_Agent_Properties config when ignoreChanges is false', () => {
+            const item = {
+                propertiesData: {
+                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                },
+                ignoreChanges: false
+            };
+
+            const result = mapAs3.translate.Ping_Access_Agent_Properties(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'apm aaa ping-access-properties-file',
+                    ignore: [],
+                    properties: {
+                        ignoreChanges: false,
+                        iControl_post: {
+                            reference: '/tenantId/appId/itemId',
+                            path: '/mgmt/shared/file-transfer/uploads/itemId',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: 'agent.engine.configuration.scheme=http',
+                            why: 'upload ping access agent properties itemId',
+                            settings: {
+                                ignoreChanges: false,
+                                propertiesData:
+                                {
+                                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Ping_Access_Profile', () => {
+        it('should handle Ping_Access_Profile config', () => {
+            const item = {
+                class: 'Ping_Access_Profile',
+                pingAccessProperties: {
+                    use: 'testPingAccess'
+                },
+                pool: {
+                    use: 'testPool'
+                },
+                useHTTPS: true,
+                serversslProfile: {
+                    use: 'testServerSSL'
+                }
+            };
+
+            const result = mapAs3.translate.Ping_Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            console.log(JSON.stringify(result.configs[0]));
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'apm profile ping-access',
+                    ignore: [],
+                    properties: {
+                        'ping-access-properties': 'testPingAccess',
+                        pool: 'testPool',
+                        'serverssl-profile': 'testServerSSL',
+                        'use-https': 'true'
                     }
                 }
             );

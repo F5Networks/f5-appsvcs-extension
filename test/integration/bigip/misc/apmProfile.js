@@ -31,6 +31,8 @@ const {
     getPath,
     getBigIpVersion,
     assertModuleProvisioned,
+    postBigipItems,
+    deleteBigipItems,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 const util = require('../../../../src/lib/util/util');
@@ -344,5 +346,199 @@ describe('Importing APM Policies', function () {
                 const accessProfiles = results.items.map((item) => item.name);
                 assert.strictEqual(accessProfiles.indexOf('accessProfile') === -1, true);
             });
+    });
+
+    it('should create ping access agent properties using base64 encoded properties', function () {
+        const declaration = {
+            SampleTenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    testPingAccess: {
+                        class: 'Ping_Access_Agent_Properties',
+                        propertiesData: {
+                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                        },
+                        ignoreChanges: false
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.53.0'
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/apm/aaa/ping-access-properties-file/~SampleTenant~Application~testPingAccess'))
+            .then((result) => {
+                assert.strictEqual(result.checksum, 'SHA1:1412:5c38be173daf11dfa25841ec35e07947e9445826');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => {
+                declaration.SampleTenant.Application.testPingAccess.ignoreChanges = true;
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            });
+    });
+
+    it('should create ping access profile', function () {
+        const declaration = {
+            SampleTenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    testServerSSL: {
+                        class: 'TLS_Client',
+                        trustCA: {
+                            bigip: '/Common/default.crt'
+                        }
+                    },
+                    testPool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                servicePort: 80,
+                                serverAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                metadata: {
+                                    example: {
+                                        value: 'test'
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    testPingAccess: {
+                        class: 'Ping_Access_Agent_Properties',
+                        propertiesData: {
+                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                        },
+                        ignoreChanges: false
+                    },
+                    app: {
+                        class: 'Ping_Access_Profile',
+                        pingAccessProperties: {
+                            use: 'testPingAccess'
+                        },
+                        pool: {
+                            use: 'testPool'
+                        },
+                        useHTTPS: true,
+                        serversslProfile: {
+                            use: 'testServerSSL'
+                        }
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.53.0'
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/apm/profile/ping-access/~SampleTenant~Application~app'))
+            .then((result) => {
+                assert.strictEqual(result.pingAccessProperties, '/SampleTenant/Application/testPingAccess');
+                assert.strictEqual(result.pool, '/SampleTenant/Application/testPool');
+                assert.strictEqual(result.serversslProfile, '/SampleTenant/Application/testServerSSL');
+                assert.strictEqual(result.useHttps, 'true');
+            })
+            .then(() => {
+                declaration.SampleTenant.Application.testPingAccess.ignoreChanges = true;
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            });
+    });
+
+    it('should create ping access profile with bigip references', function () {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/shared/file-transfer/uploads/certOne',
+                data: '-----BEGIN CERTIFICATE-----\nMIIDyTCCArGgAwIBAgIBADANBgkqhkiG9w0BAQUFADB/MQswCQYDVQQGEwJGUjET\nMBEGA1UECAwKU29tZS1TdGF0ZTEOMAwGA1UEBwwFUGFyaXMxDTALBgNVBAoMBERp\nbWkxDTALBgNVBAsMBE5TQlUxEDAOBgNVBAMMB0RpbWkgQ0ExGzAZBgkqhkiG9w0B\nCQEWDGRpbWlAZGltaS5mcjAeFw0xNDAxMjgyMDI2NDRaFw0yNDAxMjYyMDI2NDRa\nMH8xCzAJBgNVBAYTAkZSMRMwEQYDVQQIDApTb21lLVN0YXRlMQ4wDAYDVQQHDAVQ\nYXJpczENMAsGA1UECgwERGltaTENMAsGA1UECwwETlNCVTEQMA4GA1UEAwwHRGlt\naSBDQTEbMBkGCSqGSIb3DQEJARYMZGltaUBkaW1pLmZyMIIBIjANBgkqhkiG9w0B\nAQEFAAOCAQ8AMIIBCgKCAQEAuxuG4QeBIGXj/AB/YRLLtpgpTpGnDntVlgsycZrL\n3qqyOdBNlwnvcB9etfY5iWzjeq7YZRr6i0dIV4sFNBR2NoK+YvdD9j1TRi7njZg0\nd6zth0xlsOhCsDlV/YCL1CTcYDlKA/QiKeIQa7GU3Rhf0t/KnAkr6mwoDbdKBQX1\nD5HgQuXJiFdh5XRebxF1ZB3gH+0kCEaEZPrjFDApkOXNxEARZdpBLpbvQljtVXtj\nHMsvrIOc7QqUSOU3GcbBMSHjT8cgg8ssf492Go3bDQkIzTROz9QgDHaqDqTC9Hoe\nvlIpTS+q/3BCY5AGWKl3CCR6dDyK6honnOR/8srezaN4PwIDAQABo1AwTjAdBgNV\nHQ4EFgQUhMwqkbBrGp87HxfvwgPnlGgVR64wHwYDVR0jBBgwFoAUhMwqkbBrGp87\nHxfvwgPnlGgVR64wDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOCAQEAVqYq\nvhm5wAEKmvrKXRjeb5kiEIp7oZAFkYp6sKODuZ1VdkjMDD4wv46iqAe1QIIsfGwd\nDmv0oqSl+iPPy24ATMSZQbPLO5K64Hw7Q8KPos0yD8gHSg2d4SOukj+FD2IjAH17\na8auMw7TTHu6976JprQQKtPADRcfodGd5UFiz/6ZgLzUE23cktJMc2Bt18B9OZII\nJ9ef2PZxZirJg1OqF2KssDlJP5ECo9K3EmovC5M5Aly++s8ayjBnNivtklYL1VOT\nZrpPgcndTHUA5KS/Duf40dXm0snCxLAKNP28pMowDLSYc6IjVrD4+qqw3f1b7yGb\nbJcFgxKDeg5YecQOSg==\n-----END CERTIFICATE-----',
+                headers: {
+                    'Content-Range': '0-1373/1374',
+                    'Content-Type': 'text/plain'
+                }
+            },
+            {
+                endpoint: '/mgmt/tm/ltm/pool',
+                data: {
+                    name: 'testPool',
+                    partition: 'Common'
+                }
+            },
+            {
+                endpoint: '/mgmt/tm/apm/aaa/ping-access-properties-file',
+                data: {
+                    name: 'testProperties',
+                    partition: 'Common',
+                    sourcePath: 'file:///var/config/rest/downloads/certOne'
+                }
+            }
+        ];
+
+        const declaration = {
+            SampleTenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    app: {
+                        class: 'Ping_Access_Profile',
+                        pingAccessProperties: {
+                            bigip: '/Common/testProperties'
+                        },
+                        pool: {
+                            bigip: '/Common/testPool'
+                        },
+                        useHTTPS: true,
+                        serversslProfile: {
+                            bigip: '/Common/serverssl'
+                        }
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.53.0'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                console.log(JSON.stringify(response));
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
     });
 });

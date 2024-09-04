@@ -520,6 +520,10 @@
             "modules": ["apm"]
         },
         {
+            "endpoint": "/mgmt/tm/apm/aaa/ping-access-properties-file",
+            "modules": ["apm"]
+        },
+        {
             "endpoint": "/mgmt/tm/apm/policy/access-policy",
             "modules": ["apm"]
         },

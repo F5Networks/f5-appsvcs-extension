@@ -832,6 +832,38 @@ const translate = {
         return { configs: [config] };
     },
 
+    Ping_Access_Profile(context, tenantId, appId, itemId, item) {
+        if (!item.useHTTPS) {
+            delete item.serversslProfile;
+        }
+
+        item = profile(item, 'pingAccessProperties');
+        item = profile(item, 'serversslProfile');
+        item = profile(item, 'pool');
+        return { configs: [normalize.actionableMcp(context, item, 'apm profile ping-access', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    Ping_Access_Agent_Properties(context, tenantId, appId, itemId, item) {
+        const path = util.mcpPath(tenantId, appId, itemId);
+        const settings = util.simpleCopy(item);
+
+        item.iControl_post = {};
+        item.iControl_post.reference = path;
+        item.iControl_post.path = `/mgmt/shared/file-transfer/uploads/${itemId}`;
+        item.iControl_post.method = 'POST';
+        item.iControl_post.ctype = 'application/octet-stream';
+        item.iControl_post.why = `upload ping access agent properties ${itemId}`;
+        item.iControl_post.send = util.base64Decode(item.propertiesData.base64);
+        item.iControl_post.settings = settings;
+
+        if (item.ignoreChanges) {
+            delete item.ignoreChanges;
+        }
+
+        const config = normalize.actionableMcp(context, item, 'apm aaa ping-access-properties-file', path);
+
+        return { configs: [config] };
+    },
     /**
      * Defines an Access Profile
      */

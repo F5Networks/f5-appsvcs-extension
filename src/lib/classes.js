@@ -191,6 +191,8 @@ module.exports = {
         Stream_Profile: 'ltm profile stream',
         Access_Profile: 'apm profile access',
         Per_Request_Access_Policy: 'apm policy access-policy',
+        Ping_Access_Agent_Properties: 'apm aaa ping-access-properties-file',
+        Ping_Access_Profile: 'apm profile ping-access',
         ICAP_Profile: 'ltm profile icap',
         Adapt_Profile: [
             'ltm profile request-adapt',
