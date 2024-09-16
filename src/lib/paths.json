@@ -473,6 +473,22 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/monitor/mysql",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/sip",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/ldap",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/smtp",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/monitor/tcp",
             "modules": ["gtm"]
         },

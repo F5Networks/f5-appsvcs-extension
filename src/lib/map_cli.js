@@ -1174,6 +1174,18 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         });
         mapEnabledDisabled(targetConfig);
         break;
+    case 'gtm monitor ldap':
+        if (targetConfig['filter-ldap'] !== undefined) {
+            targetConfig.filter = targetConfig['filter-ldap'];
+            delete targetConfig['filter-ldap'];
+        }
+        break;
+    case 'gtm monitor sip':
+        if (targetConfig.headers !== undefined) {
+            targetConfig.headers = targetConfig.headers.replace(/\\\\/g, '\\');
+        }
+        delete targetConfig['filter-ldap'];
+        break;
     case 'gtm monitor external':
         mapExternalMonitor(diff, targetConfig, currentConfig);
         break;

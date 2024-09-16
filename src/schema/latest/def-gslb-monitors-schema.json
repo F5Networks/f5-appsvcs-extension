@@ -1,5 +1,18 @@
 {
     "definitions": {
+        "Property_Passphrase": {
+            "title": "Property Passphrase",
+            "description": "A passphrase (passphrase property)",
+            "allOf": [
+                {
+                    "$ref": "#/definitions/Secret"
+                }
+            ],
+            "f5PostProcess": {
+                "tag": "secret",
+                "errSchemaPath": "#/definitions/Property_Passphrase"
+            }
+        },
         "GSLB_Monitor": {
             "title": "GSLB_Monitor",
             "description": "Declares a monitor that verifies the availability and/or performance status of a particular protocol, service, or application",
@@ -10,14 +23,29 @@
                     "type": "string",
                     "const": "GSLB_Monitor"
                 },
-                "label": { "$ref": "#/definitions/Label" },
-                "remark": { "$ref": "#/definitions/Remark" },
-
+                "label": {
+                    "$ref": "#/definitions/Label"
+                },
+                "remark": {
+                    "$ref": "#/definitions/Remark"
+                },
                 "monitorType": {
                     "title": "Monitor Type",
                     "description": "Specifies the type of monitor",
                     "type": "string",
-                    "enum" : [ "http", "https", "gateway-icmp", "tcp-half-open", "tcp", "udp", "external" ]
+                    "enum": [
+                        "http",
+                        "https",
+                        "gateway-icmp",
+                        "tcp-half-open",
+                        "mysql",
+                        "sip",
+                        "ldap",
+                        "smtp",
+                        "tcp",
+                        "udp",
+                        "external"
+                    ]
                 },
                 "target": {
                     "title": "Target (Address:Port)",
@@ -59,41 +87,149 @@
                 {
                     "f5PostProcess": {
                         "tag": "modules",
-                        "data": ["gtm"]
+                        "data": [
+                            "gtm"
+                        ]
                     }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "http" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_HTTP" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "http"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_HTTP"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "https" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_HTTPS" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "https"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_HTTPS"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "gateway-icmp" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_ICMP" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "gateway-icmp"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_ICMP"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "tcp-half-open" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_TCP_Half_Open" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "tcp-half-open"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_TCP_Half_Open"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "udp" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_UDP" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "mysql"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_MySQL"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "tcp" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_TCP" }
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "sip"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_SIP"
+                    }
                 },
                 {
-                    "if": { "properties": { "monitorType": { "const": "external" } } },
-                    "then": { "$ref": "#/definitions/GSLB_Monitor_External" }
+                    "if": {
+                      "properties": {
+                        "monitorType": {
+                          "const": "ldap"
+                        }
+                      }
+                    },
+                    "then": {
+                      "$ref": "#/definitions/GSLB_Monitor_LDAP"
+                    }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "monitorType": {
+                          "const": "smtp"
+                        }
+                      }
+                    },
+                    "then": {
+                      "$ref": "#/definitions/GSLB_Monitor_SMTP"
+                    }
+                  },
+                {
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "udp"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_UDP"
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "tcp"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_TCP"
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "external"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_External"
+                    }
                 }
             ],
-            "required": [ "class", "monitorType"]
+            "required": [
+                "class",
+                "monitorType"
+            ]
         },
-
         "GSLB_Monitor_External": {
             "description": "Additional Monitor class properties available when monitorType = external",
             "type": "object",
@@ -310,6 +446,428 @@
             }
         },
 
+        "GSLB_Monitor_MySQL": {
+            "title": "GSLB Monitor MySQL",
+            "description": "GSLB Monitor MySQL definition",
+            "type": "object",
+            "properties": {
+                "count": {
+                    "title": "Count",
+                    "description": "Number of monitor probes after which the connection to the database will be terminated.  Count value of zero indicates that the connection will never be terminated.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2147483647,
+                    "default": 0
+                },
+                "database": {
+                    "title": "Database",
+                    "description": "The name of the database with which the monitor attempts to communicate.",
+                    "type": "string"
+                },
+                "monitorType": {
+                    "title": "Monitor Type",
+                    "description": "Specifies the type of monitor",
+                    "type": "string"
+                },
+                "passphrase": {
+                    "title": "Passphrase",
+                    "description": "Passphrase if any for query authentication",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "f5PostProcess": {
+                        "tag": "fetch",
+                        "data": "object",
+                        "errSchemaPath": "#/definitions/Monitor_MySQL/properties/passphrase"
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Property_Passphrase"
+                        }
+                    ]
+                },
+                "receive": {
+                    "title": "Receive = up",
+                    "description": "Mark node up upon receipt of this (backquote-expanded) string",
+                    "type": "string",
+                    "f5PostProcess": {
+                        "tag": "expand",
+                        "errSchemaPath": "#/definitions/Monitor_MySQL/properties/receive"
+                    }
+                },
+                "receiveColumn": {
+                    "title": "Receive Column",
+                    "description": "Specifies the column in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Receive properties.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4096
+                },
+                "receiveRow": {
+                    "title": "Receive Row",
+                    "description": "Specifies the row in the database where the system expects the specified Receive String to be located.  Specify this property only if you configure the Send and Recieve properties.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535
+                },
+                "send": {
+                    "title": "Send",
+                    "description": "Send this (backquote-expanded) string to query node",
+                    "type": "string",
+                    "f5PostProcess": {
+                        "tag": "expand",
+                        "errSchemaPath": "#/definitions/Monitor_MySQL/properties/send"
+                    }
+                },
+                "targetAddress": {
+                    "title": "Address",
+                    "description": "IP address monitor should probe; if empty (default) then pool member address",
+                    "type": "string",
+                    "format": "f5ip",
+                    "default": ""
+                },
+                "targetPort": {
+                    "title": "Port",
+                    "description": "L4 port (if any) monitor should probe; if 0 (default) then pool member port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "timeUntilUp": {
+                    "title": "Time until up",
+                    "description": "Delay between successful probe and sending traffic to node (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1800,
+                    "default": 0
+                },
+                "upInterval": {
+                    "title": "Up-Interval",
+                    "description": "Poll interval when service is already up (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "default": 0
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "Username if any for query authentication",
+                    "type": "string"
+                }
+            },
+            "dependencies": {
+                "receiveColumn": {
+                    "required": [
+                        "send",
+                        "receive"
+                    ]
+                },
+                "receiveRow": {
+                    "required": [
+                        "send",
+                        "receive"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        },
+        "GSLB_Monitor_SIP": {
+            "title": "GSLB Monitor SIP",
+            "description": "GSLB Monitor SIP definition",
+            "type": "object",
+            "properties": {
+                "ciphers": {
+                    "title": "Ciphers",
+                    "description": "Ciphersuite selection string",
+                    "type": "string",
+                    "default": "DEFAULT"
+                },
+                "clientCertificate": {
+                    "title": "Client certificate",
+                    "description": "BIG-IP AS3 pointer to client Certificate declaration, for TLS authentication (optional)",
+                    "type": "string",
+                    "minLength": 1,
+                    "f5PostProcess": {
+                        "tag": "pointer",
+                        "data": {
+                            "type": "object",
+                            "properties": {
+                                "class": {
+                                    "const": "Certificate"
+                                }
+                            },
+                            "required": [
+                                "class"
+                            ]
+                        },
+                        "errSchemaPath": "#/definitions/Monitor_SIP/properties/clientCertificate"
+                    }
+                },
+                "codesDown": {
+                    "title": "Codes = down",
+                    "description": "List of status codes meaning service is down (0 matches any code)",
+                    "type": "array",
+                    "items": {
+                        "title": "Code = down",
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "uniqueItems": true
+                },
+                "codesUp": {
+                    "title": "Codes = up",
+                    "description": "List of additional (to all 1/2/3xx) status codes meaning service is up (0 matches any code)",
+                    "type": "array",
+                    "items": {
+                        "title": "Code = up",
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "uniqueItems": true
+                },
+                "headers": {
+                    "title": "Headers",
+                    "description": "SIP headers to send in probes (if any)--separate by newlines (backquote-expanded)",
+                    "type": "string",
+                    "default": "",
+                    "f5PostProcess": {
+                        "tag": "expand",
+                        "errSchemaPath": "#/definitions/Monitor_SIP/properties/headers"
+                    }
+                },
+                "monitorType": {
+                    "title": "Monitor Type",
+                    "description": "Specifies the type of monitor",
+                    "type": "string"
+                },
+                "protocol": {
+                    "title": "Protocol",
+                    "description": "SIP transport protocol",
+                    "type": "string",
+                    "enum": [
+                        "sips",
+                        "tcp",
+                        "tls",
+                        "udp"
+                    ],
+                    "default": "udp"
+                },
+                "request": {
+                    "title": "Request",
+                    "description": "SIP request to send in probes (default empty)",
+                    "type": "string",
+                    "default": ""
+                },
+                "targetAddress": {
+                    "title": "Address",
+                    "description": "IP address monitor should probe; if empty (default) then pool member address",
+                    "type": "string",
+                    "format": "f5ip",
+                    "default": ""
+                },
+                "targetPort": {
+                    "title": "Port",
+                    "description": "L4 port (if any) monitor should probe; if 0 (default) then pool member port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "timeUntilUp": {
+                    "title": "Time until up",
+                    "description": "Delay between successful probe and sending traffic to node (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1800,
+                    "default": 0
+                },
+                "upInterval": {
+                    "title": "Up-Interval",
+                    "description": "Poll interval when service is already up (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "default": 0
+                }
+            },
+            "dependencies": {
+                "clientCertificate": {
+                    "properties": {
+                        "protocol": {
+                            "enum": [
+                                "sips",
+                                "tls"
+                            ]
+                        }
+                    }
+                }
+            },
+            "additionalProperties": true
+        },
+        "GSLB_Monitor_LDAP": {
+            "title": "GSLB Monitor LDAP",
+            "description": "GSLB Monitor LDAP definition",
+            "type": "object",
+            "properties": {
+                "base": {
+                    "title": "Base",
+                    "description": "Specifies the location in the LDAP tree from which the monitor starts the health check",
+                    "type": "string"
+                },
+                "chaseReferrals": {
+                    "title": "Chase Referrals",
+                    "description": "Specifies, whether, upon receipt of an LDAP referral entry, the referral is followed",
+                    "type": "boolean",
+                    "default": true
+                },
+                "filter": {
+                    "title": "Filter",
+                    "description": "Specifies an LDAP key which the monitor searches",
+                    "type": "string"
+                },
+                "mandatoryAttributes": {
+                    "title": "Mandatory Attributes",
+                    "description": "Specifies whether the target must include attributes in its response to be considered up",
+                    "type": "boolean",
+                    "default": false
+                },
+                "monitorType": {
+                    "title": "Monitor Type",
+                    "description": "Specifies the type of monitor",
+                    "type": "string"
+                },
+                "passphrase": {
+                    "title": "Passphrase",
+                    "description": "Passphrase if any for query authentication",
+                    "type": "object",
+                    "properties": {
+                        "allowReuse": {
+                            "description": "If true, other declaration objects may reuse this value",
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    "f5PostProcess": {
+                        "tag": "fetch",
+                        "data": "object",
+                        "errSchemaPath": "#/definitions/Monitor_LDAP/properties/passphrase"
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/Property_Passphrase"
+                        }
+                    ]
+                },
+                "security": {
+                    "title": "Security",
+                    "description": "Specifies the secure protocol type for communications with the target",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "ssl",
+                        "tls"
+                    ],
+                    "default": "none"
+                },
+                "targetAddress": {
+                    "title": "Address",
+                    "description": "IP address monitor should probe; if empty (default) then pool member address",
+                    "type": "string",
+                    "format": "f5ip",
+                    "default": ""
+                },
+                "targetPort": {
+                    "title": "Port",
+                    "description": "L4 port (if any) monitor should probe; if 0 (default) then pool member port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "timeUntilUp": {
+                    "title": "Time until up",
+                    "description": "Delay between successful probe and sending traffic to node (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1800,
+                    "default": 0
+                },
+                "upInterval": {
+                    "title": "Up-Interval",
+                    "description": "Poll interval when service is already up (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "default": 0
+                },
+                "username": {
+                    "title": "Username",
+                    "description": "Username if any for query authentication",
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true
+        },
+        "GSLB_Monitor_SMTP": {
+            "title": "GSLB Monitor SMTP",
+            "description": "GSLB Monitor SMTP definition",
+            "type": "object",
+            "properties": {
+                "domain": {
+                    "title": "Domain",
+                    "description": "Mail domain to check, if any (backquote-expanded)",
+                    "type": "string",
+                    "format": "hostname",
+                    "default": "",
+                    "f5PostProcess": {
+                        "tag": "expand",
+                        "errSchemaPath": "#/definitions/Monitor_SMTP/properties/domain"
+                    }
+                },
+                "monitorType": {
+                    "title": "Monitor Type",
+                    "description": "Specifies the type of monitor",
+                    "type": "string"
+                },
+                "targetAddress": {
+                    "title": "Address",
+                    "description": "IP address monitor should probe; if empty (default) then pool member address",
+                    "type": "string",
+                    "format": "f5ip",
+                    "default": ""
+                },
+                "targetPort": {
+                    "title": "Port",
+                    "description": "L4 port (if any) monitor should probe; if 0 (default) then pool member port",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535,
+                    "default": 0
+                },
+                "timeUntilUp": {
+                    "title": "Time until up",
+                    "description": "Delay between successful probe and sending traffic to node (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1800,
+                    "default": 0
+                },
+                "upInterval": {
+                    "title": "Up-Interval",
+                    "description": "Poll interval when service is already up (seconds)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3600,
+                    "default": 0
+                }
+            },
+            "additionalProperties": true
+        },
         "GSLB_Monitor_TCP": {
             "description": "Additional Monitor class properties available when monitorType = tcp",
             "type": "object",

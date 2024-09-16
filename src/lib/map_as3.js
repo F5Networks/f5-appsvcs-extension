@@ -4050,6 +4050,7 @@ const translate = {
         const props = {};
         const configs = [];
 
+        item.ignore = item.ignore || {};
         item.remark = item.remark || 'none';
 
         if (item.monitorType === 'https') {
@@ -4070,6 +4071,38 @@ const translate = {
             item.receive = item.receive || 'none';
             item.sniServerName = item.sniServerName || 'none';
         }
+
+        if ((['sip'].indexOf(item.monitorType) >= 0)) {
+            const cert = item.clientCertificate;
+            item.clientCertificate = cert ? `${cert}.crt` : 'none';
+            item.key = cert ? `${cert}.key` : 'none';
+            item.clientTLS = item.clientTLS ? item.clientTLS : 'none';
+            item.filter = item.filter || 'none';
+            item['filter-neg'] = item['filter-neg'] || 'none';
+        }
+
+        if (['ldap'].indexOf(item.monitorType) > -1) {
+            [['mandatoryAttributes', 'mandatory-attributes'], ['chaseReferrals', 'chase-referrals']].forEach((prop) => {
+                if (typeof item[prop[0]] === 'boolean') {
+                    item[prop[1]] = item[prop[0]] ? 'yes' : 'no';
+                    delete item[prop[0]];
+                }
+            });
+        }
+
+        // convert codes from an array in AS3 to filter and filter-neg strings
+        if (item.codesUp !== undefined) item.codesUp = item.codesUp.join(' ');
+        if (item.codesDown !== undefined) item.codesDown = item.codesDown.join(' ');
+
+        ['passphrase', 'secret'].forEach((value) => {
+            if (item[value] !== undefined) {
+                const ignoreChanges = (item[value].ignoreChanges === true);
+                item[value] = secret(item, value);
+                if (ignoreChanges === true) {
+                    item.ignore[value] = item[value];
+                }
+            }
+        });
 
         if (item.monitorType === 'external') {
             // Add default to external monitors for arguments
@@ -4095,6 +4128,10 @@ const translate = {
         props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name', 'key']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props['tcp-half-open'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
+        props.mysql = props.any.concat(['recv', 'send', 'username', 'password', 'count', 'database', 'recv-column', 'recv-row']);
+        props.sip = props.any.concat(['cert', 'cipherlist', 'filter', 'filter-neg', 'headers', 'key', 'mode', 'request']);
+        props.ldap = props.any.concat(['username', 'password', 'base', 'filter-ldap', 'security', 'mandatory-attributes', 'chase-referrals']);
+        props.smtp = props.any.concat(['domain']);
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
         props.external = props.any.concat(['run', 'api-anonymous', 'args', 'user-defined']);
@@ -4103,6 +4140,26 @@ const translate = {
                 delete config.properties[key];
             }
         });
+
+        if (['ldap'].indexOf(item.monitorType) > -1) {
+            config.properties.username = config.properties.username || 'none';
+            config.properties.base = config.properties.base || 'none';
+            config.properties['filter-ldap'] = config.properties['filter-ldap'] || 'none';
+        }
+
+        if (['mysql'].indexOf(item.monitorType) > -1) {
+            config.properties.recv = config.properties.recv || 'none';
+        }
+
+        if (['ldap', 'mysql'].indexOf(item.monitorType) > -1) {
+            config.properties.password = config.properties.password || 'none';
+        }
+
+        if (['mysql'].indexOf(item.monitorType) > -1) {
+            ['database', 'recv-column', 'recv-row', 'send', 'username'].forEach((prop) => {
+                config.properties[prop] = config.properties[prop] || 'none';
+            });
+        }
 
         config.command += ` ${item.monitorType}`;
         configs.push(config);

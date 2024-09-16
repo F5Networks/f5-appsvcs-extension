@@ -10287,6 +10287,207 @@ describe('map_as3', () => {
                     });
             });
         });
+        describe('GSLB SIP Monitor', () => {
+            it('should handle all properties of SIP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test SIP props',
+                    monitorType: 'sip',
+                    protocol: 'sips',
+                    request: 'testRequest',
+                    headers: 'test:Header',
+                    codesUp: [
+                        100,
+                        101,
+                        102,
+                        200
+                    ],
+                    codesDown: [
+                        400,
+                        500,
+                        600
+                    ],
+                    ciphers: 'DEFAULT:+SHA:+3DES',
+                    clientCertificate: 'webcert'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor sip',
+                        properties: {
+                            cert: 'webcert.crt',
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test SIP props\"',
+                            filter: '\"100 101 102 200\"',
+                            'filter-neg': '\"400 500 600\"',
+                            headers: '\"test:Header\"',
+                            request: '\"testRequest\"',
+                            /* eslint-enable no-useless-escape */
+                            cipherlist: 'DEFAULT:+SHA:+3DES',
+                            mode: 'sips',
+                            key: 'webcert.key'
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB ldap Monitor', () => {
+            it('should handle all properties of LDAP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test LDAP props',
+                    monitorType: 'ldap',
+                    interval: 10,
+                    timeout: 46,
+                    base: 'dc=bigip-test,dc=org',
+                    chaseReferrals: false,
+                    filter: 'objectClass=employee',
+                    security: 'tls',
+                    mandatoryAttributes: true,
+                    username: 'user',
+                    passphrase: {
+                        ciphertext: 'JE0kZEckTmQwckRjc1R5S3NtN1hQV2xmM3l1dz09',
+                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
+                        miniJWE: true
+                    },
+                    target: '*:*',
+                    probeTimeout: 5
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor ldap',
+                        properties: {
+                            'probe-timeout': 5,
+                            security: 'tls',
+                            timeout: 46,
+                            username: 'user',
+                            destination: '*:*',
+                            interval: 10,
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test LDAP props\"',
+                            base: '\"dc=bigip-test,dc=org\"',
+                            'chase-referrals': '\"no\"',
+                            'filter-ldap': '\"objectClass=employee\"',
+                            'mandatory-attributes': '\"yes\"',
+                            password: '\"\\$M\\$dG\\$Nd0rDcsTyKsm7XPWlf3yuw==\"'
+                            /* eslint-enable no-useless-escape */
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB smtp Monitor', () => {
+            it('should handle all properties of SMTP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test SMTP props',
+                    monitorType: 'smtp',
+                    domain: 'example.com',
+                    upInterval: 15,
+                    timeUntilUp: 20,
+                    timeout: 46,
+                    target: '*:*',
+                    interval: 30,
+                    probeTimeout: 5
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor smtp',
+                        properties: {
+                            'probe-timeout': 5,
+                            domain: 'example.com',
+                            timeout: 46,
+                            destination: '*:*',
+                            interval: 30,
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test SMTP props\"'
+                            /* eslint-enable no-useless-escape */
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB Database Monitors', () => {
+            const testCases = [
+                'mysql'
+            ];
+            testCases.forEach((testCase) => {
+                it(`should handle default ${testCase} monitor`, () => {
+                    const item = {
+                        class: 'Monitor',
+                        monitorType: testCase
+                    };
+
+                    const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                    assert.deepEqual(results.configs[0],
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: `gtm monitor ${testCase}`,
+                            properties: {
+                                database: 'none',
+                                description: 'none',
+                                password: 'none',
+                                recv: 'none',
+                                'recv-column': 'none',
+                                'recv-row': 'none',
+                                send: 'none',
+                                username: 'none'
+                            },
+                            ignore: []
+                        });
+                });
+
+                it(`should handle populated ${testCase} monitor`, () => {
+                    const item = {
+                        class: 'Monitor',
+                        monitorType: testCase,
+                        count: 10,
+                        database: 'sales',
+                        interval: 10,
+                        password: 'sql-password', // gitleaks:allow
+                        recv: 'received something',
+                        'recv-column': 2,
+                        'recv-row': 3,
+                        remark: 'My little db pony',
+                        send: 'SELECT * FROM db_name',
+                        timeout: 81,
+                        username: 'user'
+                    };
+
+                    const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                    assert.deepEqual(results.configs[0],
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: `gtm monitor ${testCase}`,
+                            properties: {
+                                description: '"My little db pony"',
+                                interval: 10,
+                                password: '"sql-password"', // gitleaks:allow
+                                recv: '"received something"',
+                                send: '"SELECT * FROM db_name"',
+                                timeout: 81,
+                                username: 'user',
+                                count: 10,
+                                database: 'sales',
+                                'recv-column': 2,
+                                'recv-row': 3
+                            },
+                            ignore: []
+                        });
+                });
+            });
+        });
     });
 
     describe('GSLB_Domain', () => {

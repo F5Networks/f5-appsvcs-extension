@@ -494,6 +494,219 @@ describe('map_mcp', () => {
                 });
             });
         });
+        describe('GSLB Database Monitors', () => {
+            const testCases = [
+                'mysql'
+            ];
+            testCases.forEach((testCase) => {
+                it(`should process ${testCase} missing values`, () => {
+                    const obj = {
+                        kind: `tm:gtm:monitor:${testCase}:${testCase}state`,
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        password: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        username: 'none',
+                        database: 'none',
+                        'recv-column': 'none',
+                        'recv-row': 'none'
+                    });
+                });
+                it(`should process ${testCase} user-defined values`, () => {
+                    const obj = {
+                        kind: `tm:gtm:monitor:${testCase}:${testCase}state`,
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor',
+                        description: 'This is my description',
+                        password: 'Same as my luggage "123"',
+                        recv: 'Something received',
+                        send: 'Something sent',
+                        username: 'user',
+                        database: 'baseOfData',
+                        count: '42',
+                        recvColumn: '1',
+                        recvRow: '1'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: '"This is my description"',
+                        password: '"Same as my luggage \\"123\\""',
+                        recv: '"Something received"',
+                        send: '"Something sent"',
+                        username: 'user',
+                        database: 'baseOfData',
+                        count: 42,
+                        'recv-column': 1,
+                        'recv-row': 1
+                    });
+                });
+            });
+            it('should process tcp-half-open missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process tcp-half-open user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process smtp missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process smtp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process sip missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    cert: 'none',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    request: 'none'
+                });
+            });
+            it('should process sip user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    cert: 'none',
+                    description: '"This is my description"',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    request: 'none',
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process ldap user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:ldap:ldapstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    username: 'user',
+                    base: 'baseOfData'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    /* eslint-disable no-useless-escape */
+                    base: '\"baseOfData\"',
+                    /* eslint-enable no-useless-escape */
+                    'filter-ldap': 'none',
+                    security: 'none',
+                    username: 'user'
+                });
+            });
+        });
         describe('tm:auth:partition:partitionstate', () => {
             it('should return a defaultRouteDomain', () => {
                 defaultContext.request.isPerApp = false;
