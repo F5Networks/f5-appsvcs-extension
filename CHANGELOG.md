@@ -20,7 +20,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4465:([Github Issue 856] (https://github.com/F5Networks/f5-appsvcs-extension/issues/856)) Convert TTL property value to D:H:M:S format, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-persist-ttl.json)
 
 ### Changed
-- Updated to Service Discovery 1.22.0-0
+- Updated to Service Discovery 1.22.0-1
 
 ### Removed
 
