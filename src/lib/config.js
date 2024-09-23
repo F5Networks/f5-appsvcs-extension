@@ -29,6 +29,7 @@ const defaults = {
     performanceTracingEndpoint: '',
     serializeFileUploads: false,
     serviceDiscoveryEnabled: true,
+    encodeDeclarationMetadata: false,
     webhook: ''
 };
 

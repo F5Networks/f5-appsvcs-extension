@@ -58,6 +58,12 @@
                 {"const": ""}
             ],
             "default": ""
+        },
+        "encodeDeclarationMetadata": {
+            "title": "Enable AS3 declaration metadata encoding",
+            "description": "A boolean that controls encoding the metadata of declaration before storing in a datagroup.",
+            "type": "boolean",
+            "default": false            
         }
     },
     "additionalProperties": false

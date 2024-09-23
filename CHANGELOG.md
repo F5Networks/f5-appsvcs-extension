@@ -12,12 +12,14 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4390: ([Github Issue 837] (https://github.com/F5Networks/f5-appsvcs-extension/issues/837)) Added AS3 schema minimumMonitors support for GSLB_Servers and GSLB_Virtual_Server classes, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-service-virtual-server-minimum-monitor.json).
 - AUTOTOOL-4577: ([Github Issue 837] (https://github.com/F5Networks/f5-appsvcs-extension/issues/862)) Author PingAccess Profile and PingAccess Agent Properties via AS3 schema [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-ping-access-profile.json), [Example2](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/examples-ping-access-properties.json), [Example3](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-ping-access-profile-https.json), [Example4](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-ping-access-profile-http.json).
 - AUTOTOOL-4414: ([Github Issue 843] (https://github.com/F5Networks/f5-appsvcs-extension/issues/843)) GSLB_Monitor - Added Additional Monitor Types(mysql, sip, ldap, smtp), [Example for MySql](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-monitor-mysql.json),  [Example for sip](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-monitor-sip.json),  [Example for Ldap](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-monitor-ldap.json),  [Example for smtp](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-monitor-smtp.json).
+- AUTOTOOL-4589: Introduction of the encodeDeclarationMetadata AS3 setting option to encode declaration metadata prior to storing it in a data group.
 
 ### Fixed
 - AUTOTOOL-4435: The requested SNAT Translation (<SNAT Name>) already exists in partition <Partition Name>
 - AUTOTOOL-4425: Handle empty values for class UpdaterRest
 - AUTOTOOL-4448:([Github Issue 857] (https://github.com/F5Networks/f5-appsvcs-extension/issues/857)) Add support for RouteDomain identifer for virtual-address name, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-virtualserver-name-with-routedomainIdentifier.json)
 - AUTOTOOL-4465:([Github Issue 856] (https://github.com/F5Networks/f5-appsvcs-extension/issues/856)) Convert TTL property value to D:H:M:S format, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-persist-ttl.json)
+- AUTOTOOL-4589: AS3 use on GTM dramatically reduces device capacity
 
 ### Changed
 - Updated to Service Discovery 1.22.0-1
