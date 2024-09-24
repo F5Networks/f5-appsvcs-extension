@@ -1,6 +1,6 @@
 {
   "name": "f5-appsvcs",
-  "version": "3.53.0-5",
+  "version": "3.53.0-6",
   "license": "Apache-2.0",
   "scripts": {
     "build": "./scripts/build/build.sh",
