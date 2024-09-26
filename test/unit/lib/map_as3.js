@@ -4911,10 +4911,65 @@ describe('map_as3', () => {
                 bigip: '/Common/vdi'
             };
 
+            const expectedProfiles = {
+                '/Common/access': {
+                    context: 'all'
+                },
+                '/Common/connectivityProfile': {
+                    context: 'clientside'
+                },
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/ppp': {
+                    context: 'all'
+                },
+                '/Common/vdi': {
+                    context: 'all'
+                }
+            };
+
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
-            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
-            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/connectivityProfile'], { context: 'clientside' });
-            assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/vdi'], { context: 'all' });
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should add access profiles ping to service when referred by use', () => {
+            item.profilePingAccess = {
+                use: '/SampleTenant/Application/testPingAccessProfile'
+            };
+            item.profileConnectivity = {
+                bigip: '/Common/connectivityProfile'
+            };
+            item.profileVdi = {
+                bigip: '/Common/vdi'
+            };
+
+            const expectedProfiles = {
+                '/SampleTenant/Application/testPingAccessProfile': {
+                    context: 'all'
+                },
+                '/Common/connectivityProfile': {
+                    context: 'clientside'
+                },
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/ppp': {
+                    context: 'all'
+                },
+                '/Common/vdi': {
+                    context: 'all'
+                }
+            };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
         it('should add rba and websso profiles with non-sslo bigip-ref', (() => {

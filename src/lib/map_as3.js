@@ -2832,10 +2832,6 @@ const translate = {
 
             if (item.profilePingAccess) {
                 item = profile(item, 'profilePingAccess');
-
-                if (item.profilePingAccess.use) {
-                    profilePath = item.profilePingAccess.use.split('/');
-                }
             }
 
             if (profilePath) {
@@ -2850,8 +2846,6 @@ const translate = {
                     profilePath = item.policyIAM.bigip;
                 } else if (item.profileAccess && item.profileAccess.bigip) {
                     profilePath = item.profileAccess.bigip;
-                } else if (item.profilePingAccess && item.profilePingAccess.bigip) {
-                    profilePath = item.profilePingAccess.bigip;
                 }
 
                 if (profilePath) {
