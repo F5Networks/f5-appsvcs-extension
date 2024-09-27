@@ -61,6 +61,14 @@
   * Create a merge request like for any other development task and announce on Teams `AS3-DO General`.
 
 ### Perform actions after confirming GO for release
+* Clone release branch to `<releaseBranch>-main`
+  * eg: 
+        * git checkout -b v3.53.0-main original/v3.53.0
+        * git push original v3.53.0-main -f
+* Clone release branch to `<releaseBranch>-docs`
+  * eg: 
+        * git checkout -b v3.53.0-docs original/v3.53.0
+        * git push original v3.53.0-docs -f
 Merge the release branch into `develop` and `main` following the steps below for each merge.
 * Navigate to the `Merge Requests` page and click on `New merge request` in the upper right corner.
 * Select the release branch as the `source branch`.
