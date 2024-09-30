@@ -32,11 +32,11 @@
             "anyOf": [
                 {
                     "description": "Any version of AS3.",
-                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-2])($|[.][0-9]+$)"
+                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-3])($|[.][0-9]+$)"
                 },
                 {
                     "description": "The current version of AS3.",
-                    "const": "3.52.0"
+                    "const": "3.53.0"
                 }
             ]
         },
@@ -502,8 +502,50 @@
                 "serviceMain": { "$ref": "#/definitions/Service_Generic" }
             }
         },
-
-
+        "Pointer_Access_Profile_Ping": {
+            "description": "Reference to a Access Profile Ping",
+            "type": "object",
+            "properties": {
+                "use": {
+                    "description": "AS3 pointer to Access Profile Ping declaration",
+                    "type": "string",
+                    "minLength": 1,
+                    "f5PostProcess": {
+                        "tag": "pointer",
+                        "data": {
+                            "properties": {
+                                "class": {
+                                    "enum": [
+                                        "Ping_Access_Profile"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "class"
+                            ]
+                        }
+                    }
+                },
+                "bigip": {
+                    "description": "Pathname of existing BIG-IP Access Profile Ping",
+                    "type": "string",
+                    "format": "f5bigip"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1,
+            "maxProperties": 1,
+            "allOf": [
+                {
+                    "f5PostProcess": {
+                        "tag": "bigComponent",
+                        "data": [
+                            "query apm profile ping-access"
+                        ]
+                    }
+                }
+            ]
+        },
         "Service_HTTP": {
             "title": "Service_HTTP",
             "description": "HTTP virtual server",
@@ -558,6 +600,11 @@
                         },
                         {
                             "required": [
+                                "profilePingAccess"
+                            ]
+                        },
+                        {
+                            "required": [
                                 "policyIAM"
                             ]
                         }
@@ -568,6 +615,11 @@
                         {
                             "required": [
                                 "profileAccess"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "profilePingAccess"
                             ]
                         },
                         {
@@ -827,6 +879,18 @@
                             }
                         },
                         { "$ref": "#/definitions/Pointer_Access_Profile" }
+                    ]
+                },
+                "profilePingAccess": {
+                    "title": "Profile ping access",
+                    "allOf": [
+                        {
+                            "f5PostProcess": {
+                                "tag": "modules",
+                                "data": ["apm"]
+                            }
+                        },
+                        { "$ref": "#/definitions/Pointer_Access_Profile_Ping" }
                     ]
                 },
                 "profileConnectivity": {
@@ -3703,9 +3767,17 @@
                 "minimumMonitors": {
                     "title": "Minimum monitors",
                     "description": "Member is down when fewer than minimum monitors report it healthy",
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 63
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "const": "all"
+                        },
+                        {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 63
+                        }
+                    ]
                 },
                 "metadata": {
                     "$ref": "#/definitions/Metadata"
@@ -6766,6 +6838,7 @@
                 }
             }
         },
+
 
         "Classification_Profile": {
             "title": "Classification_Profile",

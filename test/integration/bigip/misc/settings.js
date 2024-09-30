@@ -54,6 +54,7 @@ describe('settings (__smoke)', function () {
         performanceTracingEndpoint: '',
         serializeFileUploads: false,
         serviceDiscoveryEnabled: true,
+        encodeDeclarationMetadata: false,
         webhook: ''
     };
     function resetDefaults() {
@@ -70,6 +71,7 @@ describe('settings (__smoke)', function () {
             performanceTracingEndpoint: 'http://196.168.0.1/api/traces',
             serializeFileUploads: true,
             serviceDiscoveryEnabled: false,
+            encodeDeclarationMetadata: true,
             webhook: 'https://www.example.com'
         };
 

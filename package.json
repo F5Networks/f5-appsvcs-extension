@@ -1,6 +1,6 @@
 {
   "name": "f5-appsvcs",
-  "version": "3.52.0-5",
+  "version": "3.53.0-7",
   "license": "Apache-2.0",
   "scripts": {
     "build": "./scripts/build/build.sh",
@@ -19,29 +19,29 @@
     "misc": "mocha test/integration/bigip/misc --require test/integration/bigip/property/mochaHooks.js"
   },
   "devDependencies": {
-    "@automation-toolchain/f5-appsvcs-schema": "^0.47.3",
-    "@f5devcentral/atg-shared-utilities-dev": "^0.2.19",
+    "@automation-toolchain/f5-appsvcs-schema": "^0.51.6",
+    "@f5devcentral/atg-shared-utilities-dev": "^0.2.20",
     "@f5devcentral/eslint-config-f5-atg": "^0.1.8",
-    "@redocly/cli": "^1.17.1",
-    "aws-sdk": "^2.1658.0",
+    "@redocly/cli": "^1.25.0",
+    "aws-sdk": "^2.1691.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
     "eslint": "^8.53.0",
     "f5-schema-doc": "file:packages/f5-schema-doc-0.1.1.tgz",
     "json-schema-faker": "^0.5.6",
     "mkdirp": "^3.0.1",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.3",
     "mocha-multi-reporters": "^1.5.1",
     "nock": "10.0.0",
     "nyc": "^17.0.0",
     "proxyquire": "^2.1.3",
     "rimraf": "^6.0.1",
     "sinon": "7.5.0",
-    "winston": "^3.13.1"
+    "winston": "^3.14.2"
   },
   "optionalDependencies": {
-    "@stryker-mutator/core": "^8.2.6",
-    "@stryker-mutator/mocha-runner": "^8.2.6",
+    "@stryker-mutator/core": "^8.5.0",
+    "@stryker-mutator/mocha-runner": "^8.5.0",
     "error": "7.2.1",
     "jaeger-client": "^3.19.0"
   },
@@ -63,7 +63,7 @@
     ]
   },
   "dependencies": {
-    "@f5devcentral/atg-shared-utilities": "^0.10.6",
+    "@f5devcentral/atg-shared-utilities": "^0.10.7",
     "@f5devcentral/atg-storage": "^1.3.10",
     "@f5devcentral/f5-teem": "^1.6.1",
     "ajv": "6.12.6",

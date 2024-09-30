@@ -832,6 +832,38 @@ const translate = {
         return { configs: [config] };
     },
 
+    Ping_Access_Profile(context, tenantId, appId, itemId, item) {
+        if (!item.useHTTPS) {
+            delete item.serversslProfile;
+        }
+
+        item = profile(item, 'pingAccessProperties');
+        item = profile(item, 'serversslProfile');
+        item = profile(item, 'pool');
+        return { configs: [normalize.actionableMcp(context, item, 'apm profile ping-access', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    Ping_Access_Agent_Properties(context, tenantId, appId, itemId, item) {
+        const path = util.mcpPath(tenantId, appId, itemId);
+        const settings = util.simpleCopy(item);
+
+        item.iControl_post = {};
+        item.iControl_post.reference = path;
+        item.iControl_post.path = `/mgmt/shared/file-transfer/uploads/${itemId}`;
+        item.iControl_post.method = 'POST';
+        item.iControl_post.ctype = 'application/octet-stream';
+        item.iControl_post.why = `upload ping access agent properties ${itemId}`;
+        item.iControl_post.send = util.base64Decode(item.propertiesData.base64);
+        item.iControl_post.settings = settings;
+
+        if (item.ignoreChanges) {
+            delete item.ignoreChanges;
+        }
+
+        const config = normalize.actionableMcp(context, item, 'apm aaa ping-access-properties-file', path);
+
+        return { configs: [config] };
+    },
     /**
      * Defines an Access Profile
      */
@@ -1924,8 +1956,8 @@ const translate = {
      */
     Persist(context, tenantId, appId, itemId, item) {
         item.ignore = item.ignore || {};
-        // convert ttl seconds to special bigip hh:mm:ss format
-        item.ttl = util.convertTtlToHourMinSec(item.ttl);
+        // convert ttl seconds to special bigip dd:hh:mm:ss format
+        item.ttl = util.convertTtlToDayHourMinSec(item.ttl);
         // replace zero value with special bigip string
         if (item.duration === 0) {
             item.duration = 'indefinite';
@@ -2777,10 +2809,10 @@ const translate = {
      * Defines specific properties for HTTP virtual servers.
      * Service_Core properties are assumed.
      */
-    Service_HTTP(context, tenantId, appId, itemId, item, declaration) {
+    Service_HTTP(context, tenantId, appId, itemId, item, declaration, profileSecureHTTP2Flag) {
         let configs = [];
         // support for IAM policy attachment only
-        if (item.policyIAM || item.profileAccess) {
+        if (item.policyIAM || item.profileAccess || item.profilePingAccess) {
             // add per-session policy's auto-generated apm profile with rba and websso
             let profilePath;
 
@@ -2796,6 +2828,10 @@ const translate = {
                 if (item.profileAccess.use) {
                     profilePath = item.profileAccess.use.split('/');
                 }
+            }
+
+            if (item.profilePingAccess) {
+                item = profile(item, 'profilePingAccess');
             }
 
             if (profilePath) {
@@ -2870,6 +2906,14 @@ const translate = {
         if (typeof item.profileHTTPAcceleration === 'string') {
             item.profileHTTPAcceleration = { bigip: '/Common/webacceleration' };
         }
+
+        if (!profileSecureHTTP2Flag && typeof item.profileHTTP2 === 'string') {
+            item.profileHTTP2 = { bigip: '/Common/http2' };
+        }
+        if (!profileSecureHTTP2Flag && item.profileHTTP2 && (item.profileHTTP2.use || item.profileHTTP2.bigip)) {
+            item = profile(item, 'profileHTTP2', 'all');
+        }
+
         item = profile(item, 'profileHTTP');
         item = profile(item, 'profileHTML');
         item = profile(item, 'profileHTTPCompression');
@@ -2962,24 +3006,30 @@ const translate = {
             adminState: item.adminState
         };
 
+        let profileSecureHTTP2Flag = false;
         if (typeof item.profileHTTP2 === 'string') {
             item.profileHTTP2 = { bigip: '/Common/http2' };
+            profileSecureHTTP2Flag = true;
         }
         if (item.profileHTTP2 && (item.profileHTTP2.use || item.profileHTTP2.bigip)) {
             item = profile(item, 'profileHTTP2', 'all');
+            profileSecureHTTP2Flag = true;
         }
         const profileHttp2Copy = util.simpleCopy(item.profileHTTP2);
         if (profileHttp2Copy && profileHttp2Copy.ingress) {
             item.profileHTTP2 = profileHttp2Copy.ingress;
             item = profile(item, 'profileHTTP2', 'clientside');
+            profileSecureHTTP2Flag = true;
         }
         if (profileHttp2Copy && profileHttp2Copy.egress) {
             item.profileHTTP2 = profileHttp2Copy.egress;
             item = profile(item, 'profileHTTP2', 'serverside');
+            profileSecureHTTP2Flag = true;
         }
 
-        let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration).configs;
-        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration).configs);
+        // eslint-disable-next-line max-len
+        let configs = translate.Service_HTTP(context, tenantId, appId, itemId, item, declaration, profileSecureHTTP2Flag).configs;
+        configs = configs.concat(translate.Service_HTTP(context, tenantId, appId, `${itemId}${constants.redirectSuffix}`, redirectDef, declaration, profileSecureHTTP2Flag).configs);
         return { configs };
     },
 
@@ -3893,11 +3943,21 @@ const translate = {
 
         function mapMonitors(source) {
             if (source.monitors.length > 0) {
-                source.monitors = source.monitors
-                    .map((m, i) => bigipPath(source.monitors, i))
-                    .join(' and ');
+                if (source.minimumMonitors) {
+                    const monitorsList = source.monitors
+                        .map((m, i) => bigipPath(source.monitors, i))
+                        .join(' ');
+                    source.monitors = `min ${source.minimumMonitors} of \\{ ${monitorsList} \\}`;
+                } else {
+                    source.monitors = source.monitors
+                        .map((m, i) => bigipPath(source.monitors, i))
+                        .join(' and ');
+                }
             } else if (source.serverType === 'bigip') {
                 source.monitors = '/Common/bigip';
+                if (source.minimumMonitors) {
+                    source.monitors = `min ${source.minimumMonitors} of \\{ ${source.monitors} \\}`;
+                }
             }
         }
 
@@ -3984,6 +4044,7 @@ const translate = {
         const props = {};
         const configs = [];
 
+        item.ignore = item.ignore || {};
         item.remark = item.remark || 'none';
 
         if (item.monitorType === 'https') {
@@ -4004,6 +4065,38 @@ const translate = {
             item.receive = item.receive || 'none';
             item.sniServerName = item.sniServerName || 'none';
         }
+
+        if ((['sip'].indexOf(item.monitorType) >= 0)) {
+            const cert = item.clientCertificate;
+            item.clientCertificate = cert ? `${cert}.crt` : 'none';
+            item.key = cert ? `${cert}.key` : 'none';
+            item.clientTLS = item.clientTLS ? item.clientTLS : 'none';
+            item.filter = item.filter || 'none';
+            item['filter-neg'] = item['filter-neg'] || 'none';
+        }
+
+        if (['ldap'].indexOf(item.monitorType) > -1) {
+            [['mandatoryAttributes', 'mandatory-attributes'], ['chaseReferrals', 'chase-referrals']].forEach((prop) => {
+                if (typeof item[prop[0]] === 'boolean') {
+                    item[prop[1]] = item[prop[0]] ? 'yes' : 'no';
+                    delete item[prop[0]];
+                }
+            });
+        }
+
+        // convert codes from an array in AS3 to filter and filter-neg strings
+        if (item.codesUp !== undefined) item.codesUp = item.codesUp.join(' ');
+        if (item.codesDown !== undefined) item.codesDown = item.codesDown.join(' ');
+
+        ['passphrase', 'secret'].forEach((value) => {
+            if (item[value] !== undefined) {
+                const ignoreChanges = (item[value].ignoreChanges === true);
+                item[value] = secret(item, value);
+                if (ignoreChanges === true) {
+                    item.ignore[value] = item[value];
+                }
+            }
+        });
 
         if (item.monitorType === 'external') {
             // Add default to external monitors for arguments
@@ -4029,6 +4122,10 @@ const translate = {
         props.https = props.http.concat(['cipherlist', 'cert', 'sni-server-name', 'key']);
         props['gateway-icmp'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
         props['tcp-half-open'] = props.any.concat(['probe-interval', 'probe-attempts', 'send', 'recv', 'transparent']);
+        props.mysql = props.any.concat(['recv', 'send', 'username', 'password', 'count', 'database', 'recv-column', 'recv-row']);
+        props.sip = props.any.concat(['cert', 'cipherlist', 'filter', 'filter-neg', 'headers', 'key', 'mode', 'request']);
+        props.ldap = props.any.concat(['username', 'password', 'base', 'filter-ldap', 'security', 'mandatory-attributes', 'chase-referrals']);
+        props.smtp = props.any.concat(['domain']);
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
         props.external = props.any.concat(['run', 'api-anonymous', 'args', 'user-defined']);
@@ -4037,6 +4134,26 @@ const translate = {
                 delete config.properties[key];
             }
         });
+
+        if (['ldap'].indexOf(item.monitorType) > -1) {
+            config.properties.username = config.properties.username || 'none';
+            config.properties.base = config.properties.base || 'none';
+            config.properties['filter-ldap'] = config.properties['filter-ldap'] || 'none';
+        }
+
+        if (['mysql'].indexOf(item.monitorType) > -1) {
+            config.properties.recv = config.properties.recv || 'none';
+        }
+
+        if (['ldap', 'mysql'].indexOf(item.monitorType) > -1) {
+            config.properties.password = config.properties.password || 'none';
+        }
+
+        if (['mysql'].indexOf(item.monitorType) > -1) {
+            ['database', 'recv-column', 'recv-row', 'send', 'username'].forEach((prop) => {
+                config.properties[prop] = config.properties[prop] || 'none';
+            });
+        }
 
         config.command += ` ${item.monitorType}`;
         configs.push(config);

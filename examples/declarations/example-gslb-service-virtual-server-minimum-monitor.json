@@ -1,0 +1,49 @@
+{
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.53.0",
+        "Common": {
+            "class": "Tenant",
+            "Shared": {
+                "class": "Application",
+                "template": "shared",
+                "testDataCenter": {
+                    "class": "GSLB_Data_Center"
+                },
+                "testServer": {
+                    "class": "GSLB_Server",
+                    "dataCenter": {
+                        "use": "testDataCenter"
+                    },
+                    "devices": [
+                        {
+                            "address": "192.0.0.1"
+                        }
+                    ],
+                    "minimumMonitors": 1,
+                    "virtualServers": [
+                        {
+                            "address": "192.0.0.2",
+                            "port": 5050,
+                            "name": "virtualAddress1",
+                            "monitors": [
+                                {
+                                    "bigip": "/Common/bigip"
+                                },
+                                {
+                                    "bigip": "/Common/http"
+                                }
+                            ],
+                            "minimumMonitors": 2
+                        },
+                        {
+                            "address": "192.0.0.3",
+                            "port": 5051
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

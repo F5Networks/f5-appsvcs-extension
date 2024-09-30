@@ -1,0 +1,7 @@
+Please create a new folder and store your desired declaration to be converted.
+eg: mkdir <customerName>
+To Run the script
+node convertor.js /<customerName>/declaration
+
+Add the property to be changed in the list keysToReplace in convertor.js file if not exists.
+Please feel free to change the values in keysToReplace variable

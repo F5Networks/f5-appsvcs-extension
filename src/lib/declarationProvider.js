@@ -16,12 +16,18 @@
 
 'use strict';
 
+const zlib = require('zlib');
 const dataGroupUtil = require('./util/dataGroupUtil');
 const certUtils = require('./util/certUtil');
 const util = require('./util/util');
 const declarationUtil = require('./util/declarationUtil');
 const log = require('./log');
+const Config = require('./config');
 
+const ZLIB_OPTIONS = {
+    level: zlib.Z_BEST_COMPRESSION,
+    windowBits: 15
+};
 const methodsAllowedForEncryptDecrypt = ['Post', 'Patch'];
 
 // This is a result of refactoring validate.js
@@ -182,86 +188,101 @@ class DeclarationProvider {
                             records[r.name] = r;
                         });
 
-                        if (Object.prototype.hasOwnProperty.call(records, '0')) {
-                            metadata = {};
-                            records[0].data.split('|').forEach((row) => {
-                                if (!row.match(/^[A-Za-z0-9_]+[^][^\x00-\x20\x22'<>\x5c`\x7f]+/)) {
-                                    return;
+                        return Config.getAllSettings()
+                            .then((settingsResponse) => {
+                                const settings = settingsResponse;
+                                if (Object.prototype.hasOwnProperty.call(records, '0')) {
+                                    metadata = {};
+                                    if (records[0].data && records[0].data.indexOf('blocks') === -1) {
+                                        if (settings.encodeDeclarationMetadata) {
+                                            const compressedString = util.fromBase64(records[0].data);
+                                            // eslint-disable-next-line max-len
+                                            records[0].data = zlib.inflateSync(compressedString, ZLIB_OPTIONS).toString();
+                                        } else {
+                                            const err = new Error('declaration stored on target seems encoded.');
+                                            log.info(err);
+                                            throw err;
+                                        }
+                                    }
+                                    records[0].data.split('|').forEach((row) => {
+                                        if (!row.match(/^[A-Za-z0-9_]+[^][^\x00-\x20\x22'<>\x5c`\x7f]+/)) {
+                                            return;
+                                        }
+                                        const cols = row.split('^');
+                                        switch (cols[0]) {
+                                        case 'tenants':
+                                            metadata.tenants = cols[1].split(',');
+                                            break;
+                                        case 'blocks':
+                                            metadata.blocks = parseInt(cols[1], 10);
+                                            break;
+                                        default:
+                                            metadata[cols[0]] = cols[1];
+                                            break;
+                                        }
+                                    });
                                 }
-                                const cols = row.split('^');
-                                switch (cols[0]) {
-                                case 'tenants':
-                                    metadata.tenants = cols[1].split(',');
-                                    break;
-                                case 'blocks':
-                                    metadata.blocks = parseInt(cols[1], 10);
-                                    break;
-                                default:
-                                    metadata[cols[0]] = cols[1];
-                                    break;
+                                if ((metadata === undefined)
+                                        || (metadata.blocks !== (records.length - 1))) {
+                                    const err = new Error('declaration stored on target seems corrupt');
+                                    log.info(err);
+                                    if (includeMetadata) {
+                                        return declToReturnOnError;
+                                    }
+                                    throw err;
+                                }
+
+                                try {
+                                    textDecl = dataGroupUtil.recordsToString(records, '', 1);
+                                    if (methodsAllowedForEncryptDecrypt.includes(context.request.method)) {
+                                        textDecl = JSON.parse(textDecl);
+                                        return certUtils.checkIfClassCertExist(textDecl, 'decrypt')
+                                            .then((declCerts) => {
+                                                textDecl = JSON.stringify(declCerts);
+                                                try {
+                                                    declToReturn = JSON.parse(textDecl);
+                                                } catch (e) {
+                                                    e.message = `cannot JSON.parse() stored declaration (${e.message})`;
+                                                    log.info(e);
+                                                    if (includeMetadata) {
+                                                        return declToReturnOnError;
+                                                    }
+                                                    throw e;
+                                                }
+
+                                                log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
+                                                return (includeMetadata) ? {
+                                                    metadata,
+                                                    declaration: declToReturn
+                                                } : declToReturn;
+                                            });
+                                    }
+
+                                    try {
+                                        declToReturn = JSON.parse(textDecl);
+                                    } catch (e) {
+                                        e.message = `cannot JSON.parse() stored declaration (${e.message})`;
+                                        log.info(e);
+                                        if (includeMetadata) {
+                                            return declToReturnOnError;
+                                        }
+                                        throw e;
+                                    }
+
+                                    log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
+                                    return (includeMetadata) ? {
+                                        metadata,
+                                        declaration: declToReturn
+                                    } : declToReturn;
+                                } catch (e) {
+                                    e.message = `cannot decompress stored declaration (${e.message})`;
+                                    log.info(e);
+                                    if (includeMetadata) {
+                                        return declToReturnOnError;
+                                    }
+                                    throw e;
                                 }
                             });
-                        }
-                        if ((metadata === undefined)
-                                    || (metadata.blocks !== (records.length - 1))) {
-                            const err = new Error('declaration stored on target seems corrupt');
-                            log.info(err);
-                            if (includeMetadata) {
-                                return declToReturnOnError;
-                            }
-                            throw err;
-                        }
-
-                        try {
-                            textDecl = dataGroupUtil.recordsToString(records, '', 1);
-                            if (methodsAllowedForEncryptDecrypt.includes(context.request.method)) {
-                                textDecl = JSON.parse(textDecl);
-                                return certUtils.checkIfClassCertExist(textDecl, 'decrypt')
-                                    .then((declCerts) => {
-                                        textDecl = JSON.stringify(declCerts);
-                                        try {
-                                            declToReturn = JSON.parse(textDecl);
-                                        } catch (e) {
-                                            e.message = `cannot JSON.parse() stored declaration (${e.message})`;
-                                            log.info(e);
-                                            if (includeMetadata) {
-                                                return declToReturnOnError;
-                                            }
-                                            throw e;
-                                        }
-
-                                        log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
-                                        return (includeMetadata) ? {
-                                            metadata,
-                                            declaration: declToReturn
-                                        } : declToReturn;
-                                    });
-                            }
-
-                            try {
-                                declToReturn = JSON.parse(textDecl);
-                            } catch (e) {
-                                e.message = `cannot JSON.parse() stored declaration (${e.message})`;
-                                log.info(e);
-                                if (includeMetadata) {
-                                    return declToReturnOnError;
-                                }
-                                throw e;
-                            }
-
-                            log.debug(`fetched declaration from target, ${metadata.blocks} blocks, ${metadata.tenants.length} Tenants`);
-                            return (includeMetadata) ? {
-                                metadata,
-                                declaration: declToReturn
-                            } : declToReturn;
-                        } catch (e) {
-                            e.message = `cannot decompress stored declaration (${e.message})`;
-                            log.info(e);
-                            if (includeMetadata) {
-                                return declToReturnOnError;
-                            }
-                            throw e;
-                        }
                     });
             });
     } // getBigipDeclaration()
@@ -379,42 +400,54 @@ class DeclarationProvider {
                     + `id^${decl.id}|`
                     + `tenants^${tenants.join(',')}|`
                     + `blocks^${records.length}`);
-
-                records.unshift({
-                    name: '0',
-                    data: meta
-                });
-
-                // will datagroup name collide?  (odds are slim, but...)
-                // (life would be easier if TMOS had create-or-update)
-                log.debug(`store decl on target, blocks=${records.length - 1}`);
-                return util.iControlRequest(context, opts)
-                    .then((resp) => {
-                        opts.crude = false;
-
-                        if (resp.statusCode === 200) {
-                            // update existing dg
-                            opts.method = 'PUT';
-                            opts.send = JSON.stringify({
-                                records
+                return Config.getAllSettings()
+                    .then((settingsResponse) => {
+                        const settings = settingsResponse;
+                        if (settings.encodeDeclarationMetadata) {
+                            const compressedString = zlib.deflateSync(meta, ZLIB_OPTIONS);
+                            const encodedMeta = compressedString.toString('base64');
+                            records.unshift({
+                                name: '0',
+                                data: encodedMeta
                             });
                         } else {
-                            // create new dg
-                            opts.path = path;
-                            opts.method = 'POST';
-                            opts.send = JSON.stringify({
-                                name: (dg + stamp),
-                                partition: 'Common',
-                                description: 'f5 AS3 declaration (see info in record 0)',
-                                type: 'integer',
-                                records
+                            records.unshift({
+                                name: '0',
+                                data: meta
                             });
                         }
-                        return util.iControlRequest(context, opts);
-                    })
-                    .then(() => {
-                        log.debug(`next purge stored decls in excess of ${limit}`);
-                        return this.trimDeclarations(context, limit, context.control);
+
+                        // will datagroup name collide?  (odds are slim, but...)
+                        // (life would be easier if TMOS had create-or-update)
+                        log.debug(`store decl on target, blocks=${records.length - 1}`);
+                        return util.iControlRequest(context, opts)
+                            .then((resp) => {
+                                opts.crude = false;
+
+                                if (resp.statusCode === 200) {
+                                    // update existing dg
+                                    opts.method = 'PUT';
+                                    opts.send = JSON.stringify({
+                                        records
+                                    });
+                                } else {
+                                    // create new dg
+                                    opts.path = path;
+                                    opts.method = 'POST';
+                                    opts.send = JSON.stringify({
+                                        name: (dg + stamp),
+                                        partition: 'Common',
+                                        description: 'f5 AS3 declaration (see info in record 0)',
+                                        type: 'integer',
+                                        records
+                                    });
+                                }
+                                return util.iControlRequest(context, opts);
+                            })
+                            .then(() => {
+                                log.debug(`next purge stored decls in excess of ${limit}`);
+                                return this.trimDeclarations(context, limit, context.control);
+                            });
                     });
             });
     } // storeBigipDeclaration()

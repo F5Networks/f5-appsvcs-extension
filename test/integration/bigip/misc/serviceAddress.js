@@ -484,4 +484,85 @@ describe('serviceAddress', function () {
                 ));
         });
     });
+
+    describe('virtualAddress with RouteDomain ID', () => {
+        let declare;
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '61', id: 61 }
+            },
+            {
+                endpoint: '/mgmt/tm/ltm/virtual-address',
+                data: {
+                    name: '192.0.128.10%61',
+                    partition: 'Common'
+                },
+                skipDelete: true
+            }
+
+        ];
+        beforeEach(() => {
+            declare = {
+                schemaVersion: '3.53.0',
+                updateMode: 'selective',
+                class: 'ADC',
+                Tenant01: {
+                    class: 'Tenant',
+                    defaultRouteDomain: 61,
+                    A1: {
+                        class: 'Application',
+                        template: 'generic',
+                        vs1: {
+                            class: 'Service_UDP',
+                            sourceAddress: '0.0.0.0%61/0',
+                            virtualAddresses: [
+                                { bigip: '/Common/192.0.128.10%61' }
+                            ],
+                            virtualPort: 80,
+                            pool: 'web_pool'
+                        },
+                        web_pool: {
+                            class: 'Pool',
+                            monitors: [{
+                                bigip: '/Common/udp'
+                            }],
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.1.10'
+                                    ]
+                                }]
+                        }
+                    }
+                }
+            };
+        });
+
+        it('should able to reference BIGIP virtualAddress object with route-domain identifier', () => {
+            const Path = '/mgmt/shared/appsvcs/declare/';
+            return Promise.resolve()
+                .then(() => postBigipItems(bigipItems))
+                .then(() => postDeclaration(declare, { declarationIndex: 0 }, undefined, Path))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~192.0.128.10%2561'))
+                // Virtual-address should be removed from /Tenant once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${Path}?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/tm/ltm/virtual-address/~Common~192.0.128.10%2561'),
+                    /The requested Virtual Address \(\/Common\/192.0.128.10%61\) was not found/,
+                    'virtual-address should have been deleted'
+                ))
+                .finally(() => deleteBigipItems(bigipItems.reverse())
+                    .catch((err) => {
+                        console.log('Error deleting bigip items', err);
+                    }));
+        });
+    });
 });

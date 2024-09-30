@@ -473,6 +473,168 @@ describe('GSLB_Topology_Records', function () {
             });
     });
 
+    it('should set monitor and minimumMonitor', () => {
+        const declTenant = {
+            class: 'ADC',
+            schemaVersion: '3.52.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        minimumMonitors: 1,
+                        devices: [
+                            {
+                                address: '192.0.0.1'
+                            }
+                        ],
+                        virtualServerDiscoveryMode: 'enabled-no-delete',
+                        exposeRouteDomainsEnabled: true
+                    }
+                }
+            }
+        };
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /Common/bigip }');
+            });
+    });
+
+    it('should set minimumMonitor only for GSLB_Virtual_Server', () => {
+        const declTenant = {
+            class: 'ADC',
+            schemaVersion: '3.52.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        devices: [
+                            {
+                                address: '192.0.0.1'
+                            }
+                        ],
+                        virtualServerDiscoveryMode: 'enabled-no-delete',
+                        exposeRouteDomainsEnabled: true,
+                        virtualServers: [
+                            {
+                                address: '192.0.0.2',
+                                port: 5050,
+                                monitors: [
+                                    {
+                                        bigip: '/Common/bigip'
+                                    },
+                                    {
+                                        bigip: '/Common/http'
+                                    }
+                                ],
+                                minimumMonitors: 2
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, '/Common/bigip');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer/virtual-servers'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].monitor, 'min 2 of { /Common/bigip /Common/http }');
+            });
+    });
+
+    it('should set  minimumMonitor only for GSLB_Server', () => {
+        const declTenant = {
+            class: 'ADC',
+            schemaVersion: '3.52.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        minimumMonitors: 1,
+                        devices: [
+                            {
+                                address: '192.0.0.1'
+                            }
+                        ],
+                        virtualServerDiscoveryMode: 'enabled-no-delete',
+                        exposeRouteDomainsEnabled: true,
+                        virtualServers: [
+                            {
+                                address: '192.0.0.2',
+                                port: 5050,
+                                monitors: [
+                                    {
+                                        bigip: '/Common/bigip'
+                                    },
+                                    {
+                                        bigip: '/Common/http'
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declTenant, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /Common/bigip }');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer/virtual-servers'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].monitor, '/Common/bigip and /Common/http');
+            });
+    });
+
     it('should set member order for gslb pools members', () => {
         const declTenant0 = {
             class: 'ADC',

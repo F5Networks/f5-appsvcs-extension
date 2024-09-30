@@ -1,0 +1,34 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.53.0",
+    "Common": {
+      "class": "Tenant",
+      "Shared": {
+        "class": "Application",
+        "template": "shared",
+        "cookie-duration-15min": {
+          "class": "Persist",
+          "persistenceMethod": "cookie",
+          "ttl": 900,
+          "encrypt": true,
+          "passphrase": {
+            "ciphertext": "JE0kMmgkTnBQOGZ0SnNxNXhnc2h5TGo0WEpVZz09",
+            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=",
+            "ignoreChanges": true,
+            "miniJWE": true
+          }
+        },
+        "cookie-duration-1day": {
+          "class": "Persist",
+          "persistenceMethod": "cookie",
+          "ttl": 86400
+        },
+        "cookie-duration-1day25sec": {
+          "class": "Persist",
+          "persistenceMethod": "cookie",
+          "ttl": 86425
+        }
+      }
+    },
+    "updateMode": "selective"
+  }

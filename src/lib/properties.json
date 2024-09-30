@@ -1801,11 +1801,15 @@
   "security firewall rule-list rules source": [
     { "id":"address-lists",             "extend": "array"},
     { "id":"port-lists",                "extend": "array"},
-    { "id":"vlans",                     "extend": "array"}
+    { "id":"vlans",                     "extend": "array"},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"ports",                     "extend": "array"}
   ],
   "security firewall rule-list rules destination": [
     { "id":"address-lists",             "extend": "array"},
-    { "id":"port-lists",                "extend": "array"}
+    { "id":"port-lists",                "extend": "array"},
+    { "id":"addresses",                 "extend": "array"},
+    { "id":"ports",                     "extend": "array"}
   ],
   "security nat policy": [
     { "id":"description",               "altId": "remark", "quotedString": true},
@@ -1912,6 +1916,17 @@
   "apm policy access-policy": [
     { "id":"ignoreChanges" },
     { "id":"iControl_postFromRemote",   "extend": "object" }
+  ],
+  "apm aaa ping-access-properties-file": [
+    { "id":"ignoreChanges" },
+    { "id":"local-path" },
+    { "id":"iControl_post",            "extend": "object" }
+  ],
+  "apm profile ping-access": [
+    { "id":"ping-access-properties", "altId": "pingAccessProperties" },
+    { "id":"pool"},
+    { "id":"serverssl-profile", "altId": "serversslProfile" },
+    { "id":"use-https", "truth": "true", "falsehood": "false", "altId": "useHTTPS"}
   ],
   "iControl_post": [
     { "id":"reference" },
@@ -2312,7 +2327,27 @@
     { "id":"iControl_post",             "extend": "object"},
     { "id":"run",                       "altId": "pathname" },
     { "id":"args",                      "altId": "arguments" },
-    { "id":"user-defined",              "altId": "environmentVariables" }
+    { "id":"recv-column",               "altId": "receiveColumn" },
+    { "id":"recv-row",                  "altId": "receiveRow" },
+    { "id":"password",                  "altId": "passphrase", "quotedString": true },
+    { "id":"user-defined",              "altId": "environmentVariables" },
+    { "id":"secret",                    "quotedString": true },
+    { "id":"mode",                      "altId": "protocol" },
+    { "id":"request",                   "quotedString": true },
+    { "id":"headers",                   "quotedString": true },
+    { "id":"filter",                    "altId": "codesUp", "quotedString": true },
+    { "id":"filter-neg",                "altId": "codesDown", "quotedString": true },
+    { "id":"filter-ldap",               "altId": "filter", "quotedString": true },
+    { "id":"base",                      "quotedString": true},
+    { "id":"security" },
+    { "id":"domain" },
+    { "id":"chase-referrals",           "altId": "chaseReferrals", "quotedString": true },
+    { "id":"mandatory-attributes",      "altId": "mandatoryAttributes", "quotedString": true },
+    { "id":"time-until-up",             "altId": "timeUntilUp", "quotedString": true  },
+    { "id":"up-interval" },
+    { "id":"username" },
+    { "id":"database" },
+    { "id":"count" }
   ],
   "gtm wideip": [
     { "id":"a",                         "extend": "object" },

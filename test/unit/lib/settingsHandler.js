@@ -52,6 +52,7 @@ describe('settingsHandler', () => {
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('encodeDeclarationMetadata', false);
         localStorageDataGroup.setItem('webhook', '');
         Config.injectSettings(localStorageDataGroup);
         context = Context.build();
@@ -139,6 +140,7 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
@@ -156,6 +158,7 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
@@ -173,6 +176,7 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
@@ -194,6 +198,7 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
@@ -211,7 +216,26 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: 'https://www.example.com'
+            });
+            return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
+                .then(() => restOpPromise);
+        });
+
+        it('should set the encodeDeclarationMetadata value if passed in', () => {
+            restOp.method = 'Post';
+            restOp.body = { encodeDeclarationMetadata: true };
+            const restOpPromise = createRestOpCompletePromise(restOp, 200, {
+                asyncTaskStorage: 'data-group',
+                perAppDeploymentAllowed: true,
+                burstHandlingEnabled: false,
+                performanceTracingEnabled: false,
+                performanceTracingEndpoint: '',
+                serializeFileUploads: false,
+                serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: true,
+                webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp, schemaPath))
                 .then(() => restOpPromise);
@@ -312,6 +336,7 @@ describe('settingsHandler', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             });
             return assert.isFulfilled(SettingsHandler.process(context, restOp))

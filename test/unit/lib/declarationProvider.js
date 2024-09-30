@@ -31,6 +31,7 @@ const log = require('../../../src/lib/log');
 const dataGroupUtil = require('../../../src/lib/util/dataGroupUtil');
 const util = require('../../../src/lib/util/util');
 const certUtils = require('../../../src/lib/util/certUtil');
+const Config = require('../../../src/lib/config');
 
 describe('DeclarationProvider', () => {
     let context;
@@ -281,6 +282,105 @@ describe('DeclarationProvider', () => {
                     tenants: []
                 }
             };
+        });
+
+        it('should return bigip declaration when encodeDeclarationMetadata is true and includeMetadata is false', () => {
+            const provider = new DeclarationProvider();
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                .reply(200, {
+                    items: [
+                        {
+                            name: '____appsvcs_declaration-1554498345530',
+                            timestamp: 1554498345530,
+                            date: '2019-04-05T21:16:07.217Z',
+                            age: 4
+                        }
+                    ]
+                });
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                .reply(200, {
+                    kind: 'tm:ltm:data-group:internal:internalstate',
+                    name: '____appsvcs_declaration-1714634755515',
+                    partition: 'Common',
+                    fullPath: '/Common/____appsvcs_declaration-1714634755515',
+                    generation: 15991,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1714634755515?ver=15.1.0',
+                    description: 'f5 AS3 declaration (see info in record 0)',
+                    type: 'integer',
+                    records:
+                        [{
+                            name: '0',
+                            data: 'eJxLSSxJjTMyMDLRNTDVNTAKMTC3MjK1MjXVMzU0jarJTIkrMUw01DUwMDCsKUnNS8wrKY5zzs/Nzc/TSa1IzC3ISQ0BixrWJOXkJ2cXxxkCANArGlE='
+                        },
+                        {
+                            name: '1',
+                            data: 'eNp9VtmWokgQ/ZU5vlZ1ySIq9ZasoibKLsz0qYOQArIKaCp9+t8HtLqrumfRBzPvvUTGkkT4bRRkftOMXkdA4EfPoyTsly3pk18IgiB7oAlilPs2qpukLHqOfqGJF6In+DLPB+TbTwsmKvyi7Skj9msUfqZAVWVJ4LeDjedRi/Iq81vUE81D+jwK/Dd09Xscve3PRZih4fEfq9GX4cOJsqL+wYu6qUgKD0zxjv5VQEURWJPnQUtFACsciJQlWF81MFYdal/pEBAyb5xkQ9nTgiZyPLYAVGQNag3mNVewNU0W8dK2OtGE/SGAtEQe4JVNSZ0vZ2eP1i/7o6hBMLlzHMYLi7LjcKE3nimuIUgfz0SY14/WVTDBmotUmwMN5CQ9C2jtKnXAfmAQCsWA6QeNkA5uYZ89+ZpBw8IKdper0lPiS6ACLeWk2Ov2FJm5OZsii7uvQyrOgtw67+llAbnJTjDFCRSUm9qJDDyKN9Uu3zF425g/MRx54Mp3YPnwwTVBZptQh1h8xK8IoNq5O7X0HaYIZfYMdYCF6M4tBBCaniMR4eDnR85WAljKqimqEDSP+DEWbdnuQkHcQc66YwDjTThgEitoNpuEDpPuZeu6NMGRi9JTnCYyiwmO10RHKtTL3rGTPaUz2uK+pn3ZvnkGcwnyAEeRmPxeS6BZAEwUTsBg4Feg7Ouv8cfY8vI9xmcIJVNNghndEvlhOa5ukOYKsSHq5DLN9rXEdIW04jIAqerqcIdUu9QsFVk4aZPjjDtBPyp0ajrmZ3KwXKpLTVZXkzl1iYxtbFUyUol24sxI4cIYFV6qT0RYTiObQLstvgQRGO+86+7kAbTFO7Oipy6sVTPCE3bjeNWiVHcHl/eeyJW1JmhKD7WxklJ4M7awTQTNmtTx+Uyt52NVYe22NmMe1POwgY2wZOijEM+uWrilV5TNqm4LFul0OmVnaTozq04n8/JkLq+G7W9XJYWE80pNEcnp+6PrlH5+JuIDz7jyNGO2bDLXfDvN9m0uBHm5riz2sLYNw5nyziKt2zA5aAm/4WMQQQ4A+WgJ3AZyxFDfUIg0h+P0y2ysEXbJRYLbRcvNat1N5CbabalZBw7DnVsYUJQF4ET/r4V3rQ5FzgQC0Bbjf3t3h3oDDbD19Gkay3amkfN59oTX0pLEypy+UTMubEXCazw5lC7s/JSwaWDl5Mwj2qoW8a3aCB45bm4tuyeXsTDRI4smTjhC0iRFwdyqSnnCWqmm5LpAg9OhSVwjPHqIq4JKzOhinqXHlVza7kzmqAzKpSNcL2MSELxxtM3ciTRDkhclbLuNQ7Z8zd7knS2GtylLZrOtzZPpikEpTjdzd29spvHFHp/n9OpsJXKglC65VTqwogkyYd2dY6nX216xD4saRaVGklp3jA/hodqsObN1SG6ieSevm58kWanJGuW5tqKzoxgEfXTOEa43V0pz4SWdnnWpi59sZk1ZRZyF6o3BPbHThW5qWPQ6NJfUBvxV3JuqqAr/aLRDk35v5zx44x6t+fv378+j98b96P/kv46Ed0k/B/57LMRtWzV2UrdnP/usMlB9SQL0tjDNrdHr+oGR1Cho58To9eBnDRocS1DRmmujl/sN/dZmzdsDG0ZY/zyqfyUf2EAWfjvMIZQd+l1Vlv3R95/tsHweXR7+gDCsUdOg3p8/R+TL8KVGX3/S27LurUwmdJ+Nc4N4NGw/Ihj2yWGIFA1Z/LQbhlwSJX1WRuPHRB2H6OCfs/Yl6G305qq+VfXKFbr9nzjt6V4cxH5S8GBQ9m580j1G8vifU3ao328Z+1y/tfHG/8jjg/4cy+vPYD9ZeU/tb1aMHwn/FP2QzG+/puPD4Nfvzx91+GTsvS45yvf9n5K7hceJv5aIpV6IF+qFHIrUPC7QR5G+3q/tuQr7M2EZoscF6K9UcrkXqCzausya4Vi/DuIeNZMcNW2fuV5KEdTkC8F8ISiTmL1SzCvDvDDkxOtz+TczJA1n'
+                        }]
+                });
+
+            sinon.stub(Config, 'getAllSettings').resolves({ encodeDeclarationMetadata: true });
+            return provider.getBigipDeclaration(context, 0)
+                .then((results) => {
+                    assert.ok(results);
+                });
+        });
+
+        it('should thow an error when encodeDeclarationMetadata is false and data stored in datagroup in encoded', () => {
+            const provider = new DeclarationProvider();
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal?$select=name&$filter=partition+eq+Common')
+                .reply(200, {
+                    items: [
+                        {
+                            name: '____appsvcs_declaration-1554498345530',
+                            timestamp: 1554498345530,
+                            date: '2019-04-05T21:16:07.217Z',
+                            age: 4
+                        }
+                    ]
+                });
+
+            nock('http://localhost:8100')
+                .get('/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1554498345530')
+                .reply(200, {
+                    kind: 'tm:ltm:data-group:internal:internalstate',
+                    name: '____appsvcs_declaration-1714634755515',
+                    partition: 'Common',
+                    fullPath: '/Common/____appsvcs_declaration-1714634755515',
+                    generation: 15991,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/data-group/internal/~Common~____appsvcs_declaration-1714634755515?ver=15.1.0',
+                    description: 'f5 AS3 declaration (see info in record 0)',
+                    type: 'integer',
+                    records:
+                        [{
+                            name: '0',
+                            data: 'eJxLSSxJjTMyMDLRNTDVNTAKMTC3MjK1MjXVMzU0jarJTIkrMUw01DUwMDCsKUnNS8wrKY5zzs/Nzc/TSa1IzC3ISQ0BixrWJOXkJ2cXxxkCANArGlE='
+                        },
+                        {
+                            name: '1',
+                            data: 'eNp9VtmWokgQ/ZU5vlZ1ySIq9ZasoibKLsz0qYOQArIKaCp9+t8HtLqrumfRBzPvvUTGkkT4bRRkftOMXkdA4EfPoyTsly3pk18IgiB7oAlilPs2qpukLHqOfqGJF6In+DLPB+TbTwsmKvyi7Skj9msUfqZAVWVJ4LeDjedRi/Iq81vUE81D+jwK/Dd09Xscve3PRZih4fEfq9GX4cOJsqL+wYu6qUgKD0zxjv5VQEURWJPnQUtFACsciJQlWF81MFYdal/pEBAyb5xkQ9nTgiZyPLYAVGQNag3mNVewNU0W8dK2OtGE/SGAtEQe4JVNSZ0vZ2eP1i/7o6hBMLlzHMYLi7LjcKE3nimuIUgfz0SY14/WVTDBmotUmwMN5CQ9C2jtKnXAfmAQCsWA6QeNkA5uYZ89+ZpBw8IKdper0lPiS6ACLeWk2Ov2FJm5OZsii7uvQyrOgtw67+llAbnJTjDFCRSUm9qJDDyKN9Uu3zF425g/MRx54Mp3YPnwwTVBZptQh1h8xK8IoNq5O7X0HaYIZfYMdYCF6M4tBBCaniMR4eDnR85WAljKqimqEDSP+DEWbdnuQkHcQc66YwDjTThgEitoNpuEDpPuZeu6NMGRi9JTnCYyiwmO10RHKtTL3rGTPaUz2uK+pn3ZvnkGcwnyAEeRmPxeS6BZAEwUTsBg4Feg7Ouv8cfY8vI9xmcIJVNNghndEvlhOa5ukOYKsSHq5DLN9rXEdIW04jIAqerqcIdUu9QsFVk4aZPjjDtBPyp0ajrmZ3KwXKpLTVZXkzl1iYxtbFUyUol24sxI4cIYFV6qT0RYTiObQLstvgQRGO+86+7kAbTFO7Oipy6sVTPCE3bjeNWiVHcHl/eeyJW1JmhKD7WxklJ4M7awTQTNmtTx+Uyt52NVYe22NmMe1POwgY2wZOijEM+uWrilV5TNqm4LFul0OmVnaTozq04n8/JkLq+G7W9XJYWE80pNEcnp+6PrlH5+JuIDz7jyNGO2bDLXfDvN9m0uBHm5riz2sLYNw5nyziKt2zA5aAm/4WMQQQ4A+WgJ3AZyxFDfUIg0h+P0y2ysEXbJRYLbRcvNat1N5CbabalZBw7DnVsYUJQF4ET/r4V3rQ5FzgQC0Bbjf3t3h3oDDbD19Gkay3amkfN59oTX0pLEypy+UTMubEXCazw5lC7s/JSwaWDl5Mwj2qoW8a3aCB45bm4tuyeXsTDRI4smTjhC0iRFwdyqSnnCWqmm5LpAg9OhSVwjPHqIq4JKzOhinqXHlVza7kzmqAzKpSNcL2MSELxxtM3ciTRDkhclbLuNQ7Z8zd7knS2GtylLZrOtzZPpikEpTjdzd29spvHFHp/n9OpsJXKglC65VTqwogkyYd2dY6nX216xD4saRaVGklp3jA/hodqsObN1SG6ieSevm58kWanJGuW5tqKzoxgEfXTOEa43V0pz4SWdnnWpi59sZk1ZRZyF6o3BPbHThW5qWPQ6NJfUBvxV3JuqqAr/aLRDk35v5zx44x6t+fv378+j98b96P/kv46Ed0k/B/57LMRtWzV2UrdnP/usMlB9SQL0tjDNrdHr+oGR1Cho58To9eBnDRocS1DRmmujl/sN/dZmzdsDG0ZY/zyqfyUf2EAWfjvMIZQd+l1Vlv3R95/tsHweXR7+gDCsUdOg3p8/R+TL8KVGX3/S27LurUwmdJ+Nc4N4NGw/Ihj2yWGIFA1Z/LQbhlwSJX1WRuPHRB2H6OCfs/Yl6G305qq+VfXKFbr9nzjt6V4cxH5S8GBQ9m580j1G8vifU3ao328Z+1y/tfHG/8jjg/4cy+vPYD9ZeU/tb1aMHwn/FP2QzG+/puPD4Nfvzx91+GTsvS45yvf9n5K7hceJv5aIpV6IF+qFHIrUPC7QR5G+3q/tuQr7M2EZoscF6K9UcrkXqCzausya4Vi/DuIeNZMcNW2fuV5KEdTkC8F8ISiTmL1SzCvDvDDkxOtz+TczJA1n'
+                        }]
+                });
+
+            sinon.stub(Config, 'getAllSettings').resolves({ encodeDeclarationMetadata: false });
+
+            const errMessage = 'declaration stored on target seems encoded.';
+            let rejected = true;
+            return provider.getBigipDeclaration(context, 0)
+                .then(() => {
+                    rejected = false;
+                })
+                .catch((err) => {
+                    assert.strictEqual(err.message, errMessage);
+                })
+                .then(() => {
+                    assert.ok(rejected, 'should have rejected');
+                });
         });
 
         it('should return undefined if BIG-IP has no declarations and includeMetadata is false', () => {
@@ -656,6 +756,23 @@ describe('DeclarationProvider', () => {
             };
             context.control.timeSlip = 1;
             sinon.stub(util, 'iControlRequest').resolves({ statusCode: 404 });
+
+            return provider.storeBigipDeclaration(context, decl, 1)
+                .then((results) => {
+                    assert.ok(results);
+                });
+        });
+
+        it('should handle storing declaration to new data-group when encodedMetadata is set to true', () => {
+            const provider = new DeclarationProvider();
+            const decl = {
+                tenant: {
+                    class: 'Tenant'
+                }
+            };
+            context.control.timeSlip = 1;
+            sinon.stub(Config, 'getAllSettings').resolves({ encodeDeclarationMetadata: true });
+            sinon.stub(util, 'iControlRequest').resolves({ statusCode: 200 });
 
             return provider.storeBigipDeclaration(context, decl, 1)
                 .then((results) => {

@@ -1382,6 +1382,12 @@ const translate = {
     'tm:apm:policy:access-policy:access-policystate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'apm policy access-policy', obj.fullPath)];
     },
+    'tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'apm aaa ping-access-properties-file', obj.fullPath)];
+    },
+    'tm:apm:profile:ping-access:ping-accessstate': function (context, obj) {
+        return [normalize.actionableMcp(context, obj, 'apm profile ping-access', obj.fullPath)];
+    },
     'tm:security:firewall:address-list:address-liststate': function (context, obj) {
         if (obj.addresses) {
             obj.addresses = obj.addresses.map((addr) => addr.name);
@@ -1408,6 +1414,20 @@ const translate = {
     },
     'tm:security:firewall:rule-list:rule-liststate': function (context, obj, referenceConfig) {
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
+        referenceConfig.forEach((reference) => {
+            if (reference.destination && reference.destination.addresses) {
+                reference.destination.addresses = reference.destination.addresses.map((address) => address.name);
+            }
+            if (reference.destination && reference.destination.ports) {
+                reference.destination.ports = reference.destination.ports.map((port) => port.name);
+            }
+            if (reference.source && reference.source.addresses) {
+                reference.source.addresses = reference.source.addresses.map((address) => address.name);
+            }
+            if (reference.source && reference.source.ports) {
+                reference.source.ports = reference.source.ports.map((port) => port.name);
+            }
+        });
         obj = pushReferences(
             context,
             obj,
@@ -1693,6 +1713,38 @@ const translate = {
     },
     'tm:gtm:monitor:tcp-half-open:tcp-half-openstate': function (context, obj) {
         return profile(context, obj, 'gtm monitor', 'tcp-half-open');
+    },
+    'tm:gtm:monitor:mysql:mysqlstate': function (context, obj) {
+        databaseMonitor(context, obj);
+        return profile(context, obj, 'gtm monitor', 'mysql');
+    },
+    'tm:gtm:monitor:ldap:ldapstate': function (context, obj) {
+        obj.base = obj.base || 'none';
+        obj.username = obj.username || 'none';
+        obj.password = obj.password || 'none';
+        obj.security = obj.security || 'none';
+        obj['filter-ldap'] = obj.filter || 'none';
+        delete obj.filter;
+        return profile(context, obj, 'gtm monitor', 'ldap');
+    },
+    'tm:gtm:monitor:smtp:smtpstate': function (context, obj) { return profile(context, obj, 'gtm monitor', 'smtp'); },
+    'tm:gtm:monitor:sip:sipstate': function (context, obj) {
+        // iControl does not return these properties when their values are default
+        if (obj.headers === undefined) {
+            obj.headers = 'none';
+        } else {
+            obj.headers = obj.headers.replace(/\\"/g, '"');
+        }
+        if (obj.request === undefined) obj.request = 'none';
+        obj.cert = obj.cert || 'none';
+        obj.key = obj.key || 'none';
+        obj.filter = obj.filter || 'none';
+        obj['filter-neg'] = obj['filter-neg'] || 'none';
+        // filter from mcp will get mapped into filter for sip and filter-ldap for ldap
+        // delete filter-ldap for sip
+        const profileSip = profile(context, obj, 'gtm monitor', 'sip');
+        delete profileSip[0].properties['filter-ldap'];
+        return profileSip;
     },
     'tm:gtm:monitor:tcp:tcpstate': function (context, obj) {
         return monitor(context, obj, 'gtm monitor', 'tcp');

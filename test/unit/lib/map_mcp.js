@@ -227,6 +227,485 @@ describe('map_mcp', () => {
                     });
                 });
             });
+            it('should process radius missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:radius:radiusstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process radius user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:radius:radiusstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process tcp-half-open missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process tcp-half-open user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process tcp missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:tcp:tcpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    recv: 'none',
+                    send: 'none',
+                    'recv-disable': 'none'
+                });
+            });
+            it('should process tcp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:tcp:tcpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    'recv-disable': 'none',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process udp missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:udp:udpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    recv: 'none',
+                    send: 'none',
+                    'recv-disable': 'none'
+                });
+            });
+            it('should process udp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:udp:udpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    'recv-disable': 'none',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process smtp missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process smtp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process sip missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    cert: 'none',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    request: 'none'
+                });
+            });
+            it('should process sip user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    cert: 'none',
+                    description: '"This is my description"',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    request: 'none',
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+        });
+        describe('GSLB Database Monitors', () => {
+            const testCases = [
+                'mysql'
+            ];
+            testCases.forEach((testCase) => {
+                it(`should process ${testCase} missing values`, () => {
+                    const obj = {
+                        kind: `tm:gtm:monitor:${testCase}:${testCase}state`,
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        password: 'none',
+                        recv: 'none',
+                        send: 'none',
+                        username: 'none',
+                        database: 'none',
+                        'recv-column': 'none',
+                        'recv-row': 'none'
+                    });
+                });
+                it(`should process ${testCase} user-defined values`, () => {
+                    const obj = {
+                        kind: `tm:gtm:monitor:${testCase}:${testCase}state`,
+                        name: 'myMonitor',
+                        partition: 'Tenant',
+                        fullPath: '/Tenant/Application/myMonitor',
+                        description: 'This is my description',
+                        password: 'Same as my luggage "123"',
+                        recv: 'Something received',
+                        send: 'Something sent',
+                        username: 'user',
+                        database: 'baseOfData',
+                        count: '42',
+                        recvColumn: '1',
+                        recvRow: '1'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: '"This is my description"',
+                        password: '"Same as my luggage \\"123\\""',
+                        recv: '"Something received"',
+                        send: '"Something sent"',
+                        username: 'user',
+                        database: 'baseOfData',
+                        count: 42,
+                        'recv-column': 1,
+                        'recv-row': 1
+                    });
+                });
+            });
+            it('should process tcp-half-open missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process tcp-half-open user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:tcp-half-open:tcp-half-openstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process smtp missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none'
+                });
+            });
+            it('should process smtp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:smtp:smtpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process sip missing values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    cert: 'none',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    request: 'none'
+                });
+            });
+            it('should process sip user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:sip:sipstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    recv: 'Something received',
+                    send: 'Something sent',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    recvColumn: 1,
+                    recvRow: 1
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    cert: 'none',
+                    description: '"This is my description"',
+                    filter: 'none',
+                    'filter-neg': 'none',
+                    headers: 'none',
+                    key: 'none',
+                    password: '"Same as my luggage \\"123\\""',
+                    recv: '"Something received"',
+                    send: '"Something sent"',
+                    username: 'user',
+                    database: 'baseOfData',
+                    count: 42,
+                    request: 'none',
+                    'recv-column': 1,
+                    'recv-row': 1
+                });
+            });
+            it('should process ldap user-defined values', () => {
+                const obj = {
+                    kind: 'tm:gtm:monitor:ldap:ldapstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    password: 'Same as my luggage "123"',
+                    username: 'user',
+                    base: 'baseOfData'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    password: '"Same as my luggage \\"123\\""',
+                    /* eslint-disable no-useless-escape */
+                    base: '\"baseOfData\"',
+                    /* eslint-enable no-useless-escape */
+                    'filter-ldap': 'none',
+                    security: 'none',
+                    username: 'user'
+                });
+            });
         });
         describe('tm:auth:partition:partitionstate', () => {
             it('should return a defaultRouteDomain', () => {
@@ -1654,6 +2133,19 @@ describe('map_mcp', () => {
                             ],
                             portLists: [
                                 '/TEST_Firewall_Rule_List/Application/portList'
+                            ],
+                            addresses: [
+                                {
+                                    name: '192.0.2.244-192.0.2.245'
+                                },
+                                {
+                                    name: '192.0.2.0/25'
+                                }
+                            ],
+                            ports: [
+                                {
+                                    name: '2192-3213'
+                                }
                             ]
                         },
                         source: {
@@ -1665,8 +2157,22 @@ describe('map_mcp', () => {
                             ],
                             vlans: [
                                 '/Common/external'
+                            ],
+                            addresses: [
+                                {
+                                    name: '192.0.2.244-192.0.2.245'
+                                },
+                                {
+                                    name: '192.0.2.0/25'
+                                }
+                            ],
+                            ports: [
+                                {
+                                    name: '2192-3213'
+                                }
                             ]
                         }
+
                     }
                 ];
                 const expected = {
@@ -1682,6 +2188,13 @@ describe('map_mcp', () => {
                                 },
                                 vlans: {
                                     '/Common/external': {}
+                                },
+                                addresses: {
+                                    '192.0.2.244-192.0.2.245': {},
+                                    '192.0.2.0/25': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             destination: {
@@ -1690,6 +2203,13 @@ describe('map_mcp', () => {
                                 },
                                 'port-lists': {
                                     '/TEST_Firewall_Rule_List/Application/portList': {}
+                                },
+                                addresses: {
+                                    '192.0.2.244-192.0.2.245': {},
+                                    '192.0.2.0/25': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             log: 'yes',
@@ -1699,6 +2219,593 @@ describe('map_mcp', () => {
                     }
                 };
                 const results = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:security:firewall:address-list:address-liststate', () => {
+            it('Should return with address-liststate', () => {
+                const obj = {
+                    kind: 'tm:security:firewall:address-list:address-liststate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Address_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Address_List/Application/testItem',
+                    addresses: [{ name: '192.0.2.7', deviceName: '0', translation: 'none' }],
+                    fqdns: [{ name: 'test.server.com' }],
+                    geo: [{ name: 0 }],
+                    addressLists: [
+                        {
+                            partition: 'TEST_Firewall_Address_List',
+                            subPath: 'Application',
+                            name: 'testItem1'
+                        }
+                    ]
+                };
+                const expected = {
+                    'address-lists': {
+                        '/TEST_Firewall_Address_List/Application/testItem1': {}
+                    },
+                    addresses: {
+                        '192.0.2.7': {}
+                    },
+                    fqdns: {
+                        'test.server.com': {}
+                    },
+                    geo: {
+                        0: {}
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:security:firewall:port-list:port-liststate', () => {
+            it('Should return with port-liststate', () => {
+                const obj = {
+                    kind: 'tm:security:firewall:port-list:port-liststate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Port_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Port_List/Application/testItem',
+                    ports: [{ name: '8055' }],
+                    portLists: [
+                        {
+                            name: 'anotherList',
+                            partition: 'myApp',
+                            subPath: 'Application1'
+                        }
+                    ]
+                };
+                const expected = {
+                    'port-lists': {
+                        '/myApp/Application1/anotherList': {}
+                    },
+                    ports: {
+                        8055: {}
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:security:firewall:policy:policystate', () => {
+            it('Should return with policy-liststate', () => {
+                const obj = {
+                    kind: 'tm:security:firewall:policy:policystate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_List/Application/testItem'
+                };
+                const expected = {
+                    rules: {}
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:security:nat:source-translation:source-translationstate', () => {
+            it('Should return with source-translationstate not equal to dynamic-pat type', () => {
+                const obj = {
+                    kind: 'tm:security:nat:source-translation:source-translationstate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_List/Application/testItem',
+                    type: 'dynamic-pat',
+                    patMode: '',
+                    inboundMode: '',
+                    mapping: '',
+                    clientConnectionLimit: '',
+                    hairpinMode: '',
+                    portBlockAllocation: ''
+
+                };
+                const expected = {
+                    addresses: {},
+                    'client-connection-limit': 'none',
+                    'egress-interfaces': {},
+                    'hairpin-mode': 'none',
+                    'inbound-mode': 'none',
+                    mapping: {},
+                    'pat-mode': 'none',
+                    ports: {},
+                    type: 'dynamic-pat'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with source-translationstate not equal to pba patMode', () => {
+                const obj = {
+                    kind: 'tm:security:nat:source-translation:source-translationstate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_List/Application/testItem',
+                    type: 'dynamic-pat2',
+                    patMode: 'pba2',
+                    inboundMode: '',
+                    mapping: '',
+                    clientConnectionLimit: '',
+                    hairpinMode: '',
+                    portBlockAllocation: ''
+
+                };
+                const expected = {
+                    addresses: {},
+                    'egress-interfaces': {},
+                    ports: {},
+                    type: 'dynamic-pat2'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with source-translationstate not equal to pba patMode with egressInterfacesDisabled true', () => {
+                const obj = {
+                    kind: 'tm:security:nat:source-translation:source-translationstate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_List/Application/testItem',
+                    type: 'dynamic-pat2',
+                    patMode: 'pba2',
+                    inboundMode: '',
+                    mapping: '',
+                    clientConnectionLimit: '',
+                    hairpinMode: '',
+                    portBlockAllocation: '',
+                    egressInterfacesDisabled: true
+
+                };
+                const expected = {
+                    addresses: {},
+                    'egress-interfaces': {},
+                    ports: {},
+                    type: 'dynamic-pat2',
+                    'egress-interfaces-disabled': ' '
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with source-translationstate not equal to pba patMode with egressInterfacesEnabled true', () => {
+                const obj = {
+                    kind: 'tm:security:nat:source-translation:source-translationstate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_List/Application/testItem',
+                    type: 'dynamic-pat2',
+                    patMode: 'pba2',
+                    inboundMode: '',
+                    mapping: '',
+                    clientConnectionLimit: '',
+                    hairpinMode: '',
+                    portBlockAllocation: '',
+                    egressInterfacesEnabled: true
+
+                };
+                const expected = {
+                    addresses: {},
+                    'egress-interfaces': {},
+                    ports: {},
+                    type: 'dynamic-pat2',
+                    'egress-interfaces-enabled': ' '
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:pem:policy:policystate', () => {
+            it('Should return with pem policy-liststate', () => {
+                const obj = {
+                    kind: 'tm:pem:policy:policystate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Policy_State',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Policy_State/Application/testItem',
+                    rules: [{
+                        'flow-info-filters': {
+                            flowFilter: {
+                                operation: 'match',
+                                'dscp-code': 'disabled',
+                                'dst-ip-addr': '0.0.0.0/0',
+                                'dst-port': 0,
+                                'from-vlan': '/Common/vlan',
+                                'l2-endpoint': 'vlan',
+                                'src-ip-addr': '0.0.0.0/32',
+                                'src-port': 0,
+                                proto: 'any',
+                                'ip-addr-type': 'any'
+                            }
+                        },
+                        'tcl-filter': 'filter'
+                    }]
+                };
+                const expected = {
+                    rules: {
+                        undefined: {
+                            'classification-filters': {},
+                            'flow-info-filters': {},
+                            forwarding: {
+                                'fallback-action': 'drop',
+                                'icap-type': 'none',
+                                type: 'none'
+                            },
+                            'http-redirect': {
+                                'fallback-action': 'drop'
+                            },
+                            'insert-content': {
+                                duration: 0,
+                                frequency: 'always',
+                                position: 'prepend',
+                                'value-type': 'string'
+                            },
+                            'modify-http-hdr': {
+                                operation: 'none',
+                                'value-type': 'string'
+                            },
+                            'qoe-reporting': {
+                                dest: {
+                                    hsl: {
+                                        publisher: 'none'
+                                    }
+                                }
+                            },
+                            quota: {
+                                'reporting-level': 'rating-group'
+                            },
+                            'ran-congestion': {
+                                detect: 'disabled',
+                                'lowerthreshold-bw': 1000,
+                                report: {
+                                    dest: {
+                                        hsl: {
+                                            publisher: 'none'
+                                        }
+                                    }
+                                }
+                            },
+                            reporting: {
+                                dest: {
+                                    gx: {
+                                        'application-reporting': 'disabled'
+                                    },
+                                    hsl: {
+                                        'flow-reporting-fields': {},
+                                        publisher: 'none',
+                                        'session-reporting-fields': {},
+                                        'transaction-reporting-fields': {}
+                                    },
+                                    'radius-accounting': {
+                                        'radius-aaa-virtual': 'none'
+                                    },
+                                    sd: {
+                                        'application-reporting': 'disabled'
+                                    }
+                                },
+                                granularity: 'session',
+                                interval: 0,
+                                transaction: {
+                                    http: {
+                                        'hostname-len': 0,
+                                        'uri-len': 256,
+                                        'user-agent-len': 0
+                                    }
+                                },
+                                volume: {
+                                    downlink: 0,
+                                    total: 0,
+                                    uplink: 0
+                                }
+                            },
+                            'tcl-filter': 'filter',
+                            'url-categorization-filters': {}
+                        }
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:pem:forwarding-endpoint:forwarding-endpointstate', () => {
+            it('forwarding-endpointstate', () => {
+                const obj = {
+                    kind: 'tm:pem:forwarding-endpoint:forwarding-endpointstate',
+                    name: 'testItem',
+                    partition: 'TEST_PEM_Endpoint',
+                    subPath: 'Application',
+                    fullPath: '/TEST_PEM_Endpoint/Application/testItem',
+                    persistence: {
+                        hashSettings: {
+                            length: 1024,
+                            offset: 0,
+                            tclScript: 'A tcl script',
+                            tclValue: 'tclValue'
+                        }
+                    }
+                };
+                const expected = {
+                    persistence: {
+                        'hash-settings': {
+                            length: 1024,
+                            offset: 0,
+                            'tcl-value': 'A tcl script'
+                        }
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:ltm:node:nodestate', () => {
+            it('Should return with nodestate fqdn not undefined', () => {
+                const obj = {
+                    kind: 'tm:ltm:node:nodestate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Address_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Address_List/Application/testItem',
+                    fqdn: [{ name: 'test.server.com', tmName: undefined }],
+                    metadata: [{ name: 'fqdnPrefix' }]
+                };
+                const expected = {
+                    metadata: { fqdnPrefix: { value: 'none' } }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with nodestate fqdn undefined', () => {
+                const obj = {
+                    kind: 'tm:ltm:node:nodestate',
+                    name: 'testItem',
+                    partition: 'TEST_Firewall_Address_List',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Firewall_Address_List/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    metadata: {}
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:ltm:persistence', () => {
+            it('Should return with cookiestate with method insert', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:cookie:cookiestate',
+                    name: 'testItem',
+                    partition: 'TEST_Cookie',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Cookie/Application/testItem',
+                    method: 'insert',
+                    hashLength: 2,
+                    hashOffset: 1
+                };
+                const expected = {
+                    'cookie-name': 'none',
+                    description: 'none',
+                    method: 'insert'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with cookiestate with method insert', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:cookie:cookiestate',
+                    name: 'testItem',
+                    partition: 'TEST_Cookie',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Cookie/Application/testItem',
+                    method: 'hash',
+                    httponly: true,
+                    secure: true,
+                    alwaysSend: '',
+                    cookieEncryption: '',
+                    cookieEncryptionPassphrase: ''
+                };
+                const expected = {
+                    'cookie-name': 'none',
+                    description: 'none',
+                    method: 'hash'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence dest-addr', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:dest-addr:dest-addrstate',
+                    name: 'testItem',
+                    partition: 'TEST_Dest_addr',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Dest_addr/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence source-addr', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:source-addr:source-addrstate',
+                    name: 'testItem',
+                    partition: 'TEST_Source_addr',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Source_addr/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence hash', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:hash:hashstate',
+                    name: 'testItem',
+                    partition: 'TEST_hash',
+                    subPath: 'Application',
+                    fullPath: '/TEST_hash/Application/testItem',
+                    hashStartPattern: 'test',
+                    hashEndPattern: 'test'
+                };
+                const expected = {
+                    description: 'none',
+                    /* eslint-disable no-useless-escape */
+                    'hash-end-pattern': '\"test\"',
+                    'hash-start-pattern': '\"test\"',
+                    rule: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence msrdp', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:msrdp:msrdpstate',
+                    name: 'testItem',
+                    partition: 'TEST_msrdp',
+                    subPath: 'Application',
+                    fullPath: '/TEST_msrdp/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence sip', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:sip:sipstate',
+                    name: 'testItem',
+                    partition: 'TEST_sip',
+                    subPath: 'Application',
+                    fullPath: '/TEST_sip/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence ssl', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:ssl:sslstate',
+                    name: 'testItem',
+                    partition: 'TEST_ssl',
+                    subPath: 'Application',
+                    fullPath: '/TEST_ssl/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with persistence universal', () => {
+                const obj = {
+                    kind: 'tm:ltm:persistence:universal:universalstate',
+                    name: 'testItem',
+                    partition: 'TEST_universal',
+                    subPath: 'Application',
+                    fullPath: '/TEST_universal/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                    description: 'none'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+            it('Should return with profile client-ldap', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:client-ldap:client-ldapstate',
+                    name: 'testItem',
+                    partition: 'TEST_client_ldap',
+                    subPath: 'Application',
+                    fullPath: '/TEST_client_ldap/Application/testItem',
+                    fqdn: undefined
+                };
+                const expected = {
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:gtm:datacenter:datacenterstate', () => {
+            it('datacenterstate', () => {
+                const obj = {
+                    kind: 'tm:gtm:datacenter:datacenterstate',
+                    name: 'testItem',
+                    partition: 'TEST_PEM_Endpoint',
+                    subPath: 'Application',
+                    fullPath: '/TEST_PEM_Endpoint/Application/testItem',
+                    disabled: false
+                };
+                const expected = {
+                    enabled: true,
+                    metadata: {}
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0].properties, expected);
+            });
+        });
+
+        describe('tm:gtm:prober-pool:prober-poolstate', () => {
+            it('prober-poolstate', () => {
+                const obj = {
+                    kind: 'tm:gtm:prober-pool:prober-poolstate',
+                    name: 'testItem',
+                    partition: 'TEST_Prober_Pool',
+                    subPath: 'Application',
+                    fullPath: '/TEST_Prober_Pool/Application/testItem',
+                    disabled: false,
+                    members: [{ disabled: false }]
+                };
+                const expected = {
+                    enabled: true,
+                    'load-balancing-mode': 'global-availability',
+                    members: {
+                        undefined: {
+                            enabled: true
+                        }
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
                 assert.deepStrictEqual(results[0].properties, expected);
             });
         });
@@ -3377,6 +4484,376 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:gtm:wideip:aaaa:aaaastate', () => {
+            it('should return an object with ordered pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:aaaa:aaaastate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin',
+                    pools: [
+                        {
+                            name: 'pool1', partition: 'ten', subPath: 'app', order: 2, ratio: 1
+                        },
+                        {
+                            name: 'pool2', partition: 'ten', subPath: 'app', order: 0, ratio: 2
+                        },
+                        {
+                            name: 'pool3', partition: 'ten', subPath: 'app', order: 1, ratio: 3
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip aaaa',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
+                            'pool-lb-mode': 'round-robin',
+                            pools: {
+                                '/ten/app/pool3': { order: 1, ratio: 3 },
+                                '/ten/app/pool1': { order: 2, ratio: 1 },
+                                '/ten/app/pool2': { order: 0, ratio: 2 }
+                            },
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+
+            it('should return an object without pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:aaaa:aaaastate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip aaaa',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
+                            'pool-lb-mode': 'round-robin',
+                            pools: {},
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:gtm:wideip:cname:cnamestate', () => {
+            it('should return an object with ordered pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:cname:cnamestate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin',
+                    pools: [
+                        {
+                            name: 'pool1', partition: 'ten', subPath: 'app', order: 2, ratio: 1
+                        },
+                        {
+                            name: 'pool2', partition: 'ten', subPath: 'app', order: 0, ratio: 2
+                        },
+                        {
+                            name: 'pool3', partition: 'ten', subPath: 'app', order: 1, ratio: 3
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip cname',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
+                            'pool-lb-mode': 'round-robin',
+                            pools: {
+                                '/ten/app/pool3': { order: 1, ratio: 3 },
+                                '/ten/app/pool1': { order: 2, ratio: 1 },
+                                '/ten/app/pool2': { order: 0, ratio: 2 }
+                            },
+                            rules: {}
+                        }
+                    }
+                );
+            });
+
+            it('should return an object without pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:cname:cnamestate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip cname',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
+                            'pool-lb-mode': 'round-robin',
+                            pools: {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:gtm:wideip:mx:mxstate', () => {
+            it('should return an object with ordered pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:mx:mxstate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin',
+                    pools: [
+                        {
+                            name: 'pool1', partition: 'ten', subPath: 'app', order: 2, ratio: 1
+                        },
+                        {
+                            name: 'pool2', partition: 'ten', subPath: 'app', order: 0, ratio: 2
+                        },
+                        {
+                            name: 'pool3', partition: 'ten', subPath: 'app', order: 1, ratio: 3
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip mx',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
+                            'pool-lb-mode': 'round-robin',
+                            pools: {
+                                '/ten/app/pool3': { order: 1, ratio: 3 },
+                                '/ten/app/pool1': { order: 2, ratio: 1 },
+                                '/ten/app/pool2': { order: 0, ratio: 2 }
+                            },
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+
+            it('should return an object without pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:mx:mxstate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip mx',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
+                            'pool-lb-mode': 'round-robin',
+                            pools: {},
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:gtm:wideip:naptr:naptrstate', () => {
+            it('should return an object with ordered pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:naptr:naptrstate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [
+                        'pool-member-selection',
+                        'pool-member-traversal',
+                        'pool-selection',
+                        'pool-traversal'
+                    ],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin',
+                    pools: [
+                        {
+                            name: 'pool1', partition: 'ten', subPath: 'app', order: 2, ratio: 1
+                        },
+                        {
+                            name: 'pool2', partition: 'ten', subPath: 'app', order: 0, ratio: 2
+                        },
+                        {
+                            name: 'pool3', partition: 'ten', subPath: 'app', order: 1, ratio: 3
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip naptr',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {
+                                'pool-member-selection': {},
+                                'pool-member-traversal': {},
+                                'pool-selection': {},
+                                'pool-traversal': {}
+                            },
+                            'pool-lb-mode': 'round-robin',
+                            pools: {
+                                '/ten/app/pool3': { order: 1, ratio: 3 },
+                                '/ten/app/pool1': { order: 2, ratio: 1 },
+                                '/ten/app/pool2': { order: 0, ratio: 2 }
+                            },
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+
+            it('should return an object without pools', () => {
+                const obj = {
+                    kind: 'tm:gtm:wideip:naptr:naptrstate',
+                    enabled: true,
+                    fullPath: '/ten/app/example.edu',
+                    lastResortPool: '',
+                    loadBalancingDecisionLogVerbosity: [],
+                    minimalResponse: 'enabled',
+                    name: 'example.edu',
+                    partition: 'ten',
+                    poolLbMode: 'round-robin'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'gtm wideip naptr',
+                        ignore: [],
+                        path: '/ten/example.edu',
+                        properties: {
+                            aliases: {},
+                            enabled: true,
+                            'last-resort-pool': 'none',
+                            'load-balancing-decision-log-verbosity': {},
+                            'pool-lb-mode': 'round-robin',
+                            pools: {},
+                            'pools-cname': {},
+                            rules: {}
+                        }
+                    }
+                );
+            });
+        });
+
         describe('tm:gtm:monitor', () => {
             describe('tm:gtm:monitor:http:httpstate', () => {
                 it('should return GSLB_Monitor HTTP', () => {
@@ -3526,6 +5003,170 @@ describe('map_mcp', () => {
                         cert: 'none',
                         key: 'none'
                     });
+                });
+            });
+            describe('tm:gtm:rule', () => {
+                it('should process with rulestate response will be empty', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:rule:rulestate',
+                        name: 'myGtmRules',
+                        partition: 'Tenant',
+                        subPath: 'myRules'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                    });
+                });
+            });
+
+            describe('tm:gtm:monitor', () => {
+                it('should process with monitor gateway icmp', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:gateway-icmp:gateway-icmpstate',
+                        name: 'myGtmMonitorGateway',
+                        partition: 'Tenant',
+                        subPath: 'myGateway',
+                        description: 'none'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none'
+                    });
+                });
+
+                it('should process with monitor tcp half open', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:tcp-half-open:tcp-half-openstate',
+                        name: 'myGtmMonitorTcpHalfOpen',
+                        partition: 'Tenant',
+                        subPath: 'TcpHalfOpen',
+                        description: 'none'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none'
+                    });
+                });
+
+                it('should process with monitor tcp state', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:tcp:tcpstate'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none'
+                    });
+                });
+
+                it('should process with monitor udp state', () => {
+                    defaultContext.target.tmosVersion = '16.1';
+                    const obj = {
+                        kind: 'tm:gtm:monitor:udp:udpstate'
+                    };
+                    const result = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(result[0].properties, {
+                        description: 'none',
+                        recv: 'none',
+                        send: 'none'
+                    });
+                });
+            });
+        });
+
+        describe('tm:gtm:region', () => {
+            describe('tm:gtm:region:regionstate', () => {
+                it('should return Default Region', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:region:regionstate',
+                        name: 'gtm_region',
+                        partition: 'Tenant',
+                        subPath: 'Application',
+                        fullPath: '/Tenant/Application/gtm_region',
+                        generation: 0,
+                        description: 'my remark',
+                        regionMembers: [{
+                            name: 'region'
+                        }]
+                    };
+
+                    const results = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(results, [
+                        {
+                            path: '/Tenant/Application/gtm_region',
+                            command: 'gtm region',
+                            properties: {
+                                description: '"my remark"',
+                                'region-members': {
+                                    ' region': {
+                                        not: 'none'
+                                    }
+                                }
+                            },
+                            ignore: []
+                        }
+                    ]);
+                });
+            });
+        });
+
+        describe('tm:gtm:topology', () => {
+            describe('tm:gtm:topology:topologystate', () => {
+                it('should return  Topology', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:topology:topologystate',
+                        name: 'gtm_topology',
+                        partition: 'Tenant'
+                    };
+
+                    const results = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(results, [
+                        {
+                            path: '/Common/topology/records',
+                            command: 'gtm topology',
+                            properties: {
+                                records: {
+                                    NaN: {
+                                        'ldns:': ' gtm_t',
+                                        'server:': ' ology'
+                                    }
+                                }
+                            },
+                            ignore: []
+                        }
+                    ]);
+                });
+            });
+        });
+
+        describe('tm:gtm:global-settings', () => {
+            describe('tm:gtm:global-settings:load-balancing:load-balancingstate', () => {
+                it('should return global-settings', () => {
+                    defaultContext.target.tmosVersion = '15.1';
+                    const obj = {
+                        kind: 'tm:gtm:global-settings:load-balancing:load-balancingstate',
+                        name: 'gtm_global_settings',
+                        partition: 'Tenant'
+                    };
+
+                    const results = translate[obj.kind](defaultContext, obj);
+                    assert.deepStrictEqual(results, [
+                        {
+                            path: '/Common/global-settings',
+                            command: 'gtm global-settings load-balancing',
+                            properties: {
+                                'topology-longest-match': 'yes'
+                            },
+                            ignore: []
+                        }
+                    ]);
                 });
             });
         });
@@ -3849,6 +5490,69 @@ describe('map_mcp', () => {
                         path: '/Common/100',
                         properties: {
                             'fw-enforced-policy': '/Common/Shared/firewallPolicy'
+                        }
+                    }
+                );
+            });
+        });
+
+        describe('tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate', () => {
+            it('should create tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate config', () => {
+                const obj = {
+                    kind: 'tm:apm:aaa:ping-access-properties-file:ping-access-properties-filestate',
+                    name: 'testPingAccess',
+                    partition: 'SampleTenant',
+                    subPath: 'Application',
+                    fullPath: '/SampleTenant/Application/testPingAccess'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'apm aaa ping-access-properties-file',
+                        ignore: [],
+                        path: '/SampleTenant/Application/testPingAccess',
+                        properties: {}
+                    }
+                );
+            });
+        });
+
+        describe('tm:apm:profile:ping-access:ping-accessstate', () => {
+            it('should create tm:apm:profile:ping-access:ping-accessstate config', () => {
+                const obj = {
+                    kind: 'tm:apm:profile:ping-access:ping-accessstate',
+                    name: 'testPingAccess',
+                    partition: 'SampleTenant',
+                    subPath: 'Application',
+                    fullPath: '/SampleTenant/Application/app',
+                    pingAccessProperties: '/SampleTenant/Application/testPingAccess',
+                    pingAccessPropertiesReference: {
+                        link: 'https://localhost/mgmt/tm/apm/aaa/ping-access-properties-file/~SampleTenant~Application~testPingAccess?ver=15.1.0'
+                    },
+                    pool: '/SampleTenant/Application/testPool',
+                    poolReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/pool/~SampleTenant~Application~testPool?ver=15.1.0'
+                    },
+                    serversslProfile: '/SampleTenant/Application/testServerSSL',
+                    serversslProfileReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/profile/server-ssl/~SampleTenant~Application~testServerSSL?ver=15.1.0'
+                    },
+                    useHttps: 'true'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                console.log(JSON.stringify(results[0]));
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        command: 'apm profile ping-access',
+                        ignore: [],
+                        path: '/SampleTenant/Application/app',
+                        properties: {
+                            'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                            pool: '/SampleTenant/Application/testPool',
+                            'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                            'use-https': 'true'
                         }
                     }
                 );

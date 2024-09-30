@@ -156,6 +156,8 @@ const prefix = {
     'security firewall rule-list port-lists': 'replace-all-with',
     'security firewall rule-list rules': 'replace-all-with',
     'security firewall rule-list vlans': 'replace-all-with',
+    'security firewall rule-list addresses': 'replace-all-with',
+    'security firewall rule-list ports': 'replace-all-with',
     'security nat policy address-lists': 'replace-all-with',
     'security nat policy port-lists': 'replace-all-with',
     'security nat policy rules': 'replace-all-with',
@@ -989,6 +991,19 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         commandObj.commands = cmd;
         return commandObj;
     }
+    case 'apm aaa ping-access-properties-file': {
+        const cmd = [];
+        const file = `/var/config/rest/downloads/${diff.path[0].split('/').pop()}`;
+
+        if (diff.rhs.properties.edit) {
+            cmd.push(`tmsh::modify apm aaa ping-access-properties-file ${diff.path[0]} local-path ${file}`);
+        } else {
+            cmd.push(`tmsh::create apm aaa ping-access-properties-file ${diff.path[0]} local-path ${file}`);
+        }
+
+        commandObj.commands = cmd;
+        return commandObj;
+    }
     case 'apm policy access-policy':
     case 'apm profile access': {
         const tParam = (diff.rhsCommand === 'apm policy access-policy') ? ' -t access_policy' : '';
@@ -1159,6 +1174,18 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         });
         mapEnabledDisabled(targetConfig);
         break;
+    case 'gtm monitor ldap':
+        if (targetConfig['filter-ldap'] !== undefined) {
+            targetConfig.filter = targetConfig['filter-ldap'];
+            delete targetConfig['filter-ldap'];
+        }
+        break;
+    case 'gtm monitor sip':
+        if (targetConfig.headers !== undefined) {
+            targetConfig.headers = targetConfig.headers.replace(/\\\\/g, '\\');
+        }
+        delete targetConfig['filter-ldap'];
+        break;
     case 'gtm monitor external':
         mapExternalMonitor(diff, targetConfig, currentConfig);
         break;
@@ -1259,9 +1286,13 @@ const tmshDelete = function (context, diff, currentConfig) {
         return commandObj;
     case 'ltm node':
         if (diff.kind === 'E') {
+            if (diff.path.length > 1 && diff.rhsCommand === 'ltm snat-translation') {
+                commandObj.commands = [deleteCommand];
+            }
             // Modifies are handled in tmshCreate
             return commandObj;
         }
+
         if (diff.kind === 'D' && diff.path.length === 1 && path.split('/')[1] === 'Common'
             && !context.tasks[context.currentIndex].firstPassNoDelete) {
             // A static node can fail to be deleted if an FQDN node has resolved to the

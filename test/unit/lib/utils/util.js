@@ -2381,21 +2381,33 @@ describe('util', () => {
         });
     });
 
-    describe('.convertTtlToHourMinSec', () => {
+    describe('.convertTtlToDayHourMinSec', () => {
         it('should convert TTL to hours, minutes, and seconds', () => {
-            assert.strictEqual(util.convertTtlToHourMinSec(3718), '1:1:58');
+            assert.strictEqual(util.convertTtlToDayHourMinSec(3718), '1:1:58');
         });
 
         it('should handle TTL that is less than an hour', () => {
-            assert.strictEqual(util.convertTtlToHourMinSec(718), '11:58');
+            assert.strictEqual(util.convertTtlToDayHourMinSec(718), '11:58');
         });
 
         it('should handle TTL that is less than a minute', () => {
-            assert.strictEqual(util.convertTtlToHourMinSec(18), '18');
+            assert.strictEqual(util.convertTtlToDayHourMinSec(18), '18');
+        });
+
+        it('should handle a day scenerio', () => {
+            assert.strictEqual(util.convertTtlToDayHourMinSec(86400), '1:0:0:0');
+        });
+
+        it('should handle more than a day', () => {
+            assert.strictEqual(util.convertTtlToDayHourMinSec(86425), '1:0:0:25');
+        });
+
+        it('should handle max limit', () => {
+            assert.strictEqual(util.convertTtlToDayHourMinSec(604800), '7:0:0:0');
         });
 
         it('should handle undefined TTL', () => {
-            assert.strictEqual(util.convertTtlToHourMinSec(), '0');
+            assert.strictEqual(util.convertTtlToDayHourMinSec(), '0');
         });
     });
 
@@ -2503,6 +2515,35 @@ describe('util', () => {
     describe('.capitalizeString', () => {
         it('should capitalize string', () => {
             assert.strictEqual(util.capitalizeString('foo bar'), 'Foo bar');
+        });
+    });
+
+    describe('convertRouteDomainIDToRestAPI', () => {
+        it('should convert minimum value of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%0'), '/Common/192.0.2.100%250');
+        });
+        it('should convert RouteDomainID 1', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%1'), '/Common/192.0.2.100%251');
+        });
+
+        it('should convert mid value of RouteDomainID ', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%32534'), '/Common/192.0.2.100%2532534');
+        });
+
+        it('should convert max value of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65534'), '/Common/192.0.2.100%2565534');
+        });
+
+        it('should not convert above max limit of RouteDomainID', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65535'), '/Common/192.0.2.100%65535');
+        });
+
+        it('should identify and convert RouteDomainID only at last', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/192.0.2.100%65535%10'), '/Common/192.0.2.100%65535%2510');
+        });
+
+        it('should convert RouteDomainID mixed with name', () => {
+            assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/test_virtual.Address%10'), '/Common/test_virtual.Address%2510');
         });
     });
 });

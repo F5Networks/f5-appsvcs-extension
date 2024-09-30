@@ -1486,10 +1486,21 @@ class Util {
             .replace(/  +/g, ' ');
     }
 
-    static convertTtlToHourMinSec(ttl) {
-        const d = new Date(1000 * (ttl || 0));
-        return (d.getUTCHours() ? `${d.getUTCHours()}:` : '')
-                + (d.getUTCHours() || d.getMinutes() ? `${d.getMinutes()}:` : '') + d.getSeconds();
+    static convertTtlToDayHourMinSec(ttl) {
+        if (!ttl) {
+            return '0';
+        }
+        const days = Math.floor(ttl / (24 * 3600));
+        ttl %= (24 * 3600);
+
+        const hours = Math.floor(ttl / 3600);
+        ttl %= 3600;
+
+        const minutes = Math.floor(ttl / 60);
+        const remainingSeconds = ttl % 60;
+
+        // Format the result
+        return (days ? `${days}:` : '') + (days || hours ? `${hours}:` : '') + (days || hours || minutes ? `${minutes}:` : '') + remainingSeconds;
     }
 
     /**
@@ -1824,6 +1835,17 @@ class Util {
         }
 
         return extraHeaders;
+    }
+
+    static convertRouteDomainIDToRestAPI(routeDomain) {
+        const result = routeDomain.replace(/%(\d+)$/g, (match, p1) => {
+            const number = parseInt(p1, 10);
+            if (number >= 0 && number <= 65534) {
+                return `%25${number}`;
+            }
+            return match; // Return the original
+        });
+        return result; // Return the original
     }
 }
 

@@ -3070,6 +3070,756 @@ describe('fetch', () => {
             assert.deepStrictEqual(result.script, expected);
         });
 
+        describe('apm ping access properties', () => {
+            it('should create ping access properties', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: true
+                                    }
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::create auth partition SampleTenant default-route-domain 0',
+                    'tmsh::create sys folder /SampleTenant/Application/',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'catch { tmsh::delete sys folder /SampleTenant/Application/ } e',
+                    'catch { tmsh::delete auth partition SampleTenant } e',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+
+            it('should modify ping access properties and ignoreChanges is set to false', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            ignoreChanges: false,
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: false
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'yes'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                ignoreChanges: false,
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: false
+                                    }
+                                },
+                                edit: true
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+
+            it('should not modify ping access properties and ignoreChanges is set to true', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            ignoreChanges: true,
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Common/global-settings': {
+                        command: 'gtm global-settings load-balancing',
+                        properties: {
+                            'topology-longest-match': 'yes'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [];
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
+        describe('apm ping access profile', () => {
+            it('should create ping access properties', () => {
+                const desiredConfig = {
+                    '/SampleTenant/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/app': {
+                        command: 'apm profile ping-access',
+                        properties: {
+                            'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                            pool: '/SampleTenant/Application/testPool',
+                            'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                            'use-https': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testServerSSL': {
+                        command: 'ltm profile server-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-expired-crl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'authenticate-name': 'none',
+                            'c3d-ca-cert': 'none',
+                            'c3d-ca-key': 'none',
+                            'c3d-cert-lifespan': 24,
+                            'c3d-cert-extension-includes': {
+                                'basic-constraints': {},
+                                'extended-key-usage': {},
+                                'key-usage': {},
+                                'subject-alternative-name': {}
+                            },
+                            'cache-timeout': 3600,
+                            'ca-file': '/Common/default.crt',
+                            cert: 'none',
+                            chain: 'none',
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            key: 'none',
+                            'expire-cert-response-control': 'drop',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require-strict',
+                            'server-name': 'none',
+                            'session-ticket': 'disabled',
+                            'sni-default': 'false',
+                            'sni-require': 'false',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled',
+                            'untrusted-cert-response-control': 'drop'
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/192.0.2.5': {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.5',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {
+                                '/SampleTenant/192.0.2.5:80': {
+                                    'connection-limit': 0,
+                                    'dynamic-ratio': 1,
+                                    fqdn: {
+                                        autopopulate: 'disabled'
+                                    },
+                                    minimumMonitors: 1,
+                                    monitor: {
+                                        default: {}
+                                    },
+                                    'priority-group': 0,
+                                    'rate-limit': 'disabled',
+                                    ratio: 1,
+                                    state: 'user-up',
+                                    session: 'user-enabled',
+                                    metadata: {
+                                        example: {
+                                            value: 'test',
+                                            persist: 'true'
+                                        }
+                                    }
+                                }
+                            },
+                            'min-active-members': 1,
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/Application/testPingAccess': {
+                        command: 'apm aaa ping-access-properties-file',
+                        properties: {
+                            iControl_post: {
+                                reference: '/SampleTenant/Application/testPingAccess',
+                                path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                why: 'upload ping access agent properties testPingAccess',
+                                settings: {
+                                    class: 'Ping_Access_Agent_Properties',
+                                    propertiesData: {
+                                        base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                    },
+                                    ignoreChanges: true,
+                                    remark: 'test',
+                                    label: 'test123'
+                                }
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/SampleTenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/app'
+                        ],
+                        rhs: {
+                            command: 'apm profile ping-access',
+                            properties: {
+                                'ping-access-properties': '/SampleTenant/Application/testPingAccess',
+                                pool: '/SampleTenant/Application/testPool',
+                                'serverssl-profile': '/SampleTenant/Application/testServerSSL',
+                                'use-https': 'true'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm profile ping-access'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testServerSSL'
+                        ],
+                        rhs: {
+                            command: 'ltm profile server-ssl',
+                            properties: {
+                                'alert-timeout': 'indefinite',
+                                'allow-expired-crl': 'disabled',
+                                authenticate: 'once',
+                                'authenticate-depth': 9,
+                                'authenticate-name': 'none',
+                                'c3d-ca-cert': 'none',
+                                'c3d-ca-key': 'none',
+                                'c3d-cert-lifespan': 24,
+                                'c3d-cert-extension-includes': {
+                                    'basic-constraints': {},
+                                    'extended-key-usage': {},
+                                    'key-usage': {},
+                                    'subject-alternative-name': {}
+                                },
+                                'cache-timeout': 3600,
+                                'ca-file': '/Common/default.crt',
+                                cert: 'none',
+                                chain: 'none',
+                                ciphers: 'DEFAULT',
+                                'cipher-group': 'none',
+                                'crl-file': 'none',
+                                'data-0rtt': 'disabled',
+                                description: 'none',
+                                'handshake-timeout': 10,
+                                key: 'none',
+                                'expire-cert-response-control': 'drop',
+                                options: {
+                                    'dont-insert-empty-fragments': {},
+                                    'no-tlsv1.3': {}
+                                },
+                                'peer-cert-mode': 'ignore',
+                                'proxy-ssl': 'disabled',
+                                'proxy-ssl-passthrough': 'disabled',
+                                'renegotiate-period': 4294967295,
+                                'renegotiate-size': 4294967295,
+                                renegotiation: 'enabled',
+                                'retain-certificate': 'true',
+                                'secure-renegotiation': 'require-strict',
+                                'server-name': 'none',
+                                'session-ticket': 'disabled',
+                                'sni-default': 'false',
+                                'sni-require': 'false',
+                                'ssl-c3d': 'disabled',
+                                'ssl-forward-proxy': 'disabled',
+                                'ssl-forward-proxy-bypass': 'disabled',
+                                'ssl-sign-hash': 'any',
+                                'unclean-shutdown': 'enabled',
+                                'untrusted-cert-response-control': 'drop'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm profile server-ssl'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/192.0.2.5'
+                        ],
+                        rhs: {
+                            command: 'ltm node',
+                            properties: {
+                                address: '192.0.2.5',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm node'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPool'
+                        ],
+                        rhs: {
+                            command: 'ltm pool',
+                            properties: {
+                                'load-balancing-mode': 'round-robin',
+                                members: {
+                                    '/SampleTenant/192.0.2.5:80': {
+                                        'connection-limit': 0,
+                                        'dynamic-ratio': 1,
+                                        fqdn: {
+                                            autopopulate: 'disabled'
+                                        },
+                                        minimumMonitors: 1,
+                                        monitor: {
+                                            default: {}
+                                        },
+                                        'priority-group': 0,
+                                        'rate-limit': 'disabled',
+                                        ratio: 1,
+                                        state: 'user-up',
+                                        session: 'user-enabled',
+                                        metadata: {
+                                            example: {
+                                                value: 'test',
+                                                persist: 'true'
+                                            }
+                                        }
+                                    }
+                                },
+                                'min-active-members': 1,
+                                'reselect-tries': 0,
+                                'service-down-action': 'none',
+                                'slow-ramp-time': 10,
+                                'allow-nat': 'yes',
+                                'allow-snat': 'yes',
+                                metadata: {}
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm pool'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/Application/testPingAccess'
+                        ],
+                        rhs: {
+                            command: 'apm aaa ping-access-properties-file',
+                            properties: {
+                                iControl_post: {
+                                    reference: '/SampleTenant/Application/testPingAccess',
+                                    path: '/mgmt/shared/file-transfer/uploads/testPingAccess',
+                                    method: 'POST',
+                                    ctype: 'application/octet-stream',
+                                    send: 'agent.engine.configuration.scheme=http\nagent.engine.configuration.host=192.0.2.244\nagent.engine.configuration.port=9009\nagent.engine.configuration.username=F5TestAgent\nagent.ssl.protocols=TLSv1.1, TLSv1.2\nagent.ssl.ciphers=TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV\nagent.engine.configuration.shared.secret=secret-here\nagent.engine.configuration.bootstrap.truststore=some-base64-content-here \nagent.engine.configuration.maxConnections=10\nagent.engine.configuration.timeout=30000\nagent.engine.configuration.connectTimeout=30000\nagent.cache.missInitialTimeout=5\nagent.cache.broker.publisherPort=3031\nagent.cache.broker.subscriberPort=3032\nagent.cache.maxTokens=0\nagent.engine.configuration.failover.hosts=\nagent.engine.configuration.failover.failedRetryTimeout=60000\nagent.engine.configuration.failover.maxRetries=2',
+                                    why: 'upload ping access agent properties testPingAccess',
+                                    settings: {
+                                        class: 'Ping_Access_Agent_Properties',
+                                        propertiesData: {
+                                            base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uaG9zdD0xLjEuMS4xCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnBvcnQ9OTAwOQphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi51c2VybmFtZT1GNVRlc3RBZ2VudAphZ2VudC5zc2wucHJvdG9jb2xzPVRMU3YxLjEsIFRMU3YxLjIKYWdlbnQuc3NsLmNpcGhlcnM9VExTX0VDREhFX0VDRFNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhFX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBLFRMU19FQ0RIRV9FQ0RTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESEVfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0RIRV9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX1JTQV9XSVRIX0FFU18xMjhfR0NNX1NIQTI1NixUTFNfUlNBX1dJVEhfQUVTXzEyOF9DQkNfU0hBMjU2LFRMU19SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfUlNBX1dJVEhfQUVTXzEyOF9HQ01fU0hBMjU2LFRMU19FQ0RIX1JTQV9XSVRIX0FFU18xMjhfQ0JDX1NIQTI1NixUTFNfRUNESF9SU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0dDTV9TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEyNTYsVExTX0VDREhfRUNEU0FfV0lUSF9BRVNfMTI4X0NCQ19TSEEsVExTX0VNUFRZX1JFTkVHT1RJQVRJT05fSU5GT19TQ1NWCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLnNoYXJlZC5zZWNyZXQ9c2VjcmV0LWhlcmUKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uYm9vdHN0cmFwLnRydXN0c3RvcmU9c29tZS1iYXNlNjQtY29udGVudC1oZXJlIAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5tYXhDb25uZWN0aW9ucz0xMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi50aW1lb3V0PTMwMDAwCmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmNvbm5lY3RUaW1lb3V0PTMwMDAwCmFnZW50LmNhY2hlLm1pc3NJbml0aWFsVGltZW91dD01CmFnZW50LmNhY2hlLmJyb2tlci5wdWJsaXNoZXJQb3J0PTMwMzEKYWdlbnQuY2FjaGUuYnJva2VyLnN1YnNjcmliZXJQb3J0PTMwMzIKYWdlbnQuY2FjaGUubWF4VG9rZW5zPTAKYWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uZmFpbG92ZXIuaG9zdHM9CmFnZW50LmVuZ2luZS5jb25maWd1cmF0aW9uLmZhaWxvdmVyLmZhaWxlZFJldHJ5VGltZW91dD02MDAwMAphZ2VudC5lbmdpbmUuY29uZmlndXJhdGlvbi5mYWlsb3Zlci5tYXhSZXRyaWVzPTI='
+                                        },
+                                        ignoreChanges: true,
+                                        remark: 'test',
+                                        label: 'test123'
+                                    }
+                                }
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'apm aaa ping-access-properties-file'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/SampleTenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::create auth partition SampleTenant default-route-domain 0',
+                    'tmsh::create sys folder /SampleTenant/Application/',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create apm aaa ping-access-properties-file /SampleTenant/Application/testPingAccess local-path /var/config/rest/downloads/testPingAccess',
+                    'tmsh::create apm profile ping-access /SampleTenant/Application/app ping-access-properties /SampleTenant/Application/testPingAccess pool /SampleTenant/Application/testPool serverssl-profile /SampleTenant/Application/testServerSSL use-https true',
+                    'tmsh::create ltm profile server-ssl /SampleTenant/Application/testServerSSL alert-timeout indefinite allow-expired-crl disabled authenticate once authenticate-depth 9 authenticate-name none c3d-ca-cert none c3d-ca-key none c3d-cert-lifespan 24 c3d-cert-extension-includes \\{ basic-constraints extended-key-usage key-usage subject-alternative-name \\} cache-timeout 3600 ca-file /Common/default.crt cert none chain none ciphers DEFAULT cipher-group none crl-file none data-0rtt disabled description none handshake-timeout 10 key none expire-cert-response-control drop options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require-strict server-name none session-ticket disabled sni-default false sni-require false ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled untrusted-cert-response-control drop',
+                    'tmsh::create ltm node /SampleTenant/192.0.2.5 address 192.0.2.5 metadata none',
+                    'tmsh::create ltm pool /SampleTenant/Application/testPool load-balancing-mode round-robin members replace-all-with \\{ /SampleTenant/192.0.2.5:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata replace-all-with \\{ example \\{ value test persist true \\} \\} \\} \\} min-active-members 1 reselect-tries 0 service-down-action none slow-ramp-time 10 allow-nat yes allow-snat yes metadata none',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'catch { tmsh::delete sys folder /SampleTenant/Application/ } e',
+                    'catch { tmsh::delete auth partition SampleTenant } e',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
         describe('apm profile access', () => {
             it('should create catch blocks in script', () => {
                 const desiredConfig = {
@@ -4631,6 +5381,760 @@ describe('fetch', () => {
                 result.script,
                 'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Tenant/Application/myPool members delete \\{ "/Tenant/my.example.com:80" \\}\ntmsh::begin_transaction\ntmsh::delete ltm pool /Tenant/Application/myPool\ntmsh::create ltm pool /Tenant/Application/myPool members replace-all-with \\{ /Tenant/my.example.com:80 \\{ session user-disabled state user-down metadata none \\} \\} metadata none\ntmsh::modify auth partition Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Tenant/Application/myPool members add \\{ /Tenant/my.example.com:80 \\{ session user-enabled state user-up metadata none \\} \\}\n}}\n}'
             );
+        });
+
+        it('should create snat translation if an existing pool member is used as snat', () => {
+            const desiredConf = {
+                '/SampleTenant/SampleApp/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.1%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.1%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.1%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4A-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.3%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.3%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4B-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.3%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4B': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.3%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleMonitor': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 100,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 20,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 61,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.2%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.2%2549',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SamplePool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/SampleTenant/192.168.0.2%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/SampleTenant/SampleApp/SampleMonitor': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2549
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.1%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.3%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.3%2549',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                }
+            };
+            const currentConf = {
+                '/SampleTenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2549
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleMonitor': {
+                    command: 'ltm monitor tcp',
+                    properties: {
+                        adaptive: 'disabled',
+                        'adaptive-divergence-type': 'relative',
+                        'adaptive-divergence-value': 100,
+                        'adaptive-limit': 1000,
+                        'adaptive-sampling-timespan': 180,
+                        description: 'none',
+                        destination: '*:*',
+                        interval: 20,
+                        'ip-dscp': 0,
+                        recv: 'none',
+                        'recv-disable': 'none',
+                        reverse: 'disabled',
+                        send: 'none',
+                        timeout: 61,
+                        'time-until-up': 0,
+                        transparent: 'disabled',
+                        'up-interval': 0
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.2%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.2',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.3%2549': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.168.0.3',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SamplePool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/SampleTenant/192.168.0.2%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/SampleTenant/192.168.0.3%2549:31214': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/SampleTenant/SampleApp/SampleMonitor': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/SampleTenant/192.168.0.1%2549': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/192.168.0.1%2549': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.168.0.1',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/SampleServiceL4A': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"SampleApp"',
+                        destination: '/SampleTenant/192.168.0.1%2549:3200',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/SampleTenant/SampleApp/SamplePool',
+                        policies: {},
+                        profiles: {
+                            '/Common/cc_fastL4_profile': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2549/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/SampleTenant/SampleApp/SampleServiceL4A-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/Service_Address-192.168.0.1%2549': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.168.0.1%2549',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default'
+                    },
+                    ignore: []
+                },
+                '/SampleTenant/SampleApp/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/global-settings': {
+                    command: 'gtm global-settings load-balancing',
+                    properties: {
+                        'topology-longest-match': 'yes'
+                    },
+                    ignore: []
+                }
+            };
+            const confDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.2%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.2',
+                    rhs: '192.168.0.2%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'command'
+                    ],
+                    lhs: 'ltm node',
+                    rhs: 'ltm snat-translation',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.3',
+                    rhs: '192.168.0.3%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'metadata'
+                    ],
+                    lhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'arp'
+                    ],
+                    rhs: 'enabled',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'connection-limit'
+                    ],
+                    rhs: 0,
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'enabled'
+                    ],
+                    rhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'ip-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'tcp-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'traffic-group'
+                    ],
+                    rhs: 'default',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/192.168.0.3%2549',
+                        'properties',
+                        'udp-idle-timeout'
+                    ],
+                    rhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/SampleTenant/SampleApp/SamplePool',
+                        'properties',
+                        'members',
+                        '/SampleTenant/192.168.0.3%2549:31214'
+                    ],
+                    lhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/SampleTenant/192.168.0.1%2549',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.168.0.1',
+                    rhs: '192.168.0.1%2549',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/Service_Address-192.168.0.3%2549'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.168.0.3%2549',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                    ],
+                    rhs: {
+                        command: 'ltm snatpool',
+                        properties: {
+                            members: {
+                                '/SampleTenant/192.168.0.3%2549': {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snatpool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/SampleTenant/SampleApp/SampleServiceL4B'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"SampleApp"',
+                            destination: '/SampleTenant/192.168.0.3%2549:3200',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {},
+                            pool: '/SampleTenant/SampleApp/SamplePool',
+                            policies: {},
+                            profiles: {
+                                '/Common/cc_fastL4_profile': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0%2549/0',
+                            'source-address-translation': {
+                                type: 'snat',
+                                pool: '/SampleTenant/SampleApp/SampleServiceL4B-self'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConf, currentConf, confDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::modify ltm pool /SampleTenant/SampleApp/SamplePool members delete \\{ "/SampleTenant/192.168.0.3%2549:31214" \\}',
+                'tmsh::begin_transaction',
+                'tmsh::modify ltm node /SampleTenant/192.168.0.2%2549 metadata none',
+                'tmsh::modify auth partition SampleTenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::delete ltm node /SampleTenant/192.168.0.3%2549',
+                'tmsh::create ltm snat-translation /SampleTenant/192.168.0.3%2549 address 192.168.0.3%2549 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
+                'tmsh::delete ltm snat-translation /SampleTenant/192.168.0.1%2549',
+                'tmsh::create ltm snat-translation /SampleTenant/192.168.0.1%2549 address 192.168.0.1%2549 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
+                'tmsh::create ltm virtual-address /SampleTenant/192.168.0.3%2549 address 192.168.0.3%2549 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled server-scope any traffic-group default',
+                'tmsh::create ltm snatpool /SampleTenant/SampleApp/SampleServiceL4B-self members replace-all-with \\{ /SampleTenant/192.168.0.3%2549 \\}',
+                'tmsh::create ltm virtual /SampleTenant/SampleApp/SampleServiceL4B enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \\"SampleApp\\" destination /SampleTenant/192.168.0.3%2549:3200 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist none pool /SampleTenant/SampleApp/SamplePool policies none profiles replace-all-with \\{ /Common/cc_fastL4_profile \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0%2549/0 source-address-translation \\{ type snat pool /SampleTenant/SampleApp/SampleServiceL4B-self \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none throughput-capacity infinite',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                'tmsh::modify ltm pool /SampleTenant/SampleApp/SamplePool members add \\{ /SampleTenant/192.168.0.3%2549:31214 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
         });
 
         describe('security firewall', () => {

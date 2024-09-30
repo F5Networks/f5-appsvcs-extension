@@ -255,6 +255,14 @@ describe('def-gslb-pools-servers-schema.json', () => {
             });
 
             it('should validate generic-host as serverType', () => {
+                const devices = [
+                    {
+                        address: '192.0.2.3'
+                    },
+                    {
+                        address: '192.0.2.4'
+                    }
+                ];
                 const genericProperties = {
                     cpuUsageLimit: 0,
                     cpuUsageLimitEnabled: false,
@@ -262,6 +270,7 @@ describe('def-gslb-pools-servers-schema.json', () => {
                     memoryLimitEnabled: false
                 };
                 let decl = buildDeclaration('generic-host');
+                decl.testTenant.testApplication.testServer.devices = devices;
                 decl = assignProperty(decl, genericProperties);
                 assert.ok(validate(decl), getErrorString(validate));
             });
@@ -274,25 +283,6 @@ describe('def-gslb-pools-servers-schema.json', () => {
                 let decl = buildDeclaration(undefined);
                 decl = assignProperty(decl, bigipProperties);
                 assert.ok(validate(decl), getErrorString(validate));
-            });
-        });
-        describe('invalid', () => {
-            it('should invalidate number of generic host devices', () => {
-                const devices = [
-                    {
-                        address: '192.0.2.3'
-                    },
-                    {
-                        address: '192.0.2.4'
-                    }
-                ];
-                const decl = buildDeclaration('generic-host');
-                decl.testTenant.testApplication.testServer.devices = devices;
-                assert.strictEqual(
-                    validate(decl),
-                    false,
-                    'Number of generic hosts is limited to 1'
-                );
             });
         });
     });

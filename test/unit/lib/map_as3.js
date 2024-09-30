@@ -2867,7 +2867,7 @@ describe('map_as3', () => {
                 virtualType: 'standard'
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', item, declaration, false);
             assert.strictEqual(results.configs[0].path, '/dot.test/test_http/test_http-self');
             assert.strictEqual(results.configs[0].command, 'ltm snatpool');
             assert.strictEqual(Object.keys(results.configs[0].properties.members['/dot.test/10.204.64.249%2']).length, 0);
@@ -4860,7 +4860,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties['per-flow-request-access-policy'], '/tenantId/perRequestPolicy');
         });
 
@@ -4878,7 +4878,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties.profiles['/Common/requestadapt'].context, 'clientside');
             assert.strictEqual(results.configs[1].properties.profiles['/Common/responseadapt'].context, 'serverside');
         });
@@ -4894,10 +4894,82 @@ describe('map_as3', () => {
                 bigip: '/Common/vdi'
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/connectivityProfile'], { context: 'clientside' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/vdi'], { context: 'all' });
+        });
+
+        it('should add access profiles ping to service', () => {
+            item.profilePingAccess = {
+                bigip: '/Common/access'
+            };
+            item.profileConnectivity = {
+                bigip: '/Common/connectivityProfile'
+            };
+            item.profileVdi = {
+                bigip: '/Common/vdi'
+            };
+
+            const expectedProfiles = {
+                '/Common/access': {
+                    context: 'all'
+                },
+                '/Common/connectivityProfile': {
+                    context: 'clientside'
+                },
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/ppp': {
+                    context: 'all'
+                },
+                '/Common/vdi': {
+                    context: 'all'
+                }
+            };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should add access profiles ping to service when referred by use', () => {
+            item.profilePingAccess = {
+                use: '/SampleTenant/Application/testPingAccessProfile'
+            };
+            item.profileConnectivity = {
+                bigip: '/Common/connectivityProfile'
+            };
+            item.profileVdi = {
+                bigip: '/Common/vdi'
+            };
+
+            const expectedProfiles = {
+                '/SampleTenant/Application/testPingAccessProfile': {
+                    context: 'all'
+                },
+                '/Common/connectivityProfile': {
+                    context: 'clientside'
+                },
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/ppp': {
+                    context: 'all'
+                },
+                '/Common/vdi': {
+                    context: 'all'
+                }
+            };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
         it('should add rba and websso profiles with non-sslo bigip-ref', (() => {
@@ -4916,7 +4988,7 @@ describe('map_as3', () => {
                 }
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], { context: 'all' });
@@ -4938,7 +5010,7 @@ describe('map_as3', () => {
                 }
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/access'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], undefined);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], undefined);
@@ -4952,7 +5024,7 @@ describe('map_as3', () => {
                 ssloCreated: false
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/tenantId/accessProfile'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], { context: 'all' });
@@ -4966,7 +5038,7 @@ describe('map_as3', () => {
                 ssloCreated: true
             };
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/tenantId/accessProfile'], { context: 'all' });
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/rba'], undefined);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/websso'], undefined);
@@ -4979,7 +5051,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/apiProtectionProfile'], { context: 'all' });
         });
 
@@ -4990,7 +5062,7 @@ describe('map_as3', () => {
 
             defaultContext.target.tmosVersion = '13.0';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepStrictEqual(results.configs[1].properties.profiles['/Common/apiProtectionProfile'], undefined);
         });
 
@@ -5055,7 +5127,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: 'dosProfile' };
             defaultContext.target.tmosVersion = '13.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5071,7 +5143,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5089,7 +5161,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileBotDefense = { use: '/tenantId/appId/bot-defense' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5103,7 +5175,7 @@ describe('map_as3', () => {
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             defaultContext.target.tmosVersion = '14.1';
 
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
@@ -5140,7 +5212,7 @@ describe('map_as3', () => {
                     }
                 }
             };
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles,
                 {
                     '/Common/f5-tcp-progressive': { context: 'all' },
@@ -5150,7 +5222,7 @@ describe('map_as3', () => {
         });
 
         it('should handle adminState', () => {
-            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties.enabled, true);
         });
 
@@ -5207,7 +5279,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5244,7 +5316,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5278,7 +5350,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/myHTTP': { context: 'all' },
@@ -5316,7 +5388,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/Shared/myHTTP': { context: 'all' },
@@ -5357,7 +5429,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/Common/Shared/myHTTP': { context: 'all' },
@@ -5392,7 +5464,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(
                     results.configs[1].properties.profiles,
                     {
@@ -5433,7 +5505,7 @@ describe('map_as3', () => {
                         enable: true
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(
                     results.configs[1].properties.profiles,
                     {
@@ -5489,7 +5561,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/tenantId/appId/httpProfile': { context: 'all' },
@@ -5527,7 +5599,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+                const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
                 assert.deepStrictEqual(results.configs[1].properties.profiles,
                     {
                         '/Common/Shared/httpProfile': { context: 'all' },
@@ -6671,6 +6743,13 @@ describe('map_as3', () => {
                                 {
                                     bigip: '/Common/external'
                                 }
+                            ],
+                            addresses: [
+                                '192.0.2.244-192.0.2.245',
+                                '192.0.2.0/25'
+                            ],
+                            ports: [
+                                '2192-3213'
                             ]
                         },
                         destination: {
@@ -6683,6 +6762,13 @@ describe('map_as3', () => {
                                 {
                                     use: 'portList'
                                 }
+                            ],
+                            addresses: [
+                                '192.0.2.244-192.0.2.245',
+                                '192.0.2.0/25'
+                            ],
+                            ports: [
+                                '2192-3213'
                             ]
                         },
                         loggingEnabled: true,
@@ -6710,6 +6796,13 @@ describe('map_as3', () => {
                                 },
                                 vlans: {
                                     '/Common/external': {}
+                                },
+                                addresses: {
+                                    '192.0.2.0/25': {},
+                                    '192.0.2.244-192.0.2.245': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             destination: {
@@ -6718,6 +6811,13 @@ describe('map_as3', () => {
                                 },
                                 'port-lists': {
                                     portList: {}
+                                },
+                                addresses: {
+                                    '192.0.2.0/25': {},
+                                    '192.0.2.244-192.0.2.245': {}
+                                },
+                                ports: {
+                                    '2192-3213': {}
                                 }
                             },
                             log: 'yes',
@@ -10242,6 +10342,207 @@ describe('map_as3', () => {
                     });
             });
         });
+        describe('GSLB SIP Monitor', () => {
+            it('should handle all properties of SIP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test SIP props',
+                    monitorType: 'sip',
+                    protocol: 'sips',
+                    request: 'testRequest',
+                    headers: 'test:Header',
+                    codesUp: [
+                        100,
+                        101,
+                        102,
+                        200
+                    ],
+                    codesDown: [
+                        400,
+                        500,
+                        600
+                    ],
+                    ciphers: 'DEFAULT:+SHA:+3DES',
+                    clientCertificate: 'webcert'
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor sip',
+                        properties: {
+                            cert: 'webcert.crt',
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test SIP props\"',
+                            filter: '\"100 101 102 200\"',
+                            'filter-neg': '\"400 500 600\"',
+                            headers: '\"test:Header\"',
+                            request: '\"testRequest\"',
+                            /* eslint-enable no-useless-escape */
+                            cipherlist: 'DEFAULT:+SHA:+3DES',
+                            mode: 'sips',
+                            key: 'webcert.key'
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB ldap Monitor', () => {
+            it('should handle all properties of LDAP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test LDAP props',
+                    monitorType: 'ldap',
+                    interval: 10,
+                    timeout: 46,
+                    base: 'dc=bigip-test,dc=org',
+                    chaseReferrals: false,
+                    filter: 'objectClass=employee',
+                    security: 'tls',
+                    mandatoryAttributes: true,
+                    username: 'user',
+                    passphrase: {
+                        ciphertext: 'JE0kZEckTmQwckRjc1R5S3NtN1hQV2xmM3l1dz09',
+                        protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
+                        miniJWE: true
+                    },
+                    target: '*:*',
+                    probeTimeout: 5
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor ldap',
+                        properties: {
+                            'probe-timeout': 5,
+                            security: 'tls',
+                            timeout: 46,
+                            username: 'user',
+                            destination: '*:*',
+                            interval: 10,
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test LDAP props\"',
+                            base: '\"dc=bigip-test,dc=org\"',
+                            'chase-referrals': '\"no\"',
+                            'filter-ldap': '\"objectClass=employee\"',
+                            'mandatory-attributes': '\"yes\"',
+                            password: '\"\\$M\\$dG\\$Nd0rDcsTyKsm7XPWlf3yuw==\"'
+                            /* eslint-enable no-useless-escape */
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB smtp Monitor', () => {
+            it('should handle all properties of SMTP monitor', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                const item = {
+                    class: 'GSLB_Monitor',
+                    remark: 'Test SMTP props',
+                    monitorType: 'smtp',
+                    domain: 'example.com',
+                    upInterval: 15,
+                    timeUntilUp: 20,
+                    timeout: 46,
+                    target: '*:*',
+                    interval: 30,
+                    probeTimeout: 5
+                };
+
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0],
+                    {
+                        path: '/tenantId/appId/itemId',
+                        command: 'gtm monitor smtp',
+                        properties: {
+                            'probe-timeout': 5,
+                            domain: 'example.com',
+                            timeout: 46,
+                            destination: '*:*',
+                            interval: 30,
+                            /* eslint-disable no-useless-escape */
+                            description: '\"Test SMTP props\"'
+                            /* eslint-enable no-useless-escape */
+                        },
+                        ignore: []
+                    });
+            });
+        });
+        describe('GSLB Database Monitors', () => {
+            const testCases = [
+                'mysql'
+            ];
+            testCases.forEach((testCase) => {
+                it(`should handle default ${testCase} monitor`, () => {
+                    const item = {
+                        class: 'Monitor',
+                        monitorType: testCase
+                    };
+
+                    const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                    assert.deepEqual(results.configs[0],
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: `gtm monitor ${testCase}`,
+                            properties: {
+                                database: 'none',
+                                description: 'none',
+                                password: 'none',
+                                recv: 'none',
+                                'recv-column': 'none',
+                                'recv-row': 'none',
+                                send: 'none',
+                                username: 'none'
+                            },
+                            ignore: []
+                        });
+                });
+
+                it(`should handle populated ${testCase} monitor`, () => {
+                    const item = {
+                        class: 'Monitor',
+                        monitorType: testCase,
+                        count: 10,
+                        database: 'sales',
+                        interval: 10,
+                        password: 'sql-password', // gitleaks:allow
+                        recv: 'received something',
+                        'recv-column': 2,
+                        'recv-row': 3,
+                        remark: 'My little db pony',
+                        send: 'SELECT * FROM db_name',
+                        timeout: 81,
+                        username: 'user'
+                    };
+
+                    const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                    assert.deepEqual(results.configs[0],
+                        {
+                            path: '/tenantId/appId/itemId',
+                            command: `gtm monitor ${testCase}`,
+                            properties: {
+                                description: '"My little db pony"',
+                                interval: 10,
+                                password: '"sql-password"', // gitleaks:allow
+                                recv: '"received something"',
+                                send: '"SELECT * FROM db_name"',
+                                timeout: 81,
+                                username: 'user',
+                                count: 10,
+                                database: 'sales',
+                                'recv-column': 2,
+                                'recv-row': 3
+                            },
+                            ignore: []
+                        });
+                });
+            });
+        });
     });
 
     describe('GSLB_Domain', () => {
@@ -10473,6 +10774,149 @@ describe('map_as3', () => {
                                 }
                             },
                             monitor: '/Common/bigip',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            },
+                            'virtual-servers': {
+                                0: {
+                                    destination: '192.0.2.4:1000',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                },
+                                1: {
+                                    destination: '192.0.2.5:1111',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a config with minimum item values(along with minimumMonitor) for 13+ versions', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                minimumMonitors: 1,
+                virtualServers: [
+                    {
+                        address: '192.0.2.4',
+                        port: 1000,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    },
+                    {
+                        address: '192.0.2.5',
+                        port: 1111,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    }
+                ],
+                monitors: [{ bigip: '/Common/bigip' }]
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                },
+                                'as3-virtuals': {
+                                    persist: 'true',
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
+                                }
+                            },
+                            monitor: 'min 1 of \\{ /Common/bigip \\}',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            },
+                            'virtual-servers': {
+                                0: {
+                                    destination: '192.0.2.4:1000',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                },
+                                1: {
+                                    destination: '192.0.2.5:1111',
+                                    enabled: true,
+                                    monitor: [],
+                                    'translation-address': 'none',
+                                    'translation-port': 0
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a config with minimum item values(no monitor) for 13+ versions', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                minimumMonitors: 1,
+                virtualServers: [
+                    {
+                        address: '192.0.2.4',
+                        port: 1000,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    },
+                    {
+                        address: '192.0.2.5',
+                        port: 1111,
+                        enabled: true,
+                        addressTranslationPort: 0
+                    }
+                ],
+                monitors: [],
+                serverType: 'bigip'
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                },
+                                'as3-virtuals': {
+                                    persist: 'true',
+                                    value: '192.0.2.4:1000_192.0.2.5:1111'
+                                }
+                            },
+                            monitor: 'min 1 of \\{ /Common/bigip \\}',
                             product: 'bigip',
                             'prober-pool': 'none',
                             devices: {
@@ -13928,49 +14372,110 @@ describe('map_as3', () => {
         });
     });
 
-    describe('Enforcement_Forwarding_Endpoint', () => {
-        it('should handle Enforcement_Forwarding_Endpoint config', () => {
+    describe('Ping_Access_Agent_Properties', () => {
+        it('should handle Ping_Access_Agent_Properties config', () => {
             const item = {
-                pool: {
-                    bigip: '/Common/pool'
+                propertiesData: {
+                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
                 },
-                SNATPool: {
-                    bigip: '/Common/snatPool'
-                },
-                sourcePortAction: 'preserve',
-                addressTranslationEnabled: false,
-                portTranslationEnabled: false,
-                defaultPersistenceType: 'dsiabled',
-                fallbackPersistenceType: 'disabled',
-                persistenceHashSettings: {
-                    length: 1024,
-                    offset: 0,
-                    tclScript: 'A tcl script'
-                }
+                ignoreChanges: true
             };
-            const result = mapAs3.translate.Enforcement_Forwarding_Endpoint(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            const result = mapAs3.translate.Ping_Access_Agent_Properties(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepStrictEqual(
                 result.configs[0],
                 {
-                    command: 'pem forwarding-endpoint',
-                    ignore: [],
                     path: '/tenantId/appId/itemId',
+                    command: 'apm aaa ping-access-properties-file',
+                    ignore: [],
                     properties: {
-                        pool: '/Common/pool',
-                        'snat-pool': '/Common/snatPool',
-                        'source-port': 'preserve',
-                        'translate-address': 'disabled',
-                        'translate-service': 'disabled',
-                        persistence: {
-                            fallback: 'disabled',
-                            'hash-settings': {
-                                length: 1024,
-                                offset: 0,
-                                source: 'tcl-snippet',
-                                'tcl-value': 'A tcl script'
-                            },
-                            type: 'dsiabled'
+                        iControl_post: {
+                            reference: '/tenantId/appId/itemId',
+                            path: '/mgmt/shared/file-transfer/uploads/itemId',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: 'agent.engine.configuration.scheme=http',
+                            why: 'upload ping access agent properties itemId',
+                            settings: {
+                                ignoreChanges: true,
+                                propertiesData:
+                                {
+                                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                                }
+                            }
                         }
+                    }
+                }
+            );
+        });
+
+        it('should handle Ping_Access_Agent_Properties config when ignoreChanges is false', () => {
+            const item = {
+                propertiesData: {
+                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                },
+                ignoreChanges: false
+            };
+
+            const result = mapAs3.translate.Ping_Access_Agent_Properties(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'apm aaa ping-access-properties-file',
+                    ignore: [],
+                    properties: {
+                        ignoreChanges: false,
+                        iControl_post: {
+                            reference: '/tenantId/appId/itemId',
+                            path: '/mgmt/shared/file-transfer/uploads/itemId',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: 'agent.engine.configuration.scheme=http',
+                            why: 'upload ping access agent properties itemId',
+                            settings: {
+                                ignoreChanges: false,
+                                propertiesData:
+                                {
+                                    base64: 'YWdlbnQuZW5naW5lLmNvbmZpZ3VyYXRpb24uc2NoZW1lPWh0dHA='
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    });
+
+    describe('Ping_Access_Profile', () => {
+        it('should handle Ping_Access_Profile config', () => {
+            const item = {
+                class: 'Ping_Access_Profile',
+                pingAccessProperties: {
+                    use: 'testPingAccess'
+                },
+                pool: {
+                    use: 'testPool'
+                },
+                useHTTPS: true,
+                serversslProfile: {
+                    use: 'testServerSSL'
+                }
+            };
+
+            const result = mapAs3.translate.Ping_Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            console.log(JSON.stringify(result.configs[0]));
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'apm profile ping-access',
+                    ignore: [],
+                    properties: {
+                        'ping-access-properties': 'testPingAccess',
+                        pool: 'testPool',
+                        'serverssl-profile': 'testServerSSL',
+                        'use-https': 'true'
                     }
                 }
             );

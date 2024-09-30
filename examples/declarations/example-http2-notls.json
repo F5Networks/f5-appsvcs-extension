@@ -1,0 +1,117 @@
+{
+    "class": "ADC",
+    "updateMode": "selective",
+    "TEST_Service_HTTP": {
+        "class": "Tenant",
+        "SHARED": {
+            "HTTP_80_Address_192.168.0.80": {
+                "spanningEnabled": false,
+                "class": "Service_Address",
+                "virtualAddress": "192.168.0.80",
+                "arpEnabled": false,
+                "routeAdvertisement": "selective",
+                "icmpEcho": "enable"
+            },
+            "httpCustom": {
+                "maxHeaderSize": 32768,
+                "maxHeaderCount": 128,
+                "xForwardedFor": true,
+                "enforceRFCCompliance": false,
+                "class": "HTTP_Profile",
+                "unknownMethodAction": "allow",
+                "viaResponse": "preserve",
+                "responseChunking": "sustain",
+                "pipelineAction": "allow",
+                "allowBlankSpaceAfterHeaderName": false,
+                "trustXFF": true,
+                "rewriteRedirects": "none",
+                "requestChunking": "sustain",
+                "proxyType": "reverse",
+                "knownMethods": [
+                    "CONNECT",
+                    "DELETE",
+                    "GET",
+                    "HEAD",
+                    "LOCK",
+                    "OPTIONS",
+                    "POST",
+                    "PROPFIND",
+                    "PUT",
+                    "TRACE",
+                    "UNLOCK"
+                ],
+                "viaRequest": "preserve",
+                "truncatedRedirects": false,
+                "serverHeaderValue": "none",
+                "multiplexTransformations": true
+            },
+            "template": "shared",
+            "class": "Application",
+            "http2Custom": {
+                "includeContentLength": false,
+                "headerTableSize": 4096,
+                "label": "http2Custom",
+                "connectionIdleTimeout": 300,
+                "concurrentStreamsPerConnection": 10,
+                "insertHeader": false,
+                "activationMode": "always",
+                "frameSize": 2048,
+                "writeSize": 16384,
+                "enforceTlsRequirements": false,
+                "class": "HTTP2_Profile",
+                "receiveWindow": 32
+            },
+            "webtls": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "webcert"
+                    }
+                ],
+                "renegotiationEnabled": false
+            },
+            "tlsClient": {
+                "class": "TLS_Client",
+                "clientCertificate": "webcert"
+            },
+            "webcert": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                }
+            },
+            "HTTP": {
+                "class": "Service_HTTP",
+                "profileHTTP2": {
+                    "use": "/TEST_Service_HTTP/SHARED/http2Custom"
+                },
+                "profileTCP": {
+                    "bigip": "/Common/f5-tcp-progressive"
+                },
+                "profileHTTP": {
+                    "use": "/TEST_Service_HTTP/SHARED/httpCustom"
+                },
+                "remark": "HTTP VIP",
+                "translateServerPort": true,
+                "enable": true,
+                "layer4": "tcp",
+                "translateServerAddress": true,
+                "redirect80": false,
+                "virtualPort": 80,
+                "rateLimit": 0,
+                "virtualAddresses": [
+                    {
+                        "use": "HTTP_80_Address_192.168.0.80"
+                    }
+                ],
+                "persistenceMethods": [],
+                "translateClientPort": true
+            }
+        }
+    },
+    "id": "test",
+    "schemaVersion": "3.53.0"
+}

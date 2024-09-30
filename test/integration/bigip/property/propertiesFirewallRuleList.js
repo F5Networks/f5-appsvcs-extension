@@ -66,6 +66,13 @@ describe('Firewall_Rule_List', function () {
                                     {
                                         bigip: `/Common/${testVlan}`
                                     }
+                                ],
+                                addresses: [
+                                    '192.0.2.244-192.0.2.245',
+                                    '192.0.2.0/25'
+                                ],
+                                ports: [
+                                    '2192-3213'
                                 ]
                             },
                             destination: {
@@ -78,6 +85,13 @@ describe('Firewall_Rule_List', function () {
                                     {
                                         use: 'portList'
                                     }
+                                ],
+                                addresses: [
+                                    '192.0.2.244-192.0.2.245',
+                                    '192.0.2.0/25'
+                                ],
+                                ports: [
+                                    '2192-3213'
                                 ]
                             },
                             loggingEnabled: true,
@@ -101,6 +115,19 @@ describe('Firewall_Rule_List', function () {
                                 ],
                                 portLists: [
                                     '/TEST_Firewall_Rule_List/Application/portList'
+                                ],
+                                addresses: [
+                                    {
+                                        name: '192.0.2.0/25'
+                                    },
+                                    {
+                                        name: '192.0.2.244-192.0.2.245'
+                                    }
+                                ],
+                                ports: [
+                                    {
+                                        name: '2192-3213'
+                                    }
                                 ]
                             },
                             fullPath: 'theRule',
@@ -119,6 +146,19 @@ describe('Firewall_Rule_List', function () {
                                 ],
                                 vlans: [
                                     `/Common/${testVlan}`
+                                ],
+                                addresses: [
+                                    {
+                                        name: '192.0.2.0/25'
+                                    },
+                                    {
+                                        name: '192.0.2.244-192.0.2.245'
+                                    }
+                                ],
+                                ports: [
+                                    {
+                                        name: '2192-3213'
+                                    }
                                 ]
                             },
                             status: 'enabled'

@@ -1708,7 +1708,7 @@ const getDiff = function (context, currentConfig, desiredConfig, commonConfig, t
         // if ignoreChanges is set to false for asm policies, delete the entry from the
         // current config so deepDiff can pick up a change. Set edit true for tmshUpdateScript
         if (desiredValue && currentValue) {
-            if ((currentValue.command === 'asm policy' || currentValue.command === 'apm profile access' || currentValue.command === 'apm policy access-policy')
+            if ((currentValue.command === 'apm aaa ping-access-properties-file' || currentValue.command === 'asm policy' || currentValue.command === 'apm profile access' || currentValue.command === 'apm policy access-policy')
                 && desiredValue.properties.ignoreChanges === false) {
                 delete currentConfig[configKey];
                 desiredValue.properties.edit = true;
@@ -2883,6 +2883,14 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                                 trans.push(command);
                             }
                         });
+                    } else if (diffUpdates.commands.includes('apm aaa ping-access-properties-file')) {
+                        const commands = diffUpdates.commands.split('\n');
+                        arrayUtil.insertBeforeOrAtEnd(
+                            trans,
+                            'create apm profile ping-access',
+                            commands[0],
+                            'inc'
+                        );
                     } else {
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);

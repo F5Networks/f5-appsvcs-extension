@@ -473,6 +473,22 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/monitor/mysql",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/sip",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/ldap",
+            "modules": ["gtm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/gtm/monitor/smtp",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/gtm/monitor/tcp",
             "modules": ["gtm"]
         },
@@ -513,6 +529,14 @@
         },
         {
             "endpoint": "/mgmt/tm/apm/profile/access",
+            "modules": ["apm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/apm/profile/ping-access",
+            "modules": ["apm"]
+        },
+        {
+            "endpoint": "/mgmt/tm/apm/aaa/ping-access-properties-file",
             "modules": ["apm"]
         },
         {

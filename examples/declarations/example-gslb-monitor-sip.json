@@ -1,0 +1,41 @@
+{
+	"class": "AS3",
+	"persist": false,
+	"declaration": {
+		"class": "ADC",
+		"schemaVersion": "3.53.0",
+		"id": "GSLB_Monitor",
+		"TEST_GSLB_Monitor": {
+			"class": "Tenant",
+			"Application": {
+				"class": "Application",
+				"test.item-foo.56789012345678901234567345234567890123456789012345678901234": {
+					"class": "GSLB_Monitor",
+					"monitorType": "sip",
+					"protocol": "sips",
+					"request": "testRequest",
+					"headers": "test:Header",
+					"codesUp": [
+						100,
+						101,
+						102,
+						200
+					],
+					"codesDown": [
+						400,
+						500,
+						600
+					],
+					"ciphers": "DEFAULT:+SHA:+3DES",
+					"clientCertificate": "cert"
+				},
+				"cert": {
+					"class": "Certificate",
+					"certificate": {
+						"bigip": "/Common/default.crt"
+					}
+				}
+			}
+		}
+	}
+}

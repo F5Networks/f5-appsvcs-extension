@@ -1,0 +1,32 @@
+{
+	"class": "AS3",
+	"persist": false,
+	"declaration": {
+		"class": "ADC",
+		"schemaVersion": "3.53.0",
+		"id": "GSLB_Monitor",
+		"TEST_GSLB_Monitor": {
+			"class": "Tenant",
+			"Application": {
+				"class": "Application",
+				"test.item-foo.56789012345678901234567345234567890123456789012345678901234": {
+					"class": "GSLB_Monitor",
+					"monitorType": "ldap",
+					"interval": 10,
+					"timeout": 46,
+					"base": "dc=bigip-test,dc=org",
+					"chaseReferrals": false,
+					"filter": "objectClass=employee",
+					"security": "tls",
+					"mandatoryAttributes": true,
+					"username": "user",
+					"passphrase": {
+						"ciphertext": "ZjVmNQ==",
+						"protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0",
+						"ignoreChanges": true
+					}
+				}
+			}
+		}
+	}
+}

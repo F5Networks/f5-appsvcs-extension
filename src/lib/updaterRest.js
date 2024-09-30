@@ -51,6 +51,9 @@ class UpdaterRest {
         const hasPatched = {};
         const promises = diff.map((entry) => {
             const xhs = entry.rhs || entry.lhs;
+            if (!xhs && (entry.kind === 'N' || entry.kind === 'D')) {
+                return () => Promise.resolve();
+            }
             const options = {
                 path: `/${entry.command.replace(/ /g, '/')}`,
                 why: `${entry.command} update`

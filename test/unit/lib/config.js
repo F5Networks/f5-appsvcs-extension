@@ -56,6 +56,7 @@ describe('config', () => {
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('encodeDeclarationMetadata', false);
         localStorageDataGroup.setItem('webhook', '');
 
         return Promise.resolve()
@@ -68,6 +69,7 @@ describe('config', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             }));
     });
@@ -80,6 +82,7 @@ describe('config', () => {
         localStorageDataGroup.setItem('performanceTracingEndpoint', '');
         localStorageDataGroup.setItem('serializeFileUploads', false);
         localStorageDataGroup.setItem('serviceDiscoveryEnabled', true);
+        localStorageDataGroup.setItem('encodeDeclarationMetadata', true);
         localStorageDataGroup.setItem('webhook', '');
         const newSettings = {
             asyncTaskStorage: 'memory',
@@ -89,6 +92,7 @@ describe('config', () => {
             performanceTracingEndpoint: 'http://192.168.0.1:14268/api/traces',
             serializeFileUploads: true,
             serviceDiscoveryEnabled: false,
+            encodeDeclarationMetadata: true,
             webhook: 'https://www.example.com'
         };
 
@@ -120,6 +124,7 @@ describe('config', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             }))
             .then(() => assert.deepStrictEqual(storageData, {
@@ -130,6 +135,7 @@ describe('config', () => {
                 performanceTracingEndpoint: '',
                 serializeFileUploads: false,
                 serviceDiscoveryEnabled: true,
+                encodeDeclarationMetadata: false,
                 webhook: ''
             }));
     });
