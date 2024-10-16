@@ -635,7 +635,7 @@ const addressDiscovery = function addressDiscovery(context, tenantId, newAppId, 
             if (pool) {
                 addMember(pool, item);
             }
-            configs.push(this.Node(context, nodeTenant, nodeApp, addr, rawName).configs);
+            configs.push(this.Node(context, nodeTenant, nodeApp, addr, rawName, item).configs);
         });
     }
 
@@ -1017,11 +1017,50 @@ const translate = {
         return { configs };
     },
 
+    NodeMonitor(dec, source) {
+        const monitorsObj = {};
+        Object.keys(source.monitors).forEach((key) => {
+            if (['/Common/gateway_icmp',
+                '/Common/https_443',
+                '/Common/icmp',
+                '/Common/real_server',
+                '/Common/snmp_dca',
+                '/Common/tcp_echo'].indexOf(key) > -1) {
+                monitorsObj[key] = {};
+            }
+            if (key.split('/')[1] !== 'Common' && key.split('/').length > 1) {
+                const splitPath = key.split('/');
+                let copyDec = dec;
+                splitPath.forEach((prop) => {
+                    if (prop !== '') {
+                        copyDec = copyDec[prop];
+                    }
+                });
+                if (copyDec.monitorType && ['gateway_icmp',
+                    'https_443',
+                    'icmp',
+                    'real_server',
+                    'snmp_dca',
+                    'tcp_echo'].indexOf(copyDec.monitorType) > -1) {
+                    monitorsObj[key] = {};
+                }
+            }
+        });
+        if (Object.keys(monitorsObj).length === 0) {
+            monitorsObj.default = {};
+        }
+        return monitorsObj;
+    },
+
     /**
      * Defines a node (nodes are NOT visible in declaration)
      */
-    Node(context, tenantId, appId, addr, name) {
+    Node(context, tenantId, appId, addr, name, source) {
         const def = { address: addr };
+        if (source.monitors) {
+            const nodeMonitors = this.NodeMonitor(context.tasks[context.currentIndex].declaration, source);
+            def.monitor = nodeMonitors;
+        }
         const declaration = context.tasks[context.currentIndex].declaration;
         if (tenantId !== 'Common' && util.getDeepValue(declaration, [tenantId, 'useCommonRouteDomainTenant']) === false) {
             def.address = addr.split('%')[0];
@@ -1046,6 +1085,10 @@ const translate = {
                 persist: true
             }]
         };
+        if (item.monitors) {
+            const fqdnNodeMonitors = this.NodeMonitor(context.tasks[context.currentIndex].declaration, item);
+            def.monitor = fqdnNodeMonitors;
+        }
 
         const config = normalize.actionableMcp(context, def, 'ltm node', util.mcpPath(tenantId, appId, tmName));
         return { configs: [config] };

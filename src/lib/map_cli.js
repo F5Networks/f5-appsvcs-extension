@@ -633,6 +633,19 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         return objCopy;
     };
 
+    const pushNodeMonitors = function (obj) {
+        const objCopy = util.simpleCopy(obj);
+        if (typeof objCopy.monitor === 'object') {
+            if (objCopy.monitor) {
+                objCopy.monitor = `${Object.keys(objCopy.monitor).join(' and ')}`;
+            } else {
+                delete objCopy.monitor;
+            }
+        }
+        delete objCopy.minimumMonitors;
+        return objCopy;
+    };
+
     const getCertValidatorConfig = function () {
         let modifyCommand;
         const issuer = targetConfig['issuer-cert'] || 'none';
@@ -727,6 +740,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         mapExternalMonitor(diff, targetConfig, currentConfig);
         break;
     case 'ltm node':
+        targetConfig = pushNodeMonitors(targetConfig);
         if (diff.kind === 'E') {
             // Copy config to avoid modifying objects outside the scope of this function
             const configCopy = util.simpleCopy(targetConfig);

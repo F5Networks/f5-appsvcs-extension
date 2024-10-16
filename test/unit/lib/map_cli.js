@@ -1317,6 +1317,120 @@ describe('map_cli', () => {
             assert.deepStrictEqual(result.commands, [command]);
         });
 
+        it('should return a modify for the ltm node with node monitor varname monitors if the diff.kind is E', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/Common/192.0.2.0'
+                ],
+                tags: [
+                    'tmsh'
+                ],
+                command: 'ltm node',
+                lhsCommand: 'ltm node',
+                rhsCommand: 'ltm node'
+            };
+
+            const config = {
+                address: '192.0.2.0',
+                monitors: { '/Common/gateway_icmp': {} },
+                metadata: {
+                    references: {
+                        value: 2
+                    }
+                }
+            };
+
+            context.target.tmosVersion = '13.0.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            const command = 'tmsh::modify ltm node /Common/192.0.2.0 monitors \\{ /Common/gateway_icmp \\} metadata replace-all-with \\{ references \\{ value 2 \\} \\}';
+
+            // Test address node
+            assert.deepStrictEqual(result.commands, [command]);
+
+            // Test FQDN node
+            delete config.address;
+            config.fqdn = {};
+            assert.deepStrictEqual(result.commands, [command]);
+        });
+
+        it('should return a modify for the ltm node with node monitor varname monitor if the diff.kind is E', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/Common/192.0.2.0'
+                ],
+                tags: [
+                    'tmsh'
+                ],
+                command: 'ltm node',
+                lhsCommand: 'ltm node',
+                rhsCommand: 'ltm node'
+            };
+
+            const config = {
+                address: '192.0.2.0',
+                monitor: { '/Common/gateway_icmp': {} },
+                metadata: {
+                    references: {
+                        value: 2
+                    }
+                }
+            };
+
+            context.target.tmosVersion = '13.0.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            const command = 'tmsh::modify ltm node /Common/192.0.2.0 monitor /Common/gateway_icmp metadata replace-all-with \\{ references \\{ value 2 \\} \\}';
+
+            // Test address node
+            assert.deepStrictEqual(result.commands, [command]);
+
+            // Test FQDN node
+            delete config.address;
+            config.fqdn = {};
+            assert.deepStrictEqual(result.commands, [command]);
+        });
+
+        it('should return a modify for the ltm node with node default monitor if the diff.kind is E', () => {
+            const diff = {
+                kind: 'E',
+                path: [
+                    '/Common/192.0.2.0'
+                ],
+                tags: [
+                    'tmsh'
+                ],
+                command: 'ltm node',
+                lhsCommand: 'ltm node',
+                rhsCommand: 'ltm node'
+            };
+
+            const config = {
+                address: '192.0.2.0',
+                monitor: { default: {} },
+                metadata: {
+                    references: {
+                        value: 2
+                    }
+                }
+            };
+
+            context.target.tmosVersion = '13.0.0';
+
+            const result = mapCli.tmshCreate(context, diff, config, {});
+            const command = 'tmsh::modify ltm node /Common/192.0.2.0 monitor default metadata replace-all-with \\{ references \\{ value 2 \\} \\}';
+
+            // Test address node
+            assert.deepStrictEqual(result.commands, [command]);
+
+            // Test FQDN node
+            delete config.address;
+            config.fqdn = {};
+            assert.deepStrictEqual(result.commands, [command]);
+        });
+
         it('should return a delete and create for the ltm node if with fqdn and the diff.kind is E', () => {
             const diff = {
                 kind: 'E',

@@ -1,0 +1,42 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.54.0",
+    "id": "TEST",
+    "TEST": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testVirtual": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "1.2.3.4"
+                ],
+                "pool": {
+                    "use": "testPool"
+                }
+            },
+            "testPool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": [
+                            "1.2.3.4"
+                        ],
+                        "routeDomain": 100,
+                        "monitors": [
+                            {
+                                "use": "F5_796e378f_6182_46b0_870b_cf0571282tea"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "F5_796e378f_6182_46b0_870b_cf0571282tea": {
+                "class": "Monitor",
+                "label": "796e378f-6182-46b0-870b-cf0571282tea",
+                "monitorType": "icmp"
+            }
+        }
+    }
+}

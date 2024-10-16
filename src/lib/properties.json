@@ -127,7 +127,8 @@
     { "id":"address" },
     { "id":"fqdn",                      "extend": "object" },
     { "id":"metadata",                  "extend": "objArray"},
-    { "id":"references" }
+    { "id":"references" },
+    { "id": "monitor",                   "altId": "monitors" }
   ],
   "ltm node fqdn": [
     { "id":"address-family" },

@@ -456,6 +456,94 @@ describe('Pool', function () {
             });
     });
 
+    it('should post with support monitors for node', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            NODE_Monitor: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                serverAddresses: [
+                                    '192.0.2.25'
+                                ],
+                                servicePort: 80,
+                                monitors: [
+                                    {
+                                        use: 'F5_796e378f_6182_46b0_870b_cf0571282tea'
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    F5_796e378f_6182_46b0_870b_cf0571282tea: {
+                        class: 'Monitor',
+                        label: '796e378f-6182-46b0-870b-cf0571282tea',
+                        monitorType: 'icmp'
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].monitor, '/NODE_Monitor/app/F5_796e378f_6182_46b0_870b_cf0571282tea');
+            });
+    });
+
+    it('should post with unsupported monitors for node', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            NODE_Monitor: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                serverAddresses: [
+                                    '192.0.2.25'
+                                ],
+                                servicePort: 80,
+                                monitors: [
+                                    {
+                                        use: 'F5_796e378f_6182_46b0_870b_cf0571282tea'
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    F5_796e378f_6182_46b0_870b_cf0571282tea: {
+                        class: 'Monitor',
+                        label: '796e378f-6182-46b0-870b-cf0571282tea',
+                        monitorType: 'http'
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].monitor, 'default');
+            });
+    });
+
     it('should modify pool, existing pool member and create new pool member in single declaration', () => {
         const bigipItems = [
             {

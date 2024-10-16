@@ -541,6 +541,9 @@ describe('map_as3', () => {
                             tmName: 'www.f5.com',
                             interval: 'ttl'
                         },
+                        monitor: {
+                            default: {}
+                        },
                         metadata: {
                             fqdnPrefix: {
                                 value: 'node-'
@@ -711,6 +714,59 @@ describe('map_as3', () => {
                 ];
             });
 
+            it('should add monitor to node', () => {
+                item.members = [
+                    {
+                        addressDiscovery: 'static',
+                        servicePort: 80,
+                        serverAddresses: [
+                            '192.0.2.4'
+                        ],
+                        monitors: { '/Common/icmp': {} },
+                        routeDomain: 100,
+                        enable: true
+                    }
+                ];
+                const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
+                assert.deepEqual(
+                    config,
+                    {
+                        command: 'ltm node',
+                        ignore: [],
+                        path: '/tenantId/192.0.2.4%100',
+                        properties: {
+                            address: '192.0.2.4%100',
+                            monitor: {
+                                '/Common/icmp': {}
+                            },
+                            metadata: {}
+                        }
+                    }
+                );
+            });
+
+            it('should map monitor to node', () => {
+                const source = {
+                    monitors: { '/tenantId/appId/F5_796e378f_6182_46b0_870b_cf0571282tea': {} }
+                };
+                const dec = {
+                    tenantId: {
+                        appId: {
+                            F5_796e378f_6182_46b0_870b_cf0571282tea: {
+                                class: 'Monitor',
+                                label: '796e378f-6182-46b0-870b-cf0571282tea',
+                                monitorType: 'icmp'
+                            }
+                        }
+                    }
+                };
+                const config = translate.NodeMonitor(dec, source);
+                assert.deepEqual(
+                    config,
+                    { '/tenantId/appId/F5_796e378f_6182_46b0_870b_cf0571282tea': {} }
+                );
+            });
+
             it('should add route domain to addresses for static members', () => {
                 const config = translate.Pool(defaultContext, 'tenantId', 'appId', 'myPool', item).configs[0];
                 assert.deepEqual(
@@ -721,6 +777,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%100',
                         properties: {
                             address: '192.0.2.4%100',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -746,6 +805,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%100',
                         properties: {
                             address: '192.0.2.4',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -773,6 +835,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%123',
                         properties: {
                             address: '192.0.2.4',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -798,6 +863,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%100',
                         properties: {
                             address: '192.0.2.4%100',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -824,6 +892,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%123',
                         properties: {
                             address: '192.0.2.4%123',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -841,6 +912,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%123',
                         properties: {
                             address: '192.0.2.4%123',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -858,6 +932,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4',
                         properties: {
                             address: '192.0.2.4',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -875,6 +952,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4',
                         properties: {
                             address: '192.0.2.4',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -901,6 +981,9 @@ describe('map_as3', () => {
                         path: '/tenantId/192.0.2.4%100',
                         properties: {
                             address: '192.0.2.4%100',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -913,6 +996,9 @@ describe('map_as3', () => {
                         path: '/tenantId/node1.example.com',
                         properties: {
                             address: '192.168.0.1%100',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -925,6 +1011,9 @@ describe('map_as3', () => {
                         path: '/tenantId/node2.example.com',
                         properties: {
                             address: '192.168.0.2',
+                            monitor: {
+                                default: {}
+                            },
                             metadata: {}
                         }
                     }
@@ -4047,7 +4136,7 @@ describe('map_as3', () => {
                 {
                     path: '/tenantId/appId/itemId-2-',
                     properties: {
-                        destination: '/Common/192.0.2.123%23:123',
+                        destination: '/Common/192.0.2.123%23:123', // gitleaks:allow
                         source: '0.0.0.0%23/0',
                         mask: '255.255.255.255'
                     }
@@ -8171,7 +8260,7 @@ describe('map_as3', () => {
                 const serviceMain = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain');
                 assert.strictEqual(serviceMain.command, 'ltm virtual');
                 assert.strictEqual(serviceMain.properties.destination, '/tenantId/192.0.2.7:443');
-                assert.strictEqual(serviceMain.properties.mask, '255.255.255.255');
+                assert.strictEqual(serviceMain.properties.mask, '255.255.255.255'); // gitleaks:allow
                 assert.strictEqual(serviceMain.properties.source, '10.0.0.0/24');
                 assert.strictEqual(serviceMain.properties['vlans-disabled'], ' ');
                 assert.deepStrictEqual(serviceMain.properties.vlans,

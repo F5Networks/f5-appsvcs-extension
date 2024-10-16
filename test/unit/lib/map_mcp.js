@@ -268,6 +268,147 @@ describe('map_mcp', () => {
                     'recv-row': 1
                 });
             });
+            it('should process ftp missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:ftp:ftpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    filename: 'none',
+                    username: 'none'
+                });
+            });
+            it('should process ftp user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:ftp:ftpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    username: 'user',
+                    filename: 'fileName'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    username: 'user',
+                    filename: 'fileName'
+                });
+            });
+            it('should process http missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:http:httpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none',
+                    username: 'none'
+                });
+            });
+            it('should process http user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:http:httpstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    username: 'user'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    username: 'user',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none'
+                });
+            });
+            it('should process https missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:https:httpsstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    username: 'none',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none',
+                    cert: 'none',
+                    key: 'none',
+                    'ssl-profile': 'none'
+                });
+            });
+            it('should process https user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:https:httpsstate',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    username: 'user'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    username: 'user',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none',
+                    cert: 'none',
+                    key: 'none',
+                    'ssl-profile': 'none'
+                });
+            });
+            it('should process http2 missing values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:http2:http2state',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: 'none',
+                    username: 'none',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none',
+                    'ssl-profile': 'none'
+                });
+            });
+            it('should process http2 user-defined values', () => {
+                const obj = {
+                    kind: 'tm:ltm:monitor:http2:http2state',
+                    name: 'myMonitor',
+                    partition: 'Tenant',
+                    fullPath: '/Tenant/Application/myMonitor',
+                    description: 'This is my description',
+                    username: 'user'
+                };
+                const result = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(result[0].properties, {
+                    description: '"This is my description"',
+                    username: 'user',
+                    recv: 'none',
+                    'recv-disable': 'none',
+                    send: 'none',
+                    'ssl-profile': 'none'
+                });
+            });
             it('should process tcp-half-open missing values', () => {
                 const obj = {
                     kind: 'tm:ltm:monitor:tcp-half-open:tcp-half-openstate',

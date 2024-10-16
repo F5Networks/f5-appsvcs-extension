@@ -1175,17 +1175,36 @@ function tenantAddCommonNodes(context, actionableConfig, nodeList) {
                                     delete config.path;
                                     actionableConfig[nodePath] = config;
                                 } else {
-                                    actionableConfig[nodePath] = {
-                                        command: 'ltm node',
-                                        properties: {
-                                            address: nodePath.split('/')[2],
-                                            metadata: node.metadata.reduce((obj, m) => {
-                                                obj[m.name] = { value: m.value };
-                                                return obj;
-                                            }, {})
-                                        },
-                                        ignore: []
-                                    };
+                                    const membersNodeList = actionableConfig[configKey].properties.members;
+                                    if (membersNodeList
+                                        && membersNodeList[memberKey]
+                                        && membersNodeList[memberKey].monitor) {
+                                        const monitorsInfo = membersNodeList[memberKey];
+                                        actionableConfig[nodePath] = {
+                                            command: 'ltm node',
+                                            properties: {
+                                                address: nodePath.split('/')[2],
+                                                monitor: monitorsInfo.monitor,
+                                                metadata: node.metadata.reduce((obj, m) => {
+                                                    obj[m.name] = { value: m.value };
+                                                    return obj;
+                                                }, {})
+                                            },
+                                            ignore: []
+                                        };
+                                    } else {
+                                        actionableConfig[nodePath] = {
+                                            command: 'ltm node',
+                                            properties: {
+                                                address: nodePath.split('/')[2],
+                                                metadata: node.metadata.reduce((obj, m) => {
+                                                    obj[m.name] = { value: m.value };
+                                                    return obj;
+                                                }, {})
+                                            },
+                                            ignore: []
+                                        };
+                                    }
                                 }
                             }
                         }
