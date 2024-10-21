@@ -340,7 +340,9 @@ As a part of an initiative to clean up language that can be considered racially-
 
 .. IMPORTANT:: While some of these properties are being deprecated, the original property names will continue to work in BIG-IP AS3 declarations.
 
+**How much storage is supported for dataGroup record for tenant names in BIGIP?**
 
+AS3 supports dataGroup storage upto 63kb for aggregation of tenant names storage. Beyond this limit, AS3 cannot support the provisioning.
 
 
 .. |intro| raw:: html

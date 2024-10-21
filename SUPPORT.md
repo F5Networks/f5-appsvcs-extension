@@ -4,25 +4,29 @@ Maintenance and F5 Technical Support of this F5 code is provided only if the
 software (i) is unmodified; and (ii) has been marked as F5 Supported in
 SOL80012344, (https://support.f5.com/csp/article/K80012344).
 
-Support will only be provided to customers who have an existing BIG-IP support contract associated with a valid BIG-IP serial number. 
+Support will only be provided to customers who have an existing BIG-IP support contract associated with a valid BIG-IP serial number.
 For information about support policies, see http://www.f5.com/about/guidelines-policies/ and http://askf5.com.
 
 
 **AS3 Software Lifecycle**:
-* AS3 releases are intended to be delivered on a 6-week basis
-* There will be 2 stability releases per year (focused on bug-fixing, infra improvements, and so on)
-* Stability (LTS) releases are supported for 1 year
-* Feature releases are supported for 3 months
-* "End of Support" = End of Software Development (EOSD) + End of Technical Support (EOTS)
+* AS3 releases are intended to be delivered on a 6-week basis.
+* There will be 2 stability releases per year (focused on bug-fixing, infra improvements, and so on).
+* Stability (LTS) releases are supported for 1 year.
+* Feature releases are supported for 3 months.
+* "End of Support" = End of Software Development (EOSD) + End of Technical Support (EOTS).
 
 Currently supported versions (the next LTS release is on 30/Sep/24):
 
 | Software Version | Release Type  | First Customer Ship | End of Support  |
 |------------------|---------------|---------------------|-----------------|
+| AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
+| AS 3.45.0        | Feature       |  22-May-2023        | 22-Aug-2023     |
+| AS 3.46.0        | Feature       |  24-Jul-2023        | 24-Oct-2023     |
 | AS 3.46.1        | LTS           |  12-Sep-2023        | 31-Oct-2024     |
 | AS 3.46.2        | LTS           |  14-Nov-2023        | 31-Oct-2024     |
-| AS 3.49.0        | Feature       |  16-Jan-2024        | 16-Apr-2024     |
-| AS 3.50.0        | Feature       |  11-Mar-2024        | 11-Jun-2024     |
+| AS 3.51.0        | Feature       |  04-Jun-2024        | 11-Aug-2024     |
+| AS 3.52.0        | Feature       |  24-Jul-2024        | 23-Oct-2024     |
+| AS 3.53.0        | Feature       |  30-Oct-2024        | 31-Jan-2024     |
 
 
 
@@ -89,10 +93,11 @@ Versions no longer supported:
 | AS 3.36.1        | LTS           |  12-Sep-2022        | 12-Sep-2023     |
 | AS 3.47.0        | Feature       |  12-Sep-2023        | 12-Dec-2023     |
 | AS 3.48.0        | Feature       |  14-Nov-2023        | 14-Feb-2024     |
+| AS 3.49.0        | Feature       |  16-Jan-2024        | 16-Apr-2024     |
+| AS 3.50.0        | Feature       |  11-Mar-2024        | 11-Jun-2024     |
 
-\* Fix for updated Docker Container packaging only  
+\* Fix for updated Docker Container packaging only
 \*\* Update for the schema description for Pool minimumMonitors
 
 
-See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release. 
-
+See the [Release notes](https://github.com/F5Networks/f5-appsvcs-extension/releases) and [AS3 documentation](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html) for new features and issues resolved for each release.

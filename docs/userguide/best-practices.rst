@@ -135,6 +135,30 @@ If you are using TMOS 16.0 or earlier and are encountering a response similar to
 
 You can either upgrade to TMOS 16.1 or later, or if you have a **controls** section in your declaration with **traceResponse** set to **true**, set it to **false**.
 
+.. _enable-encodeDecl:
+Enable encodeDeclarationMetadata
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This option compresses tenant metadata before storing it in the datagroup, maximizing storage efficiency.Encoding also helps accommodate larger declarations by fitting metadata within the 64KB MCPD storage limit. Once enabled, it will be deficult to disable, as AS3 relies on the encoded metadata to manage tenant configurations. Hence, F5 recommends you to enable this parameter only when you encounter the below error while posting a large AS3 declaration.
+
+.. code-block:: json
+
+    {
+        "code": 500,
+        "declarationFullId": "autogen_28ad72e1-a42c-44fb-b521-2e46a83f4344",
+        "message": "POST http://admin:XXXXXX@localhost:8100/mgmt/tm/ltm/data-group/internal store a declaration response=400 body={\"code\":400,\"message\":\"01070712:3: Max string size exceeded during update of attribute:data type:class_value_item max:65520 received:65529\",\"errorStack\":[],\"apiError\":3}",
+        "declarationId": "autogen_28ad72e1-a42c-44fb-b521-2e46a83f4344"
+    }
+
+**To enable encodeDeclarationMetadata:**
+
+1. Set the ``encodeDeclarationMetadata`` to ``true`` using the :doc:`settings-endpoint`.
+2. Re-POST the existing AS3 declaration to the BIG-IP system.
+
+**To disable encodeDeclarationMetadata:**
+
+1. Delete the existing AS3 Configuration.
+2. Manually remove any datagroups named ``____appsvcs_declaration-*`` from **Local Traffic ›› iRules: Data Group List** on BIG-IP.
+3. Set the ``encodeDeclarationMetadata`` to ``false`` using the :doc:`settings-endpoint` and Re-POST the AS3 declaration to the BIG-IP system.
 
 
 Decrease the verbosity levels of restjavad and icrd_child
