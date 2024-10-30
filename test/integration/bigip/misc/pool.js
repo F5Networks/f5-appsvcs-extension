@@ -927,4 +927,301 @@ describe('Pool', function () {
             })
             .finally(() => deleteDeclaration());
     });
+
+    it('should handle monitorType change from https to http', () => {
+        const declaration = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        const declaration1 = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'http'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/http/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should handle monitorType change from https to http of multiple monitor objects', () => {
+        const declaration = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    },
+                    app_vs1: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.11'],
+                        virtualPort: 443,
+                        pool: 'app_pool1'
+                    },
+                    app_pool1: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor1' }]
+                    },
+                    app_monitor1: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    },
+                    app_vs2: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.12'],
+                        virtualPort: 443,
+                        pool: 'app_pool2'
+                    },
+                    app_pool2: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor2' }]
+                    },
+                    app_monitor2: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        const declaration1 = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'http'
+                    },
+                    app_vs1: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.11'],
+                        virtualPort: 443,
+                        pool: 'app_pool1'
+                    },
+                    app_pool1: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor1' }]
+                    },
+                    app_monitor1: {
+                        class: 'Monitor',
+                        monitorType: 'http'
+                    },
+                    app_vs2: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.12'],
+                        virtualPort: 443,
+                        pool: 'app_pool2'
+                    },
+                    app_pool2: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor2' }]
+                    },
+                    app_monitor2: {
+                        class: 'Monitor',
+                        monitorType: 'http'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~ADC-TENANT~app_monitor_test~app_monitor1'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~ADC-TENANT~app_monitor_test~app_monitor2'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/http/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/http/~ADC-TENANT~app_monitor_test~app_monitor1'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/http/~ADC-TENANT~app_monitor_test~app_monitor2'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should handle monitorType change from https to http of multiple monitor objects with same monitor', () => {
+        const declaration = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_vs1: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.11'],
+                        virtualPort: 443,
+                        pool: 'app_pool1'
+                    },
+                    app_pool1: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'https'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        const declaration1 = {
+            'ADC-TENANT': {
+                class: 'Tenant',
+                app_monitor_test: {
+                    class: 'Application',
+                    app_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.10'],
+                        virtualPort: 443,
+                        pool: 'app_pool'
+                    },
+                    app_pool: {
+                        class: 'Pool',
+                        monitors: [{ use: 'app_monitor' }]
+                    },
+                    app_monitor: {
+                        class: 'Monitor',
+                        monitorType: 'http'
+                    }
+                }
+            },
+            class: 'ADC',
+            schemaVersion: '3.50.0'
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~ADC-TENANT~app_monitor_test~app_vs1'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'app_vs1');
+                assert.strictEqual(response.pool, '/ADC-TENANT/app_monitor_test/app_pool1');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~ADC-TENANT~app_monitor_test~app_pool1'))
+            .then((response) => {
+                assert.strictEqual(response.monitor, 'min 1 of { /ADC-TENANT/app_monitor_test/app_monitor }');
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/http/~ADC-TENANT~app_monitor_test~app_monitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/pool/~ADC-TENANT~app_monitor_test~app_pool1'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Pool (/ADC-TENANT/app_monitor_test/app_pool1) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/virtual/~ADC-TENANT~app_monitor_test~app_vs1'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Virtual Server (/ADC-TENANT/app_monitor_test/app_vs1) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .finally(() => deleteDeclaration());
+    });
 });

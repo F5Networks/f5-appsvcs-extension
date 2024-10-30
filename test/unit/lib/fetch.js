@@ -5034,6 +5034,680 @@ describe('fetch', () => {
             });
         });
 
+        describe('should handle the monitorType changes', () => {
+            it('should handle the monitorType change from https to http', () => {
+                const desiredConfig = {
+                    '/ADC-TENANT/app_monitor_test/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/ADC-TENANT/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app_monitor_test"',
+                            destination: '/ADC-TENANT/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            pool: '/ADC-TENANT/app_monitor_test/app_pool',
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {},
+                            'min-active-members': 1,
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/ADC-TENANT/app_monitor_test/app_monitor': {}
+                            },
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_monitor': {
+                        command: 'ltm monitor http',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            recv: '"HTTP/1."',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            'up-interval': 0,
+                            username: 'none'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/ADC-TENANT/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_monitor': {
+                        command: 'ltm monitor https',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            key: 'none',
+                            recv: '"HTTP/1."',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'ssl-profile': 'none',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            username: 'none',
+                            'up-interval': 0
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {},
+                            'min-active-members': 1,
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/ADC-TENANT/app_monitor_test/app_monitor': {}
+                            },
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app_monitor_test"',
+                            destination: '/ADC-TENANT/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            pool: '/ADC-TENANT/app_monitor_test/app_pool',
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'command'
+                        ],
+                        lhs: 'ltm monitor https',
+                        rhs: 'ltm monitor http',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'cert'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'cipherlist'
+                        ],
+                        lhs: 'DEFAULT',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'key'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'ssl-profile'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify ltm pool /ADC-TENANT/app_monitor_test/app_pool monitor none',
+                    'tmsh::delete ltm monitor https /ADC-TENANT/app_monitor_test/app_monitor',
+                    'tmsh::commit_transaction',
+                    'tmsh::begin_transaction',
+                    'tmsh::create ltm monitor http /ADC-TENANT/app_monitor_test/app_monitor adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 5 ip-dscp 0 recv \\"HTTP/1.\\" recv-disable none reverse disabled send \\"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\\" timeout 16 time-until-up 0 transparent disabled up-interval 0 username none',
+                    'tmsh::modify ltm pool /ADC-TENANT/app_monitor_test/app_pool monitor min 1 of \\{ /ADC-TENANT/app_monitor_test/app_monitor \\}',
+                    'tmsh::modify auth partition ADC-TENANT description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'tmsh::create ltm monitor https /ADC-TENANT/app_monitor_test/app_monitor adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 5 ip-dscp 0 recv \\"HTTP/1.\\" recv-disable none reverse disabled send \\"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\\" timeout 16 time-until-up 0 transparent disabled up-interval 0 username none',
+                    'tmsh::modify ltm pool /ADC-TENANT/app_monitor_test/app_pool monitor min 1 of \\{ /ADC-TENANT/app_monitor_test/app_monitor \\}',
+                    '}}',
+                    '}'
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+
+            it('should handle the monitorType change from http to https', () => {
+                const desiredConfig = {
+                    '/ADC-TENANT/app_monitor_test/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/ADC-TENANT/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app_monitor_test"',
+                            destination: '/ADC-TENANT/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            pool: '/ADC-TENANT/app_monitor_test/app_pool',
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {},
+                            'min-active-members': 1,
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/ADC-TENANT/app_monitor_test/app_monitor': {}
+                            },
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_monitor': {
+                        command: 'ltm monitor https',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            key: 'none',
+                            recv: '"HTTP/1."',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'ssl-profile': 'none',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            'up-interval': 0,
+                            username: 'none'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/ADC-TENANT/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_monitor': {
+                        command: 'ltm monitor http',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            recv: '"HTTP/1."',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            username: 'none',
+                            'up-interval': 0
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_pool': {
+                        command: 'ltm pool',
+                        properties: {
+                            'load-balancing-mode': 'round-robin',
+                            members: {},
+                            'min-active-members': 1,
+                            minimumMonitors: 1,
+                            monitor: {
+                                '/ADC-TENANT/app_monitor_test/app_monitor': {}
+                            },
+                            'reselect-tries': 0,
+                            'service-down-action': 'none',
+                            'slow-ramp-time': 10,
+                            'allow-nat': 'yes',
+                            'allow-snat': 'yes',
+                            metadata: {}
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/app_vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '"app_monitor_test"',
+                            destination: '/ADC-TENANT/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/source_addr': {
+                                    default: 'yes'
+                                }
+                            },
+                            pool: '/ADC-TENANT/app_monitor_test/app_pool',
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/ADC-TENANT/app_monitor_test/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'command'
+                        ],
+                        lhs: 'ltm monitor http',
+                        rhs: 'ltm monitor https',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor http'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'cert'
+                        ],
+                        rhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor http'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'cipherlist'
+                        ],
+                        rhs: 'DEFAULT',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor http'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'key'
+                        ],
+                        rhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor http'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/ADC-TENANT/app_monitor_test/app_monitor',
+                            'properties',
+                            'ssl-profile'
+                        ],
+                        rhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor http'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm monitor http /ADC-TENANT/app_monitor_test/app_monitor',
+                    'tmsh::create ltm monitor https /ADC-TENANT/app_monitor_test/app_monitor adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 cert none cipherlist DEFAULT description none destination *:* interval 5 ip-dscp 0 key none recv \\"HTTP/1.\\" recv-disable none reverse disabled send \\"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\\" ssl-profile none timeout 16 time-until-up 0 transparent disabled up-interval 0 username none',
+                    'tmsh::modify auth partition ADC-TENANT description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
         it('should skip createFirstDeleteLast when modifying auth partition', () => {
             const desiredConfig = {
                 '/tenant/application/': { command: 'sys folder', properties: {}, ignore: [] },

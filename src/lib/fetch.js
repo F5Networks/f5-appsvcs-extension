@@ -1991,8 +1991,12 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
     const delMon = 'tmsh::delete ltm monitor';
     const createMon = 'tmsh::create ltm monitor';
 
+    const delHttpsMon = 'tmsh::delete ltm monitor https';
+    const createHttpMon = 'tmsh::create ltm monitor http';
+
     const poolEntries = trans.filter((t) => t.indexOf(delPool) > -1 && t.indexOf(createPool) > -1);
     const monitorEntries = trans.filter((t) => t.indexOf(delMon) > -1 && t.indexOf(createMon) > -1);
+    const httpMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1 && t.indexOf(createHttpMon) > -1);
 
     let updatedTrans = [];
     const allPoolPreTransCmds = [];
@@ -2036,12 +2040,33 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
         return pipConfig.commands;
     };
 
+    const detachMonitorFromPoolCmd = function (poolname) {
+        return `tmsh::modify ltm pool ${poolname} monitor none`;
+    };
+
     const getDetachFromPoolCmds = function (poolCmds) {
         return poolCmds.map((p) => {
             const pName = p.substring(delPool.length + 1, p.indexOf('\n')).trim();
             // detach from pool
-            return `tmsh::modify ltm pool ${pName} monitor none`;
+            return detachMonitorFromPoolCmd(pName);
         }).join('\n');
+    };
+
+    const getPoolsPerMonitor = function (monitorName) {
+        const tmpPools = {};
+        Object.keys(currentConfig).forEach((key) => {
+            if (currentConfig[key].command === 'ltm pool' && currentConfig[key].properties && currentConfig[key].properties.monitor) {
+                const monitorkeys = Object.keys(currentConfig[key].properties.monitor);
+                if (monitorkeys && monitorkeys.indexOf(monitorName) > -1) {
+                    tmpPools[key] = currentConfig[key].properties;
+                }
+            }
+        });
+        return tmpPools;
+    };
+
+    const reAttachMonitorFromPoolCmd = function (poolname, moniorObj) {
+        return `tmsh::modify ltm pool ${poolname} monitor ${pushMonitors(moniorObj).monitor}`;
     };
 
     const getDetachFromMonitorCmds = function (monitorName) {
@@ -2119,6 +2144,71 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
         }
         const indexOfFirstPoolCreate = rollback.findIndex((t) => t.indexOf('tmsh::modify ltm pool') > -1);
         rollback.splice(indexOfFirstPoolCreate, 0, monitorRollbackCmd.join('\n'));
+    } else if (httpMonitorEntries.length) {
+        const newTransCmds = [];
+        const newDelMonTransCmds = [];
+        const newRollbackTransCmds = [];
+        trans.forEach((transItem) => {
+            if (transItem.indexOf('\n') > -1) {
+                const existingTransCmds1 = [];
+                const existingTransCmds2 = [];
+                const rollbackTransCmds = [];
+                const commands = transItem.split('\n');
+                commands.forEach((cmd, index) => {
+                    const isDeleteCmd = cmd.indexOf(delHttpsMon) > -1;
+                    const monName = isDeleteCmd ? cmd.substring(cmd.lastIndexOf(' ') + 1) : '';
+                    const nextCmd = commands[index + 1];
+                    const isNextCreate = isDeleteCmd && nextCmd && nextCmd.indexOf(`${createHttpMon} ${monName}`) > -1;
+                    const pools = getPoolsPerMonitor(monName);
+                    if (isNextCreate) {
+                        existingTransCmds1.push(Object.keys(pools).map((p) => detachMonitorFromPoolCmd(p)).join('\n'));
+                        existingTransCmds1.push(cmd);
+                        const rollBackMonCmd = rollbackMonitorCmds(monName);
+                        if (rollBackMonCmd.indexOf(`tmsh::create ltm monitor ${monName}`) > -1) {
+                            // We always need first transaction will delete the https monitor,
+                            // Rollback should create https
+                            // In some case Rollback create monitor command missing monitor type,
+                            // So we need to add it explicitly.
+                            rollbackTransCmds.push(rollBackMonCmd.replace('tmsh::create ltm monitor', 'tmsh::create ltm monitor https'));
+                        } else {
+                            rollbackTransCmds.push(rollBackMonCmd);
+                        }
+                        rollbackTransCmds.push(Object.keys(pools).map((p) => reAttachMonitorFromPoolCmd(p, pools[p])).join('\n'));
+                        existingTransCmds2.push(nextCmd);
+                        existingTransCmds2.push(Object.keys(pools).map((p) => reAttachMonitorFromPoolCmd(p, pools[p])).join('\n'));
+                    } else if (!existingTransCmds2.includes(cmd)) {
+                        existingTransCmds2.push(cmd);
+                    }
+                });
+                if (existingTransCmds1.length > 0) {
+                    newDelMonTransCmds.push(existingTransCmds1.join('\n'));
+                }
+                if (existingTransCmds2.length > 0) {
+                    newTransCmds.push(existingTransCmds2.join('\n'));
+                }
+                if (rollbackTransCmds.length > 0) {
+                    newRollbackTransCmds.push(rollbackTransCmds.join('\n'));
+                }
+            } else {
+                newTransCmds.push(transItem);
+            }
+        });
+        log.debug({ message: 'newTransCmds is ', data: newTransCmds });
+        log.debug({ message: 'newRollbackTransCmds is ', data: newRollbackTransCmds });
+        if (newDelMonTransCmds.length > 0) {
+            newDelMonTransCmds.push(COMMIT_TRANS);
+            newDelMonTransCmds.push(BEGIN_TRANS);
+            const indexOfBeginTrans = newTransCmds.findIndex((t) => t.indexOf(BEGIN_TRANS) > -1);
+            newTransCmds.splice(indexOfBeginTrans + 1, 0, newDelMonTransCmds.join('\n'));
+        }
+        if (newRollbackTransCmds.length > 0) {
+            rollback.splice(rollback.length, 0, newRollbackTransCmds.join('\n'));
+        }
+        if (newTransCmds.length > 0) {
+            updatedTrans = newTransCmds.concat(updatedTrans);
+        } else {
+            updatedTrans = trans;
+        }
     } else {
         updatedTrans = trans;
     }
