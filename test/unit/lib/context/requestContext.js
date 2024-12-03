@@ -351,6 +351,82 @@ describe('RequestContext', () => {
                     });
             });
 
+            it('should build the correct POST context with false Controls.dryRun and query params dryRun is true', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}?async=true&controls.dryRun=true`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.controls.dryRun = false;
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.deepStrictEqual(ctxt.request.queryParams, [{ key: 'async', value: 'true' }, { key: 'controls.dryRun', value: 'true' }]);
+                    });
+            });
+
+            it('should build the correct POST context with false Controls.dryRun and query params dryRun is false', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}?async=true&controls.dryRun=false`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.controls.dryRun = false;
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, false);
+                        assert.deepStrictEqual(ctxt.request.queryParams, [{ key: 'async', value: 'true' }, { key: 'controls.dryRun', value: 'false' }]);
+                    });
+            });
+
+            it('should build the correct POST context with true Controls.dryRun and query params dryRun is true', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}?async=true&controls.dryRun=true`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.controls.dryRun = true;
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, true);
+                        assert.deepStrictEqual(ctxt.request.queryParams, [{ key: 'async', value: 'true' }, { key: 'controls.dryRun', value: 'true' }]);
+                    });
+            });
+
+            it('should build the correct POST context with true Controls.dryRun and query params dryRun is false', () => {
+                const restOp = new RestOperationMock();
+                restOp.method = 'Post';
+                // note extra /
+                restOp.setPath(`${path}?async=true&controls.dryRun=false`);
+
+                const dryRunDecl = util.simpleCopy(validDecl);
+                dryRunDecl.controls.dryRun = true;
+                restOp.setBody(dryRunDecl);
+
+                return RequestContext.get(restOp, hostContext)
+                    .then((ctxt) => {
+                        assert.isUndefined(ctxt.error);
+                        assert.strictEqual(ctxt.tasks[0].action, 'deploy');
+                        assert.strictEqual(ctxt.tasks[0].dryRun, false);
+                        assert.deepStrictEqual(ctxt.request.queryParams, [{ key: 'async', value: 'true' }, { key: 'controls.dryRun', value: 'false' }]);
+                    });
+            });
+
             it('should build the correct PATCH context', () => {
                 const restOp = new RestOperationMock();
                 restOp.method = 'Patch';

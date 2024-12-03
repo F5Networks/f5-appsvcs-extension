@@ -272,7 +272,7 @@ describe('dryRun testing', function () {
             });
     });
 
-    it('should not change the system when controls.dryRun query parameter is used', () => {
+    it('should not change the system when true controls.dryRun query parameter is used', () => {
         decl.declaration.controls.dryRun = false;
 
         return Promise.resolve()
@@ -289,6 +289,27 @@ describe('dryRun testing', function () {
             .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
             .then((response) => {
                 assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should change the system when false controls.dryRun query parameter is used', () => {
+        decl.declaration.controls.dryRun = false;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=false')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, false);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
             });
     });
 

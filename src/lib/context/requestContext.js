@@ -130,6 +130,13 @@ class RequestContext {
                 tasks.forEach((task) => {
                     if (task.declaration) {
                         let controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
+                        if (initialContext.queryParams) { // Fix for ID1712657
+                            (initialContext.queryParams || []).forEach((obj) => {
+                                if (obj.key === `${controlsName}.dryRun`) {
+                                    task.declaration[controlsName].dryRun = (obj.value === 'true');
+                                }
+                            });
+                        }
                         if (task.declaration[controlsName]) {
                             if (task.declaration[controlsName].internalUse) {
                                 if (task.declaration[controlsName].internalUse.action) {
