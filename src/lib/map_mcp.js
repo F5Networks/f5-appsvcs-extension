@@ -1416,16 +1416,36 @@ const translate = {
         const path = util.mcpPath(obj.partition, obj.subPath, obj.name);
         referenceConfig.forEach((reference) => {
             if (reference.destination && reference.destination.addresses) {
-                reference.destination.addresses = reference.destination.addresses.map((address) => address.name);
+                reference.destination.addresses = reference.destination.addresses.map((address) => {
+                    if (address.name) {
+                        return address.name;
+                    }
+                    return address;
+                });
             }
             if (reference.destination && reference.destination.ports) {
-                reference.destination.ports = reference.destination.ports.map((port) => port.name);
+                reference.destination.ports = reference.destination.ports.map((port) => {
+                    if (port.name) {
+                        return port.name;
+                    }
+                    return port;
+                });
             }
             if (reference.source && reference.source.addresses) {
-                reference.source.addresses = reference.source.addresses.map((address) => address.name);
+                reference.source.addresses = reference.source.addresses.map((address) => {
+                    if (address.name) {
+                        return address.name;
+                    }
+                    return address;
+                });
             }
             if (reference.source && reference.source.ports) {
-                reference.source.ports = reference.source.ports.map((port) => port.name);
+                reference.source.ports = reference.source.ports.map((port) => {
+                    if (port.name) {
+                        return port.name;
+                    }
+                    return port;
+                });
             }
         });
         obj = pushReferences(
