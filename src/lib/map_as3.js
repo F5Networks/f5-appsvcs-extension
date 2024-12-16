@@ -2308,6 +2308,7 @@ const translate = {
         if (itemCopy.serverScope === undefined) {
             itemCopy.serverScope = 'any';
         }
+        itemCopy.autoDelete = (itemCopy.autoDelete === undefined) ? 'true' : itemCopy.autoDelete;
         const taggedId = `Service_Address-${itemId}`;
         return { configs: [normalize.actionableMcp(context, itemCopy, 'ltm virtual-address', util.mcpPath(tenantId, newAppId, taggedId))] };
     },

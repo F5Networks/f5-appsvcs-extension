@@ -2618,6 +2618,12 @@
                     "description": "Specifies the traffic group which the Service_Address belongs.",
                     "type": "string",
                     "default": "default"
+                },
+                "autoDelete": {
+                    "title": "Auto Delete",
+                    "description": "If this is true, MCPD deletes the virtual address if it is not linked to any virtual. This option applies only to the Common Tenant.",
+                    "type": "boolean",
+                    "default": true                   
                 }
             },
             "dependencies": {

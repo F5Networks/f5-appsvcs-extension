@@ -426,5 +426,70 @@ describe('postValidator', () => {
                 );
             });
         });
+
+        describe('AutoDelete', () => {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.50.0',
+                Common: {
+                    class: 'Tenant',
+                    Shared: {
+                        class: 'Application',
+                        template: 'shared',
+                        'x_service-address_any': {
+                            class: 'Service_Address',
+                            virtualAddress: '0.0.0.0',
+                            icmpEcho: 'disable',
+                            arpEnabled: false,
+                            autoDelete: true
+                        }
+                    }
+                }
+            };
+
+            const declaration1 = {
+                class: 'ADC',
+                schemaVersion: '3.50.0',
+                testTenant: {
+                    class: 'Tenant',
+                    testApp: {
+                        class: 'Application',
+                        template: 'shared',
+                        testObj: {
+                            class: 'Service_Address',
+                            virtualAddress: '0.0.0.0',
+                            icmpEcho: 'disable',
+                            arpEnabled: false,
+                            autoDelete: true
+                        }
+                    }
+                }
+            };
+
+            it('should be valid true for Common partion', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                return assert.isFulfilled(PostValidator.validate(defaultContext, declaration));
+            });
+
+            it('should be valid false for Common partion', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                declaration.Common.Shared['x_service-address_any'].autoDelete = false;
+                return assert.isFulfilled(PostValidator.validate(defaultContext, declaration));
+            });
+
+            it('should be valid true for non-Common partion', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                return assert.isFulfilled(PostValidator.validate(defaultContext, declaration1));
+            });
+
+            it('should be invalid false for non-Common partion', () => {
+                defaultContext.target.tmosVersion = '16.1';
+                declaration1.testTenant.testApp.testObj.autoDelete = false;
+                return assert.isRejected(
+                    PostValidator.validate(defaultContext, declaration1),
+                    'Disabling auto-delete for service addresses in non-common tenants is not supported.'
+                );
+            });
+        });
     });
 });

@@ -412,6 +412,55 @@ describe('serviceAddress', function () {
                 .then(() => deleteBigipItems(bigipItems)));
     });
 
+    it('should not be thrown an error if the Service Address autoDelete field is enabled on non-common partitions', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: true
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            }).finally(() => deleteDeclaration());
+    });
+
+    it('should be thrown an error if the Service Address autoDelete field is disabled on non-common partitions.', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: false
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'Disabling auto-delete for service addresses in non-common tenants is not supported.');
+            });
+    });
+
     describe('per-app', () => {
         let Shared;
         let serviceApp;
@@ -482,6 +531,56 @@ describe('serviceAddress', function () {
                     /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,
                     'virtual-address should have been deleted'
                 ));
+        });
+
+        it('should delete the Service_Address in Common partition using autoDelete flag', () => {
+            const perAppCommonPath = '/mgmt/shared/appsvcs/declare/Common/applications';
+            const perAppTenantPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
+            Shared.ServiceAddress.autoDelete = true;
+            serviceApp.Service.virtualAddresses.push({ use: '/Common/Shared/ServiceAddress' });
+            return Promise.resolve()
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'))
+                .then(() => postDeclaration({ schemaVersion: '3.50', serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                // Virtual-address should be removed from /Common/Shared once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${perAppTenantPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'),
+                    /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,
+                    'virtual-address should have been deleted'
+                ));
+        });
+
+        it('should not delete the Service_Address in Common partition using autoDelete flag', () => {
+            const perAppCommonPath = '/mgmt/shared/appsvcs/declare/Common/applications';
+            const perAppTenantPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
+            Shared.ServiceAddress.autoDelete = false;
+            serviceApp.Service.virtualAddresses.push({ use: '/Common/Shared/ServiceAddress' });
+            return Promise.resolve()
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'))
+                .then(() => postDeclaration({ schemaVersion: '3.50', serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                // Virtual-address should not be removed from /Common/Shared once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${perAppTenantPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'));
         });
     });
 
