@@ -1221,6 +1221,17 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         mapEnabledDisabled(targetConfig);
         break;
     }
+    case 'ltm profile client-ssl': {
+        // Copy config to avoid modifying objects outside the scope of this function
+        const configCopy = util.simpleCopy(targetConfig);
+        if (configCopy['sni-default'] === 'true') {
+            configCopy['sni-require'] = true;
+        } else {
+            configCopy['sni-require'] = false;
+        }
+        commandObj.commands = [`${instruction} ${diff.path[0]}${stringify(diff.rhsCommand, configCopy, escapeQuote)}`];
+        return commandObj;
+    }
     default:
     }
 

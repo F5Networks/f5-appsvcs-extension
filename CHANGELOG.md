@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Fixed
 AUTOTOOL-3510: Pool member changing from 443 to 80 (no SSL) - Unexpected paramater appear in created http monitor
+AUTOTOOL-4597: ([Github Issue 871](https://github.com/F5Networks/f5-appsvcs-extension/issues/871)) Can't use "requireSNI" property
 
 ### Changed
 

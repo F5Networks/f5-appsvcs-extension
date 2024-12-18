@@ -404,4 +404,96 @@ describe('certificates', function () {
             })
             .then(() => deleteDeclaration());
     });
+
+    it('should handle to configure multiple SNI profiles, while default one has set \'requireSNI\': true', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.50.0',
+            sni_tenant: {
+                class: 'Tenant',
+                sni_app: {
+                    class: 'Application',
+                    template: 'shared',
+                    client_ssl_profile: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                matchToSNI: '',
+                                certificate: 'snidefault'
+                            },
+                            {
+                                matchToSNI: 'https1.example.com',
+                                certificate: 'sni1'
+                            },
+                            {
+                                matchToSNI: 'https2.example.com',
+                                certificate: 'sni2'
+                            }
+                        ],
+                        ciphers: 'DEFAULT',
+                        requireSNI: true
+                    },
+                    snidefault: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    sni1: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    sni2: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+            })
+            .then(() => deleteDeclaration());
+    });
 });

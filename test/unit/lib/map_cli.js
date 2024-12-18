@@ -1658,6 +1658,54 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
                 assert.deepStrictEqual(result.commands, ['tmsh::create ltm virtual /tenant/app/service destination /tenant/192.0.2.4:80 disabled ']);
             });
+
+            it('should handle requireSNI property with sniDefault is true', () => {
+                const diff = {
+                    kind: 'N',
+                    path: ['/sni_tenant/sni_app/client_ssl_profile'],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'sni-default': 'true',
+                            'sni-require': 'true'
+                        }
+                    },
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                };
+                const targetConfig = {
+                    'sni-default': 'true',
+                    'sni-require': 'true'
+                };
+                const currentConfig = {};
+                const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+                assert.deepStrictEqual(result.commands, ['tmsh::create ltm profile client-ssl /sni_tenant/sni_app/client_ssl_profile sni-default true sni-require true']);
+            });
+
+            it('should handle requireSNI property with sniDefault is false', () => {
+                const diff = {
+                    kind: 'N',
+                    path: ['/sni_tenant/sni_app/client_ssl_profile'],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'sni-default': 'false',
+                            'sni-require': 'true'
+                        }
+                    },
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                };
+                const targetConfig = {
+                    'sni-default': 'false',
+                    'sni-require': 'true'
+                };
+                const currentConfig = {};
+                const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+                assert.deepStrictEqual(result.commands, ['tmsh::create ltm profile client-ssl /sni_tenant/sni_app/client_ssl_profile sni-default false sni-require false']);
+            });
         });
 
         describe('ltm dns cache', () => {
