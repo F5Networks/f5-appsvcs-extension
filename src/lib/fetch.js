@@ -1006,7 +1006,7 @@ const getBigipConfig = function (context, pathList, tenantId, commonConfig) {
     const promises = supportedPaths.map((path) => {
         const icrOptions = {
             why: 'getting BIG-IP config',
-            path: `${path.endpoint}?$filter=partition%20eq%20${partition}`
+            path: `${path.endpoint}?$filter=partition%20eq%20'${encodeURIComponent(partition)}'` // Fix for ID1752917
         };
         if (path.select) {
             icrOptions.path += `&$select=${path.select}`;

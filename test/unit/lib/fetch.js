@@ -127,7 +127,7 @@ describe('fetch', () => {
                 ];
                 sinon.stub(util, 'executeBashCommand').resolves('aaa_saml_server    /thePartition/accessProfile-sp_transfer\ncertificate_file_object      /thePartition/accessProfile-portal-sts.leidos.com.crt\npool               /thePartition/accessProfile-AD_Pool-pool\npool               /thePartition/accessProfile-AD_Pool-emptyPool');
                 nock('http://localhost:8100')
-                    .get('/mgmt/tm/ltm/pool/~thePartition~other-pool/members?$filter=partition%20eq%20thePartition')
+                    .get('/mgmt/tm/ltm/pool/~thePartition~other-pool/members?$filter=partition%20eq%20%27thePartition%27')
                     .reply(200, {
                         kind: 'tm:ltm:pool:members:memberscollectionstate',
                         items: [
@@ -211,7 +211,7 @@ describe('fetch', () => {
                     .then((config) => {
                         assert.deepStrictEqual(config, []);
                         assert.strictEqual(pathsSent.length, 1);
-                        assert.strictEqual(pathsSent[0], 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?$filter=partition%20eq%20test');
+                        assert.strictEqual(pathsSent[0], 'https://localhost/mgmt/tm/ltm/pool/~test~test~testapp_pool/members?$filter=partition%20eq%20\'test\'');
                     });
             });
 
@@ -236,7 +236,7 @@ describe('fetch', () => {
                     .then((config) => {
                         assert.deepStrictEqual(config, []);
                         assert.strictEqual(pathsSent.length, 1);
-                        assert.strictEqual(pathsSent[0], '/mgmt/tm/needs/asm?$filter=partition%20eq%20Common');
+                        assert.strictEqual(pathsSent[0], '/mgmt/tm/needs/asm?$filter=partition%20eq%20\'Common\'');
                     });
             });
 
@@ -260,7 +260,7 @@ describe('fetch', () => {
                     .then((config) => {
                         assert.deepStrictEqual(config, []);
                         assert.strictEqual(pathsSent.length, 1);
-                        assert.strictEqual(pathsSent[0], '/mgmt/tm/needs140?$filter=partition%20eq%20Common');
+                        assert.strictEqual(pathsSent[0], '/mgmt/tm/needs140?$filter=partition%20eq%20\'Common\'');
                     });
             });
 
@@ -282,7 +282,7 @@ describe('fetch', () => {
                     .then((config) => {
                         assert.deepStrictEqual(config, []);
                         assert.strictEqual(pathsSent.length, 1);
-                        assert.strictEqual(pathsSent[0], '/mgmt/tm/asm/policies?$filter=partition%20eq%20Common&$select=fullPath,name');
+                        assert.strictEqual(pathsSent[0], '/mgmt/tm/asm/policies?$filter=partition%20eq%20\'Common\'&$select=fullPath,name');
                     });
             });
 
@@ -303,7 +303,7 @@ describe('fetch', () => {
                     .then((config) => {
                         assert.deepStrictEqual(config, []);
                         assert.strictEqual(pathsSent.length, 1);
-                        assert.strictEqual(pathsSent[0], '/mgmt/tm/ltm/pool?$filter=partition%20eq%20Common&expandSubcollections=true');
+                        assert.strictEqual(pathsSent[0], '/mgmt/tm/ltm/pool?$filter=partition%20eq%20\'Common\'&expandSubcollections=true');
                     });
             });
 
@@ -316,7 +316,7 @@ describe('fetch', () => {
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
                     switch (icrOptions.path) {
-                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:net:address-list:address-listcollectionstate',
                             items: [
@@ -329,7 +329,7 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:net:port-list:port-listcollectionstate',
                             items: [
@@ -342,7 +342,7 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -355,7 +355,7 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:port-list:port-listcollectionstate',
                             items: [
@@ -422,11 +422,11 @@ describe('fetch', () => {
                 sinon.stub(util, 'iControlRequest').callsFake((_context, icrOptions) => {
                     pathsSent.push(icrOptions.path);
                     switch (icrOptions.path) {
-                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/net/address-list?$filter=partition%20eq%20\'testTen\'':
                         throw new Error('Should not have queried net address-list endpoint');
-                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/net/port-list?$filter=partition%20eq%20\'testTen\'':
                         throw new Error('Should not have queried net port-list endpoint');
-                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/security/firewall/address-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:address-list:address-listcollectionstate',
                             items: [
@@ -439,7 +439,7 @@ describe('fetch', () => {
                                 }
                             ]
                         });
-                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20testTen':
+                    case '/mgmt/tm/security/firewall/port-list?$filter=partition%20eq%20\'testTen\'':
                         return Promise.resolve({
                             kind: 'tm:security:firewall:port-list:port-listcollectionstate',
                             items: [
@@ -605,7 +605,7 @@ describe('fetch', () => {
                 .then((config) => {
                     assert.deepStrictEqual(config, []);
                     assert.strictEqual(pathsSent.length, 1);
-                    assert.strictEqual(pathsSent[0], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?$filter=partition%20eq%20Tenant');
+                    assert.strictEqual(pathsSent[0], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?$filter=partition%20eq%20\'Tenant\'');
                 });
         });
 
@@ -619,10 +619,10 @@ describe('fetch', () => {
                 .then((config) => {
                     assert.deepStrictEqual(config, []);
                     assert.strictEqual(pathsSent.length, 4);
-                    assert.strictEqual(pathsSent[0], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?$filter=partition%20eq%20Tenant');
-                    assert.strictEqual(pathsSent[1], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?$filter=partition%20eq%20Tenant');
-                    assert.strictEqual(pathsSent[2], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?$filter=partition%20eq%20Tenant');
-                    assert.strictEqual(pathsSent[3], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?$filter=partition%20eq%20Tenant');
+                    assert.strictEqual(pathsSent[0], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/network?$filter=partition%20eq%20\'Tenant\'');
+                    assert.strictEqual(pathsSent[1], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-dns?$filter=partition%20eq%20\'Tenant\'');
+                    assert.strictEqual(pathsSent[2], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/protocol-sip?$filter=partition%20eq%20\'Tenant\'');
+                    assert.strictEqual(pathsSent[3], '/mgmt/tm/security/log/profile/~Tenant~Application~asm_logging_profile_for_splunk/application?$filter=partition%20eq%20\'Tenant\'');
                 });
         });
     });
@@ -11287,7 +11287,7 @@ describe('fetch', () => {
                         }
                     ]
                 })
-                .get('/mgmt/tm/auth/partition?$filter=partition%20eq%20tenant1')
+                .get('/mgmt/tm/auth/partition?$filter=partition%20eq%20%27tenant1%27')
                 .reply(200, {
                     kind: 'tm:auth:partition:partitioncollectionstate',
                     selfLink: 'https://localhost/mgmt/tm/auth/partition?$filter=partition+eq+tenant1',
@@ -11301,7 +11301,7 @@ describe('fetch', () => {
                         }
                     ]
                 })
-                .get('/mgmt/tm/sys/folder?$filter=partition%20eq%20tenant1')
+                .get('/mgmt/tm/sys/folder?$filter=partition%20eq%20%27tenant1%27')
                 .reply(200, {
                     kind: 'tm:sys:folder:foldercollectionstate',
                     selfLink: 'https://localhost/mgmt/tm/sys/folder?$filter=partition+eq+tenant1',
@@ -11324,7 +11324,7 @@ describe('fetch', () => {
                         }
                     ]
                 })
-                .get('/mgmt/tm/ltm/pool?$filter=partition%20eq%20tenant1')
+                .get('/mgmt/tm/ltm/pool?$filter=partition%20eq%20%27tenant1%27')
                 .reply(200, {
                     kind: 'tm:ltm:pool:poolcollectionstate',
                     selfLink: 'https://localhost/mgmt/tm/ltm/pool?$filter=partition+eq+tenant1&expandSubcollections=true',
