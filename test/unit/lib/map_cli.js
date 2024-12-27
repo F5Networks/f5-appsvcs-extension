@@ -1691,7 +1691,7 @@ describe('map_cli', () => {
                         command: 'ltm profile client-ssl',
                         properties: {
                             'sni-default': 'false',
-                            'sni-require': 'true'
+                            'sni-require': 'false'
                         }
                     },
                     command: 'ltm profile client-ssl',
@@ -1700,7 +1700,7 @@ describe('map_cli', () => {
                 };
                 const targetConfig = {
                     'sni-default': 'false',
-                    'sni-require': 'true'
+                    'sni-require': 'false'
                 };
                 const currentConfig = {};
                 const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
