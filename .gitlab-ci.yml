@@ -74,6 +74,8 @@ include:
     file:
       - compliance/base.gitlab-ci.yml
       - security/base.gitlab-ci.yml
+variables:
+  SECRETS_ANALYZER_VERSION: '6.14.0'
 
 # Override compliance template job
 check_copyrights:

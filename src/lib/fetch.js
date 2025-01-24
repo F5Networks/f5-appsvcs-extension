@@ -2620,7 +2620,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             const virtualConfig = desiredConfig[diff.path[0]];
             let virtualAddress = virtualConfig.properties.destination;
             if (virtualAddress) {
-                virtualAddress = virtualAddress.split(':');
+                const destAddr = virtualAddress.slice(virtualAddress.lastIndexOf('/') + 1);
+                virtualAddress = ipUtil.isIPv6(destAddr) ? virtualAddress.split('.') : virtualAddress.split(':');
                 if (virtualAddressToCreate[virtualAddress[0]] === undefined) {
                     virtualAddressToCreate[virtualAddress[0]] = 0;
                 }
@@ -2636,7 +2637,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             const virtualConfigDel = currentConfig[diff.path[0]];
             let virtualAddressDel = virtualConfigDel.properties.destination;
             if (virtualAddressDel) {
-                virtualAddressDel = virtualAddressDel.split(':');
+                const destAddr = virtualAddressDel.slice(virtualAddressDel.lastIndexOf('/') + 1);
+                virtualAddressDel = ipUtil.isIPv6(destAddr) ? virtualAddressDel.split('.') : virtualAddressDel.split(':');
                 if (virtualAddressTrackDelete[virtualAddressDel[0]] === undefined) {
                     virtualAddressTrackDelete[virtualAddressDel[0]] = 0;
                 }
@@ -2723,7 +2725,8 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             const virtualConfig = desiredConfig[diff.path[0]];
             let virtualAddressDest = virtualConfig.properties.destination;
             if (virtualAddressDest) {
-                virtualAddressDest = virtualAddressDest.split(':')[0];
+                const destAddr = virtualAddressDest.slice(virtualAddressDest.lastIndexOf('/') + 1);
+                virtualAddressDest = ipUtil.isIPv6(destAddr) ? virtualAddressDest.split('.')[0] : virtualAddressDest.split(':')[0];
                 Object.keys(virtualAddressTrackDelete).forEach((virtualAddress) => {
                     // Fetch the virtual address config of the new VS from the current config.
                     // The new virtual server is referring the existing VA.

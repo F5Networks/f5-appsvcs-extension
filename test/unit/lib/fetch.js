@@ -7795,6 +7795,459 @@ describe('fetch', () => {
                     'The Service Address virtualAddress property cannot be modified. Please delete /tenant/vaddr and recreate it.'
                 );
             });
+
+            it('should handle IPv6 virtual address', () => {
+                const desiredConfig = {
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/Service_Address-va--2a02.a90.cccc.0.0.0.0.4': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '2a02:a90:cccc::4%1',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--https': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app0',
+                            destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            mirror: 'disabled',
+                            persist: {},
+                            policies: {},
+                            profiles: {
+                                '/Common/fastL4': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '::%1/0',
+                            'source-address-translation': {
+                                type: 'none'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'disabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': '',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 1
+                        },
+                        ignore: []
+                    }
+                };
+                const currentConfig = {
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 1
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--https': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app0',
+                            destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            mirror: 'disabled',
+                            persist: {},
+                            policies: {},
+                            profiles: {
+                                '/Common/fastL4': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '::%1/0',
+                            'source-address-translation': {
+                                type: 'none'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'disabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': '',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--80': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app0',
+                            destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.80',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            mirror: 'disabled',
+                            persist: {},
+                            policies: {},
+                            profiles: {
+                                '/Common/fastL4': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '::%1/0',
+                            'source-address-translation': {
+                                type: 'none'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'disabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--443': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app0',
+                            destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            mirror: 'disabled',
+                            persist: {},
+                            policies: {},
+                            profiles: {
+                                '/Common/fastL4': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '::%1/0',
+                            'source-address-translation': {
+                                type: 'none'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'disabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--udp--443': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app0',
+                            destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                            'ip-protocol': 'udp',
+                            'last-hop-pool': 'none',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            mirror: 'disabled',
+                            persist: {},
+                            policies: {},
+                            profiles: {
+                                '/Common/fastL4': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '::%1/0',
+                            'source-address-translation': {
+                                type: 'none'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'disabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/Service_Address-va--2a02.a90.cccc.0.0.0.0.4': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '2a02:a90:cccc::4%1',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                            'route-advertisement': 'selective',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default'
+                        },
+                        ignore: []
+                    },
+                    '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--https',
+                            'properties',
+                            'destination'
+                        ],
+                        lhs: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.8443',
+                        rhs: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                        tags: ['tmsh'],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--80'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: 'app0',
+                                destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.80',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                                mirror: 'disabled',
+                                persist: {},
+                                policies: {},
+                                profiles: {
+                                    '/Common/fastL4': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '::%1/0',
+                                'source-address-translation': {
+                                    type: 'none'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'disabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {},
+                                'throughput-capacity': 'infinite'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: 'app0',
+                                destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                                mirror: 'disabled',
+                                persist: {},
+                                policies: {},
+                                profiles: {
+                                    '/Common/fastL4': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '::%1/0',
+                                'source-address-translation': {
+                                    type: 'none'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'disabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {},
+                                'throughput-capacity': 'infinite'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--udp--443'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: 'app0',
+                                destination: '/pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443',
+                                'ip-protocol': 'udp',
+                                'last-hop-pool': 'none',
+                                mask: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+                                mirror: 'disabled',
+                                persist: {},
+                                policies: {},
+                                profiles: {
+                                    '/Common/fastL4': {
+                                        context: 'all'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '::%1/0',
+                                'source-address-translation': {
+                                    type: 'none'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'disabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {},
+                                'throughput-capacity': 'infinite'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::modify ltm virtual-address /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/va--2a02.a90.cccc.0.0.0.0.4 auto-delete false',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm virtual /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--https',
+                    'tmsh::create ltm virtual /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--https enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description app0 destination /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/2a02:a90:cccc::4%1.443 ip-protocol tcp last-hop-pool none mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff mirror disabled persist none policies none profiles replace-all-with \\{ /Common/fastL4 \\{ context all \\} \\} service-down-immediate-action none source ::%1/0 source-address-translation \\{ type none \\} rules none security-log-profiles none source-port preserve translate-address disabled translate-port enabled nat64 disabled vlans none vlans-disabled  metadata none clone-pools none throughput-capacity infinite',
+                    'tmsh::modify auth partition pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5 description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::delete ltm virtual /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--80',
+                    'tmsh::delete ltm virtual /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--tcp--443',
+                    'tmsh::delete ltm virtual /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/app0/vs--ncfehcs-62351-00.fer.scdemo.ch--ipv6--udp--443',
+                    'tmsh::commit_transaction',
+                    'tmsh::modify ltm virtual-address /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/va--2a02.a90.cccc.0.0.0.0.4 auto-delete true',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'tmsh::modify ltm virtual-address /pa--00aaaaaa-b5d3-4331-85d7-25b919ac29d5/va--2a02.a90.cccc.0.0.0.0.4 auto-delete true',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
         });
 
         describe('ltm node', () => {
