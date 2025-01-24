@@ -3921,7 +3921,7 @@ const translate = {
             item.records.forEach((record) => {
                 let recKey = record.key;
                 if (item.keyDataType === 'ip' && record.key.indexOf('/') === -1) {
-                    recKey += '/32';
+                    recKey += ipUtil.isIPv4(recKey) ? '/32' : '/128'; // Fix for ID1771465
                 }
 
                 itemRecords.push({

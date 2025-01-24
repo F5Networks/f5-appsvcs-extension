@@ -111,6 +111,11 @@ describe('Data Group', function () {
     it('IP', () => {
         const properties = createProperties('ip', [
             {
+                key: '2a02:a90:cccc::',
+                expectedKey: '2a02:a90:cccc::/128',
+                expectedValue: ''
+            },
+            {
                 key: '10.1.0.0/24',
                 value: ''
             },

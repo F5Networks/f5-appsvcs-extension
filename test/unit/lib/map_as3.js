@@ -13008,6 +13008,39 @@ describe('map_as3', () => {
             );
         });
 
+        it('should handle IP keyDataType for internal Data_Group', () => {
+            item.keyDataType = 'ip';
+            item.records = [
+                {
+                    key: '1.1.1.1',
+                    value: ''
+                },
+                {
+                    key: '2a02:a90:cccc:0:0:0:0:4',
+                    value: ''
+                }
+            ];
+            const result = translate.Data_Group(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        command: 'ltm data-group internal',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            description: 'none',
+                            records: {
+                                '"1.1.1.1/32"': { },
+                                '"2a02:a90:cccc:0:0:0:0:4/128"': { }
+                            },
+                            type: 'ip'
+                        }
+                    }
+                ]
+            );
+        });
+
         it('should create correct config for external Data_Group', () => {
             item.storageType = 'external';
             item.externalFilePath = {
