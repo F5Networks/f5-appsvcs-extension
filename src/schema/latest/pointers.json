@@ -501,6 +501,11 @@
         "class": "TCP_Profile",
         "tmshPath": "ltm profile tcp"
     },
+    "TLS_Server": {
+        "name": "TLS Server",
+        "class": "TLS_Server",
+        "tmshPath": "ltm profile client-ssl"
+    },
     "TLS_Client": {
         "name": "TLS Client",
         "class": "TLS_Client",

@@ -260,6 +260,84 @@ describe('certificates', function () {
             .then(() => deleteDeclaration());
     });
 
+    it('should create multiple TLS profiles with a single declaration listing', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.53.0',
+            testTLSProfileTenant: {
+                class: 'Tenant',
+                testTLSProfileApp: {
+                    class: 'Application',
+                    template: 'https',
+                    serviceMain: {
+                        class: 'Service_HTTPS',
+                        virtualAddresses: ['1.1.1.1'],
+                        shareAddresses: true,
+                        serverTLS: 'clnt_ssl_profile',
+                        clientTLS: [
+                            {
+                                use: 'sni1_srv_ssl_profile'
+                            },
+                            {
+                                use: 'sni2_srv_ssl_profile'
+                            }
+                        ]
+                    },
+                    cert: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    clnt_ssl_profile: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                certificate: 'cert'
+                            }
+                        ]
+                    },
+                    sni1_srv_ssl_profile: {
+                        class: 'TLS_Client',
+                        sniDefault: true
+                    },
+                    sni2_srv_ssl_profile: {
+                        class: 'TLS_Client'
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~testTLSProfileTenant~testTLSProfileApp~clnt_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'clnt_ssl_profile');
+                assert.strictEqual(response.fullPath, '/testTLSProfileTenant/testTLSProfileApp/clnt_ssl_profile');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/server-ssl/~testTLSProfileTenant~testTLSProfileApp~sni1_srv_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'sni1_srv_ssl_profile');
+                assert.strictEqual(response.fullPath, '/testTLSProfileTenant/testTLSProfileApp/sni1_srv_ssl_profile');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/server-ssl/~testTLSProfileTenant~testTLSProfileApp~sni2_srv_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'sni2_srv_ssl_profile');
+                assert.strictEqual(response.fullPath, '/testTLSProfileTenant/testTLSProfileApp/sni2_srv_ssl_profile');
+            })
+            .then(() => deleteDeclaration());
+    });
+
     it('contains multiple tenant one with encrypted private key with passphrase another has plain private key', () => {
         const declaration = {
             action: 'deploy',

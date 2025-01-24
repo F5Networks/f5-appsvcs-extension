@@ -1257,10 +1257,10 @@
                     },
                     "else": {
                         "if": { "type": "object" },
-                        "then": { "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile" },
+                        "then": { "$ref": "#/definitions/Pointer_TLS_Server" },
                         "else": {
                             "type": "array",
-                            "items": { "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile" }
+                            "items": { "$ref": "#/definitions/Pointer_TLS_Server" }
                         }
                     }
                 },
@@ -1283,10 +1283,10 @@
                     },
                     "else": {
                         "if": { "type": "object" },
-                        "then": { "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile" },
+                        "then": { "$ref": "#/definitions/Pointer_TLS_Client" },
                         "else": {
                             "type": "array",
-                            "items": { "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile" }
+                            "items": { "$ref": "#/definitions/Pointer_TLS_Client" }
                         }
                     }
                 },

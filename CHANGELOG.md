@@ -5,6 +5,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Added
 - AUTOTOOL-4580: ([Github Issue 112](https://github.com/F5Networks/f5-appsvcs-extension/issues/112)) Monitor will get added to node same like pool monitors, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-node-monitor.json).
+1755469: Create and reference multiple TLS profiles with a single declaration listing
 
 ### Fixed
 AUTOTOOL-3510: Pool member changing from 443 to 80 (no SSL) - Unexpected paramater appear in created http monitor
