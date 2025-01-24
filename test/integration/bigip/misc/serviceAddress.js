@@ -412,6 +412,61 @@ describe('serviceAddress', function () {
                 .then(() => deleteBigipItems(bigipItems)));
     });
 
+    it('should show more information for \'Common\' tenant', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            controls: {
+                class: 'Controls',
+                traceResponse: true
+            },
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    vsAddres: {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.0/24',
+                        routeAdvertisement: 'disable'
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            controls: {
+                class: 'Controls',
+                traceResponse: true
+            },
+            Common: {
+                class: 'Tenant'
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'no change');
+                const expectedTraceKeys = ['CommonDesired', 'CommonCurrent', 'CommonDiff', 'Common_1Script'];
+                assert.hasAnyDeepKeys(response.traces, expectedTraceKeys);
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+                const expectedTraceKeys = ['CommonDesired', 'CommonCurrent', 'CommonDiff', 'Common_1Script', 'Common_2Script'];
+                assert.hasAnyDeepKeys(response.traces, expectedTraceKeys);
+            });
+    });
+
     describe('per-app', () => {
         let Shared;
         let serviceApp;

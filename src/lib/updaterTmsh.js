@@ -38,7 +38,12 @@ class UpdaterTmsh {
     update(desired, current, diff) {
         const tenantUpdate = fetch.tmshUpdateScript(this.context, desired, current, diff);
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
-            this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
+            if (this.tenantId === 'Common') {
+                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common_1' : 'Common_2';
+                this.context.log[`${tenantId}Script`] = tenantUpdate.script;
+            } else {
+                this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
+            }
         }
         log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script, this.context);
         return update.submit(this.context, tenantUpdate, diff);
@@ -51,7 +56,12 @@ class UpdaterTmsh {
         }
 
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
-            this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
+            if (this.tenantId === 'Common') {
+                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common_1' : 'Common_2';
+                this.context.log[`${tenantId}Script`] = tenantUpdate.script;
+            } else {
+                this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
+            }
         }
         log.writeTraceFile(this.tenantId, 'script', tenantUpdate.script, this.context);
         return update.submit(this.context, tenantUpdate, 'post process');

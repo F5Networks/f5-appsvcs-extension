@@ -14,6 +14,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4388: [AS3][SR][Swisscom]: AS3 declaration fails with error 0107176c:3: Invalid Virtual Address, the IP address X%X already exists
 - AUTOTOOL-4620: ([Github Issue 885](https://github.com/F5Networks/f5-appsvcs-extension/issues/885)) GSLB WideIP - "poolsCname" object is not allowed along with "pools" , [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-pools_with_poolsCname.json).
 - 1673189: Unable to create the GSLB_Data_Center object if the prober pool does not exist.
+- AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
 
 ### Changed
 

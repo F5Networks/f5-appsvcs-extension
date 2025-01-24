@@ -117,6 +117,40 @@ describe('UpdaterTmsh', () => {
 
             assert.strictEqual(updater.context.log.idScript, '');
         });
+
+        it('should show Common_1Script in Common tenant', () => {
+            const updater = makeUpdater(true);
+            updater.tenantId = 'Common';
+            updater.context.currentIndex = 0;
+            updater.context.tasks[0].traceResponse = true;
+            updater.context.tasks[0].firstPassNoDelete = true;
+            const script = { script: '' };
+
+            sinon.stub(log, 'writeTraceFile').resolves();
+            sinon.stub(fetch, 'tmshUpdateScript').callsFake(() => script);
+            sinon.stub(update, 'submit').resolves();
+
+            updater.update([], [], []);
+
+            assert.strictEqual(updater.context.log.Common_1Script, '');
+        });
+
+        it('should show Common_2Script in Common tenant', () => {
+            const updater = makeUpdater(true);
+            updater.tenantId = 'Common';
+            updater.context.currentIndex = 0;
+            updater.context.tasks[0].traceResponse = true;
+            updater.context.tasks[0].firstPassNoDelete = false;
+            const script = { script: '' };
+
+            sinon.stub(log, 'writeTraceFile').resolves();
+            sinon.stub(fetch, 'tmshUpdateScript').callsFake(() => script);
+            sinon.stub(update, 'submit').resolves();
+
+            updater.update([], [], []);
+
+            assert.strictEqual(updater.context.log.Common_2Script, '');
+        });
     });
 
     describe('.postProcessUpdate()', () => {
@@ -131,6 +165,40 @@ describe('UpdaterTmsh', () => {
             updater.postProcessUpdate();
 
             assert.strictEqual(updater.context.log.idScript, '');
+        });
+
+        it('should show Common_1Script in Common tenant', () => {
+            const updater = makeUpdater(true);
+            updater.tenantId = 'Common';
+            updater.context.currentIndex = 0;
+            updater.context.tasks[0].traceResponse = true;
+            updater.context.tasks[0].firstPassNoDelete = true;
+            const script = { script: '' };
+
+            sinon.stub(log, 'writeTraceFile').resolves();
+            sinon.stub(update, 'submit').resolves();
+            sinon.stub(fetch, 'postProcessUpdateScript').callsFake(() => script);
+
+            updater.postProcessUpdate();
+
+            assert.strictEqual(updater.context.log.Common_1Script, '');
+        });
+
+        it('should show Common_2Script in Common tenant', () => {
+            const updater = makeUpdater(true);
+            updater.tenantId = 'Common';
+            updater.context.currentIndex = 0;
+            updater.context.tasks[0].traceResponse = true;
+            updater.context.tasks[0].firstPassNoDelete = false;
+            const script = { script: '' };
+
+            sinon.stub(log, 'writeTraceFile').resolves();
+            sinon.stub(update, 'submit').resolves();
+            sinon.stub(fetch, 'postProcessUpdateScript').callsFake(() => script);
+
+            updater.postProcessUpdate();
+
+            assert.strictEqual(updater.context.log.Common_2Script, '');
         });
 
         it('should return null when there is no tenantUpdate', () => {
