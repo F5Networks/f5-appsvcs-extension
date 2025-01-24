@@ -2300,7 +2300,7 @@
     { "id":"contact",                   "quotedString": true },
     { "id":"prober-preference",         "altId": "proberPreferred" },
     { "id":"prober-fallback" },
-    { "id":"prober-pool"}
+    { "id":"prober-pool",               "forceToCommon": true }
   ],
   "gtm datacenter metadata": [
     { "id": "name" },

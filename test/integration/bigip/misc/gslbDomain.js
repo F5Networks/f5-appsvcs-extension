@@ -240,4 +240,83 @@ describe('GSLB_Domain', function () {
                 assert.strictEqual(response.fullPath, '/ExampleTenant/Application/cname_pool');
             });
     });
+
+    it('create GSLB DC, Server, Prober Pool, Prober Pool should be assigned to the DC', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.53.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDC: {
+                        class: 'GSLB_Data_Center',
+                        enabled: true,
+                        location: 'NYC',
+                        proberPool: {
+                            use: 'testPool'
+                        },
+                        proberPreferred: 'pool'
+                    },
+                    testPool: {
+                        class: 'GSLB_Prober_Pool',
+                        members: [
+                            {
+                                memberOrder: 0,
+                                server: {
+                                    use: 'testServer'
+                                }
+                            }
+                        ]
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDC'
+                        },
+                        devices: [
+                            {
+                                address: '192.0.2.0'
+                            },
+                            {
+                                address: '192.0.2.1'
+                            }
+                        ],
+                        exposeRouteDomainsEnabled: true,
+                        serverType: 'bigip',
+                        virtualServerDiscoveryMode: 'disabled'
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(decl, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/datacenter/~Common~testDC'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testDC');
+                assert.strictEqual(response.fullPath, '/Common/testDC');
+                assert.strictEqual(response.proberPool, '/Common/testPool');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/server/~Common~testServer'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testServer');
+                assert.strictEqual(response.fullPath, '/Common/testServer');
+                assert.strictEqual(response.datacenter, '/Common/testDC');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/prober-pool/~Common~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/Common/testPool');
+            });
+    });
 });
