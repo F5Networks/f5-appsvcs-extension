@@ -118,4 +118,126 @@ describe('GSLB_Domain', function () {
                 assert.strictEqual(response.results[1].message, 'no change');
             });
     });
+
+    it('should create a Wide-IP domain with two pools, A and CNAME', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.53.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    testDataCenter: {
+                        class: 'GSLB_Data_Center'
+                    },
+                    testServer: {
+                        class: 'GSLB_Server',
+                        dataCenter: {
+                            use: 'testDataCenter'
+                        },
+                        devices: [
+                            {
+                                address: '192.0.2.0'
+                            }
+                        ],
+                        virtualServers: [
+                            {
+                                address: '192.0.2.1',
+                                port: 5050
+                            }
+                        ]
+                    }
+                }
+            },
+            ExampleTenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    testDomain: {
+                        class: 'GSLB_Domain',
+                        domainName: 'a_wip.local',
+                        aliases: [],
+                        resourceRecordType: 'A',
+                        poolLbMode: 'global-availability',
+                        pools: [
+                            {
+                                use: 'a_pool'
+                            }
+                        ],
+                        poolsCname: [
+                            {
+                                use: 'cname_pool'
+                            }
+                        ],
+                        iRules: [],
+                        persistCidrIpv4: 24,
+                        persistenceEnabled: false,
+                        clientSubnetPreferred: true,
+                        ttlPersistence: 3600
+                    },
+                    a_pool: {
+                        class: 'GSLB_Pool',
+                        members: [
+                            {
+                                ratio: 10,
+                                server: {
+                                    use: '/Common/Shared/testServer'
+                                },
+                                virtualServer: '0',
+                                enabled: true,
+                                dependsOn: 'none'
+                            }
+                        ],
+                        resourceRecordType: 'A',
+                        enabled: true,
+                        lbModePreferred: 'round-robin',
+                        lbModeAlternate: 'round-robin',
+                        lbModeFallback: 'return-to-dns',
+                        ttl: 5,
+                        verifyMemberEnabled: true,
+                        maxAnswersReturned: 1
+                    },
+                    cname_pool: {
+                        class: 'GSLB_Pool',
+                        resourceRecordType: 'CNAME',
+                        enabled: true,
+                        members: [
+                            {
+                                domainName: 'google.com',
+                                isDomainNameStatic: true,
+                                enabled: true
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(decl, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[2].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/pool/a/~ExampleTenant~Application~a_pool'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:gtm:pool:a:astate');
+                assert.strictEqual(response.name, 'a_pool');
+                assert.strictEqual(response.partition, 'ExampleTenant');
+                assert.strictEqual(response.subPath, 'Application');
+                assert.strictEqual(response.fullPath, '/ExampleTenant/Application/a_pool');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/pool/cname/~ExampleTenant~Application~cname_pool'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:gtm:pool:cname:cnamestate');
+                assert.strictEqual(response.name, 'cname_pool');
+                assert.strictEqual(response.partition, 'ExampleTenant');
+                assert.strictEqual(response.subPath, 'Application');
+                assert.strictEqual(response.fullPath, '/ExampleTenant/Application/cname_pool');
+            });
+    });
 });

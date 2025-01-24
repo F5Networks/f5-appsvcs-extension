@@ -234,24 +234,6 @@
                     }
                 }
             },
-            "if": {
-                "properties": {
-                    "pools": {}
-                },
-                "required": [
-                    "pools"
-                ]
-            },
-            "then": {
-                "not": {
-                    "properties": {
-                        "poolsCname": {}
-                    },
-                    "required": [
-                        "poolsCname"
-                    ]
-                }
-            },
             "required": [ "resourceRecordType", "domainName" ]
         },
 

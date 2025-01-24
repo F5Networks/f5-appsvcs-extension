@@ -1,0 +1,93 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.53.0",
+    "Common": {
+        "class": "Tenant",
+        "Shared": {
+            "class": "Application",
+            "template": "shared",
+            "testDataCenter": {
+                "class": "GSLB_Data_Center"
+            },
+            "testServer": {
+                "class": "GSLB_Server",
+                "dataCenter": {
+                    "use": "testDataCenter"
+                },
+                "devices": [
+                    {
+                        "address": "192.0.2.0"
+                    }
+                ],
+                "virtualServers": [
+                    {
+                        "address": "192.0.2.1",
+                        "port": 5050
+                    }
+                ]
+            }
+        }
+    },
+    "ExampleTenant": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testDomain": {
+                "class": "GSLB_Domain",
+                "domainName": "a_wip.local",
+                "aliases": [],
+                "resourceRecordType": "A",
+                "poolLbMode": "global-availability",
+                "pools": [
+                    {
+                        "use": "a_pool"
+                    }
+                ],
+                "poolsCname": [
+                    {
+                        "use": "cname_pool"
+                    }
+                ],
+                "iRules": [],
+                "persistCidrIpv4": 24,
+                "persistenceEnabled": false,
+                "clientSubnetPreferred": true,
+                "ttlPersistence": 3600
+            },
+            "a_pool": {
+                "class": "GSLB_Pool",
+                "members": [
+                    {
+                        "ratio": 10,
+                        "server": {
+                            "use": "/Common/Shared/testServer"
+                        },
+                        "virtualServer": "0",
+                        "enabled": true,
+                        "dependsOn": "none"
+                    }
+                ],
+                "resourceRecordType": "A",
+                "enabled": true,
+                "lbModePreferred": "round-robin",
+                "lbModeAlternate": "round-robin",
+                "lbModeFallback": "return-to-dns",
+                "ttl": 5,
+                "verifyMemberEnabled": true,
+                "maxAnswersReturned": 1
+            },
+            "cname_pool": {
+                "class": "GSLB_Pool",
+                "resourceRecordType": "CNAME",
+                "enabled": true,
+                "members": [
+                    {
+                        "domainName": "google.com",
+                        "isDomainNameStatic": true,
+                        "enabled": true
+                    }
+                ]
+            }
+        }
+    }
+}
