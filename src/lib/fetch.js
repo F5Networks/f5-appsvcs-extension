@@ -2981,6 +2981,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         // This is a command to modify the pool to delete members just like we have with the
                         // delete code below.
                         const commands = diffUpdates.commands.split('\n');
+                        let poolName;
                         commands.forEach((command) => {
                             if (command.startsWith('tmsh::modify')) {
                                 if (preTrans.indexOf(command) > -1) return;
@@ -2991,6 +2992,13 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                                     'inc'
                                 );
                             } else {
+                                if (command.indexOf('tmsh::delete ltm pool') > -1) {
+                                    poolName = command.substring(command.lastIndexOf(' ') + 1);
+                                    return;
+                                }
+                                if (poolName && command.indexOf(`tmsh::create ltm pool ${poolName}`) > -1) {
+                                    command = command.replace('tmsh::create ltm pool', 'tmsh::modify ltm pool');
+                                }
                                 if (trans.indexOf(command) > -1) return;
                                 trans.push(command);
                             }
