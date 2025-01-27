@@ -143,3 +143,47 @@ describe('Class Persist', function () {
             ));
     });
 });
+
+describe('LTM Policy', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    it('should respect multiple json strings specified in action', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.53.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    policyjson: {
+                        strategy: 'first-match',
+                        class: 'Endpoint_Policy',
+                        rules: [
+                            {
+                                conditions: [],
+                                name: 'rule1',
+                                actions: [
+                                    {
+                                        type: 'httpHeader',
+                                        replace: {
+                                            name: 'Host',
+                                            value: 'tcl:[regsub -nocase {.test1.com$} [HTTP::host] {.test2.com}]'
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/policy/~tenant~app~policyjson/rules/rule1/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.value, 'tcl:[regsub -nocase  { .test1.com$  } [HTTP::host]  { .test2.com  } ]');
+            })
+            .then(() => deleteDeclaration());
+    });
+});

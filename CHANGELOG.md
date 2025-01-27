@@ -17,6 +17,7 @@ Changes to this project are documented in this file. More detail (including info
 - 1673189: Unable to create the GSLB_Data_Center object if the prober pool does not exist.
 - AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
 - 1771465: AS3 Declaration for data group with ipv6 addresses fails when no mask is specified
+- AUTOTOOL-4638: Escape characters are getting added to actions for LTM Policy creation
 
 ### Changed
 

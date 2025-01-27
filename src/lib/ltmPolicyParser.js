@@ -119,8 +119,8 @@ function processBranchTokens(branch, inputTokens) {
 
 function tokenizeInput(inputString) {
     return inputString
-        .replace('{', ' { ')
-        .replace('}', ' } ')
+        .replace(/{/g, ' { ')
+        .replace(/}/g, ' } ')
         .split(' ')
         .map((t) => t.trim())
         .filter((t) => t !== '');

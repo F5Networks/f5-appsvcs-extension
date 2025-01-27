@@ -193,6 +193,13 @@ describe('LTM Policy Parsing', () => {
                 'http-reply request redirect location \\"tcl:https://[getfield [HTTP::host] \\\\":\\\\" 1][HTTP::uri]\\"'
             );
         });
+
+        it('should respect multiple json strings specified in action', () => {
+            assertActionFilled(
+                'http-reply location \\"tcl:[regsub -nocase {.test1.com$} [HTTP::host] {.test2.com}]\\"',
+                'http-reply request redirect location \\"tcl:[regsub -nocase { .test1.com$ } [HTTP::host] { .test2.com } ]\\"'
+            );
+        });
     });
 
     describe('Object Normalization', () => {
