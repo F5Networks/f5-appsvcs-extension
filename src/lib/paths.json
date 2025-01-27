@@ -501,6 +501,10 @@
             "modules": ["gtm"]
         },
         {
+            "endpoint": "/mgmt/tm/gtm/monitor/bigip",
+            "modules": ["gtm"]
+        },
+        {
             "endpoint": "/mgmt/tm/security/dos/profile",
             "modules": ["afm", "asm"]
         },

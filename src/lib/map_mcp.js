@@ -114,6 +114,14 @@ const profile = function profile(context, obj, component, type) {
     const mcpPath = util.mcpPath(obj.partition, obj.subPath, obj.name);
     const config = normalize.actionableMcp(context, obj, component, mcpPath);
     config.command = (`${config.command} ${type}`).trim();
+    if (config.command === 'gtm monitor bigip') {
+        const bigip = ['interval', 'timeout', 'ignore-down-response', 'aggregate-dynamic-ratios'];
+        Object.keys(config.properties).forEach((key) => {
+            if (bigip.indexOf(key) === -1) {
+                delete config.properties[key];
+            }
+        });
+    }
     return [config];
 };
 
@@ -1775,6 +1783,9 @@ const translate = {
     'tm:gtm:monitor:external:externalstate': function (context, obj) {
         externalMonitor(context, obj);
         return profile(context, obj, 'gtm monitor', 'external');
+    },
+    'tm:gtm:monitor:bigip:bigipstate': function (context, obj) {
+        return profile(context, obj, 'gtm monitor', 'bigip');
     },
     'tm:gtm:rule:rulestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'gtm rule', util.mcpPath(obj.partition, obj.subPath, obj.name))];

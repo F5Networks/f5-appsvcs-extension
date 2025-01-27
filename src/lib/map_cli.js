@@ -1203,6 +1203,14 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
     case 'gtm monitor external':
         mapExternalMonitor(diff, targetConfig, currentConfig);
         break;
+    case 'gtm monitor bigip':
+        if (targetConfig.destination !== undefined) {
+            delete targetConfig.destination;
+        }
+        if (targetConfig['probe-timeout'] !== undefined) {
+            delete targetConfig['probe-timeout'];
+        }
+        break;
     case 'ltm profile analytics': {
         const captureFilterArrays = ['virtual-servers', 'node-addresses', 'response-codes', 'methods', 'url-path-prefixes', 'user-agent-substrings', 'client-ips'];
         captureFilterArrays.forEach((arr) => {

@@ -4175,6 +4175,7 @@ const translate = {
         props.tcp = props.http;
         props.udp = props['gateway-icmp'].concat(['debug', 'reverse']);
         props.external = props.any.concat(['run', 'api-anonymous', 'args', 'user-defined']);
+        props.bigip = ['interval', 'timeout', 'ignore-down-response', 'aggregate-dynamic-ratios'];
         Object.keys(config.properties).forEach((key) => {
             if (props[item.monitorType].indexOf(key) === -1) {
                 delete config.properties[key];

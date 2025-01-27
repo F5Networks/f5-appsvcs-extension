@@ -44,6 +44,7 @@
                         "smtp",
                         "tcp",
                         "udp",
+                        "bigip",
                         "external"
                     ]
                 },
@@ -223,12 +224,43 @@
                     "then": {
                         "$ref": "#/definitions/GSLB_Monitor_External"
                     }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "monitorType": {
+                                "const": "bigip"
+                            }
+                        }
+                    },
+                    "then": {
+                        "$ref": "#/definitions/GSLB_Monitor_BIGIP"
+                    }
                 }
             ],
             "required": [
                 "class",
                 "monitorType"
             ]
+        },
+        "GSLB_Monitor_BIGIP": {
+            "description": "Additional Monitor class properties available when monitorType = bigip",
+            "type": "object",
+            "properties": {
+                "aggregateDynamicRatios": {
+                    "title": "Aggregate Dynamic Ratios",
+                    "description": "Specifies how the system combines the module values to create the proportion (score) for the load balancing operation.",
+                    "type": "string",
+                    "enum": [
+                        "average-members",
+                        "average-nodes",
+                        "none",
+                        "sum-members",
+                        "sum-nodes"
+                    ],
+                    "default": "none"
+                }
+            }
         },
         "GSLB_Monitor_External": {
             "description": "Additional Monitor class properties available when monitorType = external",

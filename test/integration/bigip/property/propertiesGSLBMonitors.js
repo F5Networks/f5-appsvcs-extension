@@ -349,4 +349,41 @@ describe('GSLB Monitors', function () {
             })
             .then(() => assertClass('GSLB_Monitor', properties, { maxPathLength: MAX_PATH_LENGTH }));
     });
+
+    it('GSLB BIGIP Monitor', () => {
+        const properties = [
+            {
+                name: 'monitorType',
+                inputValue: ['bigip'],
+                expectedValue: ['bigip'],
+                extractFunction: (o) => o.defaultsFrom.split('/').pop()
+            },
+            {
+                name: 'interval',
+                inputValue: [90, 55, undefined],
+                expectedValue: [90, 55, 30],
+                extractFunction: (o) => o.interval
+            },
+            {
+                name: 'timeout',
+                inputValue: [120, 60, undefined],
+                expectedValue: [120, 60, 120],
+                extractFunction: (o) => o.timeout
+            },
+            {
+                name: 'ignoreDownResponseEnabled',
+                inputValue: [false, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled'],
+                extractFunction: (o) => o.ignoreDownResponse
+            },
+            {
+                name: 'aggregateDynamicRatios',
+                inputValue: ['none', 'sum-nodes', undefined],
+                expectedValue: ['none', 'sum-nodes', 'none'],
+                extractFunction: (o) => o.aggregateDynamicRatios
+            }
+        ];
+
+        return assertGSLBMonitorClass(properties);
+    });
 });

@@ -135,7 +135,8 @@ module.exports = {
             'gtm monitor tcp-half-open',
             'gtm monitor tcp',
             'gtm monitor udp',
-            'gtm monitor external'
+            'gtm monitor external',
+            'gtm monitor bigip'
         ],
         DOS_Profile: [
             'security dos profile',

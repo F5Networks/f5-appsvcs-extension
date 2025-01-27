@@ -224,6 +224,46 @@ describe('map_cli', () => {
             });
         });
 
+        describe('bigip monitors', () => {
+            it('gtm monitor bigip creation', () => {
+                const targetConfig = {
+                    'ignore-down-response': 'enabled',
+                    interval: 60,
+                    timeout: 90,
+                    'aggregate-dynamic-ratios': 'sum-nodes'
+                };
+
+                const currentConfig = {};
+                const diff = {
+                    kind: 'N',
+                    path: [
+                        '/Sample_BIGIP_GSLB_Monitor/Application/pathname_example'
+                    ],
+                    rhs: {
+                        command: 'gtm monitor bigip',
+                        properties: {
+                            'ignore-down-response': 'enabled',
+                            interval: 60,
+                            timeout: 90,
+                            'aggregate-dynamic-ratios': 'sum-nodes'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'gtm monitor bigip',
+                    lhsCommand: '',
+                    rhsCommand: 'gtm monitor bigip'
+                };
+                const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+                assert.strictEqual(
+                    result.commands[0],
+                    'tmsh::create gtm monitor bigip /Sample_BIGIP_GSLB_Monitor/Application/pathname_example ignore-down-response enabled interval 60 timeout 90 aggregate-dynamic-ratios sum-nodes'
+                );
+            });
+        });
+
         describe('external monitors', () => {
             ['ltm', 'gtm'].forEach((module) => {
                 it(`${module} monitor external creation`, () => {

@@ -172,6 +172,29 @@ describe('map_mcp', () => {
                 });
             });
         });
+        describe('tm:gtm:monitor:bigip:bigipstate', () => {
+            it('should process aggregarate-dynamic-ratios values', () => {
+                defaultContext.target.tmosVersion = '13.1';
+                const obj = {
+                    kind: 'tm:gtm:monitor:bigip:bigipstate',
+                    name: 'item',
+                    fullPath: '/path/to/item',
+                    aggregateDynamicRatios: 'none',
+                    defaultsFrom: '/Common/bigip',
+                    ignoreDownResponse: 'enabled',
+                    interval: 60,
+                    timeout: 90
+                };
+                const referenceConfig = [];
+                const result = translate[obj.kind](defaultContext, obj, referenceConfig);
+                assert.deepStrictEqual(result[0].properties, {
+                    'aggregate-dynamic-ratios': 'none',
+                    'ignore-down-response': 'enabled',
+                    interval: 60,
+                    timeout: 90
+                });
+            });
+        });
         describe('Database Monitors', () => {
             const testCases = [
                 'mysql',

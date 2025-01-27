@@ -2348,7 +2348,8 @@
     { "id":"up-interval" },
     { "id":"username" },
     { "id":"database" },
-    { "id":"count" }
+    { "id":"count" },
+    { "id":"aggregate-dynamic-ratios",   "altId": "aggregateDynamicRatios"}
   ],
   "gtm wideip": [
     { "id":"a",                         "extend": "object" },

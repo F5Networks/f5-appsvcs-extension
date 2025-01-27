@@ -1,0 +1,19 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.54.0",
+    "id": "GSLB_BIGIP_Monitor_Sample",
+    "Sample_BIGIP_GSLB_Monitor" : {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "pathname_example": {
+                "class": "GSLB_Monitor",
+                "monitorType": "bigip",
+                "interval": 30,
+                "timeout": 90,
+                "ignoreDownResponse": true,
+                "aggregateDynamicRatios": "average-nodes"
+                }
+            }
+        }
+}

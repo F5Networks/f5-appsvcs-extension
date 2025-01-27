@@ -10309,6 +10309,31 @@ describe('map_as3', () => {
                 });
             });
         });
+        describe('bigip monitors', () => {
+            it('should handle gtm bigip monitor with aggregarate-dynamic-ratios', () => {
+                const item = {
+                    class: 'GSLB_Monitor',
+                    monitorType: 'bigip',
+                    interval: 60,
+                    timeout: 90,
+                    ignoreDownResponseEnabled: true,
+                    aggregateDynamicRatios: 'none'
+                };
+                const expected = {
+                    command: 'gtm monitor bigip',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        'ignore-down-response': 'enabled',
+                        interval: 60,
+                        timeout: 90,
+                        'aggregate-dynamic-ratios': 'none'
+                    }
+                };
+                const results = translate.GSLB_Monitor(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepStrictEqual(results.configs[0], expected);
+            });
+        });
     });
 
     describe('GSLB_Monitor', () => {

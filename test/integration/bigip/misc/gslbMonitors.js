@@ -290,4 +290,59 @@ describe('GSLB Monitors', function () {
             })
             .then(() => deleteDeclaration());
     });
+
+    it('GSLB BIGIP Monitor', () => {
+        const declaration = {
+            action: 'deploy',
+            class: 'AS3',
+            persist: true,
+            declaration: {
+                class: 'ADC',
+                schemaVersion: '3.54.0',
+                exampleTenant1: {
+                    class: 'Tenant',
+                    exampleApp: {
+                        class: 'Application',
+                        exampleMonitor: {
+                            class: 'GSLB_Monitor',
+                            monitorType: 'bigip',
+                            interval: 60,
+                            timeout: 90,
+                            ignoreDownResponseEnabled: true,
+                            aggregateDynamicRatios: 'sum-nodes'
+                        }
+                    }
+                }
+            }
+        };
+        const responseMatchDecl = {
+            class: 'GSLB_Monitor',
+            monitorType: 'bigip',
+            interval: 60,
+            timeout: 90,
+            ignoreDownResponseEnabled: true,
+            aggregateDynamicRatios: 'sum-nodes'
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isFulfilled(
+                getPath('/mgmt/shared/appsvcs/declare')
+            ))
+            .then((response) => {
+                assert.deepStrictEqual(response.exampleTenant1.exampleApp.exampleMonitor, responseMatchDecl);
+            })
+            .then(() => getPath('/mgmt/tm/gtm/monitor/bigip/~exampleTenant1~exampleApp~exampleMonitor'))
+            .then((response) => {
+                assert.strictEqual(response.interval, 60);
+                assert.strictEqual(response.timeout, 90);
+                assert.strictEqual(response.ignoreDownResponse, 'enabled');
+                assert.strictEqual(response.aggregateDynamicRatios, 'sum-nodes');
+            })
+            .then(() => deleteDeclaration());
+    });
 });
