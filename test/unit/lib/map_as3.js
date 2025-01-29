@@ -3479,6 +3479,41 @@ describe('map_as3', () => {
                 assert.strictEqual(tmc['destination-address-list'], 'virtualAddressList');
                 assert.strictEqual(tmc['source-address-list'], undefined);
             });
+
+            it('should pick correct virtualAddresse when \'bigip\' is used in virtualServer', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '17.0';
+                fullContext.host.parser = {
+                    virtualAddressList: [
+                        {
+                            fullPath: '/Common/Shared/virtual-address_192.0.2.31',
+                            partition: 'Common',
+                            address: '192.0.2.31',
+                            metadata: []
+                        },
+                        {
+                            fullPath: '/Common/Shared/virtual-address_192.0.2.32',
+                            partition: 'Common',
+                            address: '192.0.2.32',
+                            metadata: []
+                        },
+                        {
+                            fullPath: '/Common/Shared/virtual-address_192.0.2.33',
+                            partition: 'Common',
+                            address: '192.0.2.33',
+                            metadata: []
+                        }
+                    ]
+                };
+                item.virtualAddresses = [{
+                    bigip: '/Common/Shared/virtual-address_192.0.2.32'
+                }];
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                assert.strictEqual(virtual.destination, '/Common/192.0.2.32:80');
+                assert.strictEqual(virtual.source, '0.0.0.0/0');
+            });
         });
 
         describe('sourceAddress', () => {

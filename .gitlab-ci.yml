@@ -64,6 +64,7 @@ variables:
   TF_HTTP_RETRY_WAIT_MIN: 3
   TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
   CURL_CONTENT: "Content-Type: application/json"
+  SECRETS_ANALYZER_VERSION: '6.14.0'
 
 # This inherits all the jobs defined in the parent template
 # Override variables in this project as needed
@@ -74,8 +75,6 @@ include:
     file:
       - compliance/base.gitlab-ci.yml
       - security/base.gitlab-ci.yml
-variables:
-  SECRETS_ANALYZER_VERSION: '6.14.0'
 
 # Override compliance template job
 check_copyrights:

@@ -13,11 +13,12 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-3510: Pool member changing from 443 to 80 (no SSL) - Unexpected paramater appear in created http monitor
 - AUTOTOOL-4597: ([Github Issue 871](https://github.com/F5Networks/f5-appsvcs-extension/issues/871)) Can't use "requireSNI" property
 - AUTOTOOL-4388: [AS3][SR][Swisscom]: AS3 declaration fails with error 0107176c:3: Invalid Virtual Address, the IP address X%X already exists
-- AUTOTOOL-4620: ([Github Issue 885](https://github.com/F5Networks/f5-appsvcs-extension/issues/885)) GSLB WideIP - "poolsCname" object is not allowed along with "pools" , [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-pools_with_poolsCname.json).
+- AUTOTOOL-4620: ([Github Issue 885](https://github.com/F5Networks/f5-appsvcs-extension/issues/885)) GSLB WideIP - "poolsCname" object is not allowed along with "pools", [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-pools_with_poolsCname.json).
 - 1673189: Unable to create the GSLB_Data_Center object if the prober pool does not exist.
 - AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
 - 1771465: AS3 Declaration for data group with ipv6 addresses fails when no mask is specified
 - AUTOTOOL-4638: Escape characters are getting added to actions for LTM Policy creation
+- AUTOTOOL-4657: [AS3]: When "bigip" is used with "virtualAddresses" it picks up wrong IP
 
 ### Changed
 

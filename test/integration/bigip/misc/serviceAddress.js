@@ -219,6 +219,7 @@ describe('serviceAddress', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+
     it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
         const decl1 = {
             class: 'ADC',
@@ -465,6 +466,131 @@ describe('serviceAddress', function () {
                 const expectedTraceKeys = ['CommonDesired', 'CommonCurrent', 'CommonDiff', 'Common_1Script', 'Common_2Script'];
                 assert.hasAnyDeepKeys(response.traces, expectedTraceKeys);
             });
+    });
+
+    it('should pick correct virtualAddresse when \'bigip\' is used in virtualServer', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    'virtual-address_192.0.2.31': {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.31/32',
+                        routeAdvertisement: 'disable'
+                    },
+                    'virtual-address_192.0.2.32': {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.32/32',
+                        routeAdvertisement: 'disable'
+                    },
+                    'virtual-address_192.0.2.33': {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.33/32',
+                        routeAdvertisement: 'disable'
+                    }
+                }
+            }
+        };
+
+        const declaration1 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            testApp: {
+                class: 'Tenant',
+                appFront: {
+                    class: 'Application',
+                    template: 'generic',
+                    vs1: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            {
+                                bigip: '/Common/Shared/virtual-address_192.0.2.32'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const declaration2 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            testApp: {
+                class: 'Tenant',
+                appFront1: {
+                    class: 'Application',
+                    template: 'generic',
+                    vs1: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            {
+                                bigip: '/Common/Shared/virtual-address_192.0.2.33'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~virtual-address_192.0.2.31'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/Common/Shared/virtual-address_192.0.2.31');
+                assert.strictEqual(response.routeAdvertisement, 'disabled');
+                assert.strictEqual(response.address, '192.0.2.31');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~virtual-address_192.0.2.32'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/Common/Shared/virtual-address_192.0.2.32');
+                assert.strictEqual(response.routeAdvertisement, 'disabled');
+                assert.strictEqual(response.address, '192.0.2.32');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~virtual-address_192.0.2.33'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/Common/Shared/virtual-address_192.0.2.33');
+                assert.strictEqual(response.routeAdvertisement, 'disabled');
+                assert.strictEqual(response.address, '192.0.2.33');
+            })
+            .then(() => postDeclaration(declaration1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+                assert.strictEqual(response.results[2].code, 200);
+                assert.strictEqual(response.results[2].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~testApp~appFront~vs1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/testApp/appFront/vs1');
+                assert.strictEqual(response.destination, '/Common/Shared/virtual-address_192.0.2.32:80');
+            })
+            .then(() => postDeclaration(declaration2, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+                assert.strictEqual(response.results[2].code, 200);
+                assert.strictEqual(response.results[2].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~testApp~appFront1~vs1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/testApp/appFront1/vs1');
+                assert.strictEqual(response.destination, '/Common/Shared/virtual-address_192.0.2.33:80');
+            })
+            .finally(() => deleteDeclaration());
     });
 
     describe('per-app', () => {

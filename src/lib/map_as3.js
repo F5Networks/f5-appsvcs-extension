@@ -2621,7 +2621,7 @@ const translate = {
             // handle both use cases for setting destination
             if (typeof addr === 'object' && !Array.isArray(addr)) {
                 if (addr.bigip) {
-                    let addrBigip = addr.address || addr.bigip.split('/').slice(1)[1];
+                    let addrBigip = addr.address || addr.bigip.split('/').pop();
                     // In case of referencing destination to an existing virtual address with route domain
                     // we should use IP address instead of reference name.
                     if (!addr.address && context.host) {
