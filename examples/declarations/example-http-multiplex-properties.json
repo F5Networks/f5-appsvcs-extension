@@ -1,0 +1,24 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.54.0",
+    "id": "TEST",
+    "Tenant": {
+        "class": "Tenant",
+        "App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTP",
+                "virtualPort": 80,
+                "virtualAddresses": ["192.0.2.0"],
+                "profileHTTP": {
+                    "use": "httpProfile"
+                }
+            },
+            "httpProfile": {
+                "class": "HTTP_Profile",
+                "multiplexStatusReuse": "200 201 202 400 401 402",
+                "multiplexTransformations": true
+            }
+        }
+    }
+}

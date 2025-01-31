@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 - 1755469: Create and reference multiple TLS profiles with a single declaration listing
 - AUTOTOOL-4642: [AS3]: There is a need to avoid traffic impact in pool management
 - 1599197: ([Github Issue 865](https://github.com/F5Networks/f5-appsvcs-extension/issues/865)) Ability to create a custom BIG-IP type GSLB monitor with AS3, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-bigip-monitor.json).
+- AUTOTOOL-4649: ([Github Issue 887](https://github.com/F5Networks/f5-appsvcs-extension/issues/887))[AS3][MasterCard] Add support for oneconnect-status-reuse in http profile via AS3 #887, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-http-multiplex-properties.json).
 
 ### Fixed
 - AUTOTOOL-3510: Pool member changing from 443 to 80 (no SSL) - Unexpected paramater appear in created http monitor

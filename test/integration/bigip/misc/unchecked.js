@@ -919,4 +919,43 @@ describe('Unchecked mode', function () {
                 assert.strictEqual(response.name, 'http2Custom');
             });
     });
+
+    it('should check multiplex profile with properties', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            TEST_Multiplex_HTTP: {
+                class: 'Tenant',
+                TEST_App: {
+                    class: 'Application',
+                    TEST_VS: {
+                        class: 'Service_HTTP',
+                        virtualPort: 80,
+                        virtualAddresses: ['192.0.2.0'],
+                        profileHTTP: {
+                            use: 'httpProfile'
+                        }
+                    },
+                    httpProfile: {
+                        class: 'HTTP_Profile',
+                        multiplexStatusReuse: '200 201 202 400 401 402',
+                        multiplexTransformations: true
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/http/~TEST_Multiplex_HTTP~TEST_App~httpProfile'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/TEST_Multiplex_HTTP/TEST_App/httpProfile');
+                assert.strictEqual(response.oneconnectStatusReuse, '200 201 202 400 401 402');
+                assert.strictEqual(response.oneconnectTransformations, 'enabled');
+            });
+    });
 });

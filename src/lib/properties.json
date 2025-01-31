@@ -518,7 +518,8 @@
     { "id":"via-host-name",             "altId": "viaHost" },
     { "id":"via-request" },
     { "id":"via-response" },
-    { "id":"xff-alternative-names",     "extend": "array", "altId": "otherXFF" }
+    { "id":"xff-alternative-names",     "extend": "array", "altId": "otherXFF" },
+    { "id":"oneconnect-status-reuse",   "altId": "multiplexStatusReuse", "quotedString": true }
   ],
   "ltm profile http hsts": [
     { "id": "include-subdomains",       "truth": "enabled", "falsehood": "disabled"},

@@ -1348,6 +1348,7 @@ describe('map_as3', () => {
                 responseChunking: 'preserve',
                 rewriteRedirects: 'all',
                 multiplexTransformations: false,
+                multiplexStatusReuse: '202 404',
                 insertHeader: {
                     name: 'X-Forwarded-IP',
                     value: '[expr { [IP::client_addr] }]'
@@ -1439,6 +1440,7 @@ describe('map_as3', () => {
                             },
                             'insert-xforwarded-for': 'disabled',
                             'oneconnect-transformations': 'disabled',
+                            'oneconnect-status-reuse': '"202 404"',
                             'proxy-type': 'transparent',
                             'redirect-rewrite': 'all',
                             'request-chunking': 'selective',
