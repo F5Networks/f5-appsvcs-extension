@@ -319,4 +319,96 @@ describe('GSLB_Domain', function () {
                 assert.strictEqual(response.fullPath, '/Common/testPool');
             });
     });
+
+    it('GSLB_MONITOR should be renamed', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            TEST_GSLB_MONITOR: {
+                class: 'Tenant',
+                TEST_APP: {
+                    class: 'Application',
+                    TEST_MONITOR: {
+                        class: 'GSLB_Monitor',
+                        monitorType: 'https'
+                    },
+                    TEST_POOL: {
+                        class: 'GSLB_Pool',
+                        resourceRecordType: 'A',
+                        monitors: [
+                            {
+                                use: 'TEST_MONITOR'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const declaration1 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            TEST_GSLB_MONITOR: {
+                class: 'Tenant',
+                TEST_APP: {
+                    class: 'Application',
+                    TEST_MONITOR_1: {
+                        class: 'GSLB_Monitor',
+                        monitorType: 'https'
+                    },
+                    TEST_POOL: {
+                        class: 'GSLB_Pool',
+                        resourceRecordType: 'A',
+                        monitors: [
+                            {
+                                use: 'TEST_MONITOR_1'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(
+                postDeclaration(declaration, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/monitor/https/~TEST_GSLB_MONITOR~TEST_APP~TEST_MONITOR'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'TEST_MONITOR');
+                assert.strictEqual(response.fullPath, '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/pool/a/~TEST_GSLB_MONITOR~TEST_APP~TEST_POOL'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'TEST_POOL');
+                assert.strictEqual(response.fullPath, '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL');
+                assert.strictEqual(response.monitor, '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR');
+            })
+            .then(() => assert.isFulfilled(
+                postDeclaration(declaration1, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/gtm/monitor/https/~TEST_GSLB_MONITOR~TEST_APP~TEST_MONITOR'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested monitor (/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => getPath('/mgmt/tm/gtm/monitor/https/~TEST_GSLB_MONITOR~TEST_APP~TEST_MONITOR_1'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'TEST_MONITOR_1');
+                assert.strictEqual(response.fullPath, '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR_1');
+            })
+            .then(() => getPath('/mgmt/tm/gtm/pool/a/~TEST_GSLB_MONITOR~TEST_APP~TEST_POOL'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'TEST_POOL');
+                assert.strictEqual(response.fullPath, '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL');
+                assert.strictEqual(response.monitor, '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR_1');
+            });
+    });
 });

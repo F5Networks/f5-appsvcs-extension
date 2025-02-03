@@ -20,6 +20,7 @@ Changes to this project are documented in this file. More detail (including info
 - 1771465: AS3 Declaration for data group with ipv6 addresses fails when no mask is specified
 - AUTOTOOL-4638: Escape characters are getting added to actions for LTM Policy creation
 - AUTOTOOL-4657: [AS3]: When "bigip" is used with "virtualAddresses" it picks up wrong IP
+- AUTOTOOL-4662: [AS3] Unable to rename GSLB Monitor through AS3
 
 ### Changed
 

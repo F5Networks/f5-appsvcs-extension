@@ -1998,6 +1998,9 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
     const monitorEntries = trans.filter((t) => t.indexOf(delMon) > -1 && t.indexOf(createMon) > -1);
     const httpMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1 && t.indexOf(createHttpMon) > -1);
 
+    const indexOfDeleteGtmMonCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm monitor') > -1);
+    const indexOfDeleteGtmPoolCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm pool') > -1);
+
     let updatedTrans = [];
     const allPoolPreTransCmds = [];
     // Function to generate monitors so that we can re-attach them to monitor
@@ -2043,6 +2046,20 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
     const detachMonitorFromPoolCmd = function (poolname) {
         return `tmsh::modify ltm pool ${poolname} monitor none`;
     };
+
+    if (indexOfDeleteGtmMonCmd > 0 && indexOfDeleteGtmPoolCmd < 0) {
+        const cmds = [];
+        const gtmMonName = trans[indexOfDeleteGtmMonCmd].substring(trans[indexOfDeleteGtmMonCmd].lastIndexOf(' ') + 1);
+        Object.keys(currentConfig).forEach((key) => {
+            if (currentConfig[key].command.startsWith('gtm pool') && currentConfig[key].properties && currentConfig[key].properties.monitor) {
+                const monitorkeys = (typeof currentConfig[key].properties.monitor === 'object') ? Object.keys(currentConfig[key].properties.monitor) : currentConfig[key].properties.monitor;
+                if (monitorkeys && monitorkeys.indexOf(gtmMonName) > -1) {
+                    cmds.push(`tmsh::modify ${currentConfig[key].command} ${key} monitor none`);
+                }
+            }
+        });
+        trans.splice(indexOfDeleteGtmMonCmd, 0, cmds.join('\n'));
+    }
 
     const getDetachFromPoolCmds = function (poolCmds) {
         return poolCmds.map((p) => {

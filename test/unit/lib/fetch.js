@@ -13993,6 +13993,260 @@ describe('fetch', () => {
                     );
                 });
         });
+
+        it('GSLB_MONITOR should be renamed', () => {
+            const desiredConfig = {
+                '/TEST_GSLB_MONITOR/TEST_APP/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR': {
+                    command: 'gtm monitor https',
+                    properties: {
+                        cert: 'none',
+                        cipherlist: 'DEFAULT',
+                        description: 'none',
+                        destination: '*:*',
+                        'ignore-down-response': 'disabled',
+                        interval: 30,
+                        key: 'none',
+                        'probe-timeout': 5,
+                        recv: '200 OK',
+                        'recv-status-code': 'none',
+                        reverse: 'disabled',
+                        send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                        'sni-server-name': 'none',
+                        timeout: 91,
+                        transparent: 'disabled'
+                    },
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL': {
+                    command: 'gtm pool a',
+                    properties: {
+                        'alternate-mode': 'round-robin',
+                        'dynamic-ratio': 'disabled',
+                        enabled: '',
+                        'fallback-ip': '0.0.0.0',
+                        'fallback-mode': 'return-to-dns',
+                        'limit-max-bps': 0,
+                        'limit-max-bps-status': 'disabled',
+                        'limit-max-connections': 0,
+                        'limit-max-connections-status': 'disabled',
+                        'limit-max-pps': 0,
+                        'limit-max-pps-status': 'disabled',
+                        'load-balancing-mode': 'round-robin',
+                        'manual-resume': 'disabled',
+                        'max-answers-returned': 1,
+                        members: {},
+                        monitor: '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR',
+                        'qos-hit-ratio': 5,
+                        'qos-hops': 0,
+                        'qos-kilobytes-second': 3,
+                        'qos-lcs': 30,
+                        'qos-packet-rate': 1,
+                        'qos-rtt': 50,
+                        'qos-topology': 0,
+                        'qos-vs-capacity': 0,
+                        'qos-vs-score': 0,
+                        ttl: 30,
+                        'verify-member-availability': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                }
+            };
+
+            const currentConfig = {
+                '/TEST_GSLB_MONITOR/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/TEST_APP/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL': {
+                    command: 'gtm pool a',
+                    properties: {
+                        'alternate-mode': 'round-robin',
+                        'dynamic-ratio': 'disabled',
+                        enabled: '',
+                        'fallback-ip': 'any',
+                        'fallback-mode': 'return-to-dns',
+                        'limit-max-bps': 0,
+                        'limit-max-bps-status': 'disabled',
+                        'limit-max-connections': 0,
+                        'limit-max-connections-status': 'disabled',
+                        'limit-max-pps': 0,
+                        'limit-max-pps-status': 'disabled',
+                        'load-balancing-mode': 'round-robin',
+                        'manual-resume': 'disabled',
+                        'max-answers-returned': 1,
+                        members: {},
+                        monitor: '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR1',
+                        'qos-hit-ratio': 5,
+                        'qos-hops': 0,
+                        'qos-kilobytes-second': 3,
+                        'qos-lcs': 30,
+                        'qos-packet-rate': 1,
+                        'qos-rtt': 50,
+                        'qos-topology': 0,
+                        'qos-vs-capacity': 0,
+                        'qos-vs-score': 0,
+                        ttl: 30,
+                        'verify-member-availability': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR1': {
+                    command: 'gtm monitor https',
+                    properties: {
+                        cert: 'none',
+                        cipherlist: 'DEFAULT',
+                        description: 'none',
+                        destination: '*:*',
+                        'ignore-down-response': 'disabled',
+                        interval: 30,
+                        key: 'none',
+                        'probe-timeout': 5,
+                        recv: '200 OK',
+                        'recv-status-code': 'none',
+                        reverse: 'disabled',
+                        send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                        'sni-server-name': 'none',
+                        timeout: 91,
+                        transparent: 'disabled'
+                    },
+                    ignore: []
+                }
+            };
+
+            const expectedDiffs = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL',
+                        'properties',
+                        'fallback-ip'
+                    ],
+                    lhs: 'any',
+                    rhs: '0.0.0.0'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/TEST_GSLB_MONITOR/TEST_APP/TEST_POOL',
+                        'properties',
+                        'monitor'
+                    ],
+                    lhs: '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR1',
+                    rhs: '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR1'
+                    ],
+                    lhs: {
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            'ignore-down-response': 'disabled',
+                            interval: 30,
+                            key: 'none',
+                            'probe-timeout': 5,
+                            recv: '200 OK',
+                            'recv-status-code': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'sni-server-name': 'none',
+                            timeout: 91,
+                            transparent: 'disabled'
+                        },
+                        ignore: []
+                    }
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR'
+                    ],
+                    rhs: {
+                        command: 'gtm monitor https',
+                        properties: {
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            'ignore-down-response': 'disabled',
+                            interval: 30,
+                            key: 'none',
+                            'probe-timeout': 5,
+                            recv: '200 OK',
+                            'recv-status-code': 'none',
+                            reverse: 'disabled',
+                            send: '"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'sni-server-name': 'none',
+                            timeout: 91,
+                            transparent: 'disabled'
+                        },
+                        ignore: []
+                    }
+                }
+            ];
+
+            return fetch.getDiff(context, currentConfig, desiredConfig, {}, 'Tenant', {})
+                .then((actualDiffs) => {
+                    assert.deepStrictEqual(actualDiffs, expectedDiffs);
+                    const actualCmds = fetch.tmshUpdateScript(
+                        context, desiredConfig, currentConfig, actualDiffs
+                    ).script.split('\n');
+                    assert.deepStrictEqual(
+                        actualCmds,
+                        [
+                            'cli script __appsvcs_update {',
+                            'proc script::run {} {',
+                            'if {[catch {',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                            '} err]} {',
+                            'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                            '}',
+                            'if { [catch {',
+                            'tmsh::begin_transaction',
+                            'tmsh::modify auth partition TEST_GSLB_MONITOR description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                            'tmsh::modify gtm pool a /TEST_GSLB_MONITOR/TEST_APP/TEST_POOL monitor none',
+                            'tmsh::delete gtm monitor https /TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR1',
+                            'tmsh::create gtm monitor https /TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR cert none cipherlist DEFAULT description none destination *:* ignore-down-response disabled interval 30 key none probe-timeout 5 recv 200 OK recv-status-code none reverse disabled send \\"HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\\" sni-server-name none timeout 91 transparent disabled',
+                            'tmsh::commit_transaction',
+                            'tmsh::begin_transaction',
+                            'tmsh::delete gtm pool a /TEST_GSLB_MONITOR/TEST_APP/TEST_POOL',
+                            'tmsh::create gtm pool a /TEST_GSLB_MONITOR/TEST_APP/TEST_POOL alternate-mode round-robin dynamic-ratio disabled enabled  fallback-ip 0.0.0.0 fallback-mode return-to-dns limit-max-bps 0 limit-max-bps-status disabled limit-max-connections 0 limit-max-connections-status disabled limit-max-pps 0 limit-max-pps-status disabled load-balancing-mode round-robin manual-resume disabled max-answers-returned 1 members none monitor /TEST_GSLB_MONITOR/TEST_APP/TEST_MONITOR qos-hit-ratio 5 qos-hops 0 qos-kilobytes-second 3 qos-lcs 30 qos-packet-rate 1 qos-rtt 50 qos-topology 0 qos-vs-capacity 0 qos-vs-score 0 ttl 30 verify-member-availability enabled',
+                            'tmsh::commit_transaction',
+                            '} err] } {',
+                            'catch { tmsh::cancel_transaction } e',
+                            'regsub -all {"} $err {\\"} err',
+                            'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                            '}}',
+                            '}'
+                        ]
+                    );
+                });
+        });
     });
 
     describe('.checkDesiredForReferencedProfiles', () => {
