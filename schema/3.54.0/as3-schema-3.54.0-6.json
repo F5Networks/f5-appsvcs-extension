@@ -54,11 +54,11 @@
           "anyOf": [
             {
               "description": "Any version of AS3.",
-              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-3])($|[.][0-9]+$)"
+              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-4])($|[.][0-9]+$)"
             },
             {
               "description": "The current version of AS3.",
-              "const": "3.53.0"
+              "const": "3.54.0"
             }
           ]
         },
@@ -3141,12 +3141,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+              "$ref": "#/definitions/Pointer_TLS_Server"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Server_Profile"
+                "$ref": "#/definitions/Pointer_TLS_Server"
               }
             }
           }
@@ -3178,12 +3178,12 @@
               "type": "object"
             },
             "then": {
-              "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+              "$ref": "#/definitions/Pointer_TLS_Client"
             },
             "else": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Pointer_Existing_TLS_Client_Profile"
+                "$ref": "#/definitions/Pointer_TLS_Client"
               }
             }
           }
@@ -16934,24 +16934,6 @@
           }
         }
       },
-      "if": {
-        "properties": {
-          "pools": {}
-        },
-        "required": [
-          "pools"
-        ]
-      },
-      "then": {
-        "not": {
-          "properties": {
-            "poolsCname": {}
-          },
-          "required": [
-            "poolsCname"
-          ]
-        }
-      },
       "required": [
         "resourceRecordType",
         "domainName"
@@ -17073,6 +17055,7 @@
             "smtp",
             "tcp",
             "udp",
+            "bigip",
             "external"
           ]
         },
@@ -17252,12 +17235,43 @@
           "then": {
             "$ref": "#/definitions/GSLB_Monitor_External"
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "monitorType": {
+                "const": "bigip"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/GSLB_Monitor_BIGIP"
+          }
         }
       ],
       "required": [
         "class",
         "monitorType"
       ]
+    },
+    "GSLB_Monitor_BIGIP": {
+      "description": "Additional Monitor class properties available when monitorType = bigip",
+      "type": "object",
+      "properties": {
+        "aggregateDynamicRatios": {
+          "title": "Aggregate Dynamic Ratios",
+          "description": "Specifies how the system combines the module values to create the proportion (score) for the load balancing operation.",
+          "type": "string",
+          "enum": [
+            "average-members",
+            "average-nodes",
+            "none",
+            "sum-members",
+            "sum-nodes"
+          ],
+          "default": "none"
+        }
+      }
     },
     "GSLB_Monitor_External": {
       "description": "Additional Monitor class properties available when monitorType = external",
@@ -30259,6 +30273,50 @@
         }
       ]
     },
+    "Pointer_TLS_Server": {
+      "description": "Reference to a TLS Server",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to TLS Server declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "TLS_Server"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP TLS Server",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile client-ssl"
+            ]
+          }
+        }
+      ]
+    },
     "Pointer_TLS_Client": {
       "description": "Reference to a TLS Client",
       "type": "object",
@@ -32876,6 +32934,13 @@
         "remark": {
           "$ref": "#/definitions/Remark"
         },
+        "multiplexStatusReuse": {
+          "title": "Multiplex Status Reuse",
+          "description": "Specifies what status codes will reuse connections from Multiplex. Default value is 200 206.",
+          "type": "string",
+          "pattern": "^([24]\\d\\d\\s?)+$",
+          "default": "200 206"
+        },
         "allowBlankSpaceAfterHeaderName": {
           "default": false,
           "description": "Specifies whether to allow blank space in an HTTP header between the header name and the separator colon in an HTTP request or response. Requires TMOS version 16.1 or newer.",
@@ -33126,7 +33191,6 @@
           "type": "boolean"
         },
         "proxyType": {
-          "default": "reverse",
           "description": "Default value 'reverse' is usually appropriate.  You may use 'transparent' when virtual server will handle a mix of HTTP and non-HTTP traffic.  You may use 'explicit' when clients will ask ADC to proxy connections to arbitrary remote services",
           "enum": [
             "reverse",
@@ -33134,7 +33198,8 @@
             "explicit"
           ],
           "title": "Proxy type",
-          "type": "string"
+          "type": "string",
+          "default": "reverse"
         },
         "whiteOutHeader": {
           "title": "White-out header",
@@ -33378,12 +33443,12 @@
       "if": {
         "properties": {
           "proxyType": {
-            "const": "reverse"
+            "const": "explicit"
           }
         }
       },
       "then": {
-        "$ref": "#/definitions/HTTP_Profile_Reverse"
+        "$ref": "#/definitions/HTTP_Profile_Explicit"
       },
       "else": {
         "if": {
@@ -33400,12 +33465,12 @@
           "if": {
             "properties": {
               "proxyType": {
-                "const": "explicit"
+                "const": "reverse"
               }
             }
           },
           "then": {
-            "$ref": "#/definitions/HTTP_Profile_Explicit"
+            "$ref": "#/definitions/HTTP_Profile_Reverse"
           }
         }
       }
@@ -33477,14 +33542,14 @@
               }
             ]
           },
+          "uniqueItems": true,
           "default": [
             "none"
-          ],
-          "uniqueItems": true
+          ]
         },
         "tunnelName": {
           "title": "Tunnel name",
-          "description": "Name of tunnel used for outbound CONNECT requests (default 'http-tunnel')",
+          "description": "Name of tunnel used for outbound CONNECT requests",
           "type": "string",
           "minLength": 1,
           "maxLength": 63,
@@ -33545,14 +33610,14 @@
         },
         "badRequestMessage": {
           "title": "Bad-request message",
-          "description": "Message returned to client when proxy request is erroneous.  May include iRules TCL expressions",
+          "description": "Message returned to client when proxy request is erroneous. May include iRules TCL expressions",
           "type": "string",
           "maxLength": 65279,
           "default": "<html><head><title>Bad Request</title></head><body><h2>Invalid proxy request</h2></body></html>"
         },
         "badResponseMessage": {
           "title": "Bad-response message",
-          "description": "Message returned to client when response to proxy request is erroneous.  May include iRules TCL expressions",
+          "description": "Message returned to client when proxy request is erroneous. May include iRules TCL expressions",
           "type": "string",
           "maxLength": 65279,
           "default": "<html><head><title>Bad Response</title></head><body><h2>Proxy request provoked invalid response</h2></body></html>"
@@ -35354,24 +35419,26 @@
           "type": "string"
         },
         "passphrase": {
-          "title": "Passphrase",
-          "description": "Passphrase if any for query authentication",
-          "type": "object",
-          "properties": {
-            "allowReuse": {
-              "description": "If true, other declaration objects may reuse this value",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "f5PostProcess": {
-            "tag": "fetch",
-            "data": "object",
-            "errSchemaPath": "#/definitions/Monitor_HTTP2/properties/passphrase"
-          },
           "allOf": [
             {
               "$ref": "#/definitions/Property_Passphrase"
+            },
+            {
+              "title": "Passphrase",
+              "description": "Passphrase if any for query authentication",
+              "type": "object",
+              "properties": {
+                "allowReuse": {
+                  "description": "If true, other declaration objects may reuse this value",
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "object",
+                "errSchemaPath": "#/definitions/Monitor_HTTP2/properties/passphrase/allOf/1"
+              }
             }
           ]
         },
@@ -35586,24 +35653,26 @@
           "type": "string"
         },
         "passphrase": {
-          "title": "Passphrase",
-          "description": "Passphrase if any for query authentication",
-          "type": "object",
-          "properties": {
-            "allowReuse": {
-              "description": "If true, other declaration objects may reuse this value",
-              "type": "boolean",
-              "default": false
-            }
-          },
-          "f5PostProcess": {
-            "tag": "fetch",
-            "data": "object",
-            "errSchemaPath": "#/definitions/Monitor_HTTPS/properties/passphrase"
-          },
           "allOf": [
             {
               "$ref": "#/definitions/Property_Passphrase"
+            },
+            {
+              "title": "Passphrase",
+              "description": "Passphrase if any for query authentication",
+              "type": "object",
+              "properties": {
+                "allowReuse": {
+                  "description": "If true, other declaration objects may reuse this value",
+                  "type": "boolean",
+                  "default": false
+                }
+              },
+              "f5PostProcess": {
+                "tag": "fetch",
+                "data": "object",
+                "errSchemaPath": "#/definitions/Monitor_HTTPS/properties/passphrase/allOf/1"
+              }
             }
           ]
         },
