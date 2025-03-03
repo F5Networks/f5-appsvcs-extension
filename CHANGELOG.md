@@ -23,6 +23,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4662: [AS3] Unable to rename GSLB Monitor through AS3
 
 ### Changed
+- Updated to Service Discovery 1.23.0-1
 
 ### Removed
 
