@@ -29,7 +29,7 @@ Currently supported versions (the next LTS release is on 30/Sep/24):
 | AS 3.51.0        | Feature       |  04-Jun-2024        | 11-Aug-2024     |
 | AS 3.52.0        | Feature       |  24-Jul-2024        | 23-Oct-2024     |
 | AS 3.53.0        | Feature       |  30-Oct-2024        | 31-Jan-2025     |
-| AS 3.54.0        | LTS           |  10-Feb-2025        | 31-Jan-2026     |
+| AS 3.54.0        | LTS           |  07-Mar-2025        | 31-Apr-2026     |
 
 
 
