@@ -41,11 +41,25 @@ class postValidator {
             return promise.then(() => tcpProfile(context, declaration))
                 .then(() => sslProfile(context, declaration))
                 .then(() => protocolInspectionProfile(context, declaration))
-                .then(() => service(context, declaration));
+                .then(() => service(context, declaration))
+                .then(() => virtualAddressInspect(declaration));
         }
 
         return promise;
     }
+}
+
+function virtualAddressInspect(declaration) {
+    const virtualAddressProfiles = findVirtualAddressinTenants(declaration, 'Service_Address');
+    let err;
+
+    if (virtualAddressProfiles.some((profile) => profile.autoDelete === false)) {
+        err = new Error('Disabling auto-delete for service addresses in non-common tenants is not supported.');
+        err.statusCode = 422;
+        return Promise.reject(err);
+    }
+
+    return Promise.resolve();
 }
 
 function protocolInspectionProfile(context, declaration) {
@@ -134,6 +148,28 @@ function findItems(declaration, itemName) {
     decKeys.forEach((decKey) => {
         const tenant = declaration[decKey];
         if (declarationUtil.isTenant(tenant)) {
+            Object.keys(tenant).forEach((tenKey) => {
+                const application = tenant[tenKey];
+                if (declarationUtil.isApplication(application)) {
+                    Object.keys(application).forEach((appKey) => {
+                        const item = application[appKey];
+                        if (typeof item === 'object' && item.class === itemName) {
+                            items.push(item);
+                        }
+                    });
+                }
+            });
+        }
+    });
+    return items;
+}
+
+function findVirtualAddressinTenants(declaration, itemName) {
+    const items = [];
+    const decKeys = Object.keys(declaration);
+    decKeys.forEach((decKey) => {
+        const tenant = declaration[decKey];
+        if (declarationUtil.isTenant(tenant) && decKey !== 'Common') {
             Object.keys(tenant).forEach((tenKey) => {
                 const application = tenant[tenKey];
                 if (declarationUtil.isApplication(application)) {

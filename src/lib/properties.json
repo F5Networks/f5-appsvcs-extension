@@ -1305,7 +1305,8 @@
     { "id":"route-advertisement" },
     { "id":"spanning",                  "truth": "enabled", "falsehood": "disabled", "altId": "spanningEnabled" },
     { "id":"server-scope" },
-    { "id":"traffic-group" }
+    { "id":"traffic-group" },
+    { "id":"auto-delete" ,             "truth": "true", "falsehood": "false" }
   ],
   "ltm cipher rule": [
     { "id":"cipher" },

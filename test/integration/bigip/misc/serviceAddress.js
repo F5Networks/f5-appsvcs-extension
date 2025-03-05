@@ -219,6 +219,247 @@ describe('serviceAddress', function () {
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
     });
+    it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1,
+                App1rd0: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%0'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                },
+                App1rd2: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%2'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '1', id: 1 }
+            },
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2', id: 2 }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('changing VirtualServer name should not change VirtualAddress properties.', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '4' }
+            }
+        ];
+
+        const decl0 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample--socks--8080': {
+                        class: 'Service_TCP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample-http--8080': {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Sample~va--192.0.2.25'))
+            .then((response) => {
+                assert.strictEqual(response.routeAdvertisement, 'selective');
+                assert.strictEqual(response.address, '192.0.2.25%4');
+            })
+            .then(() => postDeclaration(decl0, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('should not be thrown an error if the Service Address autoDelete field is enabled on non-common partitions', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: true
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            }).finally(() => deleteDeclaration());
+    });
+
+    it('should be thrown an error if the Service Address autoDelete field is disabled on non-common partitions.', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: false
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'Disabling auto-delete for service addresses in non-common tenants is not supported.');
+            });
+    });
 
     it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
         const decl1 = {
@@ -663,6 +904,137 @@ describe('serviceAddress', function () {
                     /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,
                     'virtual-address should have been deleted'
                 ));
+        });
+
+        it('should delete the Service_Address in Common partition using autoDelete flag', () => {
+            const perAppCommonPath = '/mgmt/shared/appsvcs/declare/Common/applications';
+            const perAppTenantPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
+            Shared.ServiceAddress.autoDelete = true;
+            serviceApp.Service.virtualAddresses.push({ use: '/Common/Shared/ServiceAddress' });
+            return Promise.resolve()
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'))
+                .then(() => postDeclaration({ schemaVersion: '3.50', serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                // Virtual-address should be removed from /Common/Shared once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${perAppTenantPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'),
+                    /The requested Virtual Address \(\/Common\/Shared\/ServiceAddress\) was not found/,
+                    'virtual-address should have been deleted'
+                ));
+        });
+
+        it('should not delete the Service_Address in Common partition using autoDelete flag', () => {
+            const perAppCommonPath = '/mgmt/shared/appsvcs/declare/Common/applications';
+            const perAppTenantPath = '/mgmt/shared/appsvcs/declare/Tenant/applications';
+            Shared.ServiceAddress.autoDelete = false;
+            serviceApp.Service.virtualAddresses.push({ use: '/Common/Shared/ServiceAddress' });
+            return Promise.resolve()
+                .then(() => postDeclaration({ schemaVersion: '3.50', Shared }, { declarationIndex: 0 }, undefined, perAppCommonPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'))
+                .then(() => postDeclaration({ schemaVersion: '3.50', serviceApp }, { declarationIndex: 1 }, undefined, perAppTenantPath))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                // Virtual-address should not be removed from /Common/Shared once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${perAppTenantPath}/serviceApp?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~Shared~ServiceAddress'));
+        });
+    });
+
+    describe('virtualAddress with RouteDomain ID', () => {
+        let declare;
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '61', id: 61 }
+            },
+            {
+                endpoint: '/mgmt/tm/ltm/virtual-address',
+                data: {
+                    name: '192.0.128.10%61',
+                    partition: 'Common'
+                },
+                skipDelete: true
+            }
+
+        ];
+        beforeEach(() => {
+            declare = {
+                schemaVersion: '3.53.0',
+                updateMode: 'selective',
+                class: 'ADC',
+                Tenant01: {
+                    class: 'Tenant',
+                    defaultRouteDomain: 61,
+                    A1: {
+                        class: 'Application',
+                        template: 'generic',
+                        vs1: {
+                            class: 'Service_UDP',
+                            sourceAddress: '0.0.0.0%61/0',
+                            virtualAddresses: [
+                                { bigip: '/Common/192.0.128.10%61' }
+                            ],
+                            virtualPort: 80,
+                            pool: 'web_pool'
+                        },
+                        web_pool: {
+                            class: 'Pool',
+                            monitors: [{
+                                bigip: '/Common/udp'
+                            }],
+                            members: [
+                                {
+                                    servicePort: 80,
+                                    serverAddresses: [
+                                        '192.0.1.10'
+                                    ]
+                                }]
+                        }
+                    }
+                }
+            };
+        });
+
+        it('should able to reference BIGIP virtualAddress object with route-domain identifier', () => {
+            const Path = '/mgmt/shared/appsvcs/declare/';
+            return Promise.resolve()
+                .then(() => postBigipItems(bigipItems))
+                .then(() => postDeclaration(declare, { declarationIndex: 0 }, undefined, Path))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Common~192.0.128.10%2561'))
+                // Virtual-address should be removed from /Tenant once associated app is removed
+                .then(() => deleteDeclaration(undefined, { path: `${Path}?async=true`, sendDelete: true }))
+                .then((response) => {
+                    assert.strictEqual(response.results[0].code, 200);
+                })
+                .then(() => assert.isRejected(
+                    getPath('/mgmt/tm/ltm/virtual-address/~Common~192.0.128.10%2561'),
+                    /The requested Virtual Address \(\/Common\/192.0.128.10%61\) was not found/,
+                    'virtual-address should have been deleted'
+                ))
+                .finally(() => deleteBigipItems(bigipItems.reverse())
+                    .catch((err) => {
+                        console.log('Error deleting bigip items', err);
+                    }));
         });
     });
 

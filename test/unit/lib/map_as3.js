@@ -2849,6 +2849,53 @@ describe('map_as3', () => {
                 const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.11', item, declaration);
                 assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.11');
             });
+
+            it('should check autoDelete flag is true by detaul in Service Address', () => {
+                const item = {
+                    arp: true,
+                    icmpEcho: 'enable',
+                    spanning: false,
+                    shareAddresses: false,
+                    virtualAddress: '10.10.0.12',
+                    serverScope: 'all'
+                };
+
+                const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.12', item, declaration);
+                assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.12');
+                assert.strictEqual(results.configs[0].properties['auto-delete'], 'true');
+            });
+
+            it('should check autoDelete flag value is true in Service Address', () => {
+                const item = {
+                    arp: true,
+                    icmpEcho: 'enable',
+                    spanning: false,
+                    shareAddresses: false,
+                    virtualAddress: '10.10.0.12',
+                    serverScope: 'all',
+                    autoDelete: true
+                };
+
+                const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.12', item, declaration);
+                assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.12');
+                assert.strictEqual(results.configs[0].properties['auto-delete'], 'true');
+            });
+
+            it('should check autoDelete flag value is false in Service Address', () => {
+                const item = {
+                    arp: true,
+                    icmpEcho: 'enable',
+                    spanning: false,
+                    shareAddresses: false,
+                    virtualAddress: '10.10.0.12',
+                    serverScope: 'all',
+                    autoDelete: false
+                };
+
+                const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.12', item, declaration);
+                assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.12');
+                assert.strictEqual(results.configs[0].properties['auto-delete'], 'false');
+            });
         });
     });
 
@@ -6289,7 +6336,8 @@ describe('map_as3', () => {
                                 'route-advertisement': 'disabled',
                                 spanning: 'disabled',
                                 'traffic-group': 'default',
-                                'server-scope': 'any'
+                                'server-scope': 'any',
+                                'auto-delete': 'true'
                             },
                             ignore: []
                         },
@@ -12937,7 +12985,8 @@ describe('map_as3', () => {
                 'route-advertisement': 'disabled',
                 spanning: 'disabled',
                 'traffic-group': 'default',
-                'server-scope': 'any'
+                'server-scope': 'any',
+                'auto-delete': 'true'
             };
 
             const result = translate.Service_Forwarding(defaultContext, 'tenantId', 'appId', 'itemId', item);
