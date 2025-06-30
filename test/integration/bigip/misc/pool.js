@@ -364,6 +364,7 @@ describe('Pool', function () {
                 assert.strictEqual(response.pool, '/tenant/app/pool');
             });
     });
+
     it('should cleanup ephemeral nodes', () => {
         const declaration = {
             class: 'ADC',
@@ -902,12 +903,12 @@ describe('Pool', function () {
         };
 
         return Promise.resolve()
-            .then(() => postDeclaration(decl0, { declarationIndex: 1 }))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'success');
             })
-            .then(() => postDeclaration(decl1, { declarationIndex: 2 }))
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'success');

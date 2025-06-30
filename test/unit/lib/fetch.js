@@ -5706,6 +5706,238 @@ describe('fetch', () => {
                 const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
                 assert.deepStrictEqual(result.script.split('\n'), expected);
             });
+
+            it('should handle the iRules when monitor are prasent in the declaration', () => {
+                const desiredConfig = {
+                    '/test/Shared/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/test/Shared/crd_0_0_0_199_443_tls_irule': {
+                        command: 'ltm rule',
+                        properties: {
+                            'api-anonymous': 'when CLIENT_ACCEPTED { TCP::collect }\n\n\n\t\twhen CLIENTSSL_HANDSHAKE {\n\t\t\t\t\tSSL::collect\n\t\t\t\t}\n\n\t\t when SERVER_CONNECTED {\n\t\t\tset reencryptssl_class "/test/Shared/crd_0_0_0_199_443_ssl_reencrypt_serverssl_dg"\n\t\t\tset edgessl_class "/test/Shared/crd_0_0_0_199_443_ssl_edge_serverssl_dg"\n\t\t\tif { [info exists sslpath] and [class exists $reencryptssl_class] } {\n\t\t\t\t# Find the nearest child path which matches the reencrypt_class\n\t\t\t\tfor {set i $rc} {$i >= 0} {incr i -1} {\n\t\t\t\t\tif { [class exists $reencryptssl_class] } {\n\t\t\t\t\t\tset reen [class match -value $sslpath equals $reencryptssl_class]\n                        # check for wildcard domain match\n                        if { $reen equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $reencryptssl_class] } {\n\t\t\t\t\t\t        set reen [class match -value $wc_routepath equals $reencryptssl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($reen equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $reen\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t\tif { [class exists $edgessl_class] } {\n\t\t\t\t\t\tset edge [class match -value $sslpath equals $edgessl_class]\n                        # check for wildcard domain match\n                        if { $edge equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $edgessl_class] } {\n\t\t\t\t\t\t        set edge [class match -value $wc_routepath equals $edgessl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($edge equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $edge\n\t\t\t\t\t\t}\n\n\t\t\t\t\t}\n\t\t\t\t\tif { not [info exists sslprofile] } {\n\t\t\t\t\t\tset sslpath [\n\t\t\t\t\t\t\tstring range $sslpath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $sslpath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n                        set wc_routepaath [\n\t\t\t\t\t\t\tstring range $wc_routepath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $wc_routepath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n\t\t\t\t\t}\n\t\t\t\t\telse {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t# Assign respective SSL profile based on ssl_reencrypt_serverssl_dg\n\t\t\t\tif { not ($sslprofile equals "false") } {\n\t\t\t\t\t\tSSL::profile $reen\n\t\t\t\t} else {\n\t\t\t\t\t\tSSL::disable serverside\n\t\t\t\t}\n\t\t\t}\n        }'
+                        },
+                        ignore: []
+                    },
+                    '/test/Shared/crd_0_0_0_200_443_tls_irule': {
+                        command: 'ltm rule',
+                        properties: {
+                            'api-anonymous': 'when CLIENT_ACCEPTED { TCP::collect }\n\n\n\t\twhen CLIENTSSL_HANDSHAKE {\n\t\t\t\t\tSSL::collect\n\t\t\t\t}\n\n\t\t when SERVER_CONNECTED {\n\t\t\tset reencryptssl_class "/test/Shared/crd_0_0_0_200_443_ssl_reencrypt_serverssl_dg"\n\t\t\tset edgessl_class "/test/Shared/crd_0_0_0_200_443_ssl_edge_serverssl_dg"\n\t\t\tif { [info exists sslpath] and [class exists $reencryptssl_class] } {\n\t\t\t\t# Find the nearest child path which matches the reencrypt_class\n\t\t\t\tfor {set i $rc} {$i >= 0} {incr i -1} {\n\t\t\t\t\tif { [class exists $reencryptssl_class] } {\n\t\t\t\t\t\tset reen [class match -value $sslpath equals $reencryptssl_class]\n                        # check for wildcard domain match\n                        if { $reen equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $reencryptssl_class] } {\n\t\t\t\t\t\t        set reen [class match -value $wc_routepath equals $reencryptssl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($reen equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $reen\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t\tif { [class exists $edgessl_class] } {\n\t\t\t\t\t\tset edge [class match -value $sslpath equals $edgessl_class]\n                        # check for wildcard domain match\n                        if { $edge equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $edgessl_class] } {\n\t\t\t\t\t\t        set edge [class match -value $wc_routepath equals $edgessl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($edge equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $edge\n\t\t\t\t\t\t}\n\n\t\t\t\t\t}\n\t\t\t\t\tif { not [info exists sslprofile] } {\n\t\t\t\t\t\tset sslpath [\n\t\t\t\t\t\t\tstring range $sslpath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $sslpath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n                        set wc_routepaath [\n\t\t\t\t\t\t\tstring range $wc_routepath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $wc_routepath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n\t\t\t\t\t}\n\t\t\t\t\telse {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t# Assign respective SSL profile based on ssl_reencrypt_serverssl_dg\n\t\t\t\tif { not ($sslprofile equals "false") } {\n\t\t\t\t\t\tSSL::profile $reen\n\t\t\t\t} else {\n\t\t\t\t\t\tSSL::disable serverside\n\t\t\t\t}\n\t\t\t}\n        }'
+                        },
+                        ignore: []
+                    },
+                    '/test/Shared/svc_1_default_foo_com_https_8443': {
+                        command: 'ltm monitor https',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 60,
+                            'ip-dscp': 0,
+                            key: 'none',
+                            recv: 'none',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"GET /healthz HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'ssl-profile': 'none',
+                            timeout: 10,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            'up-interval': 0,
+                            username: 'none'
+                        },
+                        ignore: []
+                    },
+                    '/test/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {
+                    '/test/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/test/Shared/svc_1_default_foo_com_https_8443': {
+                        command: 'ltm monitor https',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 9,
+                            'ip-dscp': 0,
+                            key: 'none',
+                            recv: 'none',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '"GET /healthz HTTP/1.0\\\\r\\\\n\\\\r\\\\n"',
+                            'ssl-profile': 'none',
+                            timeout: 10,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            'up-interval': 0,
+                            username: 'none'
+                        },
+                        ignore: []
+                    },
+                    '/test/Shared/crd_0_0_0_200_443_tls_irule': {
+                        command: 'ltm rule',
+                        properties: {
+                            'api-anonymous': 'when CLIENT_ACCEPTED { TCP::collect }\n\n\n\t\twhen CLIENTSSL_HANDSHAKE {\n\t\t\t\t\tSSL::collect\n\t\t\t\t}\n\n\t\t when SERVER_CONNECTED {\n\t\t\tset reencryptssl_class "/test/Shared/crd_0_0_0_200_443_ssl_reencrypt_serverssl_dg"\n\t\t\tset edgessl_class "/test/Shared/crd_0_0_0_200_443_ssl_edge_serverssl_dg"\n\t\t\tif { [info exists sslpath] and [class exists $reencryptssl_class] } {\n\t\t\t\t# Find the nearest child path which matches the reencrypt_class\n\t\t\t\tfor {set i $rc} {$i >= 0} {incr i -1} {\n\t\t\t\t\tif { [class exists $reencryptssl_class] } {\n\t\t\t\t\t\tset reen [class match -value $sslpath equals $reencryptssl_class]\n                        # check for wildcard domain match\n                        if { $reen equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $reencryptssl_class] } {\n\t\t\t\t\t\t        set reen [class match -value $wc_routepath equals $reencryptssl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($reen equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $reen\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t\tif { [class exists $edgessl_class] } {\n\t\t\t\t\t\tset edge [class match -value $sslpath equals $edgessl_class]\n                        # check for wildcard domain match\n                        if { $edge equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $edgessl_class] } {\n\t\t\t\t\t\t        set edge [class match -value $wc_routepath equals $edgessl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($edge equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $edge\n\t\t\t\t\t\t}\n\n\t\t\t\t\t}\n\t\t\t\t\tif { not [info exists sslprofile] } {\n\t\t\t\t\t\tset sslpath [\n\t\t\t\t\t\t\tstring range $sslpath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $sslpath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n                        set wc_routepaath [\n\t\t\t\t\t\t\tstring range $wc_routepath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $wc_routepath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n\t\t\t\t\t}\n\t\t\t\t\telse {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t# Assign respective SSL profile based on ssl_reencrypt_serverssl_dg\n\t\t\t\tif { not ($sslprofile equals "false") } {\n\t\t\t\t\t\tSSL::profile $reen\n\t\t\t\t} else {\n\t\t\t\t\t\tSSL::disable serverside\n\t\t\t\t}\n\t\t\t}\n        }'
+                        },
+                        ignore: []
+                    },
+                    '/test/Shared/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/test/Shared/svc_1_default_foo_com_https_8443',
+                            'properties',
+                            'interval'
+                        ],
+                        lhs: 9,
+                        rhs: 60,
+                        tags: ['tmsh'],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor https'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/test/Shared/crd_0_0_0_199_443_tls_irule'
+                        ],
+                        rhs: {
+                            command: 'ltm rule',
+                            properties: {
+                                'api-anonymous': 'when CLIENT_ACCEPTED { TCP::collect }\n\n\n\t\twhen CLIENTSSL_HANDSHAKE {\n\t\t\t\t\tSSL::collect\n\t\t\t\t}\n\n\t\t when SERVER_CONNECTED {\n\t\t\tset reencryptssl_class "/test/Shared/crd_0_0_0_199_443_ssl_reencrypt_serverssl_dg"\n\t\t\tset edgessl_class "/test/Shared/crd_0_0_0_199_443_ssl_edge_serverssl_dg"\n\t\t\tif { [info exists sslpath] and [class exists $reencryptssl_class] } {\n\t\t\t\t# Find the nearest child path which matches the reencrypt_class\n\t\t\t\tfor {set i $rc} {$i >= 0} {incr i -1} {\n\t\t\t\t\tif { [class exists $reencryptssl_class] } {\n\t\t\t\t\t\tset reen [class match -value $sslpath equals $reencryptssl_class]\n                        # check for wildcard domain match\n                        if { $reen equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $reencryptssl_class] } {\n\t\t\t\t\t\t        set reen [class match -value $wc_routepath equals $reencryptssl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($reen equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $reen\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t\tif { [class exists $edgessl_class] } {\n\t\t\t\t\t\tset edge [class match -value $sslpath equals $edgessl_class]\n                        # check for wildcard domain match\n                        if { $edge equals "" } {\n\t\t\t\t\t\t    if { [class match $wc_routepath equals $edgessl_class] } {\n\t\t\t\t\t\t        set edge [class match -value $wc_routepath equals $edgessl_class]\n\t\t\t\t\t\t    }\n                        }\n\t\t\t\t\t\tif { not ($edge equals "") } {\n\t\t\t\t\t\t\t    set sslprofile $edge\n\t\t\t\t\t\t}\n\n\t\t\t\t\t}\n\t\t\t\t\tif { not [info exists sslprofile] } {\n\t\t\t\t\t\tset sslpath [\n\t\t\t\t\t\t\tstring range $sslpath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $sslpath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n                        set wc_routepaath [\n\t\t\t\t\t\t\tstring range $wc_routepath 0 [\n\t\t\t\t\t\t\t\texpr {[string last "/" $wc_routepath]-1}\n\t\t\t\t\t\t\t]\n\t\t\t\t\t\t]\n\t\t\t\t\t}\n\t\t\t\t\telse {\n\t\t\t\t\t\tbreak\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t# Assign respective SSL profile based on ssl_reencrypt_serverssl_dg\n\t\t\t\tif { not ($sslprofile equals "false") } {\n\t\t\t\t\t\tSSL::profile $reen\n\t\t\t\t} else {\n\t\t\t\t\t\tSSL::disable serverside\n\t\t\t\t}\n\t\t\t}\n        }'
+                            },
+                            ignore: []
+                        },
+                        tags: ['tmsh'],
+                        command: 'ltm rule',
+                        lhsCommand: '',
+                        rhsCommand: 'ltm rule'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::delete ltm monitor https /test/Shared/svc_1_default_foo_com_https_8443',
+                    'tmsh::create ltm monitor https /test/Shared/svc_1_default_foo_com_https_8443 adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 cert none cipherlist DEFAULT description none destination *:* interval 60 ip-dscp 0 key none recv none recv-disable none reverse disabled send \\"GET /healthz HTTP/1.0\\\\r\\\\n\\\\r\\\\n\\" ssl-profile none timeout 10 time-until-up 0 transparent disabled up-interval 0 username none',
+                    'tmsh::modify auth partition test description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm rule /test/Shared/crd_0_0_0_199_443_tls_irule {',
+                    'when CLIENT_ACCEPTED { TCP::collect }',
+                    '',
+                    '',
+                    '\t\twhen CLIENTSSL_HANDSHAKE {',
+                    '\t\t\t\t\tSSL::collect',
+                    '\t\t\t\t}',
+                    '',
+                    '\t\t when SERVER_CONNECTED {',
+                    '\t\t\tset reencryptssl_class "/test/Shared/crd_0_0_0_199_443_ssl_reencrypt_serverssl_dg"',
+                    '\t\t\tset edgessl_class "/test/Shared/crd_0_0_0_199_443_ssl_edge_serverssl_dg"',
+                    '\t\t\tif { [info exists sslpath] and [class exists $reencryptssl_class] } {',
+                    '\t\t\t\t# Find the nearest child path which matches the reencrypt_class',
+                    '\t\t\t\tfor {set i $rc} {$i >= 0} {incr i -1} {',
+                    '\t\t\t\t\tif { [class exists $reencryptssl_class] } {',
+                    '\t\t\t\t\t\tset reen [class match -value $sslpath equals $reencryptssl_class]',
+                    '                        # check for wildcard domain match',
+                    '                        if { $reen equals "" } {',
+                    '\t\t\t\t\t\t    if { [class match $wc_routepath equals $reencryptssl_class] } {',
+                    '\t\t\t\t\t\t        set reen [class match -value $wc_routepath equals $reencryptssl_class]',
+                    '\t\t\t\t\t\t    }',
+                    '                        }',
+                    '\t\t\t\t\t\tif { not ($reen equals "") } {',
+                    '\t\t\t\t\t\t\t    set sslprofile $reen',
+                    '\t\t\t\t\t\t}',
+                    '\t\t\t\t\t}',
+                    '\t\t\t\t\tif { [class exists $edgessl_class] } {',
+                    '\t\t\t\t\t\tset edge [class match -value $sslpath equals $edgessl_class]',
+                    '                        # check for wildcard domain match',
+                    '                        if { $edge equals "" } {',
+                    '\t\t\t\t\t\t    if { [class match $wc_routepath equals $edgessl_class] } {',
+                    '\t\t\t\t\t\t        set edge [class match -value $wc_routepath equals $edgessl_class]',
+                    '\t\t\t\t\t\t    }',
+                    '                        }',
+                    '\t\t\t\t\t\tif { not ($edge equals "") } {',
+                    '\t\t\t\t\t\t\t    set sslprofile $edge',
+                    '\t\t\t\t\t\t}',
+                    '',
+                    '\t\t\t\t\t}',
+                    '\t\t\t\t\tif { not [info exists sslprofile] } {',
+                    '\t\t\t\t\t\tset sslpath [',
+                    '\t\t\t\t\t\t\tstring range $sslpath 0 [',
+                    '\t\t\t\t\t\t\t\texpr {[string last "/" $sslpath]-1}',
+                    '\t\t\t\t\t\t\t]',
+                    '\t\t\t\t\t\t]',
+                    '                        set wc_routepaath [',
+                    '\t\t\t\t\t\t\tstring range $wc_routepath 0 [',
+                    '\t\t\t\t\t\t\t\texpr {[string last "/" $wc_routepath]-1}',
+                    '\t\t\t\t\t\t\t]',
+                    '\t\t\t\t\t\t]',
+                    '\t\t\t\t\t}',
+                    '\t\t\t\t\telse {',
+                    '\t\t\t\t\t\tbreak',
+                    '\t\t\t\t\t}',
+                    '\t\t\t\t}',
+                    '\t\t\t\t# Assign respective SSL profile based on ssl_reencrypt_serverssl_dg',
+                    '\t\t\t\tif { not ($sslprofile equals "false") } {',
+                    '\t\t\t\t\t\tSSL::profile $reen',
+                    '\t\t\t\t} else {',
+                    '\t\t\t\t\t\tSSL::disable serverside',
+                    '\t\t\t\t}',
+                    '\t\t\t}',
+                    '        }',
+                    '}',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
         });
 
         it('should skip createFirstDeleteLast when modifying auth partition', () => {

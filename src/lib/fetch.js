@@ -1996,7 +1996,8 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
 
     const poolEntries = trans.filter((t) => t.indexOf(delPool) > -1 && t.indexOf(createPool) > -1);
     const monitorEntries = trans.filter((t) => t.indexOf(delMon) > -1 && t.indexOf(createMon) > -1);
-    const httpMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1 && t.indexOf(createHttpMon) > -1);
+    const httpMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1
+    && t.indexOf(createHttpMon) > -1 && t.indexOf(`${createHttpMon}s`) === -1);
 
     const indexOfDeleteGtmMonCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm monitor') > -1);
     const indexOfDeleteGtmPoolCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm pool') > -1);
@@ -2166,7 +2167,7 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
         const newDelMonTransCmds = [];
         const newRollbackTransCmds = [];
         trans.forEach((transItem) => {
-            if (transItem.indexOf('\n') > -1) {
+            if (transItem.indexOf('\n') > -1 && transItem.indexOf('ltm monitor') > -1) {
                 const existingTransCmds1 = [];
                 const existingTransCmds2 = [];
                 const rollbackTransCmds = [];
