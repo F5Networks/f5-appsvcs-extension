@@ -39,7 +39,7 @@ class UpdaterTmsh {
         const tenantUpdate = fetch.tmshUpdateScript(this.context, desired, current, diff);
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
             if (this.tenantId === 'Common') {
-                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common_1' : 'Common_2';
+                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common' : 'Common_0';
                 this.context.log[`${tenantId}Script`] = tenantUpdate.script;
             } else {
                 this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;
@@ -57,7 +57,7 @@ class UpdaterTmsh {
 
         if (this.context.tasks[this.context.currentIndex].traceResponse) {
             if (this.tenantId === 'Common') {
-                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common_1' : 'Common_2';
+                const tenantId = this.context.tasks[this.context.currentIndex].firstPassNoDelete ? 'Common' : 'Common_0';
                 this.context.log[`${tenantId}Script`] = tenantUpdate.script;
             } else {
                 this.context.log[`${this.tenantId}Script`] = tenantUpdate.script;

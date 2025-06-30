@@ -6,6 +6,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 
 ### Fixed
+- AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
 
 ### Changed
 

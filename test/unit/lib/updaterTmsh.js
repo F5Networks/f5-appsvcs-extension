@@ -118,7 +118,7 @@ describe('UpdaterTmsh', () => {
             assert.strictEqual(updater.context.log.idScript, '');
         });
 
-        it('should show Common_1Script in Common tenant', () => {
+        it('should show CommonScript in Common tenant', () => {
             const updater = makeUpdater(true);
             updater.tenantId = 'Common';
             updater.context.currentIndex = 0;
@@ -132,10 +132,10 @@ describe('UpdaterTmsh', () => {
 
             updater.update([], [], []);
 
-            assert.strictEqual(updater.context.log.Common_1Script, '');
+            assert.strictEqual(updater.context.log.CommonScript, '');
         });
 
-        it('should show Common_2Script in Common tenant', () => {
+        it('should show Common_0Script in Common tenant', () => {
             const updater = makeUpdater(true);
             updater.tenantId = 'Common';
             updater.context.currentIndex = 0;
@@ -149,7 +149,7 @@ describe('UpdaterTmsh', () => {
 
             updater.update([], [], []);
 
-            assert.strictEqual(updater.context.log.Common_2Script, '');
+            assert.strictEqual(updater.context.log.Common_0Script, '');
         });
     });
 
@@ -167,7 +167,7 @@ describe('UpdaterTmsh', () => {
             assert.strictEqual(updater.context.log.idScript, '');
         });
 
-        it('should show Common_1Script in Common tenant', () => {
+        it('should show CommonScript in Common tenant', () => {
             const updater = makeUpdater(true);
             updater.tenantId = 'Common';
             updater.context.currentIndex = 0;
@@ -181,10 +181,10 @@ describe('UpdaterTmsh', () => {
 
             updater.postProcessUpdate();
 
-            assert.strictEqual(updater.context.log.Common_1Script, '');
+            assert.strictEqual(updater.context.log.CommonScript, '');
         });
 
-        it('should show Common_2Script in Common tenant', () => {
+        it('should show Common_0Script in Common tenant', () => {
             const updater = makeUpdater(true);
             updater.tenantId = 'Common';
             updater.context.currentIndex = 0;
@@ -198,7 +198,7 @@ describe('UpdaterTmsh', () => {
 
             updater.postProcessUpdate();
 
-            assert.strictEqual(updater.context.log.Common_2Script, '');
+            assert.strictEqual(updater.context.log.Common_0Script, '');
         });
 
         it('should return null when there is no tenantUpdate', () => {
