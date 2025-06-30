@@ -1499,8 +1499,8 @@ const translate = {
             }
             tlsItem.matchToSNI = obj.matchToSNI || 'none';
             tlsItem.mode = obj.enabled;
-            if (item.certificates.length > 1) {
-                tlsItem.requireSNI = (tlsItem.sniDefault === true);
+            if (tlsItem.requireSNI && !tlsItem.sniDefault) {
+                tlsItem.requireSNI = false;
             }
 
             configs.push(normalize.actionableMcp(context, tlsItem, 'ltm profile client-ssl', path));

@@ -483,10 +483,25 @@ describe('certificates', function () {
             .then(() => deleteDeclaration());
     });
 
-    it('should handle to configure multiple SNI profiles, while default one has set \'requireSNI\': true', () => {
+    it('should handle to configure multiple SNI profiles, while default one has set \'requireSNI\' true or false', () => {
+        const certs = [
+            {
+                matchToSNI: '',
+                certificate: 'snidefault'
+            },
+            {
+                matchToSNI: 'https1.example.com',
+                certificate: 'sni1'
+            },
+            {
+                matchToSNI: 'https2.example.com',
+                certificate: 'sni2'
+            }
+        ];
+
         const declaration = {
             class: 'ADC',
-            schemaVersion: '3.50.0',
+            schemaVersion: '3.54.0',
             sni_tenant: {
                 class: 'Tenant',
                 sni_app: {
@@ -494,20 +509,7 @@ describe('certificates', function () {
                     template: 'shared',
                     client_ssl_profile: {
                         class: 'TLS_Server',
-                        certificates: [
-                            {
-                                matchToSNI: '',
-                                certificate: 'snidefault'
-                            },
-                            {
-                                matchToSNI: 'https1.example.com',
-                                certificate: 'sni1'
-                            },
-                            {
-                                matchToSNI: 'https2.example.com',
-                                certificate: 'sni2'
-                            }
-                        ],
+                        certificates: certs,
                         ciphers: 'DEFAULT',
                         requireSNI: true
                     },
@@ -561,16 +563,301 @@ describe('certificates', function () {
             .then((response) => {
                 assert.strictEqual(response.name, 'client_ssl_profile');
                 assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'true');
             })
             .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
             .then((response) => {
                 assert.strictEqual(response.name, 'client_ssl_profile-1-');
                 assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
             })
             .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
             .then((response) => {
                 assert.strictEqual(response.name, 'client_ssl_profile-2-');
                 assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                certs[1].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'true');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = false;
+                certs[1].sniDefault = false;
+                certs[2].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = false;
+                certs[1].sniDefault = false;
+                certs[2].sniDefault = false;
+                return postDeclaration(declaration, { declarationIndex: 3 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = false;
+                certs[1].sniDefault = true;
+                certs[2].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 4 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = true;
+                certs[1].sniDefault = true;
+                certs[2].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 5 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'true');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'true');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.service = {};
+                declaration.sni_tenant.sni_app.service.class = 'Service_HTTPS';
+                declaration.sni_tenant.sni_app.service.virtualAddresses = ['192.0.2.11'];
+                declaration.sni_tenant.sni_app.service.serverTLS = 'client_ssl_profile';
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = true;
+                certs[1].sniDefault = true;
+                certs[2].sniDefault = false;
+                return postDeclaration(declaration, { declarationIndex: 6 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'true');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~sni_tenant~sni_app~service'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'service');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/service');
+                assert.strictEqual(response.destination, '/sni_tenant/192.0.2.11:443');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~sni_tenant~sni_app~service/profiles'))
+            .then((response) => {
+                assert.isAtLeast(response.items.length, 3);
+                const items = response.items.filter((item) => item.partition === 'sni_tenant');
+                const names = items.map((item) => item.name);
+                assert.deepEqual(names, ['client_ssl_profile', 'client_ssl_profile-1-', 'client_ssl_profile-2-']);
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.service = {};
+                declaration.sni_tenant.sni_app.service.class = 'Service_HTTPS';
+                declaration.sni_tenant.sni_app.service.virtualAddresses = ['192.0.2.11'];
+                declaration.sni_tenant.sni_app.service.serverTLS = 'client_ssl_profile';
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = false;
+                certs[1].sniDefault = false;
+                certs[2].sniDefault = false;
+                return postDeclaration(declaration, { declarationIndex: 7 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-1-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-1-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~sni_tenant~sni_app~client_ssl_profile-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'client_ssl_profile-2-');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/client_ssl_profile-2-');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~sni_tenant~sni_app~service'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'service');
+                assert.strictEqual(response.fullPath, '/sni_tenant/sni_app/service');
+                assert.strictEqual(response.destination, '/sni_tenant/192.0.2.11:443');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~sni_tenant~sni_app~service/profiles'))
+            .then((response) => {
+                assert.isAtLeast(response.items.length, 3);
+                const items = response.items.filter((item) => item.partition === 'sni_tenant');
+                const names = items.map((item) => item.name);
+                assert.deepEqual(names, ['client_ssl_profile', 'client_ssl_profile-1-', 'client_ssl_profile-2-']);
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.service = {};
+                declaration.sni_tenant.sni_app.service.class = 'Service_HTTPS';
+                declaration.sni_tenant.sni_app.service.virtualAddresses = ['192.0.2.11'];
+                declaration.sni_tenant.sni_app.service.serverTLS = 'client_ssl_profile';
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = false;
+                certs[1].sniDefault = true;
+                certs[2].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 8 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'declaration failed');
+                assert.strictEqual(response.results[0].response, '01071809:3: Virtual Server /sni_tenant/sni_app/service has more than one clientssl/serverssl profile that is default for SNI.');
+            })
+            .then(() => {
+                declaration.sni_tenant.sni_app.service = {};
+                declaration.sni_tenant.sni_app.service.class = 'Service_HTTPS';
+                declaration.sni_tenant.sni_app.service.virtualAddresses = ['192.0.2.11'];
+                declaration.sni_tenant.sni_app.service.serverTLS = 'client_ssl_profile';
+                declaration.sni_tenant.sni_app.client_ssl_profile.requireSNI = true;
+                certs[1].sniDefault = true;
+                certs[2].sniDefault = true;
+                return postDeclaration(declaration, { declarationIndex: 9 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'declaration failed');
+                assert.strictEqual(response.results[0].response, '01071809:3: Virtual Server /sni_tenant/sni_app/service has more than one clientssl/serverssl profile that is default for SNI.');
             })
             .then(() => deleteDeclaration());
     });

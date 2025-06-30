@@ -8,6 +8,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Fixed
 - AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
 - AUTOTOOL-4716: ([Github Issue 920](https://github.com/F5Networks/f5-appsvcs-extension/issues/920)) Irule parsing error when multiple irules are passed in AS3 declaration
+- AUTOTOOL-4681: ([Github Issue 908](https://github.com/F5Networks/f5-appsvcs-extension/issues/908)) When declaring multiple certificates, Require Peer SNI support is inconsistently configured
 
 ### Changed
 

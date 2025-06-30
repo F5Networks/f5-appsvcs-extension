@@ -8492,6 +8492,202 @@ describe('map_as3', () => {
         });
 
         describe('TLS Server', () => {
+            it('should create add TLS_Server profile when there are multiple certificates with sniDefault and enable requireSNI', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert3',
+                            sniDefault: false
+                        }
+                    ],
+                    requireSNI: true,
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    },
+                    webcert3: {
+                        class: 'Certificate',
+                        certificate: 'last cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert1.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert1.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties['sni-require'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'disabled');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.strictEqual(profile2.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile2.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert2.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert2.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile2.properties['server-name'], 'none');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+                assert.deepEqual(profile2.properties['sni-require'], 'false');
+                assert.deepEqual(profile2.properties.mode, 'enabled');
+
+                const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
+                assert.strictEqual(profile3.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile3.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert3.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert3.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile3.properties['server-name'], 'none');
+                assert.deepEqual(profile3.properties['sni-default'], 'false');
+                assert.deepEqual(profile3.properties['sni-require'], 'false');
+                assert.deepEqual(profile3.properties.mode, 'enabled');
+            });
+
+            it('should create add TLS_Server profile when there are multiple certificates with sniDefault and disable requireSNI', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: true
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert3',
+                            sniDefault: false
+                        }
+                    ],
+                    requireSNI: false,
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    },
+                    webcert3: {
+                        class: 'Certificate',
+                        certificate: 'last cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert1.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert1.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'false');
+                assert.deepEqual(profile1.properties['sni-require'], 'false');
+                assert.deepEqual(profile1.properties.mode, 'disabled');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.strictEqual(profile2.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile2.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert2.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert2.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile2.properties['server-name'], 'none');
+                assert.deepEqual(profile2.properties['sni-default'], 'true');
+                assert.deepEqual(profile2.properties['sni-require'], 'false');
+                assert.deepEqual(profile2.properties.mode, 'enabled');
+
+                const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
+                assert.strictEqual(profile3.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile3.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert3.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert3.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile3.properties['server-name'], 'none');
+                assert.deepEqual(profile3.properties['sni-default'], 'false');
+                assert.deepEqual(profile3.properties['sni-require'], 'false');
+                assert.deepEqual(profile3.properties.mode, 'enabled');
+            });
+
             it('should create addtl profile when there are multiple certificates', () => {
                 const context = {
                     target: {

@@ -5707,7 +5707,7 @@ describe('fetch', () => {
                 assert.deepStrictEqual(result.script.split('\n'), expected);
             });
 
-            it('should handle the iRules when monitor are prasent in the declaration', () => {
+            it('should handle the iRules when monitor are present in the declaration', () => {
                 const desiredConfig = {
                     '/test/Shared/': {
                         command: 'sys folder',
