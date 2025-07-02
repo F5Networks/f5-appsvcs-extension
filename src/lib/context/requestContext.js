@@ -126,17 +126,19 @@ class RequestContext {
 
                 let tasks = validated.request;
 
+                let dryRunQueryParams; // Fix for ID1932785
+                if (initialContext.queryParams) {
+                    (initialContext.queryParams || []).forEach((obj) => {
+                        if (obj.key && obj.key.includes('dryRun')) {
+                            dryRunQueryParams = (obj.value === 'true');
+                        }
+                    });
+                }
+
                 // Iterate through all the declarations looking for controls
                 tasks.forEach((task) => {
                     if (task.declaration) {
                         let controlsName = util.getObjectNameWithClassName(task.declaration, 'Controls') || 'controls';
-                        if (initialContext.queryParams) { // Fix for ID1712657
-                            (initialContext.queryParams || []).forEach((obj) => {
-                                if (obj.key === `${controlsName}.dryRun`) {
-                                    task.declaration[controlsName].dryRun = (obj.value === 'true');
-                                }
-                            });
-                        }
                         if (task.declaration[controlsName]) {
                             if (task.declaration[controlsName].internalUse) {
                                 if (task.declaration[controlsName].internalUse.action) {
@@ -144,11 +146,17 @@ class RequestContext {
                                 }
                                 delete task.declaration[controlsName].internalUse;
                             }
+                            if (typeof dryRunQueryParams !== 'undefined') {
+                                task.declaration[controlsName].dryRun = dryRunQueryParams;
+                            }
                             task.dryRun = task.declaration[controlsName].dryRun || false;
                         }
                         Object.keys(task.declaration).forEach((tenant) => {
                             if (declarationUtil.isTenant(task.declaration[tenant])) {
                                 controlsName = util.getObjectNameWithClassName(task.declaration[tenant], 'Controls');
+                                if (controlsName && typeof dryRunQueryParams !== 'undefined') {
+                                    task.declaration[tenant][controlsName].dryRun = dryRunQueryParams;
+                                }
                                 if (controlsName && task.declaration[tenant][controlsName].dryRun) {
                                     task.dryRun = true;
                                     task.warnings = task.warnings || [];
@@ -159,6 +167,9 @@ class RequestContext {
                                 }
                             }
                         });
+                    }
+                    if (typeof dryRunQueryParams !== 'undefined') {
+                        task.dryRun = dryRunQueryParams;
                     }
                     task.dryRun = task.dryRun || false; // Enforce default if there is no declaration
                     if (task.action === 'dry-run') {

@@ -272,7 +272,7 @@ describe('dryRun testing', function () {
             });
     });
 
-    it('should not change the system when true controls.dryRun query parameter is used', () => {
+    it('should not change the system when controls.dryRun query parameter is used', () => {
         decl.declaration.controls.dryRun = false;
 
         return Promise.resolve()
@@ -289,27 +289,6 @@ describe('dryRun testing', function () {
             .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
             .then((response) => {
                 assert.strictEqual(response, ''); // Confirm nothing happened
-            });
-    });
-
-    it('should change the system when false controls.dryRun query parameter is used', () => {
-        decl.declaration.controls.dryRun = false;
-
-        return Promise.resolve()
-            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
-            .then((response) => {
-                assert.strictEqual(response, ''); // Confirm it starts in a clean state
-            })
-            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=false')))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.declaration.controls.dryRun, false);
-            })
-            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
-            .then((response) => {
-                assert.strictEqual(response.name, 'testPool');
-                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
             });
     });
 
@@ -388,6 +367,170 @@ describe('dryRun testing', function () {
             .then((response) => {
                 assert.strictEqual(response.code, 200);
                 assert.deepStrictEqual(response.items, []); // Confirm that there are no SD tasks
+            });
+    });
+
+    it('should change the system when false controls.dryRun and dryRun query parameter false', () => {
+        decl.declaration.controls.dryRun = false;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=false')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, false);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
+            });
+    });
+
+    it('should change the system when false controls.dryRun and dryRun query parameter true', () => {
+        decl.declaration.controls.dryRun = false;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=true')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, true);
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should not change the system when true controls.dryRun and dryRun query parameter false', () => {
+        decl.declaration.controls.dryRun = true;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=false')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, false);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
+            });
+    });
+
+    it('should not change the system when true controls.dryRun and dryRun query parameter true', () => {
+        decl.declaration.controls.dryRun = true;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=true')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, true);
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should change the system when false controls.dryRun and without dryRun query parameter', () => {
+        decl.declaration.controls.dryRun = false;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined)))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, false);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
+            });
+    });
+
+    it('should not change the system when true controls.dryRun and without dryRun query parameter', () => {
+        decl.declaration.controls.dryRun = true;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined)))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls.dryRun, true);
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
+            });
+    });
+
+    it('should change the system without controls param and dryRun query parameter false', () => {
+        delete decl.declaration.controls;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=false')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls, undefined);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testPool');
+                assert.strictEqual(response.fullPath, '/TEST_DNS_Nameserver/Awesome_Application/testPool');
+            });
+    });
+
+    it('should not change the system without controls param and dryRun query parameter true', () => {
+        delete decl.declaration.controls;
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm it starts in a clean state
+            })
+            .then(() => assert.isFulfilled(postDeclaration(decl, undefined, '?controls.dryRun=true')))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.declaration.controls, undefined);
+            })
+            .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
+            .then((response) => {
+                assert.strictEqual(response, ''); // Confirm nothing happened
             });
     });
 });
