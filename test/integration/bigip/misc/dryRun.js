@@ -505,7 +505,7 @@ describe('dryRun testing', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.declaration.controls, undefined);
+                assert.strictEqual(response.declaration.controls.dryRun, undefined);
             })
             .then(() => getPath('/mgmt/tm/ltm/pool/~TEST_DNS_Nameserver~Awesome_Application~testPool'))
             .then((response) => {
@@ -526,7 +526,7 @@ describe('dryRun testing', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.declaration.controls, undefined);
+                assert.strictEqual(response.declaration.controls.dryRun, undefined);
             })
             .then(() => assert.isFulfilled(getPath('/mgmt/shared/appsvcs/declare')))
             .then((response) => {
