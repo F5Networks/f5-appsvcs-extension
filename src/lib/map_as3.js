@@ -1020,12 +1020,10 @@ const translate = {
     NodeMonitor(dec, source) {
         const monitorsObj = {};
         Object.keys(source.monitors).forEach((key) => {
-            if (['/Common/gateway_icmp',
-                '/Common/https_443',
-                '/Common/icmp',
-                '/Common/real_server',
-                '/Common/snmp_dca',
-                '/Common/tcp_echo'].indexOf(key) > -1) {
+            if ([
+                '/Common/gateway_icmp',
+                '/Common/icmp'
+            ].indexOf(key) > -1) {
                 monitorsObj[key] = {};
             }
             if (key.split('/')[1] !== 'Common' && key.split('/').length > 1) {
@@ -1036,12 +1034,9 @@ const translate = {
                         copyDec = copyDec[prop];
                     }
                 });
-                if (copyDec.monitorType && ['gateway_icmp',
-                    'https_443',
+                if (copyDec.monitorType && [
                     'icmp',
-                    'real_server',
-                    'snmp_dca',
-                    'tcp_echo'].indexOf(copyDec.monitorType) > -1) {
+                    'gateway_icmp'].indexOf(copyDec.monitorType) > -1) {
                     monitorsObj[key] = {};
                 }
             }

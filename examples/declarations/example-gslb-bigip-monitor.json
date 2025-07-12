@@ -11,7 +11,7 @@
                 "monitorType": "bigip",
                 "interval": 30,
                 "timeout": 90,
-                "ignoreDownResponse": true,
+                "ignoreDownResponseEnabled": true,
                 "aggregateDynamicRatios": "average-nodes"
                 }
             }

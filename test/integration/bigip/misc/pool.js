@@ -457,7 +457,7 @@ describe('Pool', function () {
             });
     });
 
-    it('should post with support monitors for node', () => {
+    it('Verify icmp and https monitor assigned to a node', () => {
         const declaration = {
             class: 'ADC',
             schemaVersion: '3.54.0',
@@ -495,9 +495,9 @@ describe('Pool', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
             })
-            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/gateway-icmp/~NODE_Monitor~app~F5_796e378f_6182_46b0_870b_cf0571282tea'))
             .then((response) => {
-                assert.strictEqual(response.items[0].monitor, '/NODE_Monitor/app/F5_796e378f_6182_46b0_870b_cf0571282tea');
+                assert.strictEqual(response.name, 'F5_796e378f_6182_46b0_870b_cf0571282tea');
             });
     });
 
