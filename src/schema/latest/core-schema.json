@@ -36,7 +36,7 @@
                 },
                 {
                     "description": "The current version of AS3.",
-                    "const": "3.54.0"
+                    "const": "3.54.2"
                 }
             ]
         },

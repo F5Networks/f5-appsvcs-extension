@@ -1,6 +1,6 @@
 openapi: '3.0.0'
 info:
-  version: 3.54.0
+  version: 3.54.2
   title: F5 BIG-IP AS3
   description: This reference describes the BIG-IP AS3 API and available endpoints.
 externalDocs:
