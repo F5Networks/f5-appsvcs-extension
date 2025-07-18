@@ -12,6 +12,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Changed
 - AUTOTOOL-4640: Introduced a new parameter(Common_0) in the AS3 response trace to monitor the Second Pass execution
+- Updated to Service Discovery 1.24.0-1
 
 ### Removed
 
