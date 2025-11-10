@@ -643,4 +643,168 @@ describe('Service_HTTPS', function () {
 
         return assertServiceHTTPSClass(properties, options);
     });
+
+    it('profileService', function () {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [444],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileService',
+                inputValue: [undefined, { use: 'serviceProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/serviceProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    serviceProfile: {
+                        class: 'Service_Profile'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'serviceProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPSClass(properties, options);
+    });
+
+    it('profileSplitsessionClient', function () {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [444],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileSplitsessionClient',
+                inputValue: [undefined, { use: 'splitsessionClientProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/splitsessionClientProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'splitsessionClientProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPSClass(properties, options);
+    });
+
+    it('profileConnector', () => {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [444],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileConnector',
+                inputValue: [undefined, { use: 'connectorProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/connectorProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    connectorProfile: {
+                        class: 'Connector_Profile',
+                        entryVirtualServer: {
+                            use: 'theService'
+                        }
+                    },
+                    theService: {
+                        class: 'Service_TCP',
+                        virtualType: 'internal',
+                        profileService: {
+                            use: 'serviceProfile'
+                        },
+                        profileSplitsessionClient: {
+                            use: 'splitsessionClientProfile'
+                        }
+                    },
+                    serviceProfile: {
+                        class: 'Service_Profile'
+                    },
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'connectorProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPSClass(properties, options);
+    });
 });

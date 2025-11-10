@@ -143,7 +143,7 @@
         "        [browser-version [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [case-insensitive* | case-sensitive]]",
         "        [user-agent-token [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [case-insensitive* | case-sensitive] name STRING ]]",
         " [http-cookie [request*] all [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [datagroup STRING] [case-insensitive* | case-sensitive] name STRING]",
-        " [geoip [ssl-client-hello* | ssl-server-hello | ssl-server-handshake | request | response]",
+        " [geoip [ssl-client-hello* | ssl-server-hello | ssl-server-handshake | request | response | client-accepted]",
         "        [continent [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [case-insensitive* | case-sensitive] [internal BOOL] [local BOOL] ]",
         "        [country-code [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [case-insensitive* | case-sensitive] [internal BOOL] [local BOOL] ]",
         "        [country-name [not] [equals* | starts-with | ends-with | contains | exists] [values ARRAY_STRING] [case-insensitive* | case-sensitive] [internal BOOL] [local BOOL] ]",

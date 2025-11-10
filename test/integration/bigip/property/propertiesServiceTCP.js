@@ -507,4 +507,143 @@ describe('Service_TCP', function () {
         ];
         return assertClass('Service_TCP', properties);
     });
+
+    it('should build a virtual server with built in Service profile', function () {
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [123],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.100']],
+                skipAssert: true
+            },
+            {
+                name: 'profileService',
+                inputValue: [undefined, { bigip: '/Common/service' }, undefined],
+                expectedValue: [undefined, 'service', undefined],
+                extractFunction: (virtual) => extractProfile(virtual, 'service')
+            }
+        ];
+        return assertClass('Service_TCP', properties);
+    });
+
+    it('should build a virtual server with built in Splitsession Client profile', function () {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [123],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileSplitsessionClient',
+                inputValue: [undefined, { use: 'splitsessionClientProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/splitsessionClientProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'splitsessionClientProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertClass('Service_TCP', properties, options);
+    });
+
+    it('should build a virtual server with built in Connector profile', function () {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [123],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileConnector',
+                inputValue: [undefined, { use: 'connectorProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/connectorProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    connectorProfile: {
+                        class: 'Connector_Profile',
+                        entryVirtualServer: {
+                            use: 'theService'
+                        }
+                    },
+                    theService: {
+                        class: 'Service_TCP',
+                        virtualType: 'internal',
+                        profileService: {
+                            use: 'serviceProfile'
+                        },
+                        profileSplitsessionClient: {
+                            use: 'splitsessionClientProfile'
+                        }
+                    },
+                    serviceProfile: {
+                        class: 'Service_Profile'
+                    },
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'connectorProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertClass('Service_TCP', properties, options);
+    });
 });

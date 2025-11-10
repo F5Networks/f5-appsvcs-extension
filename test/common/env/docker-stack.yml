@@ -10,7 +10,7 @@ resources:
       image: Ubuntu18.04LTS-pristine
       flavor: m1.medium
       networks:
-        - network: AdminNetwork2
+        - network: AdminNetwork
       user_data_format: SOFTWARE_CONFIG
       user_data: {get_resource: configuration}
 
@@ -33,4 +33,4 @@ outputs:
       str_replace:
         template: http://host:8500
         params:
-          host: {get_attr: [docker_server, networks, AdminNetwork2, 0]}
+          host: {get_attr: [docker_server, networks, AdminNetwork, 0]}

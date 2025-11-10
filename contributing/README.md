@@ -11,6 +11,7 @@ This is the top-level documentation which provides notes and information about c
 - [BIG-IP Licensing](bigip_licensing.md)
 - [BIG-IQ Integration](bigiq_integration.md)
 - [Ciphertext](ciphertext.md)
+- [Debugging](debugging.md)
 - [Node Inspector Profiling](node_inspector_profiling_as3.md)
 
 ## Test Configuration and Results

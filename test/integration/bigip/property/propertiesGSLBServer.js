@@ -156,6 +156,11 @@ describe('GSLB_Server', function () {
                 expectedValue: ['disabled', 'enabled', 'enabled-no-delete']
             },
             {
+                name: 'virtualServers',
+                inputValue: [[]],
+                skipAssert: true
+            },
+            {
                 name: 'exposeRouteDomainsEnabled',
                 inputValue: [undefined, true, false],
                 expectedValue: ['no', 'yes', 'no']
@@ -212,6 +217,11 @@ describe('GSLB_Server', function () {
                 name: 'proberPreferred',
                 inputValue: ['pool'],
                 expectedValue: ['pool']
+            },
+            {
+                name: 'virtualServers',
+                inputValue: [[]],
+                skipAssert: true
             },
             {
                 name: 'proberPool',
@@ -275,6 +285,11 @@ describe('GSLB_Server', function () {
             {
                 name: 'devices.0',
                 inputValue: [{}],
+                skipAssert: true
+            },
+            {
+                name: 'virtualServers',
+                inputValue: [[]],
                 skipAssert: true
             },
             {

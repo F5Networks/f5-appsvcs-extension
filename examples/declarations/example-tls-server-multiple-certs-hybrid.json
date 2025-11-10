@@ -1,0 +1,44 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.55.0",
+    "id": "TLS_Server_Naming_Scheme",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "192.0.2.0"
+                ],
+                "serverTLS": "tlsServer",
+                "virtualPort": 443
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                    {
+                        "certificate": "cert_rsa",
+                        "matchToSNI": "www.somehost.com"
+                    },
+                    {
+                        "certificate": "cert_ecdsa"
+                    }
+                ],
+                "hybrid": true
+            },
+            "cert_rsa": {
+                "class": "Certificate",
+                "remark": "in practice using a passphrase is recommended",
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIIC/zCCAeegAwIBAgIJAORJGvs8YNr7MA0GCSqGSIb3DQEBCwUAMBYxFDASBgNV\nBAMMC2V4YW1wbGUuY29tMB4XDTI1MDcyNDEzMTE0M1oXDTI2MDcyNDEzMTE0M1ow\nFjEUMBIGA1UEAwwLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw\nggEKAoIBAQCrYTIRCP1SOBFouFnewYBpkD3fWMBZGJu270CHLUk3aVp2q0zm8qJi\nGte7BfrAJrDeDzpOPp4/CI3iVYwYscgy2tNa/pwzTmQIRjGWJLv/9ramAuhllExn\n66dHhhKkhCjJA1TgnSQV6dxBhCDYxdogql0ny/ok2qvxgnXvO9EGrcmLoVte5i0j\nl2Zcf+kon1GCNKf70rWLJdhTFNpG4oifrCWAgPXKpf9XCaa+8NDlX3L8FdF+M6P+\nrnkqO7z6Q/6H8bxvv2slxCWqaGMCp/j0Ty2AhYfVMy/em+KAygJt7Zig10kx4sZw\nXFvkJA0LgiJMLyl3UfliYyMqI4PJaX0PAgMBAAGjUDBOMB0GA1UdDgQWBBQQBds4\n0eZsSjyctu+C9AccSJQlhTAfBgNVHSMEGDAWgBQQBds40eZsSjyctu+C9AccSJQl\nhTAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAGzfXFqZwNUnI16AUm\n8iog6s+MCFwMCyhRvY0bp0yZ3VQyerT1KFB2go0opqgCcC/rCqeiTeKWInDPvmCY\n+sIBoVQ44Pp8fNBXloBuxA1B6HQonR0hJaa27ly0qfzsn2qum0B5W/6aFUlpJ2fJ\nwwnlT09NoaLBoQxID/KrvAjMZDrpAoo0V23G79W7u5YhNOkhx2zSBuE5Zw8q4Dpv\nMVE/waxVvLj6leP05b+ihrUEezNOco51OkYBBkiFBUkhW7SfqKDp87bJW7qNbhkg\ntPJVAvf9debN2CwwmMgI0oiLPMirIXAWwMrfeUExF8vL4+nAbpb1+qdf6O5SD3Or\n95qA\n-----END CERTIFICATE-----",
+                "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCrYTIRCP1SOBFo\nuFnewYBpkD3fWMBZGJu270CHLUk3aVp2q0zm8qJiGte7BfrAJrDeDzpOPp4/CI3i\nVYwYscgy2tNa/pwzTmQIRjGWJLv/9ramAuhllExn66dHhhKkhCjJA1TgnSQV6dxB\nhCDYxdogql0ny/ok2qvxgnXvO9EGrcmLoVte5i0jl2Zcf+kon1GCNKf70rWLJdhT\nFNpG4oifrCWAgPXKpf9XCaa+8NDlX3L8FdF+M6P+rnkqO7z6Q/6H8bxvv2slxCWq\naGMCp/j0Ty2AhYfVMy/em+KAygJt7Zig10kx4sZwXFvkJA0LgiJMLyl3UfliYyMq\nI4PJaX0PAgMBAAECggEARNKzBvlLtc1zXFEQMi8WEQ6OcleTYxRJUDUTflWW3gxO\nenJ/Xw2YXXp3IRGdKbY/9+U4nnxyE1EtnXOKX85hXd7X2uZ9tvLnpBUAS9Hzt66N\nmex4BHcCGgeeNVBnwy6ZrGPMnakteSlhvOPBRxxpZQ3VfCpjiZJRU5r3HnwwjJPs\nUwVyqeMDZzY3SFl/pvcq2QSJ30r1hvZ66RvZqng1EJvjFPHoStNB2QSjpmy732T6\nARmi2Bfhga9yAn2708lA1C+Knlow8FZIqp0gtQAWTgo8ASLV1twPIgV26L6+gQD0\n1PZ+Rcde/enPJ8+VKLHlq1eAn3q+jlGrwXp38INz+QKBgQDfdSGr/bkI/FmkpcWZ\n/ciQTEohDa2/8+Q4YCqISw5dVnsnQesSN9oDhVFb4NqJbbhhadw3fHrpLbqYRo7g\nrlM+VX1OucM7wlMzO9/sBPJyr+xKoupN1+mKlMsjzAaDC91dO+WBRMRAOtniR+zz\nXLX/2h6i3xFqBlft+wT6WW3FVwKBgQDEVoOtHCWf0fVoRzvzXoAvruWSfg/TBtbr\nvaSTMzrqP4SybJWnOFIWjlnP/tbGCKoG0Tc20rpw08EmeNiax76wjUMwAjonKftN\nxO9kjWI6rqiAe7Ipu9Nyt4Z4YznBifCLBTLNvEiPzA0ubdglSg3o6vM0PcSgwrII\n5oPJNnG7CQKBgARSy9f8DLxzxXg+DNix5FOGZljFXvs7yMqecbQ5X4nGxpM330h2\n9CzlQ3G3pALMsKiR18TrD6W7UMTpeJI4TTwDg20mgvSBCgMPwYFbhyVY6gV3qXjg\nGJCp2FRU+jtG232WTxZ1Mibb/KM4KQl8XbkZi0Yzcq7OeJ0OIkaFvG35AoGAaGC6\nBhjVo76CIdrk80AFE9R+NcAQ95ZGQfOC/8KXipsUF6sEcG7PrTAmbR5E3ekTQyaM\nnPewqHTa1XIfbUHNjZy74FT+x31ZHYIZ5rIHS7041X1tPSSeh/krYusVdF+54p5z\n4M49IT1QsKMy6rgQ5wepHdfMpc57yaGK5Diug8kCgYEA2DPvCLr5ATKrpePVuMgw\n3WIb/m/dd47tGSL1M+x739VthRkhNpZVK9T5t4/H5Sf/fv5/VZ6E7Er2CsPIgJrB\n/n21A3Hdj3C9DQrYmSzfC3D7j2V0mcZaaGYPvQSQpbBkGhqNmadeZwokGW1HD640\nCUme8qv3ZCx28kTttYkAt9Y=\n-----END PRIVATE KEY-----"
+            },
+            "cert_ecdsa": {
+                "class": "Certificate",
+                "remark": "in practice using a passphrase is recommended",
+                "certificate": "-----BEGIN CERTIFICATE-----\nMIICaDCCAg2gAwIBAgIJAP13qQYRz0CPMAoGCCqGSM49BAMCMBYxFDASBgNVBAMM\nC2V4YW1wbGUuY29tMB4XDTI1MDcyNDEzMTIwMloXDTI2MDcyNDEzMTIwMlowFjEU\nMBIGA1UEAwwLZXhhbXBsZS5jb20wggFLMIIBAwYHKoZIzj0CATCB9wIBATAsBgcq\nhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg////\n/wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxl\nHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEQQRrF9Hy4SxC\nR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClk/jQuL+Gn+bjufrSnwPnhYrzjNXazFe\nzsu2QGg3v1H1AiEA/////wAAAAD//////////7zm+q2nF56E87nKwvxjJVECAQED\nQgAEiiAyU5TVP/RHNVCUptrdC76GF1qIy0rid41QQUiL8GLq1IBmIJznMZC5To0D\nnH6RkBXLBx0gM6Gpv0vvbQ996aNQME4wHQYDVR0OBBYEFBYFj/M+v2+nxH0zPrGF\nQfbwvDiVMB8GA1UdIwQYMBaAFBYFj/M+v2+nxH0zPrGFQfbwvDiVMAwGA1UdEwQF\nMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAJiQGYNiJGSFzvc0Eyf5ikb6pCMqvmWC\nTITvMQP4OkASAiEAi2ZqngIfpC/c/699/wgLkH8gYU6K7jeonzOS1k7N8hY=\n-----END CERTIFICATE-----",
+                "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIBeQIBADCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAAB\nAAAAAAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA\n///////////////8BCBaxjXYqjqT57PrvVV2mIa8ZR0GsMxTsPY7zjw+J9JgSwMV\nAMSdNgiG5wSTamZ44ROdJreBn36QBEEEaxfR8uEsQkf4vOblY6RA8ncDfYEt6zOg\n9KE5RdiYwpZP40Li/hp/m47n60p8D54WK84zV2sxXs7LtkBoN79R9QIhAP////8A\nAAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBBG0wawIBAQQgLScB0Krj24t/\na/YLAV1CW7LGhGO8TS4i3QpldBZ4xXKhRANCAASKIDJTlNU/9Ec1UJSm2t0LvoYX\nWojLSuJ3jVBBSIvwYurUgGYgnOcxkLlOjQOcfpGQFcsHHSAzoam/S+9tD33p\n-----END PRIVATE KEY-----"
+            }
+        }
+    }
+}

@@ -220,55 +220,6 @@ describe('serviceAddress', function () {
                 .then(() => deleteBigipItems(bigipItems)));
     });
 
-    it('should not be thrown an error if the Service Address autoDelete field is enabled on non-common partitions', () => {
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.0.0',
-            tenant: {
-                class: 'Tenant',
-                app: {
-                    class: 'Application',
-                    vaddr: {
-                        class: 'Service_Address',
-                        virtualAddress: '10.0.1.2',
-                        autoDelete: true
-                    }
-                }
-            }
-        };
-
-        return Promise.resolve()
-            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-            }).finally(() => deleteDeclaration());
-    });
-
-    it('should be thrown an error if the Service Address autoDelete field is disabled on non-common partitions', () => {
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.0.0',
-            tenant: {
-                class: 'Tenant',
-                app: {
-                    class: 'Application',
-                    vaddr: {
-                        class: 'Service_Address',
-                        virtualAddress: '10.0.1.2',
-                        autoDelete: false
-                    }
-                }
-            }
-        };
-
-        return Promise.resolve()
-            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 422);
-                assert.strictEqual(response.results[0].message, 'Disabling auto-delete for service addresses in non-common tenants is not supported.');
-            });
-    });
-
     it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
         const decl1 = {
             class: 'ADC',
@@ -374,7 +325,7 @@ describe('serviceAddress', function () {
                 .then(() => deleteBigipItems(bigipItems)));
     });
 
-    it('changing VirtualServer name should not change VirtualAddress properties', () => {
+    it('changing VirtualServer name should not change VirtualAddress properties.', () => {
         const bigipItems = [
             {
                 endpoint: '/mgmt/tm/net/route-domain',
@@ -460,6 +411,55 @@ describe('serviceAddress', function () {
             })
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('should not be thrown an error if the Service Address autoDelete field is enabled on non-common partitions', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: true
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            }).finally(() => deleteDeclaration());
+    });
+
+    it('should be thrown an error if the Service Address autoDelete field is disabled on non-common partitions', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.0.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    vaddr: {
+                        class: 'Service_Address',
+                        virtualAddress: '10.0.1.2',
+                        autoDelete: false
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'Disabling auto-delete for service addresses in non-common tenants is not supported.');
+            });
     });
 
     it('should show more information for \'Common\' tenant', () => {
@@ -638,6 +638,66 @@ describe('serviceAddress', function () {
             .then((response) => {
                 assert.strictEqual(response.fullPath, '/testApp/appFront1/vs1');
                 assert.strictEqual(response.destination, '/Common/Shared/virtual-address_192.0.2.33:80');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should handle virtualAddresses mask plus shareAddresses true not idempotent', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    testVS: {
+                        class: 'Service_Forwarding',
+                        forwardingType: 'ip',
+                        layer4: 'udp',
+                        snat: {
+                            use: 'testSnat'
+                        },
+                        virtualAddresses: [['192.0.2.0/24', '198.51.100.0/23']],
+                        shareAddresses: true,
+                        virtualPort: 3999
+                    },
+                    testSnat: {
+                        class: 'SNAT_Pool',
+                        snatAddresses: ['192.0.2.2']
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => deleteDeclaration())
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => {
+                decl.tenant.app.testVS.virtualAddresses = decl.tenant.app.testVS.virtualAddresses[0];
+                return postDeclaration(decl, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 3 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
             })
             .finally(() => deleteDeclaration());
     });

@@ -129,4 +129,12 @@ describe('normalize', () => {
             assert.strictEqual(normalize.quoteString(original), expected);
         });
     });
+
+    describe('specialChars', () => {
+        it('should quote the specialChars values', () => {
+            const original = 'example\\?key';
+            const expected = '"example\\\\?key"';
+            assert.strictEqual(normalize.quoteString(original, true), expected);
+        });
+    });
 });

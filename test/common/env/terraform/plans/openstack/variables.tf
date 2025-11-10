@@ -34,7 +34,7 @@ variable "image_flavor" {
 variable "networks" {
   description = "Networks for BIGIP"
   default = {
-      1: "AdminNetwork2",
+      1: "AdminNetwork",
       2: "vlan1010",
       3: "vlan1011"
     }

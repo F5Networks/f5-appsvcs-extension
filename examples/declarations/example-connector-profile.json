@@ -1,0 +1,51 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.55.0",
+    "label": "Sample_Service",
+    "remark": "Sample_Service",
+    "Sample_Service": {
+        "class": "Tenant",
+        "ServiceTCP": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualPort": 80,
+                "virtualAddresses": [
+                    "192.0.2.0"
+                ],
+                "profileConnector": {
+                    "use": "connectorProfile"
+                }
+            },
+            "connectorProfile": {
+                "class": "Connector_Profile",
+                "entryVirtualServer": {
+                    "use": "theService"
+                }
+            },
+            "theService": {
+                "class": "Service_TCP",
+                "virtualType": "internal",
+                "profileService": {
+                    "use": "serviceProfile"
+                },
+                "profileSplitsessionClient": {
+                    "use": "splitsessionClientProfile"
+                }
+            },
+            "serviceProfile": {
+                "class": "Service_Profile",
+                "type": "inline-http-explicit"
+            },
+            "splitsessionClientProfile": {
+                "class": "Splitsession_Client_Profile",
+                "description": "none",
+                "peerPort": 80,
+                "peerIp": "192.0.2.1",
+                "localPeer": false,
+                "httpHeader": "none",
+                "sessionLookupType": "flow"
+            }
+        }
+    }
+}

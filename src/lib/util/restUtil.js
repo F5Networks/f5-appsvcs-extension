@@ -21,6 +21,7 @@ const util = require('./util');
 const Config = require('../config');
 const STATUS_CODES = require('../constants').STATUS_CODES;
 const perAppUtil = require('./perAppUtil');
+const utils = require('./util');
 
 /**
  * builds an operation result
@@ -121,9 +122,13 @@ const completeRequestMultiStatus = function (restOperation, results, format) {
         const statusCode = getMultiStatusCode(results);
         const body = getMultiBody(results, statusCode);
         restOperation.setStatusCode(statusCode);
+        const maskedConstBody = utils.maskSensitiveConstants(body);
+        restOperation.setBody(maskedConstBody);
         restOperation.setBody(body);
     } else {
         restOperation.setStatusCode(results.code);
+        const maskedConstBody = utils.maskSensitiveConstants(results.body);
+        restOperation.setBody(maskedConstBody);
         restOperation.setBody(results.body || results);
     }
 
@@ -156,7 +161,8 @@ const completeRequest = function (restOperation, result, perAppInfo) {
     }
 
     restOperation.setStatusCode(result.code);
-    restOperation.setBody(body);
+    const maskedConstBody = utils.maskSensitiveConstants(body);
+    restOperation.setBody(maskedConstBody);
 
     restOperation.complete();
     checkWebhook(restOperation, result);

@@ -2546,4 +2546,71 @@ describe('util', () => {
             assert.strictEqual(util.convertRouteDomainIDToRestAPI('/Common/test_virtual.Address%10'), '/Common/test_virtual.Address%2510');
         });
     });
+
+    describe('.maskSensitiveConstants', () => {
+        it('should mask constants', () => {
+            const declaration = {
+                class: 'ADC',
+                schemaVersion: '3.54.0',
+                id: 'waf-constants-example',
+                constants: {
+                    class: 'Constants',
+                    authkey: 'mySensitiveAPIKey123',
+                    apiSecret: 'anotherSensitiveValue',
+                    maskConstants: true // Mask this object
+                },
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug',
+                    archiveTimestamp: '2024-05-21T11:40:13.016Z',
+                    dryRun: false,
+                    traceResponse: false
+                },
+                nestedStructure: {
+                    anotherConstantsObject: {
+                        class: 'Constants',
+                        sensitiveToken: 'verySensitive',
+                        maskConstants: true // Mask this object as well
+                    },
+                    unrelatedObject: {
+                        type: 'NotConstants',
+                        value: 'SomethingUnrelated'
+                    }
+                }
+            };
+
+            const output = util.maskSensitiveConstants(declaration);
+            assert.deepStrictEqual(output, {
+                class: 'ADC',
+                schemaVersion: '3.54.0',
+                id: 'waf-constants-example',
+                constants: {
+                    class: 'Constants',
+                    authkey: '**MASKED**',
+                    apiSecret: '**MASKED**',
+                    maskConstants: true // Mask this object
+                },
+                controls: {
+                    class: 'Controls',
+                    trace: true,
+                    logLevel: 'debug',
+                    archiveTimestamp: '2024-05-21T11:40:13.016Z',
+                    dryRun: false,
+                    traceResponse: false
+                },
+                nestedStructure: {
+                    anotherConstantsObject: {
+                        class: 'Constants',
+                        sensitiveToken: '**MASKED**',
+                        maskConstants: true // Mask this object as well
+                    },
+                    unrelatedObject: {
+                        type: 'NotConstants',
+                        value: 'SomethingUnrelated'
+                    }
+                }
+            });
+        });
+    });
 });

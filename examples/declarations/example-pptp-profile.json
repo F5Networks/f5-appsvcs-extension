@@ -1,0 +1,58 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.53.0",
+        "id": "pptp-profile-declaration",
+        "Sample_Tenant": {
+            "class": "Tenant",
+            "Sample_App": {
+                "class": "Application",
+                "template": "generic",
+                "pptpProfileSample": {
+                    "class": "PPTP_Profile",
+                    "description": "Sample PPTP profile",
+                    "label": "test",
+                    "remark": "test",
+                    "defaultsFrom": {
+                        "bigip": "/Common/pptp"
+                    },
+                    "csvFormat": true,
+                    "includeDestinationIp": true,
+                    "publisherName": {
+                        "bigip": "/Common/local-db-publisher"
+                    }
+                },
+                "pptpService": {
+                    "class": "Service_TCP",
+                    "virtualAddresses": [
+                        "192.0.2.10"
+                    ],
+                    "virtualPort": 1723,
+                    "snat": "auto",
+                    "pool": "pptpPool",
+                    "profilePPTP": {
+                        "use": "pptpProfileSample"
+                    }
+                },
+                "pptpPool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 1723,
+                            "serverAddresses": [
+                                "192.0.2.12",
+                                "192.0.2.13"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

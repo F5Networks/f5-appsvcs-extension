@@ -1,0 +1,63 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.54.0",
+    "Sample_HTTPS": {
+        "class": "Tenant",
+        "MyHttps": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "192.0.2.1"
+                ],
+                "virtualPort": 8080,
+                "clientTLS": [
+                   
+{                         "use": "tlsClient"                     }
+,
+                   
+{                         "use": "tlsClient1"                     }
+                ],
+                "serverTLS": [
+                   
+{                         "use": "tlsServer"                     }
+,
+                   
+{                         "use": "tlsServer1"                     }
+                ]
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "certificates": [
+                   
+{                         "certificate": "webcert"                     }
+                ],
+                "renegotiationEnabled": false,
+                "requireSNI": true
+            },
+            "tlsServer1": {
+                "class": "TLS_Server",
+                "certificates": [
+                   
+{                         "certificate": "webcert"                     }
+                ],
+                "renegotiationEnabled": false,
+                "requireSNI": false
+            },
+            "tlsClient":
+{                 "class": "TLS_Client",                 "clientCertificate": "webcert",                 "renegotiationEnabled": false,                 "sniDefault": true             }
+,
+            "tlsClient1":
+{                 "class": "TLS_Client",                 "clientCertificate": "webcert",                 "renegotiationEnabled": false,                 "serverName": "test2",                 "sniDefault": false             }
+,
+            "webcert": {
+                "class": "Certificate",
+                "certificate":
+{                     "bigip": "/Common/default.crt"                 }
+,
+                "privateKey":
+{                     "bigip": "/Common/default.key"                 }
+            }
+        }
+    }
+}

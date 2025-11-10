@@ -256,6 +256,10 @@ const translate = {
         return [normalize.actionableMcp(context, obj, 'ltm html-rule tag-remove-attribute', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
     'tm:sys:file:data-group:data-groupstate': function (context, obj) {
+        // remove the additional \\ added when query parameters are present in obj.sourcePath
+        if (obj.sourcePath) {
+            obj.sourcePath = obj.sourcePath.replace(/\\\?/g, '?');
+        }
         return [normalize.actionableMcp(context, obj, 'sys file data-group', util.mcpPath(obj.partition, obj.subPath, obj.name))];
     },
     'tm:ltm:data-group:external:externalstate': function (context, obj) {
@@ -541,6 +545,18 @@ const translate = {
     },
     'tm:ltm:profile:ftp:ftpstate': function (context, obj) {
         return profile(context, obj, 'ltm profile ftp', '');
+    },
+    'tm:ltm:profile:pptp:pptpstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile pptp', '');
+    },
+    'tm:ltm:profile:service:servicestate': function (context, obj) {
+        return profile(context, obj, 'ltm profile service', '');
+    },
+    'tm:ltm:profile:splitsessionclient:splitsessionclientstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile splitsessionclient', '');
+    },
+    'tm:ltm:profile:connector:connectorstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile connector', '');
     },
     'tm:ltm:profile:rtsp:rtspstate': function (context, obj) {
         return profile(context, obj, 'ltm profile rtsp', '');
@@ -1815,6 +1831,54 @@ const translate = {
     },
     'tm:sys:file:ifile:ifilestate': function (context, obj) {
         return [normalize.actionableMcp(context, obj, 'sys file ifile', util.mcpPath(obj.partition, obj.subPath, obj.name))];
+    },
+    'tm:security:ip-intelligence:policy:policystate': function (context, obj) {
+        if (obj.blacklistCategories) {
+            if (obj.blacklistCategories.length === 0) {
+                delete obj.blacklistCategories;
+            } else {
+                const blacklistCategories = {};
+                obj.blacklistCategories.forEach((category) => {
+                    const categoryname = category.name;
+                    delete category.name;
+                    delete category.nameReference;
+                    delete category.partition;
+                    if (category.ignore) {
+                        delete category.ignore;
+                    }
+                    blacklistCategories[categoryname] = category;
+                });
+                delete obj.blacklistCategories;
+                if (blacklistCategories && Object.keys(blacklistCategories).length > 0) {
+                    obj.blacklistCategories = blacklistCategories;
+                }
+            }
+        }
+
+        if (obj.feedLists) {
+            if (Object.keys(obj.feedLists).length === 0) {
+                delete obj.feedLists;
+            } else {
+                const feedLists = {};
+                obj.feedLists.forEach((feed) => {
+                    // Push feedname to feedLists array
+                    feedLists[feed] = '';
+                });
+
+                delete obj.feedLists;
+                if (feedLists && Object.keys(feedLists).length > 0) {
+                    obj.feedLists = feedLists;
+                }
+            }
+        }
+
+        const config = [normalize.actionableMcp(context, obj, 'security ip-intelligence policy', util.mcpPath(obj.partition, obj.subPath, obj.name))];
+        config.forEach((c) => {
+            if (c.name) {
+                delete c.name;
+            }
+        });
+        return config;
     }
 
 };

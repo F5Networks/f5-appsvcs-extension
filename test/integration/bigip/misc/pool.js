@@ -411,6 +411,99 @@ describe('Pool', function () {
             });
     });
 
+    it('should create the new pool successfully when modifying pool from fqdn to node with fdqn node IP', () => {
+        const declaration1 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'tcp'
+                        ],
+                        members: [
+                            {
+                                addressDiscovery: 'fqdn',
+                                servicePort: 80,
+                                autoPopulate: true,
+                                hostname: 'www.f5.com'
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const declaration2 = {
+            class: 'ADC',
+            schemaVersion: '3.54.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'tcp'
+                        ],
+                        members: [
+                            {
+                                servicePort: 80,
+                                serverAddresses: [
+                                    '192.0.2.1',
+                                    '192.0.2.2',
+                                    '192.0.2.3'
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration1, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((response) => {
+                const ephemeralNode = (response.items || []).filter((node) => node.name.includes('_auto_'));
+                assert.strictEqual(ephemeralNode.length, 1);
+                const fqdnNode = (response.items || []).filter((node) => node.name === 'www.f5.com');
+                assert.strictEqual(fqdnNode.length, 1);
+                if (!declaration2.Common.Shared.pool.members[0].serverAddresses.includes(ephemeralNode[0].address)) {
+                    // Adding ephemeral node created due to fqdn member, to the members list
+                    declaration2.Common.Shared.pool.members[0].serverAddresses.push(ephemeralNode[0].address);
+                }
+            })
+            .then(() => postDeclaration(declaration2, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+            })
+            .then(() => getPath('/mgmt/tm/ltm/node'))
+            .then((response) => {
+                // 4 Nodes used in the declaration should be created
+                // and FQDN Node, ephemeral node should be deleted
+                assert.strictEqual(response.items.length, 4);
+                const nodeAddressArr = (response.items.map((item) => item.address)).sort();
+                const expectednodAddressArr = declaration2.Common.Shared.pool.members[0].serverAddresses.sort();
+                assert.deepStrictEqual(nodeAddressArr, expectednodAddressArr);
+                const fqdnEpheNodes = (response.items || []).filter((node) => (node.name === 'www.f5.com' || node.ephemeral === true));
+                assert.strictEqual(fqdnEpheNodes.length, 0);
+            })
+            .then(() => postDeclaration(declaration2, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
     it('should post shared fqdn nodes in Common', () => {
         const declaration = {
             class: 'ADC',
@@ -1224,5 +1317,241 @@ describe('Pool', function () {
                 'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Virtual Server (/ADC-TENANT/app_monitor_test/app_vs1) was not found.","errorStack":[],"apiError":3}'
             ))
             .finally(() => deleteDeclaration());
+    });
+
+    it('should handle the Pool Member description', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        remark: 'testRemark',
+                        members: [
+                            {
+                                serverAddresses: [
+                                    '192.0.2.0'
+                                ],
+                                servicePort: 80
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, undefined);
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => {
+                declaration.tenant.app.pool.members[0].description = 'remarkOne';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => {
+                delete declaration.tenant.app.pool.members[0].description;
+                return postDeclaration(declaration, { declarationIndex: 3 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, undefined);
+                assert.strictEqual(response.monitor, 'default');
+            });
+    });
+
+    it('should manage the Pool Members', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    pool: {
+                        class: 'Pool',
+                        remark: 'testRemark',
+                        members: [
+                            {
+                                serverAddresses: [
+                                    '192.0.2.0'
+                                ],
+                                servicePort: 80
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, undefined);
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => {
+                declaration.tenant.app.pool.members[0].description = 'remarkOne';
+                declaration.tenant.app.pool.members.push({
+                    autoPopulate: true,
+                    hostname: 'www.f5.com',
+                    servicePort: 80,
+                    addressDiscovery: 'fqdn'
+                });
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~www.f5.com:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/www.f5.com:80');
+                assert.strictEqual(response.description, undefined);
+                assert.strictEqual(response.fqdn.autopopulate, 'enabled');
+                assert.strictEqual(response.fqdn.tmName, 'www.f5.com');
+            })
+            .then(() => {
+                declaration.tenant.app.pool.members[1].description = 'remarkTwo';
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~www.f5.com:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/www.f5.com:80');
+                assert.strictEqual(response.description, 'remarkTwo');
+                assert.strictEqual(response.fqdn.autopopulate, 'enabled');
+                assert.strictEqual(response.fqdn.tmName, 'www.f5.com');
+            })
+            .then(() => {
+                declaration.tenant.app.pool.members[1].servicePort = 443;
+                return postDeclaration(declaration, { declarationIndex: 3 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~www.f5.com:80'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/www.f5.com:80","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~www.f5.com:443'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/www.f5.com:443');
+                assert.strictEqual(response.description, 'remarkTwo');
+                assert.strictEqual(response.fqdn.autopopulate, 'enabled');
+                assert.strictEqual(response.fqdn.tmName, 'www.f5.com');
+            })
+            .then(() => {
+                delete declaration.tenant.app.pool.members[1].autoPopulate;
+                delete declaration.tenant.app.pool.members[1].hostname;
+                delete declaration.tenant.app.pool.members[1].description;
+                declaration.tenant.app.pool.members[1].addressDiscovery = 'static';
+                declaration.tenant.app.pool.members[1].servicePort = 80;
+                declaration.tenant.app.pool.members[1].serverAddresses = ['192.0.2.1'];
+                return postDeclaration(declaration, { declarationIndex: 4 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~www.f5.com:80'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/www.f5.com:80","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.1:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.1:80');
+                assert.strictEqual(response.description, undefined);
+                assert.strictEqual(response.fqdn.autopopulate, 'disabled');
+            })
+            .then(() => {
+                declaration.tenant.app.pool.members[1].description = 'remarkOne';
+                const member = declaration.tenant.app.pool.members[1];
+                declaration.tenant.app.pool.members = [];
+                declaration.tenant.app.pool.members[0] = member;
+                return postDeclaration(declaration, { declarationIndex: 5 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.0:80'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/192.0.2.0:80","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool/members/~tenant~192.0.2.1:80'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.1:80');
+                assert.strictEqual(response.description, 'remarkOne');
+                assert.strictEqual(response.monitor, 'default');
+            });
     });
 });

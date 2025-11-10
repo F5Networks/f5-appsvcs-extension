@@ -1,6 +1,47 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.55.0
+
+### Added
+- AUTOTOOL-4734: Allow Modification of iFile Content via AS3, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-ifile-ignorechanges.json)
+- AUTOTOOL-4707: Unable to assign DOS profile as LTM policy action, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-endpoint-policy-enable-disable-botdefense.json)
+- AUTOTOOL-4668: ([Github Issue 476](https://github.com/F5Networks/f5-appsvcs-extension/issues/476)) Deploy multiple certificates into a single ClientSSL profile [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-tls-server-multiple-certs-hybrid.json)
+- AUTOTOOL-4676: Support PPTP Profile [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-pptp-profile.json).
+- AUTOTOOL-4415: Add Support for serversslUseSni Option in Virtual Server Configuration [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-serverssl-use-sni.json)
+- AUTOTOOL-4279: Support to mask profiles in Constants class [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-mask-constants.json)
+- AUTOTOOL-4724: Add Class to create IP-Intelligence policies - AS3 ([Github Issue 668](https://github.com/F5Networks/f5-appsvcs-extension/issues/668))[Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-ip-intelligence-policy.json)
+- AUTOTOOL-4836: ([Github Issue 684](https://github.com/F5Networks/f5-appsvcs-extension/issues/684)) Support Service Profiles [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-service-profile.json).
+- AUTOTOOL-4836: Support Splitsession Client Profiles [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-splitsessionClient-profile.json).
+- AUTOTOOL-4566: ([Github Issue 683](https://github.com/F5Networks/f5-appsvcs-extension/issues/683)) Support Connector Profiles [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-connector-profile.json).
+
+### Fixed
+- AUTOTOOL-4689: GTM pools issues after POST GTM servers via AS3
+- AUTOTOOL-4397: ([Github Issue 840](https://github.com/F5Networks/f5-appsvcs-extension/issues/840)) GSLB_Server - Using 'label' or 'remark' will not set Device name.
+- AUTOTOOL-4477: LTM policy rule condition for "geoip" not work in event "client-accepted"
+- AUTOTOOL-3007: ([Github Issue 558](https://github.com/F5Networks/f5-appsvcs-extension/issues/558)) DOS_Profile.application.stressBasedDetection.badActor - Use TLS patterns as part of host identification, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-dos-profile-signatures-tls-fp.json).
+- AUTOTOOL-4631: ([Github Issue 895](https://github.com/F5Networks/f5-appsvcs-extension/issues/895)) Cannot change Pool from FQDN to IP if the node IPs are the same. Continuation of #572.
+- AUTOTOOL-4718: Fails to remark LTM pool member
+- AUTOTOOL-4673: ([Github Issue 873](https://github.com/F5Networks/f5-appsvcs-extension/issues/873)) LTM "legacy" policy automatically adds "requires { http }" and it breaks the customer's AS3 use case
+- AUTOTOOL-4745: ([Github Issue 872](https://github.com/F5Networks/f5-appsvcs-extension/issues/872)) VirtualAddresses w/mask plus shareAddresses true not idempotent
+- AUTOTOOL-3714: ([Github Issue 699](https://github.com/F5Networks/f5-appsvcs-extension/issues/699)) Unable to delete AS3 tenant because of irule dependency issue
+- AUTOTOOL-4679: Escaped characters in declaration cause AS3 to deploy changes when same declaration is applied again.
+- AUTOTOOL-4709: ([Github Issue 919](https://github.com/F5Networks/f5-appsvcs-extension/issues/919)) Declaring the same pool member server name multiple times validates, but only uses the last IP address and does not error out
+- AUTOTOOL-4376: "ignoreChanges" parameter is ignored when externalFilePath URL has query string
+- AUTOTOOL-4683: Unable to create node when same IP SNAT Translation exists
+- AUTOTOOL-4470: ([Github Issue 863](https://github.com/F5Networks/f5-appsvcs-extension/issues/863)) WAF_Policy: allow use of policy/use referring an existing ASM Policy on the BIG-IP, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-waf-policy-reference.json).
+- AUTOTOOL-4674: ([Github Issue 903](https://github.com/F5Networks/f5-appsvcs-extension/issues/903)) AS3 is ignoring SNIdefault flag
+- AUTOTOOL-4839: The serverTLS profiles are not handled correctly when an array of TLS_Server objects is provided in the declaration on the Virtual Server.
+- AUTOTOOL-4818: ([Github Issue 802](https://github.com/F5Networks/f5-appsvcs-extension/issues/802)) AS3 GitHub issue 802 possible regression
+- AUTOTOOL-4797: AS3 creation of Traffic Matching Criteria ignores Destination Port Inline
+- AUTOTOOL-3902: ([Github Issue 732](https://github.com/F5Networks/f5-appsvcs-extension/issues/732)) Cant rename virtual server. Experiencing code 422 Declaration failed
+
+### Changed
+- Optimize the post process ASM call in AS3.
+- AUTOTOOL-4850: Update to Service Discovery 1.24.0-6 to address package dependency cves
+
+### Removed
+
 ## 3.54.2
 
 ### Added
@@ -23,12 +64,12 @@ Changes to this project are documented in this file. More detail (including info
 - 1755469: Create and reference multiple TLS profiles with a single declaration listing
 - AUTOTOOL-4642: [AS3]: There is a need to avoid traffic impact in pool management
 - 1599197: ([Github Issue 865](https://github.com/F5Networks/f5-appsvcs-extension/issues/865)) Ability to create a custom BIG-IP type GSLB monitor with AS3, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-bigip-monitor.json).
-- AUTOTOOL-4649: ([Github Issue 887](https://github.com/F5Networks/f5-appsvcs-extension/issues/887))[AS3][MasterCard] Add support for oneconnect-status-reuse in http profile via AS3 #887, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-http-multiplex-properties.json).
+- AUTOTOOL-4649: ([Github Issue 887](https://github.com/F5Networks/f5-appsvcs-extension/issues/887)) Add support for oneconnect-status-reuse in http profile via AS3 #887, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-http-multiplex-properties.json).
 
 ### Fixed
 - AUTOTOOL-3510: Pool member changing from 443 to 80 (no SSL) - Unexpected paramater appear in created http monitor
 - AUTOTOOL-4597: ([Github Issue 871](https://github.com/F5Networks/f5-appsvcs-extension/issues/871)) Can't use "requireSNI" property
-- AUTOTOOL-4388: [AS3][SR][Swisscom]: AS3 declaration fails with error 0107176c:3: Invalid Virtual Address, the IP address X%X already exists
+- AUTOTOOL-4388: AS3 declaration fails with error 0107176c:3: Invalid Virtual Address, the IP address X%X already exists
 - AUTOTOOL-4620: ([Github Issue 885](https://github.com/F5Networks/f5-appsvcs-extension/issues/885)) GSLB WideIP - "poolsCname" object is not allowed along with "pools", [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-pools_with_poolsCname.json).
 - 1673189: Unable to create the GSLB_Data_Center object if the prober pool does not exist.
 - AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
@@ -36,6 +77,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4638: Escape characters are getting added to actions for LTM Policy creation
 - AUTOTOOL-4657: [AS3]: When "bigip" is used with "virtualAddresses" it picks up wrong IP
 - AUTOTOOL-4662: [AS3] Unable to rename GSLB Monitor through AS3
+- AUTOTOOL-4629: [AS3]: WAF_Policy object ignoreChanges property is ignored for tenant names with dots
 
 ### Changed
 - Updated to Service Discovery 1.23.0-1

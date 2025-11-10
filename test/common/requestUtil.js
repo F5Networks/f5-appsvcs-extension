@@ -23,6 +23,60 @@ const validateEnvVars = require('./checkEnv').validateEnvVars;
 
 const REQUEST_TIMEOUT = 180000;
 
+/**
+ * Retry function with exponential backoff
+ * @param {Function} fn - The function to retry
+ * @param {number} maxRetries - Maximum number of retry attempts (default: 3)
+ * @param {number} initialDelay - Initial delay in milliseconds (default: 1000)
+ * @param {number} backoffMultiplier - Exponential backoff multiplier (default: 2)
+ * @param {Function} shouldRetry - Optional function to determine if error should trigger retry
+ * @returns {Promise} - Promise that resolves with function result or rejects after all retries
+ */
+function retryWithExponentialBackoff(
+    fn,
+    maxRetries = 3,
+    initialDelay = 1000,
+    backoffMultiplier = 2,
+    shouldRetry = null
+) {
+    return new Promise((resolve, reject) => {
+        let attempt = 0;
+
+        function executeAttempt() {
+            attempt += 1;
+
+            Promise.resolve()
+                .then(() => fn())
+                .then(resolve)
+                .catch((error) => {
+                    console.log(`Attempt ${attempt} failed: ${error.message}`);
+
+                    // Check if we should retry this error
+                    if (shouldRetry && !shouldRetry(error)) {
+                        console.log('Error is not retryable, rejecting immediately');
+                        reject(error);
+                        return;
+                    }
+
+                    // Check if we have retries left
+                    if (attempt <= maxRetries) {
+                        let delay = initialDelay;
+                        for (let i = 1; i < attempt; i += 1) {
+                            delay *= backoffMultiplier;
+                        }
+                        console.log(`Retrying in ${delay}ms...`);
+                        setTimeout(executeAttempt, delay);
+                    } else {
+                        error.message = `Failed after ${attempt} attempts: ${error.message}`;
+                        reject(error);
+                    }
+                });
+        }
+
+        executeAttempt();
+    });
+}
+
 function responseHandler(response, options, callback) {
     let data = '';
     response.on('data', (chunk) => { data += chunk; });
@@ -254,5 +308,6 @@ module.exports = {
     post,
     delete: deleteRequest,
     patch,
-    put
+    put,
+    retryWithExponentialBackoff
 };

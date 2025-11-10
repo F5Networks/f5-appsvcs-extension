@@ -1112,6 +1112,143 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:profile:pptp:pptpstate', () => {
+            it('should create tm:ltm:profile:pptp:pptpstate', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:pptp:pptpstate',
+                    name: 'pptpProfileSample',
+                    partition: 'MyTenant1',
+                    subPath: 'MyApp',
+                    fullPath: '/MyTenant1/MyApp/pptpProfileSample',
+                    generation: 1967,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/pptp/~MyTenant1~MyApp~pptpProfileSample',
+                    appService: 'none',
+                    csvFormat: 'enabled',
+                    defaultsFrom: '/Common/pptp',
+                    defaultsFromReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/profile/pptp/~Common~pptp'
+                    },
+                    description: 'Sample PPTP profile',
+                    includeDestinationIp: 'disabled',
+                    publisherName: '/Common/local-db-publisher',
+                    publisherNameReference: {
+                        link: 'https://localhost/mgmt/tm/sys/log-config/publisher/~Common~local-db-publisher?ver=15.1.0'
+                    }
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/MyTenant1/MyApp/pptpProfileSample',
+                    command: 'ltm profile pptp',
+                    properties: {
+                        'defaults-from': '/Common/pptp',
+                        description: '"Sample PPTP profile"',
+                        'csv-format': 'enabled',
+                        'include-destination-ip': 'disabled',
+                        'publisher-name': '/Common/local-db-publisher'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:service:servicestate', () => {
+            it('should create tm:ltm:profile:service:servicestate', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:service:servicestate',
+                    name: 'serviceProfileSample',
+                    partition: 'MyTenant1',
+                    subPath: 'MyApp',
+                    fullPath: '/MyTenant1/MyApp/serviceProfileSample',
+                    generation: 1,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/service/~MyTenant1~MyApp~serviceProfileSample',
+                    appService: 'none',
+                    type: 'inline'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/MyTenant1/MyApp/serviceProfileSample',
+                    command: 'ltm profile service',
+                    properties: {
+                        type: 'inline'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:splitsessionclient:splitsessionclientstate', () => {
+            it('should create tm:ltm:profile:splitsessionclient:splitsessionclientstate', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:splitsessionclient:splitsessionclientstate',
+                    name: 'splitsessionClient',
+                    partition: 'MyTenant1',
+                    subPath: 'MyApp',
+                    fullPath: '/MyTenant1/MyApp/splitsessionClient',
+                    generation: 1,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/service/~MyTenant1~MyApp~splitsessionClient',
+                    appService: 'none',
+                    description: 'none',
+                    httpHeader: 'none',
+                    localPeer: 'false',
+                    peerIp: '192.0.2.1',
+                    peerPort: 80,
+                    sessionLookupType: 'flow'
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/MyTenant1/MyApp/splitsessionClient',
+                    command: 'ltm profile splitsessionclient',
+                    properties: {
+                        description: 'none',
+                        'http-header': 'none',
+                        'local-peer': 'false',
+                        'peer-ip': '192.0.2.1',
+                        'peer-port': 80,
+                        'session-lookup-type': 'flow'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:connector:connectorstate', () => {
+            const obj = {
+                kind: 'tm:ltm:profile:connector:connectorstate',
+                name: 'connectorProfile',
+                partition: 'Sample_Service',
+                subPath: 'ServiceTCP',
+                fullPath: '/Sample_Service/ServiceTCP/connectorProfile',
+                generation: 20580,
+                selfLink: 'https://localhost/mgmt/tm/ltm/profile/connector/~Sample_Service~ServiceTCP~connectorProfile',
+                appService: 'none',
+                connectOnData: 'disabled',
+                connectionTimeout: 0,
+                entryVirtualServer: '/Sample_Service/ServiceTCP/theService',
+                entryVirtualServerReference: {
+                    link: 'https://localhost/mgmt/tm/ltm/virtual/~Sample_Service~ServiceTCP~theService'
+                },
+                serviceDownAction: 'ignore'
+            };
+
+            const results = translate[obj.kind](defaultContext, obj);
+
+            assert.deepStrictEqual(results[0], {
+                path: '/Sample_Service/ServiceTCP/connectorProfile',
+                command: 'ltm profile connector',
+                properties: {
+                    'entry-virtual-server': '/Sample_Service/ServiceTCP/theService',
+                    'connection-timeout': 0,
+                    'service-down-action': 'ignore',
+                    'connect-on-data': 'disabled'
+                },
+                ignore: []
+            });
+        });
+
         describe('tm:ltm:alg-log-profile:alg-log-profilestate', () => {
             it('should convert', () => {
                 const obj = {
@@ -3948,6 +4085,108 @@ describe('map_mcp', () => {
                     ]
                 );
             });
+
+            it("should return ltm 'l7dos' policy", () => {
+                const obj = {
+                    kind: 'tm:ltm:policy:policystate',
+                    name: 'myPolicy',
+                    partition: 'TEST_Service_HTTP',
+                    fullPath: '/TEST_Service_HTTP/myPolicy',
+                    selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy?ver=16.1.2',
+                    controls: [],
+                    status: 'published',
+                    strategy: '/Common/first-match',
+                    strategyReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy-strategy/~Common~first-match?ver=16.1.2'
+                    },
+                    references: {},
+                    rulesReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules?ver=16.1.2',
+                        isSubcollection: true,
+                        items: [
+                            {
+                                kind: 'tm:ltm:policy:rules:rulesstat',
+                                name: 'myPolicy',
+                                fullPath: 'myPolicy',
+                                selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules/myPolicy?ver=16.1.2',
+                                ordinal: 0,
+                                actionsReference: {
+                                    link: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~myPolicy/rules/myPolicy/actions?ver=16.1.2',
+                                    isSubcollection: true,
+                                    items: [
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '0',
+                                            fullPath: '0',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~Application~myPolicy/rules/myPolicy/actions/0?ver=16.1.2',
+                                            l7dos: true,
+                                            code: 0,
+                                            disable: true,
+                                            expirySecs: 0,
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            request: true,
+                                            status: 0,
+                                            timeout: 0,
+                                            vlanId: 0
+                                        },
+                                        {
+                                            kind: 'tm:ltm:policy:rules:actions:actionsstate',
+                                            name: '1',
+                                            fullPath: '1',
+                                            selfLink: 'https://localhost/mgmt/tm/ltm/policy/~TEST_Service_HTTP~Application~myPolicy/rules/myPolicy/actions/1?ver=16.1.2',
+                                            l7dos: true,
+                                            clientAccepted: true,
+                                            code: 0,
+                                            enable: true,
+                                            expirySecs: 0,
+                                            fromProfile: '/Common/profilel7dos',
+                                            fromProfileReference: {
+                                                link: 'https://localhost/mgmt/tm/security/dos/profile/~Common~profilel7dos?ver=16.1.2'
+                                            },
+                                            length: 0,
+                                            offset: 0,
+                                            port: 0,
+                                            status: 0,
+                                            timeout: 0,
+                                            vlanId: 0
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results, [
+                        {
+                            path: '/TEST_Service_HTTP/myPolicy',
+                            command: 'ltm policy',
+                            properties: {
+                                rules: {
+                                    myPolicy: {
+                                        ordinal: 0,
+                                        conditions: {},
+                                        actions: {
+                                            0: {
+                                                policyString: 'l7dos request disable'
+                                            },
+                                            1: {
+                                                policyString: 'l7dos request enable from-profile /Common/profilel7dos'
+                                            }
+                                        }
+                                    }
+                                },
+                                strategy: '/Common/first-match'
+                            },
+                            ignore: []
+                        }
+                    ]
+                );
+            });
         });
 
         describe('tm:ltm:cipher:group:groupstate', () => {
@@ -5526,6 +5765,14 @@ describe('map_mcp', () => {
                         {
                             name: 'quotes',
                             data: 'has \\"quotes\\"'
+                        },
+                        {
+                            name: 'test.data.group1',
+                            data: 'The data?'
+                        },
+                        {
+                            name: 'test.data.group2',
+                            data: 'The data*'
                         }
                     ]
                 };
@@ -5542,8 +5789,78 @@ describe('map_mcp', () => {
                             },
                             '"quotes"': {
                                 data: '"has \\"quotes\\""'
+                            },
+                            '"test.data.group1"': {
+                                data: '"The data\\\\?"'
+                            },
+                            '"test.data.group2"': {
+                                data: '"The data\\\\*"'
                             }
                         }
+                    }
+                );
+            });
+        });
+
+        describe('tm:sys:file:data-group:data-groupstate', () => {
+            it('should handle sys file data-group sourcePath url with no query parameters', () => {
+                const obj = {
+                    kind: 'tm:sys:file:data-group:data-groupstate',
+                    name: 'testDataGroup',
+                    partition: 'testTenant',
+                    subPath: 'testApp',
+                    fullPath: '/testTenant/testApp/testDataGroup',
+                    sourcePath: 'https://example.com/testDataGroup',
+                    type: 'string'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        'source-path': 'https://example.com/testDataGroup',
+                        type: 'string'
+                    }
+                );
+            });
+            it('should handle sys file data-group sourcePath url with query parameters', () => {
+                const obj = {
+                    kind: 'tm:sys:file:data-group:data-groupstate',
+                    name: 'testDataGroup',
+                    partition: 'testTenant',
+                    subPath: 'testApp',
+                    fullPath: '/testTenant/testApp/testDataGroup',
+                    sourcePath: 'https://example.com/testDataGroup\\?param=value1',
+                    type: 'string'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        'source-path': 'https://example.com/testDataGroup?param=value1',
+                        type: 'string'
+                    }
+                );
+            });
+
+            it('should handle sys file data-group sourcePath url with multiple query parameters', () => {
+                const obj = {
+                    kind: 'tm:sys:file:data-group:data-groupstate',
+                    name: 'testDataGroup',
+                    partition: 'testTenant',
+                    subPath: 'testApp',
+                    fullPath: '/testTenant/testApp/testDataGroup',
+                    sourcePath: 'https://example.com/testDataGroup\\?param=value1&param2=value2',
+                    type: 'string'
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                const properties = results[0].properties;
+                assert.deepStrictEqual(
+                    properties,
+                    {
+                        'source-path': 'https://example.com/testDataGroup?param=value1&param2=value2',
+                        type: 'string'
                     }
                 );
             });
@@ -5705,7 +6022,6 @@ describe('map_mcp', () => {
                     useHttps: 'true'
                 };
                 const results = translate[obj.kind](defaultContext, obj);
-                console.log(JSON.stringify(results[0]));
                 assert.deepStrictEqual(
                     results[0],
                     {
@@ -5718,6 +6034,321 @@ describe('map_mcp', () => {
                             'serverssl-profile': '/SampleTenant/Application/testServerSSL',
                             'use-https': 'true'
                         }
+                    }
+                );
+            });
+        });
+
+        describe('tm:security:ip-intelligence:policy:policystate', () => {
+            it('should create tm:security:ip-intelligence:policy:policystate config', () => {
+                defaultContext.target.provisionedModules = ['afm'];
+                const obj = {
+                    kind: 'tm:security:ip-intelligence:policy:policystate',
+                    name: 'Example_IP_Intelligence_Policy',
+                    partition: 'Test_IP_Intelligence_Policy',
+                    subPath: 'SampleApp',
+                    fullPath: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    generation: 2163,
+                    selfLink: 'https://localhost/mgmt/tm/security/ip-intelligence/policy/~Test_IP_Intelligence_Policy~SampleApp~Example_IP_Intelligence_Policy?ver=17.1.1.4',
+                    defaultAction: 'drop',
+                    defaultLogBlacklistHitOnly: 'limited',
+                    defaultLogBlacklistWhitelistHit: 'no',
+                    feedLists: [
+                        '/Common/feed1',
+                        '/Common/feed2'
+                    ],
+                    feedListsReference: [
+                        {
+                            link: 'https://localhost/mgmt/tm/security/ip-intelligence/feed-list/~Common~feed1?ver=17.1.1.4'
+                        },
+                        {
+                            link: 'https://localhost/mgmt/tm/security/ip-intelligence/feed-list/~Common~feed2?ver=17.1.1.4'
+                        }
+                    ],
+                    blacklistCategories: [
+                        {
+                            name: 'additional',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~additional?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'botnets',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'limited',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-source-and-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~botnets?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'phishing',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'yes',
+                            matchDirectionOverride: 'match-source',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~phishing?ver=17.1.1.4'
+                            }
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                        command: 'security ip-intelligence policy',
+                        properties: {
+                            'default-action': 'drop',
+                            'default-log-blacklist-hit-only': 'limited',
+                            'default-log-blacklist-whitelist-hit': 'no',
+                            'blacklist-categories': {
+                                additional: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-destination'
+                                },
+                                botnets: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'limited',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-source-and-destination'
+                                },
+                                phishing: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'yes',
+                                    'match-direction-override': 'match-source'
+                                }
+                            },
+                            'feed-lists': {
+                                '/Common/feed1': '',
+                                '/Common/feed2': ''
+                            }
+                        },
+                        ignore: []
+                    }
+                );
+            });
+            it('should create tm:security:ip-intelligence:policy:policystate config when afm or dos is not provisioned', () => {
+                const obj = {
+                    kind: 'tm:security:ip-intelligence:policy:policystate',
+                    name: 'Example_IP_Intelligence_Policy',
+                    partition: 'Test_IP_Intelligence_Policy',
+                    subPath: 'SampleApp',
+                    fullPath: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    generation: 2163,
+                    selfLink: 'https://localhost/mgmt/tm/security/ip-intelligence/policy/~Test_IP_Intelligence_Policy~SampleApp~Example_IP_Intelligence_Policy?ver=17.1.1.4',
+                    defaultAction: 'drop',
+                    defaultLogBlacklistHitOnly: 'limited',
+                    blacklistCategories: [
+                        {
+                            name: 'additional',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~additional?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'botnets',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'limited',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-source-and-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~botnets?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'phishing',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'yes',
+                            matchDirectionOverride: 'match-source',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~phishing?ver=17.1.1.4'
+                            }
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                        command: 'security ip-intelligence policy',
+                        properties: {
+                            'default-action': 'drop',
+                            'default-log-blacklist-hit-only': 'limited',
+                            'blacklist-categories': {
+                                additional: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-destination'
+                                },
+                                botnets: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'limited',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-source-and-destination'
+                                },
+                                phishing: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'yes',
+                                    'match-direction-override': 'match-source'
+                                }
+                            }
+                        },
+                        ignore: []
+                    }
+                );
+            });
+
+            it('should create tm:security:ip-intelligence:policy:policystate config without blacklistCategories', () => {
+                defaultContext.target.provisionedModules = ['afm'];
+                const obj = {
+                    kind: 'tm:security:ip-intelligence:policy:policystate',
+                    name: 'Example_IP_Intelligence_Policy',
+                    partition: 'Test_IP_Intelligence_Policy',
+                    subPath: 'SampleApp',
+                    fullPath: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    generation: 2163,
+                    selfLink: 'https://localhost/mgmt/tm/security/ip-intelligence/policy/~Test_IP_Intelligence_Policy~SampleApp~Example_IP_Intelligence_Policy?ver=17.1.1.4',
+                    defaultAction: 'drop',
+                    defaultLogBlacklistHitOnly: 'limited',
+                    defaultLogBlacklistWhitelistHit: 'no',
+                    feedLists: [
+                        '/Common/feed1',
+                        '/Common/feed2'
+                    ],
+                    feedListsReference: [
+                        {
+                            link: 'https://localhost/mgmt/tm/security/ip-intelligence/feed-list/~Common~feed1?ver=17.1.1.4'
+                        },
+                        {
+                            link: 'https://localhost/mgmt/tm/security/ip-intelligence/feed-list/~Common~feed2?ver=17.1.1.4'
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                        command: 'security ip-intelligence policy',
+                        properties: {
+                            'default-action': 'drop',
+                            'default-log-blacklist-hit-only': 'limited',
+                            'default-log-blacklist-whitelist-hit': 'no',
+                            'feed-lists': {
+                                '/Common/feed1': '',
+                                '/Common/feed2': ''
+                            }
+                        },
+                        ignore: []
+                    }
+                );
+            });
+
+            it('should create tm:security:ip-intelligence:policy:policystate config without feedLists', () => {
+                defaultContext.target.provisionedModules = ['afm'];
+                const obj = {
+                    kind: 'tm:security:ip-intelligence:policy:policystate',
+                    name: 'Example_IP_Intelligence_Policy',
+                    partition: 'Test_IP_Intelligence_Policy',
+                    subPath: 'SampleApp',
+                    fullPath: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    generation: 2163,
+                    selfLink: 'https://localhost/mgmt/tm/security/ip-intelligence/policy/~Test_IP_Intelligence_Policy~SampleApp~Example_IP_Intelligence_Policy?ver=17.1.1.4',
+                    defaultAction: 'drop',
+                    defaultLogBlacklistHitOnly: 'limited',
+                    defaultLogBlacklistWhitelistHit: 'no',
+                    blacklistCategories: [
+                        {
+                            name: 'additional',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~additional?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'botnets',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'limited',
+                            logBlacklistWhitelistHit: 'no',
+                            matchDirectionOverride: 'match-source-and-destination',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~botnets?ver=17.1.1.4'
+                            }
+                        },
+                        {
+                            name: 'phishing',
+                            partition: 'Common',
+                            action: 'accept',
+                            logBlacklistHitOnly: 'no',
+                            logBlacklistWhitelistHit: 'yes',
+                            matchDirectionOverride: 'match-source',
+                            nameReference: {
+                                link: 'https://localhost/mgmt/tm/security/ip-intelligence/blacklist-category/~Common~phishing?ver=17.1.1.4'
+                            }
+                        }
+                    ]
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(
+                    results[0],
+                    {
+                        path: '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                        command: 'security ip-intelligence policy',
+                        properties: {
+                            'default-action': 'drop',
+                            'default-log-blacklist-hit-only': 'limited',
+                            'default-log-blacklist-whitelist-hit': 'no',
+                            'blacklist-categories': {
+                                additional: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-destination'
+                                },
+                                botnets: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'limited',
+                                    'log-blacklist-whitelist-hit': 'no',
+                                    'match-direction-override': 'match-source-and-destination'
+                                },
+                                phishing: {
+                                    action: 'accept',
+                                    'log-blacklist-hit-only': 'no',
+                                    'log-blacklist-whitelist-hit': 'yes',
+                                    'match-direction-override': 'match-source'
+                                }
+                            }
+                        },
+                        ignore: []
                     }
                 );
             });

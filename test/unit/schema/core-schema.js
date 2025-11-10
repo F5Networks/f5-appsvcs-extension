@@ -2088,6 +2088,7 @@ describe('core-schema.json', () => {
                                 trasnlateServerAddress: false,
                                 translateServerPort: false,
                                 nat64Enabled: true,
+                                serversslUseSni: true,
                                 httpMrfRoutingEnabled: true,
                                 persistenceMethds: ['cookie'],
                                 fallbackPersistenceMethod: 'destination-address',

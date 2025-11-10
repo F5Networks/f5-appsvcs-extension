@@ -79,6 +79,91 @@ describe('postValidator', () => {
             return assert.isFulfilled(PostValidator.validate(defaultContext, decl));
         });
 
+        describe('checkDuplicateNodes', function () {
+            const decl = {
+                class: 'ADC',
+                schemaVersion: '3.55.0',
+                tenant: {
+                    class: 'Tenant',
+                    app: {
+                        class: 'Application',
+                        template: 'generic',
+                        testVIP: {
+                            class: 'Service_L4',
+                            remark: 'app',
+                            layer4: 'any',
+                            pool: 'testPool',
+                            translateServerAddress: false,
+                            translateServerPort: false,
+                            persistenceMethods: [],
+                            virtualAddresses: ['192.0.2.100'],
+                            virtualPort: 0,
+                            snat: 'none'
+                        },
+                        testPool: {
+                            loadBalancingMode: 'round-robin',
+                            members: [
+                                {
+                                    servers: [
+                                        {
+                                            name: 'ns1.test.local',
+                                            address: '192.0.2.0'
+                                        }
+                                    ],
+                                    servicePort: 0,
+                                    shareNodes: true
+                                }
+                            ],
+                            class: 'Pool'
+                        },
+                        'testVIP-http': {
+                            class: 'Service_HTTP',
+                            remark: 'app',
+                            layer4: 'tcp',
+                            pool: 'testPool-http',
+                            translateServerAddress: true,
+                            translateServerPort: true,
+                            profileTCP: {
+                                bigip: '/Common/f5-tcp-progressive'
+                            },
+                            profileHTTP: {
+                                bigip: '/Common/http'
+                            },
+                            virtualAddresses: ['192.0.2.100'],
+                            virtualPort: 80,
+                            snat: 'auto'
+                        },
+                        'testPool-http': {
+                            loadBalancingMode: 'round-robin',
+                            members: [
+                                {
+                                    servers: [
+                                        {
+                                            name: 'ns1.test.local',
+                                            address: '192.0.2.3'
+                                        }
+                                    ],
+                                    servicePort: 80,
+                                    shareNodes: true
+                                }
+                            ],
+                            class: 'Pool'
+                        }
+                    }
+                }
+            };
+
+            it('should validate the AS3 if duplicate nodes are present in the declaration', () => assert.isRejected(
+                PostValidator.checkDuplicateNodes(decl),
+                'The node name must be unique throughout the declaration. Duplicate node name \'ns1.test.local\' found.'
+            ));
+
+            it('should not validate the AS3 if no duplicate nodes are present in the declaration', () => {
+                decl.tenant.app.testPool.members[0].servers[0].name = 'ns1.test.local1';
+                return assert.isFulfilled(PostValidator.checkDuplicateNodes(decl));
+            });
+        });
+
         describe('protocol inspection profiles', () => {
             const declaration = {
                 class: 'ADC',

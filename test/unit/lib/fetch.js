@@ -6289,6 +6289,468 @@ describe('fetch', () => {
             );
         });
 
+        it('should delete the fqdn autopopulate node in the first pass of Common tenant', () => {
+            context.currentIndex = 0;
+            context.tasks = [{ unchecked: true, firstPassNoDelete: true }];
+            const desiredConfig = {
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/Shared/192.0.2.1': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.1',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/192.0.2.3': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.3',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/192.0.2.2': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.2',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/192.0.2.4': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.4',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/demo-http-pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/Common/Shared/192.0.2.1:80': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/Common/Shared/192.0.2.3:80': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/Common/Shared/192.0.2.2:80': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/Common/Shared/192.0.2.4:80': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Common/http': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/Common/Shared/www.f5.com': {
+                    command: 'ltm node',
+                    properties: {
+                        fqdn: {
+                            'address-family': 'ipv4',
+                            autopopulate: 'enabled',
+                            'down-interval': 5,
+                            tmName: 'www.f5.com',
+                            interval: 'ttl'
+                        },
+                        metadata: {
+                            fqdnPrefix: {
+                                value: 'none'
+                            }
+                        },
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/demo-http-pool': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/Common/Shared/www.f5.com:80': {
+                                'connection-limit': 0,
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'enabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Common/http': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'D',
+                    path: [
+                        '/Common/Shared/demo-http-pool',
+                        'properties',
+                        'members',
+                        '/Common/Shared/www.f5.com:80'
+                    ],
+                    lhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'enabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/demo-http-pool',
+                        'properties',
+                        'members',
+                        '/Common/Shared/192.0.2.1:80'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/demo-http-pool',
+                        'properties',
+                        'members',
+                        '/Common/Shared/192.0.2.3:80'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/demo-http-pool',
+                        'properties',
+                        'members',
+                        '/Common/Shared/192.0.2.2:80'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/demo-http-pool',
+                        'properties',
+                        'members',
+                        '/Common/Shared/192.0.2.4:80'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm pool'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/Common/Shared/www.f5.com'
+                    ],
+                    lhs: {
+                        command: 'ltm node',
+                        properties: {
+                            fqdn: {
+                                'address-family': 'ipv4',
+                                autopopulate: 'enabled',
+                                'down-interval': 5,
+                                tmName: 'www.f5.com',
+                                interval: 'ttl'
+                            },
+                            metadata: {
+                                fqdnPrefix: {
+                                    value: 'none'
+                                }
+                            },
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/192.0.2.1'
+                    ],
+                    rhs: {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.1',
+                            metadata: {},
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/192.0.2.3'
+                    ],
+                    rhs: {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.3',
+                            metadata: {},
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/192.0.2.2'
+                    ],
+                    rhs: {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.2',
+                            metadata: {},
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/192.0.2.4'
+                    ],
+                    rhs: {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.4',
+                            metadata: {},
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: ['tmsh'],
+                    command: 'ltm node'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            assert.strictEqual(
+                result.script,
+                'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members delete \\{ /Common/Shared/www.f5.com:80 \\}\ntmsh::delete ltm node /Common/Shared/www.f5.com\ntmsh::begin_transaction\ntmsh::modify auth partition Common description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members add \\{ /Common/Shared/192.0.2.1:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members add \\{ /Common/Shared/192.0.2.3:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members add \\{ /Common/Shared/192.0.2.2:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members add \\{ /Common/Shared/192.0.2.4:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}\ntmsh::create ltm node /Common/Shared/192.0.2.1 address 192.0.2.1 metadata none monitor default\ntmsh::create ltm node /Common/Shared/192.0.2.3 address 192.0.2.3 metadata none monitor default\ntmsh::create ltm node /Common/Shared/192.0.2.2 address 192.0.2.2 metadata none monitor default\ntmsh::create ltm node /Common/Shared/192.0.2.4 address 192.0.2.4 metadata none monitor default\ntmsh::commit_transaction\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\ntmsh::modify ltm pool /Common/Shared/demo-http-pool members add \\{ /Common/Shared/www.f5.com:80 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate enabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}\ntmsh::create  /Common/Shared/www.f5.com fqdn \\{ address-family ipv4 autopopulate enabled down-interval 5 tmName www.f5.com interval ttl \\} metadata \\{ fqdnPrefix \\{ value none \\} \\} monitor \\{ default \\}\n}}\n}'
+            );
+        });
+
         it('should create snat translation if an existing pool member is used as snat', () => {
             const desiredConf = {
                 '/SampleTenant/SampleApp/': {
@@ -7037,6 +7499,2703 @@ describe('fetch', () => {
                 'regsub -all {"} $err {\\"} err',
                 'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
                 'tmsh::modify ltm pool /SampleTenant/SampleApp/SamplePool members add \\{ /SampleTenant/192.168.0.3%2549:31214 \\{ connection-limit 0 dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should handle the dependent irule', () => {
+            const desiredConf = {};
+            const currentConf = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/tenant/app/example_irule': {
+                    command: 'ltm rule',
+                    properties: {
+                        'api-anonymous': 'when HTTP_REQUEST {\n  set nothing [call library_irule::do_nothing]\n}'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/library_irule': {
+                    command: 'ltm rule',
+                    properties: {
+                        'api-anonymous': 'proc do_nothing {}'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/example_service': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: 'app',
+                        destination: '/tenant/1.1.1.1:80',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            },
+                            '/Common/http': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {
+                            '/tenant/app/example_irule': {}
+                        },
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': '',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant/Service_Address-1.1.1.1': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '1.1.1.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/': {
+                    command: 'sys folder',
+                    properties: { },
+                    ignore: []
+                }
+            };
+            const confDiff = [
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/'
+                    ],
+                    lhs: {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'auth partition',
+                    lhsCommand: 'auth partition',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/app/example_irule'
+                    ],
+                    lhs: {
+                        command: 'ltm rule',
+                        properties: {
+                            'api-anonymous': 'when HTTP_REQUEST {\n  set nothing [call library_irule::do_nothing]\n}'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm rule',
+                    lhsCommand: 'ltm rule',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/app/library_irule'
+                    ],
+                    lhs: {
+                        command: 'ltm rule',
+                        properties: {
+                            'api-anonymous': 'proc do_nothing {}'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm rule',
+                    lhsCommand: 'ltm rule',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/app/example_service'
+                    ],
+                    lhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app',
+                            destination: '/tenant/1.1.1.1:80',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Common/http': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {
+                                '/tenant/app/example_irule': {}
+                            },
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            'serverssl-use-sni': 'disabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': '',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual',
+                    lhsCommand: 'ltm virtual',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/Service_Address-1.1.1.1'
+                    ],
+                    lhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '1.1.1.1',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address',
+                    lhsCommand: 'ltm virtual-address',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/app/'
+                    ],
+                    lhs: {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'sys folder',
+                    lhsCommand: 'sys folder',
+                    rhsCommand: ''
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConf, currentConf, confDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::begin_transaction',
+                'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::delete ltm rule /tenant/app/example_irule',
+                'tmsh::delete ltm virtual /tenant/app/example_service',
+                '',
+                'tmsh::delete ltm virtual-address /tenant/1.1.1.1',
+                'tmsh::commit_transaction',
+                'tmsh::begin_transaction',
+                'tmsh::delete ltm rule /tenant/app/library_irule',
+                'tmsh::commit_transaction',
+                '',
+                'tmsh::delete sys folder /tenant/app/',
+                'tmsh::delete sys folder /tenant/',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should handle the special characters in declaration', () => {
+            const desiredConf = {
+                '/example_tenant/example_app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/example_tenant/example_app/example_security_log_profile': {
+                    command: 'security log profile',
+                    properties: {
+                        application: {
+                            undefined: {
+                                facility: 'local0',
+                                filter: {
+                                    'request-type': {
+                                        values: {
+                                            'illegal-including-staged-signatures': {}
+                                        }
+                                    }
+                                },
+                                format: {
+                                    type: 'user-defined',
+                                    'user-string': '\'date_time=\\\'%date_time%\\\'\''
+                                },
+                                'guarantee-logging': 'disabled',
+                                'guarantee-response-logging': 'disabled',
+                                'local-storage': 'disabled',
+                                'logic-operation': 'or',
+                                'logger-type': 'remote',
+                                'maximum-entry-length': '10k',
+                                'maximum-header-size': 'any',
+                                'maximum-query-size': 'any',
+                                'maximum-request-size': 'any',
+                                protocol: 'tcp',
+                                'remote-storage': 'remote',
+                                'report-anomalies': 'disabled',
+                                'response-logging': 'none',
+                                servers: {
+                                    '10.10.10.10:514': {}
+                                }
+                            }
+                        },
+                        'bot-defense': {},
+                        classification: {
+                            'log-all-classification-matches': 'disabled'
+                        },
+                        'dos-application': {},
+                        'ip-intelligence': {
+                            'log-publisher': 'none',
+                            'log-translation-fields': 'disabled',
+                            'aggregate-rate': 4294967295
+                        },
+                        nat: {
+                            errors: 'disabled',
+                            'log-subscriber-id': 'disabled',
+                            'quota-exceeded': 'disabled',
+                            'start-inbound-session': 'disabled',
+                            'end-inbound-session': 'disabled',
+                            'start-outbound-session': {
+                                action: 'disabled'
+                            },
+                            'end-outbound-session': {
+                                action: 'disabled'
+                            },
+                            'rate-limit': {
+                                errors: 4294967295,
+                                'quota-exceeded': 4294967295,
+                                'start-inbound-session': 4294967295,
+                                'end-inbound-session': 4294967295,
+                                'start-outbound-session': 4294967295,
+                                'end-outbound-session': 4294967295,
+                                'aggregate-rate': 4294967295
+                            },
+                            format: {
+                                errors: {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'quota-exceeded': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                }
+                            },
+                            'lsn-legacy-mode': 'disabled'
+                        },
+                        network: {},
+                        'protocol-dns': {},
+                        'protocol-inspection': {
+                            'log-packet': 'disabled'
+                        },
+                        'protocol-sip': {},
+                        'protocol-transfer': {},
+                        'ssh-proxy': {}
+                    },
+                    ignore: []
+                },
+                '/example_tenant/example_app/example_data_group': {
+                    command: 'ltm data-group internal',
+                    properties: {
+                        description: 'none',
+                        type: 'string',
+                        records: {
+                            '"example\\\\?key"': {
+                                data: '"example_value"'
+                            },
+                            '"example\\\\*key"': {
+                                data: '"example_value"'
+                            },
+                            '"example_key"': {
+                                data: '"examplevalue"'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/example_tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                }
+            };
+            const currentConf = {
+                '/example_tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                },
+                '/example_tenant/example_app/example_data_group': {
+                    command: 'ltm data-group internal',
+                    properties: {
+                        description: 'none',
+                        type: 'string',
+                        records: {
+                            '"example\\\\*key"': {
+                                data: '"example_value"'
+                            },
+                            '"example\\\\?key"': {
+                                data: '"example_value"'
+                            },
+                            '"example_key"': {
+                                data: '"examplevalue"'
+                            }
+                        }
+                    },
+                    ignore: []
+                },
+                '/example_tenant/example_app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/example_tenant/example_app/example_security_log_profile': {
+                    command: 'security log profile',
+                    properties: {
+                        application: {
+                            undefined: {
+                                facility: 'local0',
+                                filter: {
+                                    'request-type': {
+                                        values: {
+                                            'illegal-including-staged-signatures': {}
+                                        }
+                                    }
+                                },
+                                format: {
+                                    type: 'user-defined',
+                                    'user-string': '\'date_time=\\\'%date_time%\\\'\''
+                                },
+                                'guarantee-logging': 'disabled',
+                                'guarantee-response-logging': 'disabled',
+                                'local-storage': 'disabled',
+                                'logic-operation': 'or',
+                                'logger-type': 'remote',
+                                'maximum-entry-length': '10k',
+                                'maximum-header-size': 'any',
+                                'maximum-query-size': 'any',
+                                'maximum-request-size': 'any',
+                                protocol: 'tcp',
+                                'remote-storage': 'remote',
+                                'report-anomalies': 'disabled',
+                                'response-logging': 'none',
+                                servers: {
+                                    '10.10.10.10:514': {}
+                                }
+                            }
+                        },
+                        'bot-defense': {},
+                        classification: {
+                            'log-all-classification-matches': 'disabled'
+                        },
+                        'dos-application': {},
+                        'ip-intelligence': {
+                            'log-publisher': 'none',
+                            'log-translation-fields': 'disabled',
+                            'aggregate-rate': 4294967295
+                        },
+                        nat: {
+                            errors: 'disabled',
+                            'log-subscriber-id': 'disabled',
+                            'quota-exceeded': 'disabled',
+                            'start-inbound-session': 'disabled',
+                            'end-inbound-session': 'disabled',
+                            'start-outbound-session': {
+                                action: 'disabled'
+                            },
+                            'end-outbound-session': {
+                                action: 'disabled'
+                            },
+                            'rate-limit': {
+                                errors: 4294967295,
+                                'quota-exceeded': 4294967295,
+                                'start-inbound-session': 4294967295,
+                                'end-inbound-session': 4294967295,
+                                'start-outbound-session': 4294967295,
+                                'end-outbound-session': 4294967295,
+                                'aggregate-rate': 4294967295
+                            },
+                            format: {
+                                errors: {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'quota-exceeded': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-inbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'start-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                },
+                                'end-outbound-session': {
+                                    'field-list-delimiter': ',',
+                                    type: 'none'
+                                }
+                            },
+                            'lsn-legacy-mode': 'disabled'
+                        },
+                        network: {},
+                        'protocol-dns': {},
+                        'protocol-inspection': {
+                            'log-packet': 'disabled'
+                        },
+                        'protocol-sip': {},
+                        'protocol-transfer': {},
+                        'ssh-proxy': {}
+                    },
+                    ignore: []
+                }
+            };
+            const result = fetch.tmshUpdateScript(context, desiredConf, currentConf, []);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::begin_transaction',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should handle to create node when same IP SNAT Translation exists', () => {
+            const desiredConfig = {
+                '/tenant/app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/tenant/Service_Address-192.0.2.3%2742': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.3%2742',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': true
+                    },
+                    ignore: []
+                },
+                '/tenant/app/L4Service1-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/tenant/192.0.2.3%2742': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/app/L4Service1': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: '',
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: 'app',
+                        destination: '/tenant/192.0.2.3%2742:30010',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/tenant/app/pool_L4',
+                        policies: {},
+                        profiles: {
+                            '/Common/fastL4': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2742/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/tenant/app/L4Service1-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': '',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.1%2742': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.1%2742',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.4%2742': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.4%2742',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.0%2742': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.0%2742',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/app/pool_L4': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/tenant/192.0.2.1%2742:32651': {
+                                'connection-limit': 0,
+                                description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/tenant/192.0.2.4%2742:32651': {
+                                'connection-limit': 0,
+                                description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            },
+                            '/tenant/192.0.2.0%2742:32651': {
+                                'connection-limit': 0,
+                                description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Common/http': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2742
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.3%2742': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.3%2742',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {
+                '/tenant/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 2742
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.1%2742': {
+                    command: 'ltm node',
+                    properties: {
+                        address: '192.0.2.1',
+                        metadata: {},
+                        monitor: {
+                            default: {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/app/pool_L4': {
+                    command: 'ltm pool',
+                    properties: {
+                        'load-balancing-mode': 'round-robin',
+                        members: {
+                            '/tenant/192.0.2.1%2742:32651': {
+                                'connection-limit': 0,
+                                description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                'dynamic-ratio': 1,
+                                fqdn: {
+                                    autopopulate: 'disabled'
+                                },
+                                minimumMonitors: 1,
+                                monitor: {
+                                    default: {}
+                                },
+                                'priority-group': 0,
+                                'rate-limit': 'disabled',
+                                ratio: 1,
+                                state: 'user-up',
+                                session: 'user-enabled',
+                                metadata: {}
+                            }
+                        },
+                        'min-active-members': 1,
+                        minimumMonitors: 1,
+                        monitor: {
+                            '/Common/http': {}
+                        },
+                        'reselect-tries': 0,
+                        'service-down-action': 'none',
+                        'slow-ramp-time': 10,
+                        'allow-nat': 'yes',
+                        'allow-snat': 'yes',
+                        metadata: {}
+                    },
+                    ignore: []
+                },
+                '/tenant/app/L4Service1-self': {
+                    command: 'ltm snatpool',
+                    properties: {
+                        members: {
+                            '/tenant/192.0.2.0%2742': {}
+                        }
+                    },
+                    ignore: []
+                },
+                '/tenant/192.0.2.0%2742': {
+                    command: 'ltm snat-translation',
+                    properties: {
+                        address: '192.0.2.0',
+                        arp: 'enabled',
+                        'connection-limit': 0,
+                        enabled: {},
+                        'ip-idle-timeout': 'indefinite',
+                        'tcp-idle-timeout': 'indefinite',
+                        'traffic-group': 'default',
+                        'udp-idle-timeout': 'indefinite'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/L4Service1': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: 'app',
+                        destination: '/tenant/192.0.2.0%2742:30010',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {},
+                        pool: '/tenant/app/pool_L4',
+                        policies: {},
+                        profiles: {
+                            '/Common/fastL4': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0%2742/0',
+                        'source-address-translation': {
+                            type: 'snat',
+                            pool: '/tenant/app/L4Service1-self'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/tenant/Service_Address-192.0.2.0%2742': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.0%2742',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/tenant/app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                }
+            };
+            const configDiff = [
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/192.0.2.1%2742',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.0.2.1',
+                    rhs: '192.0.2.1%2742',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node',
+                    lhsCommand: 'ltm node',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/pool_L4',
+                        'properties',
+                        'members',
+                        '/tenant/192.0.2.4%2742:32651'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm pool',
+                    lhsCommand: 'ltm pool',
+                    rhsCommand: 'ltm pool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/pool_L4',
+                        'properties',
+                        'members',
+                        '/tenant/192.0.2.0%2742:32651'
+                    ],
+                    rhs: {
+                        'connection-limit': 0,
+                        description: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                        'dynamic-ratio': 1,
+                        fqdn: {
+                            autopopulate: 'disabled'
+                        },
+                        minimumMonitors: 1,
+                        monitor: {
+                            default: {}
+                        },
+                        'priority-group': 0,
+                        'rate-limit': 'disabled',
+                        ratio: 1,
+                        state: 'user-up',
+                        session: 'user-enabled',
+                        metadata: {}
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm pool',
+                    lhsCommand: 'ltm pool',
+                    rhsCommand: 'ltm pool'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/app/L4Service1-self',
+                        'properties',
+                        'members',
+                        '/tenant/192.0.2.0%2742'
+                    ],
+                    lhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snatpool',
+                    lhsCommand: 'ltm snatpool',
+                    rhsCommand: 'ltm snatpool'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/app/L4Service1-self',
+                        'properties',
+                        'members',
+                        '/tenant/192.0.2.3%2742'
+                    ],
+                    rhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snatpool',
+                    lhsCommand: 'ltm snatpool',
+                    rhsCommand: 'ltm snatpool'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'command'
+                    ],
+                    lhs: 'ltm snat-translation',
+                    rhs: 'ltm node',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'address'
+                    ],
+                    lhs: '192.0.2.0',
+                    rhs: '192.0.2.0%2742',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'arp'
+                    ],
+                    lhs: 'enabled',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'connection-limit'
+                    ],
+                    lhs: 0,
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'enabled'
+                    ],
+                    lhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'ip-idle-timeout'
+                    ],
+                    lhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'tcp-idle-timeout'
+                    ],
+                    lhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'traffic-group'
+                    ],
+                    lhs: 'default',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'udp-idle-timeout'
+                    ],
+                    lhs: 'indefinite',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'metadata'
+                    ],
+                    rhs: {},
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/192.0.2.0%2742',
+                        'properties',
+                        'monitor'
+                    ],
+                    rhs: {
+                        default: {}
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: 'ltm snat-translation',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'E',
+                    path: [
+                        '/tenant/app/L4Service1',
+                        'properties',
+                        'destination'
+                    ],
+                    lhs: '/tenant/192.0.2.0%2742:30010',
+                    rhs: '/tenant/192.0.2.3%2742:30010',
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual',
+                    lhsCommand: 'ltm virtual',
+                    rhsCommand: 'ltm virtual'
+                },
+                {
+                    kind: 'D',
+                    path: [
+                        '/tenant/Service_Address-192.0.2.0%2742'
+                    ],
+                    lhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.0%2742',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address',
+                    lhsCommand: 'ltm virtual-address',
+                    rhsCommand: ''
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/192.0.2.3%2742'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.3%2742',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm virtual-address'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/192.0.2.4%2742'
+                    ],
+                    rhs: {
+                        command: 'ltm node',
+                        properties: {
+                            address: '192.0.2.4%2742',
+                            metadata: {},
+                            monitor: {
+                                default: {}
+                            }
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm node',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm node'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/tenant/192.0.2.3%2742'
+                    ],
+                    rhs: {
+                        command: 'ltm snat-translation',
+                        properties: {
+                            address: '192.0.2.3%2742',
+                            arp: 'enabled',
+                            'connection-limit': 0,
+                            enabled: {},
+                            'ip-idle-timeout': 'indefinite',
+                            'tcp-idle-timeout': 'indefinite',
+                            'traffic-group': 'default',
+                            'udp-idle-timeout': 'indefinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm snat-translation',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm snat-translation'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::begin_transaction',
+                'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::modify ltm pool /tenant/app/pool_L4 members add \\{ /tenant/192.0.2.4%2742:32651 \\{ connection-limit 0 description 0ec91a62-2abc-492d-9848-3a7b42c39e9d dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}',
+                'tmsh::modify ltm pool /tenant/app/pool_L4 members add \\{ /tenant/192.0.2.0%2742:32651 \\{ connection-limit 0 description 0ec91a62-2abc-492d-9848-3a7b42c39e9d dynamic-ratio 1 fqdn \\{ autopopulate disabled \\} priority-group 0 rate-limit disabled ratio 1 state user-up session user-enabled metadata none \\} \\}',
+                'tmsh::delete ltm snatpool /tenant/app/L4Service1-self',
+                'tmsh::create ltm snatpool /tenant/app/L4Service1-self members replace-all-with \\{ /tenant/192.0.2.3%2742 \\}',
+                'tmsh::delete ltm snat-translation /tenant/192.0.2.0%2742',
+                'tmsh::create ltm node /tenant/192.0.2.0%2742 address 192.0.2.0%2742 metadata none monitor default',
+                'tmsh::delete ltm virtual /tenant/app/L4Service1',
+                'tmsh::create ltm virtual /tenant/app/L4Service1 enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description app destination /tenant/192.0.2.3%2742:30010 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist none pool /tenant/app/pool_L4 policies none profiles replace-all-with \\{ /Common/fastL4 \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0%2742/0 source-address-translation \\{ type snat pool /tenant/app/L4Service1-self \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled serverssl-use-sni disabled nat64 disabled vlans none vlans-disabled  metadata none clone-pools none throughput-capacity infinite',
+                '',
+                'tmsh::create ltm snat-translation /tenant/192.0.2.3%2742 address 192.0.2.3%2742 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
+                'tmsh::create ltm node /tenant/192.0.2.4%2742 address 192.0.2.4%2742 metadata none monitor default',
+                'tmsh::commit_transaction',
+                'tmsh::delete ltm virtual-address /tenant/192.0.2.0%2742',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should handle to Virtual Servers with multiple serverTLS with multiple certificates', () => {
+            const desiredConfig = {
+                '/Sample_01/app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Sample_01/Service_Address-192.0.2.1': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/virtualServer': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '\'app\'',
+                        destination: '/Sample_01/192.0.2.1:443',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {
+                            '/Common/http': {
+                                context: 'all'
+                            },
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            },
+                            '/Sample_01/app/ssl_server1': {
+                                context: 'clientside'
+                            },
+                            '/Sample_01/app/ssl_server1-1-': {
+                                context: 'clientside'
+                            },
+                            '/Sample_01/app/ssl_server': {
+                                context: 'clientside'
+                            },
+                            '/Sample_01/app/ssl_server-1-': {
+                                context: 'clientside'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/ssl_server': {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'alert-timeout': 'indefinite',
+                        'allow-dynamic-record-sizing': 'disabled',
+                        'allow-expired-crl': 'disabled',
+                        'allow-non-ssl': 'disabled',
+                        authenticate: 'once',
+                        'authenticate-depth': 9,
+                        'c3d-drop-unknown-ocsp-status': 'drop',
+                        'c3d-ocsp': 'none',
+                        'cache-timeout': 3600,
+                        'ca-file': 'none',
+                        'cert-extension-includes': {},
+                        'cert-lookup-by-ipaddr-port': 'disabled',
+                        'cert-key-chain': {
+                            set0: {
+                                cert: '/Common/default.crt',
+                                key: '/Common/default.key',
+                                chain: '/Common/ca-bundle.crt',
+                                usage: 'SERVER'
+                            }
+                        },
+                        ciphers: 'DEFAULT',
+                        'cipher-group': 'none',
+                        'client-cert-ca': 'none',
+                        'crl-file': 'none',
+                        'data-0rtt': 'disabled',
+                        description: 'none',
+                        'handshake-timeout': 10,
+                        'hostname-whitelist': 'none',
+                        mode: 'enabled',
+                        options: {
+                            'dont-insert-empty-fragments': {},
+                            'no-tlsv1.3': {}
+                        },
+                        'ocsp-stapling': 'disabled',
+                        'notify-cert-status-to-virtual-server': 'disabled',
+                        'peer-cert-mode': 'ignore',
+                        'proxy-ssl': 'disabled',
+                        'proxy-ssl-passthrough': 'disabled',
+                        'renegotiate-max-record-delay': 4294967295,
+                        'renegotiate-period': 4294967295,
+                        'renegotiate-size': 4294967295,
+                        renegotiation: 'enabled',
+                        'retain-certificate': 'true',
+                        'secure-renegotiation': 'require',
+                        'sni-default': 'false',
+                        'sni-require': 'false',
+                        'server-name': 'none',
+                        'ssl-c3d': 'disabled',
+                        'ssl-forward-proxy': 'disabled',
+                        'ssl-forward-proxy-bypass': 'disabled',
+                        'ssl-sign-hash': 'any',
+                        'unclean-shutdown': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/ssl_server-1-': {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'alert-timeout': 'indefinite',
+                        'allow-dynamic-record-sizing': 'disabled',
+                        'allow-expired-crl': 'disabled',
+                        'allow-non-ssl': 'disabled',
+                        authenticate: 'once',
+                        'authenticate-depth': 9,
+                        'c3d-drop-unknown-ocsp-status': 'drop',
+                        'c3d-ocsp': 'none',
+                        'cache-timeout': 3600,
+                        'ca-file': 'none',
+                        'cert-extension-includes': {},
+                        'cert-lookup-by-ipaddr-port': 'disabled',
+                        'cert-key-chain': {
+                            set0: {
+                                cert: '/Common/default.crt',
+                                key: '/Common/default.key',
+                                chain: '/Common/ca-bundle.crt',
+                                usage: 'SERVER'
+                            }
+                        },
+                        ciphers: 'DEFAULT',
+                        'cipher-group': 'none',
+                        'client-cert-ca': 'none',
+                        'crl-file': 'none',
+                        'data-0rtt': 'disabled',
+                        description: 'none',
+                        'handshake-timeout': 10,
+                        'hostname-whitelist': 'none',
+                        mode: 'enabled',
+                        options: {
+                            'dont-insert-empty-fragments': {},
+                            'no-tlsv1.3': {}
+                        },
+                        'ocsp-stapling': 'disabled',
+                        'notify-cert-status-to-virtual-server': 'disabled',
+                        'peer-cert-mode': 'ignore',
+                        'proxy-ssl': 'disabled',
+                        'proxy-ssl-passthrough': 'disabled',
+                        'renegotiate-max-record-delay': 4294967295,
+                        'renegotiate-period': 4294967295,
+                        'renegotiate-size': 4294967295,
+                        renegotiation: 'enabled',
+                        'retain-certificate': 'true',
+                        'secure-renegotiation': 'require',
+                        'sni-default': 'false',
+                        'sni-require': 'false',
+                        'server-name': 'https1.example.com',
+                        'ssl-c3d': 'disabled',
+                        'ssl-forward-proxy': 'disabled',
+                        'ssl-forward-proxy-bypass': 'disabled',
+                        'ssl-sign-hash': 'any',
+                        'unclean-shutdown': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/ssl_server1': {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'alert-timeout': 'indefinite',
+                        'allow-dynamic-record-sizing': 'disabled',
+                        'allow-expired-crl': 'disabled',
+                        'allow-non-ssl': 'disabled',
+                        authenticate: 'once',
+                        'authenticate-depth': 9,
+                        'c3d-drop-unknown-ocsp-status': 'drop',
+                        'c3d-ocsp': 'none',
+                        'cache-timeout': 3600,
+                        'ca-file': 'none',
+                        'cert-extension-includes': {},
+                        'cert-lookup-by-ipaddr-port': 'disabled',
+                        'cert-key-chain': {
+                            set0: {
+                                cert: '/Common/default.crt',
+                                key: '/Common/default.key',
+                                chain: '/Common/ca-bundle.crt',
+                                usage: 'SERVER'
+                            }
+                        },
+                        ciphers: 'DEFAULT',
+                        'cipher-group': 'none',
+                        'client-cert-ca': 'none',
+                        'crl-file': 'none',
+                        'data-0rtt': 'disabled',
+                        description: 'none',
+                        'handshake-timeout': 10,
+                        'hostname-whitelist': 'none',
+                        mode: 'enabled',
+                        options: {
+                            'dont-insert-empty-fragments': {},
+                            'no-tlsv1.3': {}
+                        },
+                        'ocsp-stapling': 'disabled',
+                        'notify-cert-status-to-virtual-server': 'disabled',
+                        'peer-cert-mode': 'ignore',
+                        'proxy-ssl': 'disabled',
+                        'proxy-ssl-passthrough': 'disabled',
+                        'renegotiate-max-record-delay': 4294967295,
+                        'renegotiate-period': 4294967295,
+                        'renegotiate-size': 4294967295,
+                        renegotiation: 'enabled',
+                        'retain-certificate': 'true',
+                        'secure-renegotiation': 'require',
+                        'sni-default': 'false',
+                        'sni-require': 'false',
+                        'server-name': 'https3.example.com',
+                        'ssl-c3d': 'disabled',
+                        'ssl-forward-proxy': 'disabled',
+                        'ssl-forward-proxy-bypass': 'disabled',
+                        'ssl-sign-hash': 'any',
+                        'unclean-shutdown': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/ssl_server1-1-': {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'alert-timeout': 'indefinite',
+                        'allow-dynamic-record-sizing': 'disabled',
+                        'allow-expired-crl': 'disabled',
+                        'allow-non-ssl': 'disabled',
+                        authenticate: 'once',
+                        'authenticate-depth': 9,
+                        'c3d-drop-unknown-ocsp-status': 'drop',
+                        'c3d-ocsp': 'none',
+                        'cache-timeout': 3600,
+                        'ca-file': 'none',
+                        'cert-extension-includes': {},
+                        'cert-lookup-by-ipaddr-port': 'disabled',
+                        'cert-key-chain': {
+                            set0: {
+                                cert: '/Common/default.crt',
+                                key: '/Common/default.key',
+                                chain: '/Common/ca-bundle.crt',
+                                usage: 'SERVER'
+                            }
+                        },
+                        ciphers: 'DEFAULT',
+                        'cipher-group': 'none',
+                        'client-cert-ca': 'none',
+                        'crl-file': 'none',
+                        'data-0rtt': 'disabled',
+                        description: 'none',
+                        'handshake-timeout': 10,
+                        'hostname-whitelist': 'none',
+                        mode: 'enabled',
+                        options: {
+                            'dont-insert-empty-fragments': {},
+                            'no-tlsv1.3': {}
+                        },
+                        'ocsp-stapling': 'disabled',
+                        'notify-cert-status-to-virtual-server': 'disabled',
+                        'peer-cert-mode': 'ignore',
+                        'proxy-ssl': 'disabled',
+                        'proxy-ssl-passthrough': 'disabled',
+                        'renegotiate-max-record-delay': 4294967295,
+                        'renegotiate-period': 4294967295,
+                        'renegotiate-size': 4294967295,
+                        renegotiation: 'enabled',
+                        'retain-certificate': 'true',
+                        'secure-renegotiation': 'require',
+                        'sni-default': 'true',
+                        'sni-require': 'false',
+                        'server-name': 'https4.example.com',
+                        'ssl-c3d': 'disabled',
+                        'ssl-forward-proxy': 'disabled',
+                        'ssl-forward-proxy-bypass': 'disabled',
+                        'ssl-sign-hash': 'any',
+                        'unclean-shutdown': 'enabled'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {};
+            const configDiff = [
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/'
+                    ],
+                    rhs: {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'sys folder',
+                    lhsCommand: '',
+                    rhsCommand: 'sys folder'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/Service_Address-192.0.2.1'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm virtual-address'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/virtualServer'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: '',
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '\'app\'',
+                            destination: '/Sample_01/192.0.2.1:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Sample_01/app/ssl_server1': {
+                                    context: 'clientside'
+                                },
+                                '/Sample_01/app/ssl_server1-1-': {
+                                    context: 'clientside'
+                                },
+                                '/Sample_01/app/ssl_server': {
+                                    context: 'clientside'
+                                },
+                                '/Sample_01/app/ssl_server-1-': {
+                                    context: 'clientside'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            'serverssl-use-sni': 'disabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm virtual'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/ssl_server'
+                    ],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: '/Common/ca-bundle.crt',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'false',
+                            'sni-require': 'false',
+                            'server-name': 'none',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/ssl_server-1-'
+                    ],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: '/Common/ca-bundle.crt',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'false',
+                            'sni-require': 'false',
+                            'server-name': 'https1.example.com',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/ssl_server1'
+                    ],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: '/Common/ca-bundle.crt',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'false',
+                            'sni-require': 'false',
+                            'server-name': 'https3.example.com',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/ssl_server1-1-'
+                    ],
+                    rhs: {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Common/default.crt',
+                                    key: '/Common/default.key',
+                                    chain: '/Common/ca-bundle.crt',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'true',
+                            'sni-require': 'false',
+                            'server-name': 'https4.example.com',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm profile client-ssl',
+                    lhsCommand: '',
+                    rhsCommand: 'ltm profile client-ssl'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/'
+                    ],
+                    rhs: {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'auth partition',
+                    lhsCommand: '',
+                    rhsCommand: 'auth partition'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::create auth partition Sample_01 default-route-domain 0',
+                'tmsh::create sys folder /Sample_01/app/',
+                'tmsh::begin_transaction',
+                'tmsh::modify auth partition Sample_01 description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::create ltm virtual-address /Sample_01/192.0.2.1 address 192.0.2.1 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled server-scope any traffic-group default auto-delete true',
+                'tmsh::create ltm virtual /Sample_01/app/virtualServer enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \'app\' destination /Sample_01/192.0.2.1:443 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/cookie \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/http \\{ context all \\} /Common/f5-tcp-progressive \\{ context all \\} /Sample_01/app/ssl_server1 \\{ context clientside \\} /Sample_01/app/ssl_server1-1- \\{ context clientside \\} /Sample_01/app/ssl_server \\{ context clientside \\} /Sample_01/app/ssl_server-1- \\{ context clientside \\} \\} service-down-immediate-action none source 0.0.0.0/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled serverssl-use-sni disabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none throughput-capacity infinite',
+                'tmsh::create ltm profile client-ssl /Sample_01/app/ssl_server alert-timeout indefinite allow-dynamic-record-sizing disabled allow-expired-crl disabled allow-non-ssl disabled authenticate once authenticate-depth 9 c3d-drop-unknown-ocsp-status drop c3d-ocsp none cache-timeout 3600 ca-file none cert-extension-includes none cert-lookup-by-ipaddr-port disabled cert-key-chain replace-all-with \\{ set0 \\{ cert /Common/default.crt key /Common/default.key chain /Common/ca-bundle.crt usage SERVER \\} \\} ciphers DEFAULT cipher-group none client-cert-ca none crl-file none data-0rtt disabled description none handshake-timeout 10 hostname-whitelist none mode enabled options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} ocsp-stapling disabled notify-cert-status-to-virtual-server disabled peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-max-record-delay 4294967295 renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require sni-default false sni-require false server-name none ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled',
+                'tmsh::create ltm profile client-ssl /Sample_01/app/ssl_server-1- alert-timeout indefinite allow-dynamic-record-sizing disabled allow-expired-crl disabled allow-non-ssl disabled authenticate once authenticate-depth 9 c3d-drop-unknown-ocsp-status drop c3d-ocsp none cache-timeout 3600 ca-file none cert-extension-includes none cert-lookup-by-ipaddr-port disabled cert-key-chain replace-all-with \\{ set0 \\{ cert /Common/default.crt key /Common/default.key chain /Common/ca-bundle.crt usage SERVER \\} \\} ciphers DEFAULT cipher-group none client-cert-ca none crl-file none data-0rtt disabled description none handshake-timeout 10 hostname-whitelist none mode enabled options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} ocsp-stapling disabled notify-cert-status-to-virtual-server disabled peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-max-record-delay 4294967295 renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require sni-default false sni-require false server-name https1.example.com ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled',
+                'tmsh::create ltm profile client-ssl /Sample_01/app/ssl_server1 alert-timeout indefinite allow-dynamic-record-sizing disabled allow-expired-crl disabled allow-non-ssl disabled authenticate once authenticate-depth 9 c3d-drop-unknown-ocsp-status drop c3d-ocsp none cache-timeout 3600 ca-file none cert-extension-includes none cert-lookup-by-ipaddr-port disabled cert-key-chain replace-all-with \\{ set0 \\{ cert /Common/default.crt key /Common/default.key chain /Common/ca-bundle.crt usage SERVER \\} \\} ciphers DEFAULT cipher-group none client-cert-ca none crl-file none data-0rtt disabled description none handshake-timeout 10 hostname-whitelist none mode enabled options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} ocsp-stapling disabled notify-cert-status-to-virtual-server disabled peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-max-record-delay 4294967295 renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require sni-default false sni-require false server-name https3.example.com ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled',
+                'tmsh::create ltm profile client-ssl /Sample_01/app/ssl_server1-1- alert-timeout indefinite allow-dynamic-record-sizing disabled allow-expired-crl disabled allow-non-ssl disabled authenticate once authenticate-depth 9 c3d-drop-unknown-ocsp-status drop c3d-ocsp none cache-timeout 3600 ca-file none cert-extension-includes none cert-lookup-by-ipaddr-port disabled cert-key-chain replace-all-with \\{ set0 \\{ cert /Common/default.crt key /Common/default.key chain /Common/ca-bundle.crt usage SERVER \\} \\} ciphers DEFAULT cipher-group none client-cert-ca none crl-file none data-0rtt disabled description none handshake-timeout 10 hostname-whitelist none mode enabled options \\{ dont-insert-empty-fragments no-tlsv1.3 \\} ocsp-stapling disabled notify-cert-status-to-virtual-server disabled peer-cert-mode ignore proxy-ssl disabled proxy-ssl-passthrough disabled renegotiate-max-record-delay 4294967295 renegotiate-period 4294967295 renegotiate-size 4294967295 renegotiation enabled retain-certificate true secure-renegotiation require sni-default true sni-require false server-name https4.example.com ssl-c3d disabled ssl-forward-proxy disabled ssl-forward-proxy-bypass disabled ssl-sign-hash any unclean-shutdown enabled',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                'catch { tmsh::delete sys folder /Sample_01/app/ } e',
+                'catch { tmsh::delete auth partition Sample_01 } e',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should handle to Virtual Servers with multiple serverTLS with multiple certificates of references', () => {
+            const desiredConfig = {
+                '/Sample_01/app/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Sample_01/Service_Address-192.0.2.1': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.1',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/app/virtualServer': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '\'app\'',
+                        destination: '/Sample_01/192.0.2.1:443',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {
+                            '/Common/http': {
+                                context: 'all'
+                            },
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            },
+                            '/Common/ssl_server': {
+                                context: 'clientside'
+                            },
+                            '/Common/ssl_server1': {
+                                context: 'clientside'
+                            },
+                            '/Common/ssl_server2': {
+                                context: 'clientside'
+                            },
+                            '/Common/ssl_server3': {
+                                context: 'clientside'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/Sample_01/': {
+                    command: 'auth partition',
+                    properties: {
+                        'default-route-domain': 0
+                    },
+                    ignore: []
+                }
+            };
+            const currentConfig = {};
+            const configDiff = [
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/'
+                    ],
+                    rhs: {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'sys folder'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/Service_Address-192.0.2.1'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.1',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual-address'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/app/virtualServer'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '\'app\'',
+                            destination: '/Sample_01/192.0.2.1:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Common/ssl_server': {
+                                    context: 'clientside'
+                                },
+                                '/Common/ssl_server1': {
+                                    context: 'clientside'
+                                },
+                                '/Common/ssl_server2': {
+                                    context: 'clientside'
+                                },
+                                '/Common/ssl_server3': {
+                                    context: 'clientside'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            'serverssl-use-sni': 'disabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Sample_01/'
+                    ],
+                    rhs: {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'auth partition'
+                }
+            ];
+
+            const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::create auth partition Sample_01 default-route-domain 0',
+                'tmsh::create sys folder /Sample_01/app/',
+                'tmsh::begin_transaction',
+                'tmsh::modify auth partition Sample_01 description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::create ltm virtual-address /Sample_01/192.0.2.1 address 192.0.2.1 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled server-scope any traffic-group default auto-delete true',
+                'tmsh::create ltm virtual /Sample_01/app/virtualServer enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \'app\' destination /Sample_01/192.0.2.1:443 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/cookie \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/http \\{ context all \\} /Common/f5-tcp-progressive \\{ context all \\} /Common/ssl_server \\{ context clientside \\} /Common/ssl_server1 \\{ context clientside \\} /Common/ssl_server2 \\{ context clientside \\} /Common/ssl_server3 \\{ context clientside \\} \\} service-down-immediate-action none source 0.0.0.0/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled serverssl-use-sni disabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none throughput-capacity infinite',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                'catch { tmsh::delete sys folder /Sample_01/app/ } e',
+                'catch { tmsh::delete auth partition Sample_01 } e',
+                '}}',
+                '}'
+            ];
+            assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+        });
+
+        it('should rename the virtual server in Common partition', () => {
+            const desiredConf = {
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/Shared/Service_Address-192.0.2.0': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.0',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/demoHttp1': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '\'Shared\'',
+                        destination: '/Common/Shared/192.0.2.0:80',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {
+                            '/Common/http': {
+                                context: 'all'
+                            },
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                }
+            };
+            const currentConf = {
+                '/Common/Shared/demoHttp': {
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '\'Shared\'',
+                        destination: '/Common/Shared/192.0.2.0:80',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {},
+                        profiles: {
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            },
+                            '/Common/http': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {},
+                        'throughput-capacity': 'infinite'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/Service_Address-192.0.2.0': {
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.0',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                '/Common/Shared/': {
+                    command: 'sys folder',
+                    properties: {},
+                    ignore: []
+                },
+                '/Common/global-settings': {
+                    command: 'gtm global-settings load-balancing',
+                    properties: {
+                        'topology-longest-match': 'yes'
+                    },
+                    ignore: []
+                }
+            };
+            const confDiff = [
+                {
+                    kind: 'D',
+                    path: [
+                        '/Common/Shared/demoHttp'
+                    ],
+                    lhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '\'Shared\'',
+                            destination: '/Common/Shared/192.0.2.0:80',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Common/http': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            'serverssl-use-sni': 'disabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual'
+                },
+                {
+                    kind: 'N',
+                    path: [
+                        '/Common/Shared/demoHttp1'
+                    ],
+                    rhs: {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: '\'Shared\'',
+                            destination: '/Common/Shared/192.0.2.0:80',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            'serverssl-use-sni': 'disabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    tags: [
+                        'tmsh'
+                    ],
+                    command: 'ltm virtual'
+                }
+            ];
+            context.currentIndex = 0;
+            context.tasks = [{ firstPassNoDelete: true }];
+
+            const result = fetch.tmshUpdateScript(context, desiredConf, currentConf, confDiff);
+            const expectedOutput = [
+                'cli script __appsvcs_update {',
+                'proc script::run {} {',
+                'if {[catch {',
+                'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                '} err]} {',
+                'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                '}',
+                'if { [catch {',
+                'tmsh::begin_transaction',
+                'tmsh::modify auth partition Common description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                'tmsh::delete ltm virtual /Common/Shared/demoHttp',
+                'tmsh::create ltm virtual /Common/Shared/demoHttp1 enabled  address-status yes auto-lasthop default connection-limit 0 rate-limit disabled description \'Shared\' destination /Common/Shared/192.0.2.0:80 ip-protocol tcp last-hop-pool none mask 255.255.255.255 mirror disabled persist replace-all-with \\{ /Common/cookie \\{ default yes \\} \\} policies none profiles replace-all-with \\{ /Common/http \\{ context all \\} /Common/f5-tcp-progressive \\{ context all \\} \\} service-down-immediate-action none source 0.0.0.0/0 source-address-translation \\{ type automap \\} rules none security-log-profiles none source-port preserve translate-address enabled translate-port enabled serverssl-use-sni disabled nat64 disabled vlans none vlans-disabled   metadata none clone-pools none throughput-capacity infinite',
+                'tmsh::commit_transaction',
+                '} err] } {',
+                'catch { tmsh::cancel_transaction } e',
+                'regsub -all {"} $err {\\"} err',
+                'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
                 '}}',
                 '}'
             ];
@@ -10556,6 +13715,1194 @@ describe('fetch', () => {
                 assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
             });
         });
+
+        describe('ltm profile pptp', () => {
+            it('should create ltm profile pptpt', () => {
+                const desiredConfig = {
+                    '/Sample_PPTP_Tenant/Sample_PPT_App/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample_PPTP_Tenant/Sample_PPT_App/pptpProfileSample': {
+                        command: 'ltm profile pptp',
+                        properties: {
+                            'defaults-from': '/Common/pptp',
+                            description: '"Sample PPTP profile"',
+                            'csv-format': 'enabled',
+                            'include-destination-ip': 'enabled',
+                            'publisher-name': '/Common/local-db-publisher'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_PPTP_Tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+
+                const currentConfig = {};
+
+                const configDiff = [
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_PPTP_Tenant/Sample_PPT_App/'
+                        ],
+                        rhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_PPTP_Tenant/Sample_PPT_App/pptpProfileSample'
+                        ],
+                        rhs: {
+                            command: 'ltm profile pptp',
+                            properties: {
+                                'defaults-from': '/Common/pptp',
+                                description: '"Sample PPTP profile"',
+                                'csv-format': 'enabled',
+                                'include-destination-ip': 'enabled',
+                                'publisher-name': '/Common/local-db-publisher'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm profile pptp'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_PPTP_Tenant/'
+                        ],
+                        rhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition'
+                    }
+                ];
+
+                const expected = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::create auth partition Sample_PPTP_Tenant default-route-domain 0',
+                    'tmsh::create sys folder /Sample_PPTP_Tenant/Sample_PPT_App/',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition Sample_PPTP_Tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm profile pptp /Sample_PPTP_Tenant/Sample_PPT_App/pptpProfileSample defaults-from /Common/pptp description \\"Sample PPTP profile\\" csv-format enabled include-destination-ip enabled publisher-name /Common/local-db-publisher',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'catch { tmsh::delete sys folder /Sample_PPTP_Tenant/Sample_PPT_App/ } e',
+                    'catch { tmsh::delete auth partition Sample_PPTP_Tenant } e',
+                    '}}',
+                    '}'
+                ];
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                assert.deepStrictEqual(result.script.split('\n'), expected);
+            });
+        });
+
+        describe('ltm profile client-ssl', () => {
+            it('should modify the multiple certs into single profiles', () => {
+                const desiredConfig = {
+                    '/Sample_01/app/': {
+                        command: '',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/Sample_01/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app',
+                            destination: '/Sample_01/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Sample_01/app/ssl_server': {
+                                    context: 'clientside'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/ssl_server': {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set1: {
+                                    cert: '/Sample_01/app/cert_ecdsa.crt',
+                                    key: '/Sample_01/app/cert_ecdsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                },
+                                set0: {
+                                    cert: '/Sample_01/app/cert_rsa.crt',
+                                    key: '/Sample_01/app/cert_rsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'true',
+                            'sni-require': 'false',
+                            'server-name': 'none',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.crt',
+                            iControl_post: {
+                                reference: '/Sample_01/app/cert_rsa.crt',
+                                path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_rsa.crt',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: '-----BEGIN CERTIFICATE-----\nRCA Certificate Value\n-----END CERTIFICATE-----',
+                                why: 'upload certificate file'
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.key',
+                            iControl_post: {
+                                reference: '/Sample_01/app/cert_rsa.key',
+                                path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_rsa.key',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: '-----BEGIN PRIVATE KEY-----\nRCA Key Value\n-----END PRIVATE KEY-----',
+                                why: 'upload privateKey file'
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.crt',
+                            iControl_post: {
+                                reference: '/Sample_01/app/cert_ecdsa.crt',
+                                path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_ecdsa.crt',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: '-----BEGIN CERTIFICATE-----\nECDSA Certificate Value\n-----END CERTIFICATE-----',
+                                why: 'upload certificate file'
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.key',
+                            iControl_post: {
+                                reference: '/Sample_01/app/cert_ecdsa.key',
+                                path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_ecdsa.key',
+                                method: 'POST',
+                                ctype: 'application/octet-stream',
+                                send: '-----BEGIN RSA PRIVATE KEY-----\nECDSA Key Value\n-----END RSA PRIVATE KEY-----',
+                                why: 'upload privateKey file'
+                            }
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+                const currentConfig = {
+                    '/Sample_01/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/ssl_server': {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Sample_01/app/cert_rsa.crt',
+                                    key: '/Sample_01/app/cert_rsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                },
+                                set1: {
+                                    cert: '/Sample_01/app/cert_ecdsa.crt',
+                                    key: '/Sample_01/app/cert_ecdsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'true',
+                            'sni-require': 'false',
+                            'server-name': 'none',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app',
+                            destination: '/Sample_01/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Sample_01/app/ssl_server': {
+                                    context: 'clientside'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'cert-validation-options': {},
+                            'cert-validators': {},
+                            checksum: 'SHA1:671:60057ce38ec71cd537b3c5bcee3de8c770dd8565',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.crt'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'cert-validation-options': {},
+                            'cert-validators': {},
+                            checksum: 'SHA1:1203:726a62c03cad90da9758d3667a19c5ba569a6cac',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.crt'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            checksum: 'SHA1:240:50739430b07e1686baf9528276e97f0ba5181176',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.key'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            checksum: 'SHA1:1703:844ab005a247b713f30b928043c7bec08435a112',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.key'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/': {
+                        command: '',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.crt',
+                            'properties',
+                            'checksum'
+                        ],
+                        lhs: 'SHA1:671:60057ce38ec71cd537b3c5bcee3de8c770dd8565',
+                        rhs: 'SHA1:1683:2a2d9bca641d81dc4e396eb73f1f6c51ab5046fd',
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: 'sys file ssl-cert'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.crt',
+                            'properties',
+                            'iControl_post'
+                        ],
+                        rhs: {
+                            reference: '/Sample_01/app/cert_ecdsa.crt',
+                            path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_ecdsa.crt',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: '-----BEGIN CERTIFICATE-----\nECDSA Certificate Value\n-----END CERTIFICATE-----',
+                            why: 'upload certificate file'
+                        },
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: 'sys file ssl-cert'
+                    },
+                    {
+                        kind: 'E',
+                        path: [
+                            '/Sample_01/app/cert_rsa.crt',
+                            'properties',
+                            'checksum'
+                        ],
+                        lhs: 'SHA1:1203:726a62c03cad90da9758d3667a19c5ba569a6cac',
+                        rhs: 'SHA1:671:60057ce38ec71cd537b3c5bcee3de8c770dd8565',
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: 'sys file ssl-cert'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_01/app/cert_rsa.crt',
+                            'properties',
+                            'iControl_post'
+                        ],
+                        rhs: {
+                            reference: '/Sample_01/app/cert_rsa.crt',
+                            path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_rsa.crt',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: '-----BEGIN CERTIFICATE-----\nRCA Certificate Value\n-----END CERTIFICATE-----',
+                            why: 'upload certificate file'
+                        },
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: 'sys file ssl-cert'
+                    },
+                    {
+                        kind: 'E',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.key',
+                            'properties',
+                            'checksum'
+                        ],
+                        lhs: 'SHA1:240:50739430b07e1686baf9528276e97f0ba5181176',
+                        rhs: 'SHA1:3242:16376c7bab085bfc0e7293df52d1d039033dc442',
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: 'sys file ssl-key'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.key',
+                            'properties',
+                            'iControl_post'
+                        ],
+                        rhs: {
+                            reference: '/Sample_01/app/cert_ecdsa.key',
+                            path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_ecdsa.key',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: '-----BEGIN RSA PRIVATE KEY-----\nECDSA Key Value\n-----END RSA PRIVATE KEY-----',
+                            why: 'upload privateKey file'
+                        },
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: 'sys file ssl-key'
+                    },
+                    {
+                        kind: 'E',
+                        path: [
+                            '/Sample_01/app/cert_rsa.key',
+                            'properties',
+                            'checksum'
+                        ],
+                        lhs: 'SHA1:1703:844ab005a247b713f30b928043c7bec08435a112',
+                        rhs: 'SHA1:240:50739430b07e1686baf9528276e97f0ba5181176',
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: 'sys file ssl-key'
+                    },
+                    {
+                        kind: 'N',
+                        path: [
+                            '/Sample_01/app/cert_rsa.key',
+                            'properties',
+                            'iControl_post'
+                        ],
+                        rhs: {
+                            reference: '/Sample_01/app/cert_rsa.key',
+                            path: '/mgmt/shared/file-transfer/uploads/_Sample_01_app_cert_rsa.key',
+                            method: 'POST',
+                            ctype: 'application/octet-stream',
+                            send: '-----BEGIN PRIVATE KEY-----\nRCA Key Value\n-----END PRIVATE KEY-----',
+                            why: 'upload privateKey file'
+                        },
+                        tags: ['tmsh'],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: 'sys file ssl-key'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify ltm profile client-ssl /Sample_01/app/ssl_server cert-key-chain delete \\{ set1 \\}',
+                    'tmsh::modify ltm profile client-ssl /Sample_01/app/ssl_server cert-key-chain add \\{ set1 \\{  cert /Sample_01/app/cert_ecdsa.crt key /Sample_01/app/cert_ecdsa.key chain none usage SERVER \\} \\}',
+                    'tmsh::delete sys file ssl-cert /Sample_01/app/cert_ecdsa.crt',
+                    'tmsh::create sys file ssl-cert /Sample_01/app/cert_ecdsa.crt source-path file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.crt',
+                    'tmsh::modify auth partition Sample_01 description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::modify ltm profile client-ssl /Sample_01/app/ssl_server cert-key-chain delete \\{ set0 \\}',
+                    'tmsh::modify ltm profile client-ssl /Sample_01/app/ssl_server cert-key-chain add \\{ set0 \\{  cert /Sample_01/app/cert_rsa.crt key /Sample_01/app/cert_rsa.key chain none usage SERVER \\} \\}',
+                    'tmsh::delete sys file ssl-cert /Sample_01/app/cert_rsa.crt',
+                    'tmsh::create sys file ssl-cert /Sample_01/app/cert_rsa.crt source-path file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.crt',
+                    'tmsh::delete sys file ssl-key /Sample_01/app/cert_ecdsa.key',
+                    'tmsh::create sys file ssl-key /Sample_01/app/cert_ecdsa.key source-path file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.key',
+                    'tmsh::delete sys file ssl-key /Sample_01/app/cert_rsa.key',
+                    'tmsh::create sys file ssl-key /Sample_01/app/cert_rsa.key source-path file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.key',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+
+            it('should delete the client-ssl profile', () => {
+                context.host.parser.nodelist = [
+                    {
+                        fullPath: '/Sample_01/Service_Address-192.0.2.10',
+                        key: '192.0.2.10'
+                    }
+                ];
+                const desiredConfig = {};
+                const currentConfig = {
+                    '/Sample_01/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/ssl_server': {
+                        command: 'ltm profile client-ssl',
+                        properties: {
+                            'alert-timeout': 'indefinite',
+                            'allow-dynamic-record-sizing': 'disabled',
+                            'allow-expired-crl': 'disabled',
+                            'allow-non-ssl': 'disabled',
+                            authenticate: 'once',
+                            'authenticate-depth': 9,
+                            'c3d-drop-unknown-ocsp-status': 'drop',
+                            'c3d-ocsp': 'none',
+                            'cache-timeout': 3600,
+                            'ca-file': 'none',
+                            'cert-extension-includes': {},
+                            'cert-lookup-by-ipaddr-port': 'disabled',
+                            'cert-key-chain': {
+                                set0: {
+                                    cert: '/Sample_01/app/cert_rsa.crt',
+                                    key: '/Sample_01/app/cert_rsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                },
+                                set1: {
+                                    cert: '/Sample_01/app/cert_ecdsa.crt',
+                                    key: '/Sample_01/app/cert_ecdsa.key',
+                                    chain: 'none',
+                                    usage: 'SERVER'
+                                }
+                            },
+                            ciphers: 'DEFAULT',
+                            'cipher-group': 'none',
+                            'client-cert-ca': 'none',
+                            'crl-file': 'none',
+                            'data-0rtt': 'disabled',
+                            description: 'none',
+                            'handshake-timeout': 10,
+                            'hostname-whitelist': 'none',
+                            mode: 'enabled',
+                            options: {
+                                'dont-insert-empty-fragments': {},
+                                'no-tlsv1.3': {}
+                            },
+                            'ocsp-stapling': 'disabled',
+                            'notify-cert-status-to-virtual-server': 'disabled',
+                            'peer-cert-mode': 'ignore',
+                            'proxy-ssl': 'disabled',
+                            'proxy-ssl-passthrough': 'disabled',
+                            'renegotiate-max-record-delay': 4294967295,
+                            'renegotiate-period': 4294967295,
+                            'renegotiate-size': 4294967295,
+                            renegotiation: 'enabled',
+                            'retain-certificate': 'true',
+                            'secure-renegotiation': 'require',
+                            'sni-default': 'true',
+                            'sni-require': 'false',
+                            'server-name': 'none',
+                            'ssl-c3d': 'disabled',
+                            'ssl-forward-proxy': 'disabled',
+                            'ssl-forward-proxy-bypass': 'disabled',
+                            'ssl-sign-hash': 'any',
+                            'unclean-shutdown': 'enabled'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/vs': {
+                        command: 'ltm virtual',
+                        properties: {
+                            enabled: true,
+                            'address-status': 'yes',
+                            'auto-lasthop': 'default',
+                            'connection-limit': 0,
+                            'rate-limit': 'disabled',
+                            description: 'app',
+                            destination: '/Sample_01/192.0.2.10:443',
+                            'ip-protocol': 'tcp',
+                            'last-hop-pool': 'none',
+                            mask: '255.255.255.255',
+                            mirror: 'disabled',
+                            persist: {
+                                '/Common/cookie': {
+                                    default: 'yes'
+                                }
+                            },
+                            policies: {},
+                            profiles: {
+                                '/Common/http': {
+                                    context: 'all'
+                                },
+                                '/Common/f5-tcp-progressive': {
+                                    context: 'all'
+                                },
+                                '/Sample_01/app/ssl_server': {
+                                    context: 'clientside'
+                                }
+                            },
+                            'service-down-immediate-action': 'none',
+                            source: '0.0.0.0/0',
+                            'source-address-translation': {
+                                type: 'automap'
+                            },
+                            rules: {},
+                            'security-log-profiles': {},
+                            'source-port': 'preserve',
+                            'translate-address': 'enabled',
+                            'translate-port': 'enabled',
+                            nat64: 'disabled',
+                            vlans: {},
+                            'vlans-disabled': ' ',
+                            metadata: {},
+                            'clone-pools': {},
+                            'throughput-capacity': 'infinite'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/Service_Address-192.0.2.10': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '192.0.2.10',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'cert-validation-options': {},
+                            'cert-validators': {},
+                            checksum: 'SHA1:1683:2a2d9bca641d81dc4e396eb73f1f6c51ab5046fd',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.crt'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.crt': {
+                        command: 'sys file ssl-cert',
+                        properties: {
+                            'cert-validation-options': {},
+                            'cert-validators': {},
+                            checksum: 'SHA1:671:60057ce38ec71cd537b3c5bcee3de8c770dd8565',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.crt'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_ecdsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            checksum: 'SHA1:3242:16376c7bab085bfc0e7293df52d1d039033dc442',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.key'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/cert_rsa.key': {
+                        command: 'sys file ssl-key',
+                        properties: {
+                            checksum: 'SHA1:240:50739430b07e1686baf9528276e97f0ba5181176',
+                            'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.key'
+                        },
+                        ignore: []
+                    },
+                    '/Sample_01/app/': {
+                        command: '',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/'
+                        ],
+                        lhs: {
+                            command: 'auth partition',
+                            properties: {
+                                'default-route-domain': 0
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'auth partition',
+                        lhsCommand: 'auth partition',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/ssl_server'
+                        ],
+                        lhs: {
+                            command: 'ltm profile client-ssl',
+                            properties: {
+                                'alert-timeout': 'indefinite',
+                                'allow-dynamic-record-sizing': 'disabled',
+                                'allow-expired-crl': 'disabled',
+                                'allow-non-ssl': 'disabled',
+                                authenticate: 'once',
+                                'authenticate-depth': 9,
+                                'c3d-drop-unknown-ocsp-status': 'drop',
+                                'c3d-ocsp': 'none',
+                                'cache-timeout': 3600,
+                                'ca-file': 'none',
+                                'cert-extension-includes': {},
+                                'cert-lookup-by-ipaddr-port': 'disabled',
+                                'cert-key-chain': {
+                                    set0: {
+                                        cert: '/Sample_01/app/cert_rsa.crt',
+                                        key: '/Sample_01/app/cert_rsa.key',
+                                        chain: 'none',
+                                        usage: 'SERVER'
+                                    },
+                                    set1: {
+                                        cert: '/Sample_01/app/cert_ecdsa.crt',
+                                        key: '/Sample_01/app/cert_ecdsa.key',
+                                        chain: 'none',
+                                        usage: 'SERVER'
+                                    }
+                                },
+                                ciphers: 'DEFAULT',
+                                'cipher-group': 'none',
+                                'client-cert-ca': 'none',
+                                'crl-file': 'none',
+                                'data-0rtt': 'disabled',
+                                description: 'none',
+                                'handshake-timeout': 10,
+                                'hostname-whitelist': 'none',
+                                mode: 'enabled',
+                                options: {
+                                    'dont-insert-empty-fragments': {},
+                                    'no-tlsv1.3': {}
+                                },
+                                'ocsp-stapling': 'disabled',
+                                'notify-cert-status-to-virtual-server': 'disabled',
+                                'peer-cert-mode': 'ignore',
+                                'proxy-ssl': 'disabled',
+                                'proxy-ssl-passthrough': 'disabled',
+                                'renegotiate-max-record-delay': 4294967295,
+                                'renegotiate-period': 4294967295,
+                                'renegotiate-size': 4294967295,
+                                renegotiation: 'enabled',
+                                'retain-certificate': 'true',
+                                'secure-renegotiation': 'require',
+                                'sni-default': 'true',
+                                'sni-require': 'false',
+                                'server-name': 'none',
+                                'ssl-c3d': 'disabled',
+                                'ssl-forward-proxy': 'disabled',
+                                'ssl-forward-proxy-bypass': 'disabled',
+                                'ssl-sign-hash': 'any',
+                                'unclean-shutdown': 'enabled'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm profile client-ssl',
+                        lhsCommand: 'ltm profile client-ssl',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/vs'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual',
+                            properties: {
+                                enabled: true,
+                                'address-status': 'yes',
+                                'auto-lasthop': 'default',
+                                'connection-limit': 0,
+                                'rate-limit': 'disabled',
+                                description: '\'app\'',
+                                destination: '/Sample_01/192.0.2.10:443',
+                                'ip-protocol': 'tcp',
+                                'last-hop-pool': 'none',
+                                mask: '255.255.255.255',
+                                mirror: 'disabled',
+                                persist: {
+                                    '/Common/cookie': {
+                                        default: 'yes'
+                                    }
+                                },
+                                policies: {},
+                                profiles: {
+                                    '/Common/f5-tcp-progressive': {
+                                        context: 'all'
+                                    },
+                                    '/Common/http': {
+                                        context: 'all'
+                                    },
+                                    '/Sample_01/app/ssl_server': {
+                                        context: 'clientside'
+                                    }
+                                },
+                                'service-down-immediate-action': 'none',
+                                source: '0.0.0.0/0',
+                                'source-address-translation': {
+                                    type: 'automap'
+                                },
+                                rules: {},
+                                'security-log-profiles': {},
+                                'source-port': 'preserve',
+                                'translate-address': 'enabled',
+                                'translate-port': 'enabled',
+                                nat64: 'disabled',
+                                vlans: {},
+                                'vlans-disabled': ' ',
+                                metadata: {},
+                                'clone-pools': {},
+                                'throughput-capacity': 'infinite'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual',
+                        lhsCommand: 'ltm virtual',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/Service_Address-192.0.2.10'
+                        ],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '192.0.2.10',
+                                arp: 'enabled',
+                                'icmp-echo': 'enabled',
+                                mask: '255.255.255.255',
+                                'route-advertisement': 'disabled',
+                                spanning: 'disabled',
+                                'server-scope': 'any',
+                                'traffic-group': 'default',
+                                'auto-delete': 'true'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm virtual-address',
+                        lhsCommand: 'ltm virtual-address',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.crt'
+                        ],
+                        lhs: {
+                            command: 'sys file ssl-cert',
+                            properties: {
+                                'cert-validation-options': {},
+                                'cert-validators': {},
+                                checksum: 'SHA1:1683:2a2d9bca641d81dc4e396eb73f1f6c51ab5046fd',
+                                'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.crt'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/cert_rsa.crt'
+                        ],
+                        lhs: {
+                            command: 'sys file ssl-cert',
+                            properties: {
+                                'cert-validation-options': {},
+                                'cert-validators': {},
+                                checksum: 'SHA1:671:60057ce38ec71cd537b3c5bcee3de8c770dd8565',
+                                'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.crt'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys file ssl-cert',
+                        lhsCommand: 'sys file ssl-cert',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/cert_ecdsa.key'
+                        ],
+                        lhs: {
+                            command: 'sys file ssl-key',
+                            properties: {
+                                checksum: 'SHA1:3242:16376c7bab085bfc0e7293df52d1d039033dc442',
+                                'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_ecdsa.key'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/cert_rsa.key'
+                        ],
+                        lhs: {
+                            command: 'sys file ssl-key',
+                            properties: {
+                                checksum: 'SHA1:240:50739430b07e1686baf9528276e97f0ba5181176',
+                                'source-path': 'file:/var/config/rest/downloads/_Sample_01_app_cert_rsa.key'
+                            },
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys file ssl-key',
+                        lhsCommand: 'sys file ssl-key',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/Sample_01/app/'
+                        ],
+                        lhs: {
+                            command: 'sys folder',
+                            properties: {},
+                            ignore: []
+                        },
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'sys folder',
+                        lhsCommand: 'sys folder',
+                        rhsCommand: ''
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    'tmsh::modify auth partition Sample_01 description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::delete ltm profile client-ssl /Sample_01/app/ssl_server',
+                    'tmsh::delete ltm virtual /Sample_01/app/vs',
+                    '',
+                    'tmsh::delete sys file ssl-cert /Sample_01/app/cert_ecdsa.crt',
+                    'tmsh::delete sys file ssl-cert /Sample_01/app/cert_rsa.crt',
+                    'tmsh::delete sys file ssl-key /Sample_01/app/cert_ecdsa.key',
+                    'tmsh::delete sys file ssl-key /Sample_01/app/cert_rsa.key',
+                    'tmsh::delete ltm virtual-address /Sample_01/192.0.2.10',
+                    'tmsh::commit_transaction',
+                    'tmsh::cd /Sample_01',
+                    'foreach {node} [tmsh::get_config /ltm node] {',
+                    '  tmsh::delete ltm node [tmsh::get_name $node]',
+                    '}',
+                    'tmsh::cd /Common',
+                    '',
+                    'tmsh::delete sys folder /Sample_01/app/',
+                    'tmsh::delete sys folder /Sample_01/',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
+        });
     });
 
     describe('.gatherAccessProfileItems', () => {
@@ -12460,7 +16807,7 @@ describe('fetch', () => {
                             'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members modify \\{ /Common/192.0.2.10:9021 \\}',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
                             'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::commit_transaction',
@@ -12477,6 +16824,7 @@ describe('fetch', () => {
                     );
                 });
         });
+
         it('should add pool and irule diff/commands if monitor is ref by pool or poolMember and if special characters are included in irules', () => {
             const desiredConf = {
                 '/tenant/': {
@@ -12620,7 +16968,7 @@ describe('fetch', () => {
                             'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
                             'tmsh::delete ltm monitor https /tenant/app/tenant_mon2',
                             'tmsh::create ltm monitor https /tenant/app/tenant_mon2 destination *:119 interval 20',
-                            'tmsh::modify ltm pool /tenant/app/tenant_pool members add \\{ /Common/192.0.2.10:9021 \\}',
+                            'tmsh::modify ltm pool /tenant/app/tenant_pool members modify \\{ /Common/192.0.2.10:9021 \\}',
                             'tmsh::delete ltm pool /tenant/app/tenant_pool',
                             'tmsh::create ltm pool /tenant/app/tenant_pool monitor min 1 of \\{ /tenant/app/tenant_mon1 /Common/gateway_icmp \\}',
                             'tmsh::create ltm rule /tenant/app/tenant_irule {',

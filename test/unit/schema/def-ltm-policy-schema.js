@@ -679,6 +679,36 @@ describe('def-ltm-policy-schema.json', () => {
                 });
             });
         });
+        describe('Policy_Action_L7_Dos', () => {
+            beforeEach(() => {
+                data.Tenant.Application.test1.rules[0].actions.push(
+                    {
+                        type: 'l7dos'
+                    }
+                );
+            });
+
+            describe('valid', () => {
+                it('should validate with required properties', () => assert.ok(validate(data), getErrorString(validate)));
+
+                it('should validate updating event to a valid event type', () => {
+                    data.Tenant.Application.test1.rules[0].actions[1].event = 'client-accepted';
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+
+                it('should validate updating fromProfile', () => {
+                    data.Tenant.Application.test1.rules[0].actions[1].profile = { bigip: '/Common/fromProfile' };
+                    assert.ok(validate(data), getErrorString(validate));
+                });
+            });
+
+            describe('invalid', () => {
+                it('should invalidate invalid event type', () => {
+                    data.Tenant.Application.test1.rules[0].actions[1].event = 'ws-request';
+                    assert.strictEqual(validate(data), false);
+                });
+            });
+        });
     });
 });
 

@@ -195,4 +195,51 @@ describe('iRule', function () {
                 assert.strictEqual(response.partition, 'TEST_iRule_HttpsMonitor');
             });
     });
+
+    it('should handled the dependent rules in the tenant', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            TEST_Rule: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    example_service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        iRules: ['example_irule']
+                    },
+                    example_irule: {
+                        class: 'iRule',
+                        iRule: {
+                            text: 'when HTTP_REQUEST {\n  set nothing [call library_irule::do_nothing]\n}'
+                        }
+                    },
+                    library_irule: {
+                        class: 'iRule',
+                        iRule: {
+                            text: 'proc do_nothing {}'
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => deleteDeclaration())
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            });
+    });
 });

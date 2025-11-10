@@ -2526,6 +2526,21 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
         return false;
     }
 
+    function isDependentRule(ruleName) {
+        let flag = false;
+        const rulesConfigDiff = configDiff.filter((cmd) => cmd.command === 'ltm rule');
+        rulesConfigDiff.forEach((diff) => {
+            if (diff.lhs && diff.lhs.properties) {
+                Object.keys(diff.lhs.properties).forEach((prop) => {
+                    if (diff.lhs.properties[prop].includes(ruleName)) {
+                        flag = true;
+                    }
+                });
+            }
+        });
+        return flag;
+    }
+
     function isNewAddressListAndTmcWithRouteDomain(diffUpdates, diffs) {
         function isCreate(itemToCreateMatch, itemToDeleteMatch) {
             if (!itemToCreateMatch || !itemToDeleteMatch) {
@@ -2738,6 +2753,34 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             });
         }
 
+        function getUpdatedSSlProfileCommand(confs, delCmd) {
+            const sslCmds = [];
+            const sslProfiles = {};
+            Object.keys(confs).forEach((configKey) => {
+                if (confs[configKey].command === 'ltm profile client-ssl') {
+                    sslProfiles[configKey] = confs[configKey];
+                }
+            });
+            const certOrKey = delCmd.substring(delCmd.lastIndexOf(' ') + 1);
+            Object.keys(sslProfiles).forEach((profileName) => {
+                const certKeyChains = ((sslProfiles[profileName] || {}).properties || {})['cert-key-chain'];
+                if (certKeyChains) {
+                    Object.keys(certKeyChains).forEach((certKeyName) => {
+                        if (certKeyChains[certKeyName].cert === certOrKey
+                             || certKeyChains[certKeyName].key === certOrKey) {
+                            const desireCertKeyChains = ((desiredConfig[profileName] || {}).properties || {})['cert-key-chain'];
+                            const desireCertKeyObj = (desireCertKeyChains || {})[certKeyName];
+                            if (desireCertKeyObj) {
+                                sslCmds.push(`tmsh::modify ltm profile client-ssl ${profileName} cert-key-chain delete \\{ ${certKeyName} \\}`);
+                                sslCmds.push(`tmsh::modify ltm profile client-ssl ${profileName} cert-key-chain add \\{ ${certKeyName} \\{ ${mapCli.stringify('ltm profile client-ssl cert-key-chain', desireCertKeyObj, false)} \\} \\}`);
+                            }
+                        }
+                    });
+                }
+            });
+            return sslCmds.length > 0 ? sslCmds.join('\n') : '';
+        }
+
         if (isNonDefaultRouteDomainSet && diff.command === 'ltm virtual'
             && (diff.kind === 'N' || diff.kind === 'E')) {
             const virtualConfig = desiredConfig[diff.path[0]];
@@ -2847,6 +2890,14 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         commands.forEach((command) => {
                             if (command.indexOf('modify sys') > -1) {
                                 postTrans.push(command);
+                            } else if (command.indexOf('delete sys') > -1) {
+                                const updatedSSlProfileCmds = getUpdatedSSlProfileCommand(currentConfig, command);
+                                if (updatedSSlProfileCmds && trans.indexOf(updatedSSlProfileCmds) < 0) {
+                                    trans.push(updatedSSlProfileCmds);
+                                }
+                                if (trans.indexOf(command) < 0) {
+                                    trans.push(command);
+                                }
                             } else if (trans.indexOf(command) < 0) {
                                 trans.push(command);
                             }
@@ -3029,6 +3080,32 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                             commands[0],
                             'inc'
                         );
+                    } else if (diffUpdates.commands.indexOf('ltm snat-translation') > -1
+                    && diffUpdates.commands.indexOf('ltm node') > -1) {
+                        const commands = diffUpdates.commands.split('\n');
+                        commands.forEach((command) => {
+                            if (command.includes('tmsh::modify') || command.includes('tmsh::create')) {
+                                const cmdBlocks = command.split(' ').slice(0, 3);
+                                if (cmdBlocks[0] === 'tmsh::modify') {
+                                    cmdBlocks[0] = 'tmsh::create';
+                                    const find = trans.find((rCmd) => rCmd.includes(cmdBlocks.join(' ')));
+                                    if (!find && !trans.includes(command)) {
+                                        trans.push(command);
+                                    }
+                                } else if (cmdBlocks[0] === 'tmsh::create') {
+                                    cmdBlocks[0] = 'tmsh::modify';
+                                    const find = trans.find((rCmd) => rCmd.includes(cmdBlocks.join(' ')));
+                                    if (find) {
+                                        trans = trans.filter((c) => c !== find);
+                                    }
+                                    if (!trans.includes(command)) {
+                                        trans.push(command);
+                                    }
+                                }
+                            } else if (!trans.includes(command)) {
+                                trans.push(command);
+                            }
+                        });
                     } else {
                         // put all other create commands into the cli transaction
                         trans.push(diffUpdates.commands);
@@ -3119,6 +3196,14 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     commands.forEach((command) => {
                         if (command.indexOf('modify sys') > -1) {
                             postTrans.push(command);
+                        } else if (command.indexOf('delete sys') > -1) {
+                            const updatedSSlProfileCmds = getUpdatedSSlProfileCommand(currentConfig, command);
+                            if (updatedSSlProfileCmds && trans.indexOf(updatedSSlProfileCmds) < 0) {
+                                trans.push(updatedSSlProfileCmds);
+                            }
+                            if (trans.indexOf(command) < 0) {
+                                trans.push(command);
+                            }
                         } else if (trans.indexOf(command) < 0) {
                             trans.push(command);
                         }
@@ -3168,6 +3253,40 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                     // Deleting the pool before nodes ensures that FQDN auto generated
                     // nodes are cleaned up.
                     arrayUtil.insertBeforeOrAtEnd(trans, 'ltm node', diffUpdates.commands);
+                } else if (diffUpdates.commands.indexOf('delete ltm rule') > -1) {
+                    const ruleName = diffUpdates.commands.substring(diffUpdates.commands.lastIndexOf(' ') + 1);
+                    const exactRuleName = ruleName.split('/').pop();
+                    if (isDependentRule(exactRuleName) && !trans2.includes(diffUpdates.commands)) {
+                        trans2.push(diffUpdates.commands);
+                    } else if (!trans.includes(diffUpdates.commands)) {
+                        trans.push(diffUpdates.commands);
+                    }
+                } else if (diffUpdates.commands.indexOf('ltm snat-translation') > -1
+                && diffUpdates.commands.indexOf('ltm node') > -1) {
+                    const commands = diffUpdates.commands.split('\n');
+                    commands.forEach((command) => {
+                        if (command.includes('tmsh::modify') || command.includes('tmsh::create')) {
+                            const cmdBlocks = command.split(' ').slice(0, 3);
+                            if (cmdBlocks[0] === 'tmsh::modify') {
+                                cmdBlocks[0] = 'tmsh::create';
+                                const find = trans.find((rCmd) => rCmd.includes(cmdBlocks.join(' ')));
+                                if (!find && !trans.includes(command)) {
+                                    trans.push(command);
+                                }
+                            } else if (cmdBlocks[0] === 'tmsh::create') {
+                                cmdBlocks[0] = 'tmsh::modify';
+                                const find = trans.find((rCmd) => rCmd.includes(cmdBlocks.join(' ')));
+                                if (find) {
+                                    trans = trans.filter((c) => c !== find);
+                                }
+                                if (!trans.includes(command)) {
+                                    trans.push(command);
+                                }
+                            }
+                        } else if (!trans.includes(command)) {
+                            trans.push(command);
+                        }
+                    });
                 } else if (!isModifyGtmServer(diffUpdates)) {
                     // put all other delete commands into the cli transaction
                     trans.push(diffUpdates.commands);
@@ -3182,6 +3301,48 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
             if (context.tasks[context.currentIndex].firstPassNoDelete && diff.kind === 'E'
                 && isConfigForCommonNode(diff.command, diff.path[0], diff.rhs.properties)) {
                 trans.push(diffUpdates.commands);
+            }
+
+            // Delete the virtual server in the first pass of Common tenant
+            // Fix for AUTOTOOL-3902
+            if (context.tasks[context.currentIndex].firstPassNoDelete && diff.kind === 'D' && diff.command === 'ltm virtual') {
+                trans.push(diffUpdates.commands);
+            }
+
+            // Delete the fqdn autopopulate node in the first pass of Common tenant
+            // to avoid the node already exists issues.
+            // Fix for ID1854245
+            if (context.tasks[context.currentIndex].firstPassNoDelete && diff.kind === 'D' && diff.command === 'ltm node') {
+                const properties = (diff.rhs && diff.rhs.properties) || (diff.lhs && diff.lhs.properties);
+                const fqdnAutopopulate = util.getDeepValue(properties, 'fqdn.autopopulate');
+                if (fqdnAutopopulate === 'enabled') {
+                    if (!diffUpdates.commands.includes('create ltm node')) {
+                        const cmd = diffUpdates.commands;
+                        const nodeName = cmd.substring(cmd.lastIndexOf(' ') + 1);
+                        const pools = configDiff.filter((d) => (d.command === 'ltm pool'
+                            && d.kind === 'D' && d.path[d.path.length - 1].indexOf(nodeName) > -1));
+                        pools.forEach((pool) => {
+                            const poolName = pool.path[0];
+                            const nodName = pool.path[pool.path.length - 1];
+                            const deleteCmd = `tmsh::modify ltm pool ${poolName} members delete \\{ ${nodName} \\}`;
+                            if (!preTrans.includes(deleteCmd)) {
+                                preTrans.push(deleteCmd);
+                            }
+                        });
+                        if (!preTrans.includes(cmd)) {
+                            preTrans.push(cmd);
+                        }
+                        const fqdnNodeDiff = util.simpleCopy(diff);
+                        fqdnNodeDiff.kind = 'N';
+                        const targetObj = (fqdnNodeDiff.rhs && fqdnNodeDiff.rhs.properties)
+                        || (fqdnNodeDiff.lhs && fqdnNodeDiff.lhs.properties);
+                        const rollBackFqdnNode = mapCli.tmshCreate(context, fqdnNodeDiff, targetObj, currentConfig);
+                        const nodeRollBackCmd = (rollBackFqdnNode.commands || []).length > 0 ? rollBackFqdnNode.commands[0] : '';
+                        if (nodeRollBackCmd && !rollback.includes(nodeRollBackCmd)) {
+                            rollback.push(nodeRollBackCmd);
+                        }
+                    }
+                }
             }
         }
     });

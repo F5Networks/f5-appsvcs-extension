@@ -54,11 +54,11 @@
           "anyOf": [
             {
               "description": "Any version of AS3.",
-              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-4])($|[.][0-9]+$)"
+              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-5])($|[.][0-9]+$)"
             },
             {
               "description": "The current version of AS3.",
-              "const": "3.54.2"
+              "const": "3.55.0"
             }
           ]
         },
@@ -119,6 +119,12 @@
               "description": "Date+time (this version of) declaration was created (optional but recommended)",
               "type": "string",
               "format": "date-time"
+            },
+            "maskConstants": {
+              "title": "Mask constants",
+              "description": "If true, then the declaration will mask all constant values in the output (default false)",
+              "type": "boolean",
+              "default": false
             }
           },
           "additionalProperties": {
@@ -735,6 +741,10 @@
               "Cipher_Rule",
               "Cipher_Group",
               "iFile",
+              "PPTP_Profile",
+              "Service_Profile",
+              "Splitsession_Client_Profile",
+              "Connector_Profile",
               "Firewall_Address_List",
               "Firewall_Port_List",
               "Firewall_Rule_List",
@@ -745,6 +755,7 @@
               "SSH_Proxy_Profile",
               "Ping_Access_Agent_Properties",
               "Ping_Access_Profile",
+              "IP_Intelligence_Policy",
               "Data_Group",
               "DNS_Cache",
               "DNS_Profile",
@@ -1275,6 +1286,54 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "PPTP_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/PPTP_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Service_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Service_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Splitsession_Client_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Splitsession_Client_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Connector_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Connector_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Firewall_Address_List"
                 }
               }
@@ -1389,6 +1448,18 @@
             },
             "then": {
               "$ref": "#/definitions/Ping_Access_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "IP_Intelligence_Policy"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/IP_Intelligence_Policy"
             }
           },
           {
@@ -2498,6 +2569,15 @@
         "profileAnalyticsTcp": {
           "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
         },
+        "profileService": {
+          "$ref": "#/definitions/Pointer_Service_Profile"
+        },
+        "profileSplitsessionClient": {
+          "$ref": "#/definitions/Pointer_Splitsession_Client_Profile"
+        },
+        "profileConnector": {
+          "$ref": "#/definitions/Pointer_Connector_Profile"
+        },
         "profileHTTP": {
           "title": "HTTP profile",
           "description": "HTTP profile; name of built-in or else BIG-IP AS3 pointer",
@@ -2840,6 +2920,9 @@
         "profilePPTP": {
           "$ref": "#/definitions/Pointer_PPTP_Profile"
         },
+        "profileConnector": {
+          "$ref": "#/definitions/Pointer_Connector_Profile"
+        },
         "profileRTSP": {
           "$ref": "#/definitions/Pointer_RTSP_Profile"
         },
@@ -3110,6 +3193,12 @@
         },
         "profileAnalyticsTcp": {
           "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
+        },
+        "profileService": {
+          "$ref": "#/definitions/Pointer_Service_Profile"
+        },
+        "profileSplitsessionClient": {
+          "$ref": "#/definitions/Pointer_Splitsession_Client_Profile"
         },
         "profileSSHProxy": {
           "$ref": "#/definitions/Pointer_SSH_Proxy_Profile"
@@ -3826,6 +3915,9 @@
         },
         "profileAnalyticsTcp": {
           "$ref": "#/definitions/Pointer_Analytics_TCP_Profile"
+        },
+        "profileSplitsessionClient": {
+          "$ref": "#/definitions/Pointer_Splitsession_Client_Profile"
         }
       },
       "allOf": [
@@ -4489,6 +4581,12 @@
           "description": "If true (default), make server-side connection to server port (otherwise, connect to server on virtual-server port)",
           "type": "boolean",
           "default": true
+        },
+        "serversslUseSni": {
+          "title": "Server SSL with SNI",
+          "description": "If false (default), connects using server's service port without SNI. If true, sends SNI using virtual server port. ",
+          "type": "boolean",
+          "default": false
         },
         "nat64Enabled": {
           "title": "Translate IPv6 to IPv4",
@@ -7095,6 +7193,12 @@
               "$ref": "#/definitions/Pointer_Data_Group"
             }
           ]
+        },
+        "hybrid": {
+          "title": "Hybrid Client-SSL Profile",
+          "description": "Forces all certificates to be part of a single Client-SSL profile. Requires that all certificates are of different types (e.g. RSA, ECDSA).",
+          "type": "boolean",
+          "default": false
         },
         "ldapStartTLS": {
           "title": "Client-LDAP Profile",
@@ -10949,12 +11053,232 @@
               }
             }
           ]
+        },
+        "ignoreChanges": {
+          "title": "Ignore changes",
+          "description": "If true(default), BIG-IP AS3 creates the ifile on first deployment, and leaves it untouched afterwards. If false, the system updates the iFile in every BIG-IP AS3 declaration deployment.",
+          "type": "boolean",
+          "default": true
         }
       },
       "additionalProperties": false,
       "required": [
         "class",
         "iFile"
+      ]
+    },
+    "PPTP_Profile": {
+      "title": "PPTP_Profile",
+      "type": "object",
+      "description": "Point-to-Point Tunneling Protocol (PPTP) profile",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "PPTP_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "description": {
+          "description": "Description of the profile",
+          "type": "string"
+        },
+        "defaultsFrom": {
+          "description": "Parent profile to inherit settings from (none or another pptp profile)",
+          "type": "object",
+          "properties": {
+            "bigip": {
+              "title": "BIG-IP resolver",
+              "description": "Parent profile to inherit settings from (none or another pptp profile)",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "bigip": "/Common/pptp"
+          },
+          "required": [
+            "bigip"
+          ]
+        },
+        "csvFormat": {
+          "description": "Enables/disables CSV format logging",
+          "type": "boolean",
+          "default": false
+        },
+        "includeDestinationIp": {
+          "description": "Enables/disables using destination IP in call ID hash",
+          "type": "boolean",
+          "default": false
+        },
+        "publisherName": {
+          "title": "Analytics publisher for logging events",
+          "description": "BIG-IP AS3 pointer to analytics publisher for logging events",
+          "type": "object",
+          "properties": {
+            "bigip": {
+              "title": "BIG-IP resolver",
+              "description": "Pathname of existing analytics publisher for logging events",
+              "type": "string",
+              "format": "f5bigip"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "bigip"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ]
+    },
+    "Service_Profile": {
+      "title": "Service_Profile",
+      "type": "object",
+      "description": "Configures an Service profile",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Service_Profile"
+        },
+        "type": {
+          "title": "Type",
+          "description": "Specifies the type of service statistics to be collected by the Service profile. You can select ICAP, Inline, TAP, HTTP Explicit Proxy, HTTP Transparent Proxy, or F5 Module. Select F5 Module if connecting to another F5 service, such as DataSafe.",
+          "type": "string",
+          "enum": [
+            "captive-portal",
+            "f5-module",
+            "inline",
+            "inline-http-explicit",
+            "default-value",
+            "icap",
+            "inline-http",
+            "tap"
+          ],
+          "default": "inline"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
+      ]
+    },
+    "Splitsession_Client_Profile": {
+      "title": "Splitsession_Client_Profile",
+      "type": "object",
+      "description": "Configures an Splitsession Client profile",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Splitsession_Client_Profile"
+        },
+        "description": {
+          "description": "Description of the profile",
+          "type": "string"
+        },
+        "peerPort": {
+          "title": "Peer Port",
+          "description": "Specifies the port of the SplitSession peer connected to the out-of-band connection.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 0
+        },
+        "peerIp": {
+          "title": "Peer IP",
+          "description": "Specifies the IP address of the SplitSession peer connected to the out-of-band connection.",
+          "type": "string",
+          "format": "f5ip"
+        },
+        "localPeer": {
+          "title": "Local Peer",
+          "description": "Specifies the this is a Local Peer of the SplitSession",
+          "type": "boolean",
+          "default": false
+        },
+        "httpHeader": {
+          "title": "Http Header",
+          "description": "Specifies the Http Header of the SplitSession",
+          "type": "string",
+          "default": "none"
+        },
+        "sessionLookupType": {
+          "title": "Session Lookup Type",
+          "description": "Specifies the Lookup Type of the SplitSession",
+          "type": "string",
+          "enum": [
+            "flow",
+            "http-header",
+            "session-flow"
+          ],
+          "default": "flow"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "peerPort",
+        "peerIp"
+      ]
+    },
+    "Connector_Profile": {
+      "title": "Connector_Profile",
+      "type": "object",
+      "description": "Configures a Connector Profile",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "Connector_Profile"
+        },
+        "entryVirtualServer": {
+          "title": "Entry Virtual Server",
+          "description": "Specifies the name of the internal service to use for Connector Profile",
+          "type": "object",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_Service"
+            }
+          ]
+        },
+        "connectionTimeout": {
+          "title": "Connection Timeout",
+          "description": "Specifies the timeout in milliseconds. If the internal virtual server does not return a result within the specified time, the operation times out. Specifying 0 disables the timeout. The default value is 0.",
+          "type": "integer",
+          "maximum": 4294967295,
+          "minimum": 0,
+          "default": 0
+        },
+        "serviceDownAction": {
+          "title": "Service Down Action",
+          "description": "Specifies the action to take when the Connector service is down.",
+          "type": "string",
+          "enum": [
+            "drop",
+            "ignore",
+            "reset"
+          ],
+          "default": "ignore"
+        },
+        "connectOnData": {
+          "title": "Connect On Data",
+          "description": "Specifies the action to take when the Connector connectOn data.",
+          "type": "boolean",
+          "default": false,
+          "f5PostProcess": {
+            "tag": "minVersion",
+            "data": "16.0"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
       ]
     },
     "Firewall_Address_List": {
@@ -13495,6 +13819,135 @@
       ],
       "additionalProperties": false
     },
+    "IP_Intelligence_Policy": {
+      "title": "IP_Intelligence_Policy",
+      "description": "Configures a IP Intelligence (Dynamic White/Black List) policy",
+      "type": "object",
+      "f5PostProcess": {
+        "tag": "modules",
+        "data": [
+          "afm",
+          "asm"
+        ]
+      },
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "IP_Intelligence_Policy"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "description": {
+          "description": "Description for the IP Intelligence Policy.",
+          "type": "string"
+        },
+        "defaultAction": {
+          "type": "string",
+          "description": "Specifies the default enforcement action.",
+          "enum": [
+            "drop",
+            "accept"
+          ],
+          "default": "drop"
+        },
+        "defaultLogBlacklistHitOnly": {
+          "type": "string",
+          "description": "Specifies the default blacklist hit only logging action.",
+          "enum": [
+            "no",
+            "yes",
+            "limited"
+          ],
+          "default": "no"
+        },
+        "defaultLogBlacklistWhitelistHit": {
+          "type": "string",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "afm",
+              "dos"
+            ]
+          },
+          "description": "Specifies the default blacklist and whitelist hit logging action.",
+          "enum": [
+            "no",
+            "yes"
+          ]
+        },
+        "blacklistCategories": {
+          "type": "array",
+          "description": "Specifies List of IP Intelligence blacklist categories with the enforcement and logging settings per category.",
+          "items": {
+            "$ref": "#/definitions/Blacklist_Categories"
+          }
+        },
+        "feedLists": {
+          "type": "array",
+          "f5PostProcess": {
+            "tag": "modules",
+            "data": [
+              "afm"
+            ]
+          },
+          "description": "Specifies IP Intelligence feed lists that are applied to all.",
+          "items": {
+            "$ref": "#/definitions/Pointer_IP_Intelligence_Feed_List"
+          }
+        }
+      },
+      "required": [
+        "class"
+      ]
+    },
+    "Blacklist_Categories": {
+      "description": "IP Intelligence blacklist categories with the enforcement and logging settings per category.",
+      "type": "object",
+      "properties": {
+        "blacklistCategory": {
+          "$ref": "#/definitions/Pointer_Denylist_Category"
+        },
+        "action": {
+          "type": "string",
+          "description": "Specifies the default enforcement action.",
+          "enum": [
+            "accept",
+            "drop"
+          ]
+        },
+        "logBlacklistHitOnly": {
+          "type": "string",
+          "description": "Specifies the default blacklist hit only logging action.",
+          "enum": [
+            "limited",
+            "yes",
+            "no"
+          ]
+        },
+        "logBlacklistWhitelistHit": {
+          "type": "string",
+          "description": "Specifies the default blacklist and whitelist hit logging action.",
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "matchDirectionOverride": {
+          "type": "string",
+          "description": "Specifies the source/destination IP match direction setting",
+          "enum": [
+            "match-source",
+            "match-destination",
+            "match-source-and-destination"
+          ]
+        }
+      }
+    },
     "Data_Group": {
       "title": "Data_Group",
       "description": "Configures a data group object which contains list of data",
@@ -15451,6 +15904,11 @@
         },
         "tlsSignaturesEnabled": {
           "description": "Enables tls signature detection before the connection establishment. This property is available on BIGIP 14.1 and above.",
+          "type": "boolean",
+          "default": false
+        },
+        "useTlsPatternsForHostIdentification": {
+          "description": "Enables use tls patterns as part of host identification detection before the connection establishment.",
           "type": "boolean",
           "default": false
         }
@@ -22208,7 +22666,8 @@
             "clientSsl",
             "persist",
             "tcl",
-            "log"
+            "log",
+            "l7dos"
           ]
         }
       },
@@ -22367,6 +22826,18 @@
           },
           "then": {
             "$ref": "#/definitions/Policy_Action_Log"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "l7dos"
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/definitions/Policy_Action_L7_Dos"
           }
         }
       ],
@@ -23301,6 +23772,26 @@
       "required": [
         "write"
       ]
+    },
+    "Policy_Action_L7_Dos": {
+      "type": "object",
+      "description": "Enable or disable L7 Dos processing",
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "When to run this event in the request-response cycle",
+          "enum": [
+            "client-accepted",
+            "proxy-request",
+            "request"
+          ],
+          "default": "request"
+        },
+        "profile": {
+          "$ref": "#/definitions/Pointer_DOS_Profile"
+        }
+      },
+      "required": []
     },
     "Policy_Condition": {
       "type": "object",
@@ -29343,6 +29834,26 @@
       "description": "Reference to a IP Intelligence Policy",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to IP Intelligence Policy declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "IP_Intelligence_Policy"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP IP Intelligence Policy",
           "type": "string",
@@ -29358,6 +29869,30 @@
             "tag": "bigComponent",
             "data": [
               "query security ip-intelligence policy"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_IP_Intelligence_Feed_List": {
+      "description": "Reference to a IP Intelligence Feed List",
+      "type": "object",
+      "properties": {
+        "bigip": {
+          "description": "Pathname of existing BIG-IP IP Intelligence Feed List",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query security ip-intelligence feed-list"
             ]
           }
         }
@@ -30083,6 +30618,26 @@
       "description": "Reference to a PPTP_Profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to PPTP_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "PPTP_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP PPTP_Profile",
           "type": "string",
@@ -30098,6 +30653,138 @@
             "tag": "bigComponent",
             "data": [
               "query ltm profile pptp"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_Service_Profile": {
+      "description": "Reference to a Service_Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Service_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Service_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Service_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile service"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_Splitsession_Client_Profile": {
+      "description": "Reference to a Splitsession_Client_Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Splitsession_Client_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Splitsession_Client_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Splitsession_Client_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile splitsessionclient"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_Connector_Profile": {
+      "description": "Reference to a Connector_Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to Connector_Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Connector_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP Connector_Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile connector"
             ]
           }
         }

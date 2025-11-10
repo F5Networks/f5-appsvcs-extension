@@ -49,7 +49,7 @@ The **/settings** endpoint supports the following (see |apiset| in the API Refer
 
 - **perAppDeploymentAllowed** |br| *Requires BIG-IP AS3 3.50 or later* - This setting controls whether per-application deployments are allowed or not. See :doc:`per-app-declarations` for more information.
 
-- **encodeDeclarationMetadata** |br| *Requires BIG-IP AS3 3.53 or later* - A boolean parameter that manages the encoding of tenant metadata, with encoding disabled by default. See :ref:`enable-encodeDecl` for more information.
+- **encodeDeclarationMetadata** |br| *Requires BIG-IP AS3 3.53 or later* - A boolean parameter that manages the encoding of tenant metadata, with encoding disabled by default. See :ref:`Enable encodeDeclarationMetadata<enable-encodeDecl>` for more information.
 
 
 .. _serialize:

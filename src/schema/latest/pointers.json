@@ -382,7 +382,12 @@
     },
     "IP_Intelligence_Policy": {
         "name": "IP Intelligence Policy",
+        "class": "IP_Intelligence_Policy",
         "tmshPath": "security ip-intelligence policy"
+    },
+    "IP_Intelligence_Feed_List": {
+        "name": "IP Intelligence Feed List",
+        "tmshPath": "security ip-intelligence feed-list"
     },
     "NAT_Source_Translation": {
         "name": "NAT Source Translation",
@@ -479,7 +484,23 @@
     },
     "PPTP_Profile": {
         "name": "PPTP_Profile",
+        "class": "PPTP_Profile",
         "tmshPath": "ltm profile pptp"
+    },
+    "Service_Profile": {
+        "name": "Service_Profile",
+        "class": "Service_Profile",
+        "tmshPath": "ltm profile service"
+    },
+    "Splitsession_Client_Profile": {
+        "name": "Splitsession_Client_Profile",
+        "class": "Splitsession_Client_Profile",
+        "tmshPath": "ltm profile splitsessionclient"
+    },
+    "Connector_Profile": {
+        "name": "Connector_Profile",
+        "class": "Connector_Profile",
+        "tmshPath": "ltm profile connector"
     },
     "Rewrite_Profile": {
         "name": "Rewrite Profile",

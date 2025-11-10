@@ -144,7 +144,9 @@ const profile = function profile(item, key, context, declaration) {
                         } else {
                             profName = i === 0 ? n : `${n}-${i}-`;
                         }
-                        item.profiles.push({ name: profName, context });
+                        if (!(profileDef.hybrid || false) || i === 0) {
+                            item.profiles.push({ name: profName, context });
+                        }
                     });
                 }
             } else {
@@ -157,6 +159,24 @@ const profile = function profile(item, key, context, declaration) {
                 if ((key === 'policyIAM' || key === 'profileAccess') && path.split('/').length === 4) {
                     const splitPath = path.split('/');
                     path = `/${splitPath[1]}/${splitPath[3]}`;
+                }
+
+                if (key === 'serverTLS' && (typeof profileDef.use !== 'undefined')) {
+                    const pathServerTLS = path.split('/');
+                    const profileServerTLSDef = declaration[pathServerTLS[1]][pathServerTLS[2]][pathServerTLS[3]];
+                    if (profileServerTLSDef) {
+                        (profileServerTLSDef.certificates || []).forEach((certObj, i) => {
+                            let profName;
+                            if (profileServerTLSDef.namingScheme === 'certificate') {
+                                profName = path.replace(/([^/]*)$/, certObj.certificate.split('/').pop());
+                            } else {
+                                profName = i === 0 ? path : `${path}-${i}-`;
+                            }
+                            if (!(profileServerTLSDef.hybrid || false) || i === 0) {
+                                item.profiles.push({ name: profName, context });
+                            }
+                        });
+                    }
                 }
 
                 if (path !== undefined) {
@@ -748,6 +768,13 @@ const translate = {
             iFile['source-path'] = `file:/var/config/rest/downloads/${fn}`;
 
             item['file-name'] = `${path}-ifile`;
+            // Add the ignoreChanges only if false to get the file modified when specified
+            if (item.ignoreChanges === false) {
+                // For Common partition add the property for secondPass only as delete needs to be performed
+                if (!(tenantId === 'Common' && context.tasks[context.currentIndex].firstPassNoDelete)) {
+                    iFile.ignoreChanges = item.ignoreChanges;
+                }
+            }
             configs.push(normalize.actionableMcp(context, iFile, 'sys file ifile', `${path}-ifile`));
         }
 
@@ -811,6 +838,10 @@ const translate = {
                 };
             }
         } else if (item.policy || item.file) {
+            if (item.policy && item.policy.bigip) {
+                // In this case AS3 giving the Policy reference, so no need to load the Policy.
+                return {};
+            }
             item.iControl_post = {};
             item.iControl_post.reference = path;
             item.iControl_post.path = `/mgmt/shared/file-transfer/uploads/${itemId}.xml`;
@@ -1419,7 +1450,7 @@ const translate = {
             }
 
             // check certificate declaration for a passphrase
-            cert.passphrase = tenantCert.passphrase || undefined;
+            cert.passphrase = (tenantCert || {}).passphrase || undefined;
             if (typeof cert.passphrase === 'object') {
                 const ignoreChanges = (tenantCert.passphrase.ignoreChanges === true);
                 cert.passphrase = secret(cert, 'passphrase');
@@ -1438,7 +1469,12 @@ const translate = {
                 return;
             }
 
-            tlsItem.certificates.push(cert);
+            const certKeyName = certPath.split('/').pop();
+            if (certKeyName.toLowerCase().includes('rsa')) {
+                tlsItem.certificates.push(cert);
+            } else {
+                tlsItem.certificates.unshift(cert);
+            }
         };
 
         item.ignore = item.ignore || {};
@@ -1471,35 +1507,64 @@ const translate = {
         // Schema default for sniDefault property is false.
         const isSniDefaultSet = item.certificates.find((e) => e.sniDefault);
 
-        item.certificates.forEach((obj, index) => {
+        if (item.hybrid || false) {
             const tlsItem = Object.create(item);
-
-            let itemName;
-            if (item.namingScheme === 'certificate') {
-                itemName = obj.certificate.split('/').pop();
-            } else {
-                itemName = index === 0 ? itemId : `${itemId}-${index}-`;
-            }
-            const path = util.mcpPath(tenantId, appId, itemName);
-
+            let itemName = itemId;
+            tlsItem['sni-default'] = true;
+            tlsItem.matchToSNI = false;
+            tlsItem.mode = false;
             tlsItem.certificates = [];
-            genCert(tlsItem, obj.certificate, 'SERVER');
-            genCert(tlsItem, obj.proxyCertificate, 'CA');
+            item.certificates.forEach((obj, index) => {
+                genCert(tlsItem, obj.certificate, 'SERVER');
+                genCert(tlsItem, obj.proxyCertificate, 'CA');
 
-            // Set sniDefault to first certificate if applicable.
-            if (index === 0) {
-                tlsItem.sniDefault = obj.sniDefault || !isSniDefaultSet;
-            } else {
-                tlsItem.sniDefault = obj.sniDefault;
-            }
-            tlsItem.matchToSNI = obj.matchToSNI || 'none';
-            tlsItem.mode = obj.enabled;
-            if (tlsItem.requireSNI && !tlsItem.sniDefault) {
-                tlsItem.requireSNI = false;
-            }
+                if (item.namingScheme === 'certificate' && index === 0) {
+                    itemName = obj.certificate.split('/').pop();
+                }
 
+                if (obj.matchToSNI && !tlsItem.matchToSNI) {
+                    tlsItem.matchToSNI = obj.matchToSNI;
+                }
+                tlsItem.mode = tlsItem.mode || obj.enabled;
+            });
+            tlsItem.matchToSNI = tlsItem.matchToSNI || 'none';
+            const path = util.mcpPath(tenantId, appId, itemName);
             configs.push(normalize.actionableMcp(context, tlsItem, 'ltm profile client-ssl', path));
-        });
+        } else {
+            item.certificates.forEach((obj, index) => {
+                const tlsItem = Object.create(item);
+
+                let itemName;
+                if (item.namingScheme === 'certificate') {
+                    itemName = obj.certificate.split('/').pop();
+                } else {
+                    itemName = index === 0 ? itemId : `${itemId}-${index}-`;
+                }
+                const path = util.mcpPath(tenantId, appId, itemName);
+
+                tlsItem.certificates = [];
+                genCert(tlsItem, obj.certificate, 'SERVER');
+                genCert(tlsItem, obj.proxyCertificate, 'CA');
+
+                // Set sniDefault to first certificate if applicable.
+                // We set the sniDefault value of the first certificate to true only
+                // when the user does not provide the sniDefault property in the declaration
+                const certs = (index === 0) ? ((((((context.request || {}).body || {})[tenantId]
+                || {})[appId] || {})[itemId] || {}).certificates || []) : [];
+                if (index === 0 && certs.length > 0 && typeof certs[0].sniDefault === 'undefined') {
+                    tlsItem.sniDefault = obj.sniDefault || !isSniDefaultSet;
+                } else {
+                    tlsItem.sniDefault = obj.sniDefault;
+                }
+                tlsItem.matchToSNI = obj.matchToSNI || 'none';
+                tlsItem.mode = obj.enabled;
+                if (tlsItem.requireSNI && !tlsItem.sniDefault) {
+                    tlsItem.requireSNI = false;
+                }
+
+                configs.push(normalize.actionableMcp(context, tlsItem, 'ltm profile client-ssl', path));
+            });
+        }
 
         if (item.ldapStartTLS) {
             const clientLdapProfile = {
@@ -2629,7 +2694,11 @@ const translate = {
                     }
                     const addrMetadata = util.getDeepValue(metadata, `${addrPath}.${index}`) || {};
                     parsAddr = [ipUtil.parseIpAddress(addrBigip)];
-                    destAddr = `/${addr.bigip.split('/')[1]}/${addrBigip}`;
+                    if (addrBigip.includes('/')) {
+                        destAddr = `/${addr.bigip.split('/')[1]}/${parsAddr[0].ip}`;
+                    } else {
+                        destAddr = `/${addr.bigip.split('/')[1]}/${addrBigip}`;
+                    }
                     delete addr.address;
 
                     // Gather possible metadata if bigip ref is included
@@ -2670,7 +2739,11 @@ const translate = {
                         ipUtil.parseIpAddress(addrBigip),
                         ipUtil.parseIpAddress(arrUtil.ensureArray(addr)[1])
                     ];
-                    destAddr = `/${addr[0].bigip.split('/')[1]}/${addrBigip}`;
+                    if (addrBigip.includes('/')) {
+                        destAddr = `/${addr[0].bigip.split('/')[1]}/${parsAddr[0].ip}`;
+                    } else {
+                        destAddr = `/${addr[0].bigip.split('/')[1]}/${addrBigip}`;
+                    }
                     delete addr[0].address;
 
                     // Gather possible metadata if bigip ref is included
@@ -2823,6 +2896,7 @@ const translate = {
                     protocol: item.layer4,
                     destinationAddressInline: `${destIp.split('%')[0]}/${msk}`, // strip the route domain
                     destinationAddressList: bigipPathFromSrc(destinationAddressList),
+                    destinationPortInline: `${item.virtualPort}`,
                     destinationPortList: bigipPathFromSrc(destinationPortList),
                     sourceAddressList: bigipPathFromSrc(sourceAddressList),
                     sourceAddressInline: source
@@ -2913,6 +2987,15 @@ const translate = {
         // support for WAF policy attachment only
         // however, this requires an LTM policy to be constructed
         if (item.policyWAF !== undefined && item.policyWAF !== '') {
+            if (item.policyWAF.use) {
+                const path = item.policyWAF.use.split('/');
+                if (path.length > 3) {
+                    const policyWAFDef = declaration[path[1]][path[2]][path[3]];
+                    if (policyWAFDef && policyWAFDef.policy && policyWAFDef.policy.bigip) {
+                        item.policyWAF.bigip = policyWAFDef.policy.bigip;
+                    }
+                }
+            }
             item = profile(item, 'policyWAF');
             item.profiles.pop();
             item.profiles.push({ name: '/Common/websecurity', context: 'all' });
@@ -2968,6 +3051,9 @@ const translate = {
         item = profile(item, 'profileRequestAdapt', 'clientside');
         item = profile(item, 'profileResponseAdapt', 'serverside');
         item = profile(item, 'profileWebSocket');
+        item = profile(item, 'profileService');
+        item = profile(item, 'profileSplitsessionClient', 'serverside');
+        item = profile(item, 'profileConnector');
         if (!util.versionLessThan(context.target.tmosVersion, '14.1')) {
             item = profile(item, 'profileApiProtection');
         }
@@ -3040,6 +3126,7 @@ const translate = {
             translateClientPort: false,
             translateServerAddress: true,
             translateServerPort: true,
+            serversslUseSni: false,
             virtualAddresses: util.simpleCopy(item.virtualAddresses),
             virtualPort: 80,
             shareAddresses: item.shareAddresses,
@@ -3113,6 +3200,9 @@ const translate = {
         item = profile(item, 'profileStream');
         item = profile(item, 'profileILX');
         item = profile(item, 'profileRTSP', 'clientside');
+        item = profile(item, 'profileService');
+        item = profile(item, 'profileSplitsessionClient', 'serverside');
+        item = profile(item, 'profileConnector');
 
         if (item.mqttEnabled) {
             item.mqttEnabled = { bigip: '/Common/mqtt' };
@@ -3210,6 +3300,7 @@ const translate = {
      */
     Service_Generic(context, tenantId, appId, itemId, item, tenantDecl) {
         item = profile(item, 'profileAnalyticsTcp');
+        item = profile(item, 'profileSplitsessionClient', 'serverside');
         const serviceCore = translate.Service_Core(context, tenantId, appId, itemId, item, tenantDecl);
         return { configs: serviceCore.configs };
     },
@@ -3263,15 +3354,23 @@ const translate = {
                     action.type = 'httpReply';
                 } else if (action.type === 'clientSsl') {
                     action.type = 'serverSsl';
-                    if (action.enabled) {
+                    if (action.enable || action.enabled) {
                         action.enable = true;
-                    } else if (!action.enabled) {
+                    } else {
                         action.disable = true;
                     }
                     delete action.enabled;
                 } else if (action.type === 'http') {
                     if (action.enabled) {
                         action.enable = true;
+                    } else {
+                        action.disable = true;
+                    }
+                } else if (action.type === 'l7dos') {
+                    if (action.profile) {
+                        action.enable = true;
+                        action.fromProfile = bigipPath(action, 'profile');
+                        delete action.profile;
                     } else {
                         action.disable = true;
                     }
@@ -3967,7 +4066,8 @@ const translate = {
         item.remark = item.remark || '';
         tagMetadata(item);
         item.devices = item.devices.map((device, i) => ({
-            name: `${i}`,
+            name: device.label || `${i}`,
+            remark: device.remark,
             addresses: [{
                 name: device.address,
                 translation: device.addressTranslation || 'none'
@@ -4032,6 +4132,13 @@ const translate = {
 
         const path = util.mcpPath(tenantId, '', itemId);
         const config = [normalize.actionableMcp(context, item, 'gtm server', path)];
+        if (item.virtualServers === undefined) {
+            // Fix for ID1928713
+            // This is hande only virtualServers not include in the GSLB Server declaration.
+            // If GSLB Servers are not included the virtualServers in the declaration
+            // then stop removing the virtualServers from GSLB Servers.
+            delete config[0].properties['virtual-servers'];
+        }
         return { configs: config };
     },
 
@@ -4899,6 +5006,27 @@ const translate = {
         return { configs };
     },
 
+    PPTP_Profile(context, tenantId, appId, itemId, item) {
+        item = profile(item, 'publisherName');
+        item = profile(item, 'defaultsFrom');
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile pptp', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    Service_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile service', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    Splitsession_Client_Profile(context, tenantId, appId, itemId, item) {
+        if (typeof item.localPeer === 'boolean') {
+            item.localPeer = `${item.localPeer}`;
+        }
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile splitsessionclient', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    Connector_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile connector', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
     TFTP_Profile(context, tenantId, appId, itemId, item) {
         return { configs: [normalize.actionableMcp(context, item, 'ltm profile tftp', util.mcpPath(tenantId, appId, itemId))] };
     },
@@ -4985,6 +5113,73 @@ const translate = {
             });
         }
         configs.push(normalize.actionableMcp(context, item, 'net timer-policy', util.mcpPath(tenantId, appId, itemId)));
+        return { configs };
+    },
+
+    IP_Intelligence_Policy(context, tenantId, appId, itemId, item) {
+        const configs = [];
+
+        // If the blacklistCategories is not empty, convert it to an object with category names as keys
+        // and the category objects as values. This is to ensure that the blacklistCategories is in
+        // the format expected by AS3 and to avoid issues with empty arrays in the MCP.
+        if (item.blacklistCategories) {
+            if (item.blacklistCategories.length === 0) {
+                delete item.blacklistCategories;
+            } else {
+                const blacklistCategories = {};
+                item.blacklistCategories.forEach((category) => {
+                    const copyObj = util.simpleCopy(category);
+                    const categoryname = category.blacklistCategory.bigip.split('/').pop();
+                    delete copyObj.blacklistCategory;
+
+                    // Assign values for missing properties action, logBlacklistHitOnly,
+                    // logBlacklistWhitelistHit from policy or default values
+                    copyObj.action = copyObj.action || item.defaultAction || 'drop';
+                    copyObj.logBlacklistHitOnly = copyObj.logBlacklistHitOnly || item.defaultLogBlacklistHitOnly || 'no';
+                    copyObj.logBlacklistWhitelistHit = copyObj.logBlacklistWhitelistHit || item.defaultLogBlacklistWhitelistHit || 'no';
+
+                    // When blacklist Category creation support is added in future, below code
+                    // to be evaluated to see if the default matchDirectionOverride can be fetched
+                    // for setting the default value
+                    copyObj.matchDirectionOverride = copyObj.matchDirectionOverride || 'match-source';
+
+                    blacklistCategories[categoryname] = copyObj;
+                });
+
+                delete item.blacklistCategories;
+                if (blacklistCategories && Object.keys(blacklistCategories).length > 0) {
+                    item.blacklistCategories = blacklistCategories;
+                }
+            }
+        }
+
+        // If feedLists is not empty, convert it to an object with feed names as keys
+        // and empty strings as values
+        // This is to ensure that the feedLists is in the format expected by AS3
+        // and to avoid issues with empty arrays in the MCP
+        if (item.feedLists) {
+            if (Object.keys(item.feedLists).length === 0) {
+                delete item.feedLists;
+            } else {
+                const feedLists = {};
+                item.feedLists.forEach((feed) => {
+                    feedLists[feed.bigip] = '';
+                });
+                delete item.feedLists;
+                if (feedLists && Object.keys(feedLists).length > 0) {
+                    item.feedLists = feedLists;
+                }
+            }
+        }
+
+        if (!util.isOneOfProvisioned(context.target, ['afm', 'dos'])) {
+            delete item.defaultLogBlacklistWhitelistHit;
+        } else {
+            // If the defaultLogBlacklistWhitelistHit is not set, set it to 'no'
+            item.defaultLogBlacklistWhitelistHit = item.defaultLogBlacklistWhitelistHit || 'no';
+        }
+
+        configs.push(normalize.actionableMcp(context, item, 'security ip-intelligence policy', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
     }
 };

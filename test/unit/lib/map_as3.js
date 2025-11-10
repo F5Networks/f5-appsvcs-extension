@@ -180,6 +180,14 @@ describe('map_as3', () => {
                     expected: 'server-ssl request disable'
                 },
                 {
+                    input: { type: 'clientSsl', enable: true },
+                    expected: 'server-ssl request enable'
+                },
+                {
+                    input: { type: 'clientSsl', enable: false },
+                    expected: 'server-ssl request disable'
+                },
+                {
                     input: { type: 'http', enabled: true },
                     expected: 'http request enable'
                 },
@@ -211,6 +219,14 @@ describe('map_as3', () => {
                         }
                     },
                     expected: 'log proxy-request write message "The message!" facility local1 priority debug ip-address 192.0.2.4 port 123'
+                },
+                {
+                    input: { type: 'l7dos', profile: { bigip: '/Common/myDosProfile' } },
+                    expected: 'l7dos request enable from-profile /Common/myDosProfile'
+                },
+                {
+                    input: { type: 'l7dos' },
+                    expected: 'l7dos request disable'
                 }
             ];
 
@@ -334,6 +350,17 @@ describe('map_as3', () => {
                         index: 99
                     },
                     expected: 'ssl-extension ssl-client-hello server-name equals case-insensitive'
+                },
+                {
+                    input: {
+                        type: 'geoip',
+                        event: 'client-accepted',
+                        continent: {
+                            operand: 'matches',
+                            values: ['EU']
+                        }
+                    },
+                    expected: 'geoip client-accepted continent equals values { EU } case-insensitive'
                 }
             ];
 
@@ -2925,6 +2952,7 @@ describe('map_as3', () => {
                             maxConnections: 0,
                             mirroring: 'none',
                             nat64Enabled: false,
+                            serversslUseSni: true,
                             persistenceMethods: ['cookie'],
                             profileHTTP: 'basic',
                             profileTCP: 'normal',
@@ -2987,6 +3015,7 @@ describe('map_as3', () => {
                 maxConnections: 0,
                 mirroring: 'none',
                 nat64Enabled: false,
+                serversslUseSni: true,
                 persistenceMethods: ['cookie'],
                 profileHTTP: 'basic',
                 profileTCP: 'normal',
@@ -3496,6 +3525,7 @@ describe('map_as3', () => {
                 assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
                 assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
                 assert.strictEqual(tmc['destination-port-list'], 'firewallPortList');
+                assert.strictEqual(tmc['destination-port-inline'], '0');
                 assert.strictEqual(tmc['destination-address-list'], undefined);
                 assert.strictEqual(tmc['source-address-list'], undefined);
             });
@@ -3524,6 +3554,7 @@ describe('map_as3', () => {
                 assert.strictEqual(virtual.source, undefined);
                 assert.strictEqual(tmc['destination-address-inline'], 'any/any');
                 assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-inline'], '80');
                 assert.strictEqual(tmc['destination-port-list'], undefined);
                 assert.strictEqual(tmc['destination-address-list'], 'virtualAddressList');
                 assert.strictEqual(tmc['source-address-list'], undefined);
@@ -3563,6 +3594,137 @@ describe('map_as3', () => {
                 assert.strictEqual(virtual.destination, '/Common/192.0.2.32:80');
                 assert.strictEqual(virtual.source, '0.0.0.0/0');
             });
+
+            it('should handle virtualAddresses w/mask plus shareAddresses true not idempotent', () => {
+                const fullContext = Object.assign({}, defaultContext, context);
+                fullContext.target.tmosVersion = '17.0';
+                fullContext.host.parser = {
+                    virtualAddressList: [
+                        {
+                            fullPath: '/Common/192.0.2.0',
+                            partition: 'Common',
+                            address: '192.0.2.0',
+                            metadata: {
+                                name: 'references',
+                                persist: true,
+                                value: 1
+                            }
+                        }
+                    ]
+                };
+
+                item = {
+                    class: 'Service_Forwarding',
+                    forwardingType: 'ip',
+                    layer4: 'udp',
+                    snat: {
+                        use: '/tenant/app/itemSnat'
+                    },
+                    virtualAddresses: [
+                        {
+                            bigip: '/Common/192.0.2.0',
+                            address: '192.0.2.0/24'
+                        },
+                        '192.0.2.1/23'
+                    ],
+                    virtualPort: 3999,
+                    shareAddresses: true,
+                    translateServerPort: false,
+                    translateServerAddress: false,
+                    serviceDownImmediateAction: 'none',
+                    enable: true,
+                    maxConnections: 0,
+                    addressStatus: true,
+                    mirroring: 'none',
+                    lastHop: 'default',
+                    translateClientPort: false,
+                    serversslUseSni: false,
+                    nat64Enabled: false,
+                    httpMrfRoutingEnabled: false,
+                    rateLimit: 0,
+                    adminState: 'enable',
+                    'ip-forward': ' ',
+                    profileL4: {
+                        bigip: '/Common/fastL4',
+                        name: '/Common/fastL4',
+                        context: 'all'
+                    },
+                    profiles: {
+                        bigip: '/Common/fastL4',
+                        name: '/Common/fastL4',
+                        context: 'all'
+                    }
+                };
+                declaration = {
+                    class: 'ADC',
+                    id: 'testid',
+                    schemaVersion: '3.55.0',
+                    tenant: {
+                        class: 'Tenant',
+                        app: {
+                            class: 'Application',
+                            template: 'generic',
+                            item: {
+                                class: 'Service_Forwarding',
+                                forwardingType: 'ip',
+                                layer4: 'udp',
+                                snat: {
+                                    use: '/tenant/app/itemSnat'
+                                },
+                                virtualAddresses: [
+                                    {
+                                        bigip: '/Common/192.0.2.0',
+                                        address: '192.0.2.0/24'
+                                    },
+                                    '192.0.2.1/23'
+                                ],
+                                virtualPort: 3999,
+                                shareAddresses: true,
+                                translateServerPort: false,
+                                translateServerAddress: false,
+                                serviceDownImmediateAction: 'none',
+                                enable: true,
+                                maxConnections: 0,
+                                addressStatus: true,
+                                mirroring: 'none',
+                                lastHop: 'default',
+                                translateClientPort: false,
+                                serversslUseSni: false,
+                                nat64Enabled: false,
+                                httpMrfRoutingEnabled: false,
+                                rateLimit: 0,
+                                adminState: 'enable',
+                                'ip-forward': ' ',
+                                profileL4: {
+                                    bigip: '/Common/fastL4',
+                                    name: '/Common/fastL4',
+                                    context: 'all'
+                                },
+                                profiles: {
+                                    bigip: '/Common/fastL4',
+                                    name: '/Common/fastL4',
+                                    context: 'all'
+                                }
+                            },
+                            itemSnat: {
+                                class: 'SNAT_Pool',
+                                snatAddresses: ['192.0.2.2']
+                            },
+                            enable: true
+                        },
+                        enable: true,
+                        defaultRouteDomain: 0,
+                        useCommonRouteDomainTenant: true,
+                        optimisticLockKey: ''
+                    },
+                    updateMode: 'selective'
+                };
+
+                const data = translate.Service_Core(fullContext, 'tenant', 'app', 'item', item, declaration);
+                const virtual = data.configs.find((c) => c.command === 'ltm virtual').properties;
+                assert.strictEqual(virtual.destination, '/Common/192.0.2.0:3999');
+                assert.strictEqual(virtual.source, '0.0.0.0/0');
+            });
         });
 
         describe('sourceAddress', () => {
@@ -3596,6 +3758,7 @@ describe('map_as3', () => {
                 assert.strictEqual(virtual.source, undefined);
                 assert.strictEqual(tmc['destination-address-inline'], '10.192.75.27/255.255.255.255'); // gitleaks:allow
                 assert.strictEqual(tmc['source-address-inline'], '0.0.0.0/any');
+                assert.strictEqual(tmc['destination-port-inline'], '80');
                 assert.strictEqual(tmc['destination-port-list'], undefined);
                 assert.strictEqual(tmc['destination-address-list'], undefined);
                 assert.strictEqual(tmc['source-address-list'], 'sourceAddressList');
@@ -3737,6 +3900,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -3942,6 +4106,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -4144,6 +4309,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -4281,6 +4447,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -4501,6 +4668,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -4629,6 +4797,7 @@ describe('map_as3', () => {
                 translateServerAddress: true,
                 translateServerPort: true,
                 nat64Enabled: false,
+                serversslUseSni: true,
                 profiles: [
                     { bigip: '/Common/http', name: '/Common/http', context: 'all' },
                     {
@@ -4888,6 +5057,53 @@ describe('map_as3', () => {
             const results = translate.Service_Core(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
             assert.deepEqual(results.configs[1].properties.profiles['/Common/clientssl1'], clientSideContext);
             assert.deepEqual(results.configs[1].properties.profiles['/Common/clientssl2'], clientSideContext);
+        });
+
+        it('should handle serverTLS pointing to multiple profiles', () => {
+            declaration.tenantId.appId.ssl_server = {
+                class: 'TLS_Server',
+                certificates: [
+                    {
+                        matchToSNI: '',
+                        certificate: 'snidefault',
+                        sniDefault: false
+                    },
+                    {
+                        matchToSNI: 'https1.example.com',
+                        certificate: 'sni1',
+                        sniDefault: false
+                    }
+                ]
+            };
+            declaration.tenantId.appId.ssl_server1 = {
+                class: 'TLS_Server',
+                certificates: [
+                    {
+                        matchToSNI: 'https2.example.com',
+                        certificate: 'sni2',
+                        sniDefault: false
+                    },
+                    {
+                        matchToSNI: 'https3.example.com',
+                        certificate: 'sni3',
+                        sniDefault: true
+                    }
+                ]
+            };
+            item.serverTLS = [
+                {
+                    use: '/tenantId/appId/ssl_server'
+                },
+                {
+                    use: '/tenantId/appId/ssl_server1'
+                }
+            ];
+
+            const results = translate.Service_Core(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration);
+            assert.deepEqual(results.configs[1].properties.profiles['/tenantId/appId/ssl_server'], clientSideContext);
+            assert.deepEqual(results.configs[1].properties.profiles['/tenantId/appId/ssl_server-1-'], clientSideContext);
+            assert.deepEqual(results.configs[1].properties.profiles['/tenantId/appId/ssl_server1'], clientSideContext);
+            assert.deepEqual(results.configs[1].properties.profiles['/tenantId/appId/ssl_server1-1-'], clientSideContext);
         });
 
         it('should handle clientTLS pointing to existing profile', () => {
@@ -5397,6 +5613,161 @@ describe('map_as3', () => {
         it('should handle adminState', () => {
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.strictEqual(results.configs[1].properties.enabled, true);
+        });
+
+        it('should allow to use of policy/use referring an existing ASM Policy on the BIG-IP for WAF_Policy', () => {
+            const sampleItem = {
+                class: 'Service_HTTP',
+                virtualAddresses: [
+                    '192.0.2.0'
+                ],
+                policyWAF: {
+                    use: '/Tenant/Application/wafPolicy'
+                },
+                virtualPort: 80,
+                persistenceMethods: [
+                    'cookie'
+                ],
+                profileHTTP: 'basic',
+                virtualType: 'standard',
+                layer4: 'tcp',
+                profileTCP: 'normal',
+                serviceDownImmediateAction: 'none',
+                shareAddresses: false,
+                enable: true,
+                maxConnections: 0,
+                snat: 'auto',
+                addressStatus: true,
+                mirroring: 'none',
+                lastHop: 'default',
+                translateClientPort: false,
+                translateServerAddress: true,
+                translateServerPort: true,
+                serversslUseSni: false,
+                nat64Enabled: false,
+                httpMrfRoutingEnabled: false,
+                rateLimit: 0,
+                adminState: 'enable'
+            };
+            const sampleDelcaration = {
+                class: 'ADC',
+                schemaVersion: '3.55.0',
+                Tenant: {
+                    class: 'Tenant',
+                    Application: {
+                        class: 'Application',
+                        service: {
+                            class: 'Service_HTTP',
+                            virtualAddresses: ['192.0.2.0'],
+                            policyWAF: {
+                                use: 'wafPolicy'
+                            }
+                        },
+                        wafPolicy: {
+                            class: 'WAF_Policy',
+                            policy: {
+                                bigip: '/Common/AppPolicy01'
+                            },
+                            ignoreChanges: false
+                        }
+                    }
+                }
+            };
+            defaultContext.target.tmosVersion = '17.2';
+
+            const expectedConfig = [
+                {
+                    path: '/Tenant/Application/_WAF_service',
+                    command: 'ltm policy',
+                    properties: {
+                        rules: {
+                            default: {
+                                ordinal: 0,
+                                conditions: {},
+                                actions: {
+                                    0: {
+                                        policyString: 'asm request enable policy /Common/AppPolicy01'
+                                    }
+                                }
+                            }
+                        },
+                        strategy: '/Common/first-match'
+                    },
+                    ignore: []
+                },
+                {
+                    path: '/Tenant/Service_Address-192.0.2.0',
+                    command: 'ltm virtual-address',
+                    properties: {
+                        address: '192.0.2.0',
+                        arp: 'enabled',
+                        'icmp-echo': 'enabled',
+                        mask: '255.255.255.255',
+                        'route-advertisement': 'disabled',
+                        spanning: 'disabled',
+                        'server-scope': 'any',
+                        'traffic-group': 'default',
+                        'auto-delete': 'true'
+                    },
+                    ignore: []
+                },
+                {
+                    path: '/Tenant/Application/service',
+                    command: 'ltm virtual',
+                    properties: {
+                        enabled: true,
+                        'address-status': 'yes',
+                        'auto-lasthop': 'default',
+                        'connection-limit': 0,
+                        'rate-limit': 'disabled',
+                        description: '"Application"',
+                        destination: '/Tenant/192.0.2.0:80',
+                        'ip-protocol': 'tcp',
+                        'last-hop-pool': 'none',
+                        mask: '255.255.255.255',
+                        mirror: 'disabled',
+                        persist: {
+                            '/Common/cookie': {
+                                default: 'yes'
+                            }
+                        },
+                        policies: {
+                            '/Tenant/Application/_WAF_service': {}
+                        },
+                        profiles: {
+                            '/Common/websecurity': {
+                                context: 'all'
+                            },
+                            '/Common/http': {
+                                context: 'all'
+                            },
+                            '/Common/f5-tcp-progressive': {
+                                context: 'all'
+                            }
+                        },
+                        'service-down-immediate-action': 'none',
+                        source: '0.0.0.0/0',
+                        'source-address-translation': {
+                            type: 'automap'
+                        },
+                        rules: {},
+                        'security-log-profiles': {},
+                        'source-port': 'preserve',
+                        'translate-address': 'enabled',
+                        'translate-port': 'enabled',
+                        'serverssl-use-sni': 'disabled',
+                        nat64: 'disabled',
+                        vlans: {},
+                        'vlans-disabled': ' ',
+                        metadata: {},
+                        'clone-pools': {}
+                    },
+                    ignore: []
+                }
+            ];
+
+            const results = translate.Service_HTTP(defaultContext, 'Tenant', 'Application', 'service', sampleItem, sampleDelcaration, false);
+            assert.deepEqual(results.configs, expectedConfig);
         });
 
         describe('websocket profile', () => {
@@ -7584,6 +7955,16 @@ describe('map_as3', () => {
             );
         });
 
+        it('should create existing policy referance (bigip property)', () => {
+            const item = {
+                policy: {
+                    bigip: '/Common/Policy_01'
+                }
+            };
+            const results = translate.WAF_Policy(context, 'tenantId', 'appId', 'itemId', item, {});
+            assert.deepStrictEqual(results, {});
+        });
+
         it('should have correct ignore values for token when ignoreChanges is true', () => {
             const item = {
                 url: {
@@ -9156,10 +9537,25 @@ describe('map_as3', () => {
                 assert.strictEqual(profile['handshake-timeout'], 4294967295);
             });
 
-            it('should set sniDefault to first certificate', () => {
+            it('should set sniDefault to first certificate when the sniDefault property is not present in the declaration', () => {
                 const context = {
                     target: {
                         tmosVersion: '14.0'
+                    },
+                    request: {
+                        body: {
+                            tenantId: {
+                                appId: {
+                                    tlsServer: {
+                                        certificates: [
+                                            {
+                                                certificate: '/tenantId/appId/webcert1'
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
                     }
                 };
                 const item = {
@@ -9170,6 +9566,116 @@ describe('map_as3', () => {
                             enabled: true,
                             certificate: '/tenantId/appId/webcert1',
                             sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+            });
+
+            it('should set sniDefault to first certificate when the sniDefault property is disabled in the declaration', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    },
+                    request: {
+                        body: {
+                            tenantId: {
+                                appId: {
+                                    tlsServer: {
+                                        certificates: [
+                                            {
+                                                certificate: '/tenantId/appId/webcert1',
+                                                sniDefault: false
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            sniDefault: false
+                        }
+                    ],
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.deepEqual(profile1.properties['sni-default'], 'false');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+            });
+
+            it('should set sniDefault to first certificate when the sniDefault property is enabled in the declaration', () => {
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    },
+                    request: {
+                        body: {
+                            tenantId: {
+                                appId: {
+                                    tlsServer: {
+                                        certificates: [
+                                            {
+                                                certificate: '/tenantId/appId/webcert1',
+                                                sniDefault: true
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
                         },
                         {
                             enabled: true,
@@ -9247,6 +9753,369 @@ describe('map_as3', () => {
                 const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
                 const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
                 assert.deepEqual(profile1.properties['authenticate-depth'], 9);
+            });
+
+            it('should create single profile when there are multiple certificates and hybrid flag is enabled', () => {
+                const savedDeclaration = util.simpleCopy(declaration);
+                savedDeclaration.tenantId.appId.tlsServer.hybrid = true;
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2'
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert3'
+                        }
+                    ],
+                    hybrid: true,
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    },
+                    webcert3: {
+                        class: 'Certificate',
+                        certificate: 'last cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, savedDeclaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert1.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert1.key',
+                            usage: 'SERVER'
+                        },
+                        set1: {
+                            cert: '/tenantId/appId/webcert2.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert2.key',
+                            usage: 'SERVER'
+                        },
+                        set2: {
+                            cert: '/tenantId/appId/webcert3.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert3.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'enabled');
+            });
+
+            it('should create multiple profiles when there are multiple certificates and hybrid flag is disable', () => {
+                const savedDeclaration = util.simpleCopy(declaration);
+                savedDeclaration.tenantId.appId.tlsServer.hybrid = false;
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/webcert1',
+                            sniDefault: true
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2'
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert3'
+                        }
+                    ],
+                    hybrid: false,
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    },
+                    webcert3: {
+                        class: 'Certificate',
+                        certificate: 'last cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, savedDeclaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert1.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert1.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'disabled');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.strictEqual(profile2.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile2.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert2.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert2.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile2.properties['server-name'], 'none');
+                assert.deepEqual(profile2.properties['sni-default'], undefined);
+                assert.deepEqual(profile2.properties.mode, 'enabled');
+
+                const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
+                assert.strictEqual(profile3.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile3.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert3.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert3.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile3.properties['server-name'], 'none');
+                assert.deepEqual(profile3.properties['sni-default'], undefined);
+                assert.deepEqual(profile3.properties.mode, 'enabled');
+            });
+
+            it('should create single profile when there are multiple certificates like rsa, ecdsa and hybrid flag is enabled', () => {
+                const decl = {
+                    class: 'ADC',
+                    schemaVersion: '3.55.0',
+                    id: 'TLS_Server',
+                    tenantId: {
+                        class: 'Tenant',
+                        appId: {
+                            class: 'Application',
+                            template: 'https',
+                            serviceMain: {
+                                class: 'Service_HTTPS',
+                                virtualAddresses: [
+                                    '192.0.2.91',
+                                    '192.0.2.92'
+                                ],
+                                serverTLS: 'tlsServer'
+                            },
+                            tlsServer: {
+                                class: 'TLS_Server',
+                                certificates: [
+                                    {
+                                        matchToSNI: 'www.somehost.com',
+                                        certificate: 'cert_rsa'
+                                    },
+                                    {
+                                        certificate: 'cert_ecdsa'
+                                    }],
+                                hybrid: true
+                            },
+                            cert_rsa: {
+                                class: 'Certificate',
+                                certificate: 'some cert value'
+                            },
+                            cert_ecdsa: {
+                                class: 'Certificate',
+                                certificate: 'another cert value'
+                            }
+                        }
+                    }
+                };
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/cert_ecdsa'
+                        },
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/cert_rsa',
+                            sniDefault: true
+                        }
+                    ],
+                    hybrid: true,
+                    cert_rsa: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    cert_ecdsa: {
+                        class: 'Certificate',
+                        certificate: 'second some cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, decl);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/cert_ecdsa.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/cert_ecdsa.key',
+                            usage: 'SERVER'
+                        },
+                        set1: {
+                            cert: '/tenantId/appId/cert_rsa.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/cert_rsa.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'enabled');
+            });
+
+            it('should create single profile when there are multiple certificates with ignore the certs order and hybrid flag is enabled', () => {
+                const decl = {
+                    class: 'ADC',
+                    schemaVersion: '3.55.0',
+                    id: 'TLS_Server',
+                    tenantId: {
+                        class: 'Tenant',
+                        appId: {
+                            class: 'Application',
+                            template: 'https',
+                            serviceMain: {
+                                class: 'Service_HTTPS',
+                                virtualAddresses: [
+                                    '192.0.2.91',
+                                    '192.0.2.92'
+                                ],
+                                serverTLS: 'tlsServer'
+                            },
+                            tlsServer: {
+                                class: 'TLS_Server',
+                                certificates: [
+                                    {
+                                        certificate: 'cert_ecdsa'
+                                    },
+                                    {
+                                        matchToSNI: 'www.somehost.com',
+                                        certificate: 'cert_rsa'
+                                    }
+                                ],
+                                hybrid: true
+                            },
+                            cert_rsa: {
+                                class: 'Certificate',
+                                certificate: 'some cert value'
+                            },
+                            cert_ecdsa: {
+                                class: 'Certificate',
+                                certificate: 'another cert value'
+                            }
+                        }
+                    }
+                };
+                const context = {
+                    target: {
+                        tmosVersion: '14.0'
+                    }
+                };
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/cert_ecdsa'
+                        },
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/cert_rsa',
+                            sniDefault: true
+                        }
+                    ],
+                    hybrid: true,
+                    cert_rsa: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    cert_ecdsa: {
+                        class: 'Certificate',
+                        certificate: 'second some cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, decl);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/cert_ecdsa.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/cert_ecdsa.key',
+                            usage: 'SERVER'
+                        },
+                        set1: {
+                            cert: '/tenantId/appId/cert_rsa.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/cert_rsa.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'enabled');
             });
         });
 
@@ -9576,10 +10445,8 @@ describe('map_as3', () => {
                 let profile = results.configs[0].properties;
                 assert.strictEqual(profile['authenticate-depth'], 10);
                 item.authenticationDepth = 11;
-                console.log(item);
                 results = translate.TLS_Client(context, 'tenantId', 'appId', 'tlsClient', item, declaration);
                 profile = results.configs[0].properties;
-                console.log(profile);
                 assert.strictEqual(profile['authenticate-depth'], 11);
             });
         });
@@ -11489,6 +12356,117 @@ describe('map_as3', () => {
                 ]
             });
         });
+
+        it('should return a config for GSLB Server without virtualServers', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                monitors: [{ bigip: '/Common/bigip' }]
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                }
+                            },
+                            monitor: '/Common/bigip',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a config for GSLB Server with virtualServers', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ address: '192.0.2.3' }],
+                virtualServers: [],
+                monitors: [{ bigip: '/Common/bigip' }]
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                }
+                            },
+                            monitor: '/Common/bigip',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                0: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    }
+                                }
+                            },
+                            'virtual-servers': {}
+                        }
+                    }
+                ]
+            });
+        });
+
+        it('should return a config for GSLB Server with device info', () => {
+            const item = {
+                class: 'GSLB_Server',
+                devices: [{ label: 'gtmServer', remark: 'gtmServer_desc', address: '192.0.2.3' }],
+                monitors: [{ bigip: '/Common/bigip' }]
+            };
+            const results = translate.GSLB_Server(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            return assert.deepStrictEqual(results, {
+                configs: [
+                    {
+                        command: 'gtm server',
+                        ignore: [],
+                        path: '/tenantId/itemId',
+                        properties: {
+                            description: 'none',
+                            metadata: {
+                                as3: {
+                                    persist: 'true'
+                                }
+                            },
+                            monitor: '/Common/bigip',
+                            product: 'bigip',
+                            'prober-pool': 'none',
+                            devices: {
+                                gtmServer: {
+                                    addresses: {
+                                        '192.0.2.3': { translation: 'none' }
+                                    },
+                                    description: '"gtmServer_desc"'
+                                }
+                            }
+                        }
+                    }
+                ]
+            });
+        });
     });
 
     describe('GSLB_Topology_Records', () => {
@@ -13252,6 +14230,80 @@ describe('map_as3', () => {
                 ]
             );
         });
+
+        it('should create correct config with ignoreChanges true', () => {
+            item.iFile = 'Look, an iFile!';
+            item.ignoreChanges = true;
+            const result = translate.iFile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        command: 'sys file ifile',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId-ifile',
+                        properties: {
+                            iControl_post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                                reference: '/tenantId/appId/itemId-ifile',
+                                send: 'Look, an iFile!',
+                                why: 'upload ifile'
+                            },
+                            'source-path': 'file:/var/config/rest/downloads/_tenantId_appId_itemId'
+                        }
+                    },
+                    {
+                        command: 'ltm ifile',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            description: '"The iFile"',
+                            'file-name': '/tenantId/appId/itemId-ifile'
+                        }
+                    }
+                ]
+            );
+        });
+
+        it('should create correct config with ignoreChanges false', () => {
+            item.iFile = 'Look, an iFile!';
+            // Property should appear in the results
+            item.ignoreChanges = false;
+            const result = translate.iFile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs,
+                [
+                    {
+                        command: 'sys file ifile',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId-ifile',
+                        properties: {
+                            iControl_post: {
+                                ctype: 'application/octet-stream',
+                                method: 'POST',
+                                path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                                reference: '/tenantId/appId/itemId-ifile',
+                                send: 'Look, an iFile!',
+                                why: 'upload ifile'
+                            },
+                            'source-path': 'file:/var/config/rest/downloads/_tenantId_appId_itemId',
+                            ignoreChanges: false
+                        }
+                    },
+                    {
+                        command: 'ltm ifile',
+                        ignore: [],
+                        path: '/tenantId/appId/itemId',
+                        properties: {
+                            description: '"The iFile"',
+                            'file-name': '/tenantId/appId/itemId-ifile'
+                        }
+                    }
+                ]
+            );
+        });
     });
 
     describe('Data_Group', () => {
@@ -13282,6 +14334,14 @@ describe('map_as3', () => {
                 {
                     key: 4,
                     value: 'has "quotes"'
+                },
+                {
+                    key: 5,
+                    value: 'should escape?'
+                },
+                {
+                    key: 6,
+                    value: 'should escape*'
                 }
             ];
             const result = translate.Data_Group(defaultContext, 'tenantId', 'appId', 'itemId', item);
@@ -13306,6 +14366,12 @@ describe('map_as3', () => {
                                 },
                                 '"4"': {
                                     data: '"has \\"quotes\\""'
+                                },
+                                '"5"': {
+                                    data: '"should escape\\\\?"'
+                                },
+                                '"6"': {
+                                    data: '"should escape\\\\*"'
                                 }
                             },
                             type: 'integer'
@@ -14893,7 +15959,6 @@ describe('map_as3', () => {
             };
 
             const result = mapAs3.translate.Ping_Access_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
-            console.log(JSON.stringify(result.configs[0]));
             assert.deepStrictEqual(
                 result.configs[0],
                 {
@@ -14905,6 +15970,501 @@ describe('map_as3', () => {
                         pool: 'testPool',
                         'serverssl-profile': 'testServerSSL',
                         'use-https': 'true'
+                    }
+                }
+            );
+        });
+    });
+
+    describe('PPTP_Profile', () => {
+        it('should handle PPTP_Profile config', () => {
+            const item = {
+                class: 'PPTP_Profile',
+                description: 'Sample PPTP profile',
+                label: 'test',
+                remark: 'test',
+                defaultsFrom: {
+                    bigip: '/Common/pptp'
+                },
+                csvFormat: true,
+                includeDestinationIp: true,
+                publisherName: {
+                    bigip: '/Common/local-db-publisher'
+                }
+            };
+
+            const result = mapAs3.translate.PPTP_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile pptp',
+                    properties: {
+                        'defaults-from': '/Common/pptp', description: '"Sample PPTP profile"', 'csv-format': 'enabled', 'include-destination-ip': 'enabled', 'publisher-name': '/Common/local-db-publisher'
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    describe('Service_Profile', () => {
+        it('should handle Service_Profile config', () => {
+            const item = {
+                class: 'Service_Profile',
+                type: 'inline'
+            };
+
+            const result = mapAs3.translate.Service_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile service',
+                    properties: {
+                        type: 'inline'
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    describe('Splitsession_Client_Profile', () => {
+        it('should handle Splitsession_Client_Profile config', () => {
+            const item = {
+                class: 'Splitsession_Client_Profile',
+                peerPort: 80,
+                peerIp: '192.0.2.0',
+                httpHeader: 'none',
+                localPeer: false,
+                sessionLookupType: 'flow'
+            };
+
+            const result = mapAs3.translate.Splitsession_Client_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile splitsessionclient',
+                    properties: {
+                        description: 'none',
+                        'peer-ip': '192.0.2.0',
+                        'peer-port': 80,
+                        'http-header': 'none',
+                        'local-peer': 'false',
+                        'session-lookup-type': 'flow'
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    describe('Connector_Profile', () => {
+        it('should handle Connector_Profile config', () => {
+            const item = {
+                class: 'Connector_Profile',
+                entryVirtualServer: {
+                    use: '/tenantId/appId/theService'
+                },
+                connectionTimeout: 0,
+                serviceDownAction: 'ignore',
+                connectOnData: false
+            };
+
+            const result = mapAs3.translate.Connector_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile connector',
+                    properties: {
+                        'entry-virtual-server': '/tenantId/appId/theService',
+                        'connection-timeout': 0,
+                        'service-down-action': 'ignore',
+                        'connect-on-data': 'disabled'
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    describe('IP_Intelligence_Policy', () => {
+        it('should handle IP_Intelligence_Policy with empty blackListCategories', () => {
+            defaultContext.target.provisionedModules = ['afm'];
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                blacklistCategories: [],
+                feedLists: [
+                    {
+                        bigip: '/Common/feed2'
+                    },
+                    {
+                        bigip: '/Common/feed1'
+                    }
+                ]
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'feed-lists': {
+                            '/Common/feed2': '',
+                            '/Common/feed1': ''
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should handle IP_Intelligence_Policy without blackListCategories', () => {
+            defaultContext.target.provisionedModules = ['afm'];
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                defaultLogBlacklistWhitelistHit: 'no',
+                feedLists: [
+                    {
+                        bigip: '/Common/feed2'
+                    },
+                    {
+                        bigip: '/Common/feed1'
+                    }
+                ]
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'feed-lists': {
+                            '/Common/feed2': '',
+                            '/Common/feed1': ''
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should handle IP_Intelligence_Policy without feedList', () => {
+            defaultContext.target.provisionedModules = ['afm'];
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                defaultLogBlacklistWhitelistHit: 'no',
+                blacklistCategories: [
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/botnets'
+                        },
+                        action: 'accept',
+                        logBlacklistWhitelistHit: 'no',
+                        matchDirectionOverride: 'match-source-and-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/additional'
+                        },
+                        logBlacklistHitOnly: 'no',
+                        logBlacklistWhitelistHit: 'yes',
+                        matchDirectionOverride: 'match-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/phishing'
+                        },
+                        action: 'drop',
+                        logBlacklistHitOnly: 'yes'
+                    }
+                ]
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'blacklist-categories': {
+                            botnets: {
+                                action: 'accept',
+                                'log-blacklist-hit-only': 'limited',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source-and-destination'
+                            },
+                            additional: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-destination'
+                            },
+                            phishing: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'yes',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source'
+                            }
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should handle IP_Intelligence_Policy with empty feedList', () => {
+            defaultContext.target.provisionedModules = ['afm'];
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                defaultLogBlacklistWhitelistHit: 'no',
+                blacklistCategories: [
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/botnets'
+                        },
+                        action: 'accept',
+                        logBlacklistWhitelistHit: 'no',
+                        matchDirectionOverride: 'match-source-and-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/additional'
+                        },
+                        logBlacklistHitOnly: 'no',
+                        logBlacklistWhitelistHit: 'yes',
+                        matchDirectionOverride: 'match-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/phishing'
+                        },
+                        action: 'drop',
+                        logBlacklistHitOnly: 'yes'
+                    }
+                ],
+                feedLists: []
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'blacklist-categories': {
+                            botnets: {
+                                action: 'accept',
+                                'log-blacklist-hit-only': 'limited',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source-and-destination'
+                            },
+                            additional: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-destination'
+                            },
+                            phishing: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'yes',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source'
+                            }
+                        }
+                    }
+                }
+            );
+        });
+
+        it('should handle IP_Intelligence_Policy config', () => {
+            defaultContext.target.provisionedModules = ['asm', 'afm'];
+            // blacklistCategory values for missing properties action, logBlacklistHitOnly,
+            // logBlacklistWhitelistHit should be set from policy or default values
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                defaultLogBlacklistWhitelistHit: 'no',
+                blacklistCategories: [
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/botnets'
+                        },
+                        action: 'accept',
+                        logBlacklistWhitelistHit: 'no',
+                        matchDirectionOverride: 'match-source-and-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/additional'
+                        },
+                        logBlacklistHitOnly: 'no',
+                        logBlacklistWhitelistHit: 'yes',
+                        matchDirectionOverride: 'match-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/phishing'
+                        },
+                        action: 'drop',
+                        logBlacklistHitOnly: 'yes'
+                    }
+                ],
+                feedLists: [
+                    {
+                        bigip: '/Common/feed2'
+                    },
+                    {
+                        bigip: '/Common/feed1'
+                    }
+                ]
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'blacklist-categories': {
+                            botnets: {
+                                action: 'accept',
+                                'log-blacklist-hit-only': 'limited',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source-and-destination'
+                            },
+                            additional: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-destination'
+                            },
+                            phishing: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'yes',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source'
+                            }
+                        },
+                        'feed-lists': {
+                            '/Common/feed2': '',
+                            '/Common/feed1': ''
+                        }
+                    }
+                }
+            );
+        });
+        it('should handle IP_Intelligence_Policy config when afm or dos is not provisionsed', () => {
+            // defaultLogBlacklistWhitelistHit should be undefined from policy or default values
+            const item = {
+                class: 'IP_Intelligence_Policy',
+                defaultAction: 'drop',
+                defaultLogBlacklistHitOnly: 'limited',
+                blacklistCategories: [
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/botnets'
+                        },
+                        action: 'accept',
+                        logBlacklistWhitelistHit: 'no',
+                        matchDirectionOverride: 'match-source-and-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/additional'
+                        },
+                        logBlacklistHitOnly: 'no',
+                        logBlacklistWhitelistHit: 'yes',
+                        matchDirectionOverride: 'match-destination'
+                    },
+                    {
+                        blacklistCategory: {
+                            bigip: '/Common/phishing'
+                        },
+                        action: 'drop',
+                        logBlacklistHitOnly: 'yes'
+                    }
+                ],
+                feedLists: [
+                    {
+                        bigip: '/Common/feed2'
+                    },
+                    {
+                        bigip: '/Common/feed1'
+                    }
+                ]
+            };
+
+            const result = mapAs3.translate.IP_Intelligence_Policy(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'security ip-intelligence policy',
+                    ignore: [],
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'blacklist-categories': {
+                            botnets: {
+                                action: 'accept',
+                                'log-blacklist-hit-only': 'limited',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source-and-destination'
+                            },
+                            additional: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-destination'
+                            },
+                            phishing: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'yes',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source'
+                            }
+                        }
                     }
                 }
             );

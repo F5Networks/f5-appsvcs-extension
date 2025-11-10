@@ -79,7 +79,7 @@ class PostProcessor {
             }
 
             const data = gatherData(declaration, info);
-            return processor.process(context, declaration, [data], originalDeclaration);
+            return processor.process(context, declaration, data, originalDeclaration);
         });
 
         return promiseUtil.series(processFunctions)
@@ -114,14 +114,28 @@ function getProcessorsByTag() {
  * @returns {Object} - Data object that includes declaration data and original info
  */
 function gatherData(declaration, info) {
-    return {
+    if (Array.isArray(info.instancePath)) {
+        const dataObjs = [];
+        (info.instancePath || []).forEach((path) => {
+            dataObjs.push({
+                tenant: path ? path.split('/')[1] : 'unknown tenant',
+                instancePath: path,
+                parentDataProperty: info.parentDataProperty,
+                schemaData: info.schemaData,
+                data: jsonpointer.get(declaration, path),
+                parentData: jsonpointer.get(declaration, path.split('/').slice(0, -1).join('/'))
+            });
+        });
+        return dataObjs;
+    }
+    return [{
         tenant: info.instancePath ? info.instancePath.split('/')[1] : 'unknown tenant',
         instancePath: info.instancePath,
         parentDataProperty: info.parentDataProperty,
         schemaData: info.schemaData,
         data: jsonpointer.get(declaration, info.instancePath),
         parentData: jsonpointer.get(declaration, info.instancePath.split('/').slice(0, -1).join('/'))
-    };
+    }];
 }
 
 module.exports = PostProcessor;

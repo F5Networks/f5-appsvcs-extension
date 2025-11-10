@@ -316,6 +316,7 @@ describe('adcParser', function () {
                                     translateServerAddress: true,
                                     translateServerPort: true,
                                     nat64Enabled: false,
+                                    serversslUseSni: false,
                                     httpMrfRoutingEnabled: false,
                                     rateLimit: 0,
                                     adminState: 'enable'

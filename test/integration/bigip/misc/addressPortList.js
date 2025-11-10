@@ -149,15 +149,84 @@ describe('address and port lists', function () {
                     ]
                 );
             })
-            .then(() => getPath('/mgmt/tm/ltm/virtual'))
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~TEST_Port_List~Application~tcpService'))
             .then((response) => {
-                assert.strictEqual(response.items[0].fullPath, '/TEST_Port_List/Application/tcpService');
-                assert.strictEqual(response.items[0].trafficMatchingCriteria, '/TEST_Port_List/Application/tcpService_VS_TMC_OBJ');
+                assert.strictEqual(response.fullPath, '/TEST_Port_List/Application/tcpService');
+                assert.strictEqual(response.trafficMatchingCriteria, '/TEST_Port_List/Application/tcpService_VS_TMC_OBJ');
             })
             .then(() => postDeclaration(decl, { declarationIndex: 1 }))
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'no change');
             });
+    });
+
+    it('should set the Destination Port Inline on Traffic Matching Criteria', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'http',
+                    serviceMain: {
+                        class: 'Service_HTTP',
+                        enable: true,
+                        virtualPort: 80,
+                        sourceAddress: {
+                            use: 'Net_Address_List'
+                        },
+                        virtualAddresses: ['198.51.100.0'],
+                        pool: 'Pool'
+                    },
+                    Pool: {
+                        class: 'Pool',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                servicePort: 80,
+                                serverAddresses: [
+                                    '192.0.2.1',
+                                    '192.0.2.2'
+                                ]
+                            }
+                        ]
+                    },
+                    Net_Address_List: {
+                        class: 'Net_Address_List',
+                        addresses: [
+                            '192.0.2.10/32',
+                            '192.0.2.11/32'
+                        ]
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/trafficMatchingCriteria'))
+            .then((response) => {
+                assert.strictEqual(response.items[0].fullPath, '/tenant/app/serviceMain_VS_TMC_OBJ');
+                assert.strictEqual(response.items[0].destinationAddressList, undefined);
+                assert.strictEqual(response.items[0].destinationPortList, undefined);
+                assert.strictEqual(response.items[0].sourceAddressInline, '0.0.0.0');
+                assert.strictEqual(response.items[0].sourceAddressList, '/tenant/app/Net_Address_List');
+                assert.strictEqual(response.items[0].destinationAddressInline, '198.51.100.0/32');
+                assert.strictEqual(response.items[0].destinationPortInline, '80');
+                assert.strictEqual(response.items[0].sourcePortInline, 0);
+                assert.strictEqual(response.items[0].protocol, 'tcp');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration());
     });
 });

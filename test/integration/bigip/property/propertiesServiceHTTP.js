@@ -501,7 +501,8 @@ describe('Service_HTTP', function () {
         validateEnvVars(['TEST_RESOURCES_URL']);
 
         // the bigd service sometimes restarts causing the next set of tests to fail
-        const options = { checkServices: true };
+        // Skip idempotent check for WAF policy with ignoreChanges: false as it always reprocesses
+        const options = { checkServices: true, skipIdempotentCheck: true };
 
         const policyHost = `${process.env.TEST_RESOURCES_URL}`;
         const properties = [
@@ -538,7 +539,7 @@ describe('Service_HTTP', function () {
                             url: {
                                 url: `https://${policyHost}/asm-policy/wordpress_template_12.0.xml`
                             },
-                            ignoreChanges: true
+                            ignoreChanges: false
                         }
                     }
                 };
@@ -1319,6 +1320,146 @@ describe('Service_HTTP', function () {
                 extractFunction: (o) => {
                     const profiles = o.profiles
                         .filter((p) => p.name === 'f5_appsvcs_preserve')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPClass(properties, options);
+    });
+
+    it('should attach Service and Splitsession Client profile', () => {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [80],
+                expectedValue: ['80'],
+                extractFunction: (o) => o.destination.split(':')[1]
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileService',
+                inputValue: [undefined, { use: 'serviceProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/serviceProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    serviceProfile: {
+                        class: 'Service_Profile'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'serviceProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            },
+            {
+                name: 'profileSplitsessionClient',
+                inputValue: [undefined, { use: 'splitsessionClientProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/splitsessionClientProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'splitsessionClientProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPClass(properties, options);
+    });
+
+    it('should attach Connector Profile profile', () => {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [80],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileConnector',
+                inputValue: [undefined, { use: 'connectorProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/connectorProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    connectorProfile: {
+                        class: 'Connector_Profile',
+                        entryVirtualServer: {
+                            use: 'theService'
+                        }
+                    },
+                    theService: {
+                        class: 'Service_TCP',
+                        virtualType: 'internal',
+                        profileService: {
+                            use: 'serviceProfile'
+                        },
+                        profileSplitsessionClient: {
+                            use: 'splitsessionClientProfile'
+                        }
+                    },
+                    serviceProfile: {
+                        class: 'Service_Profile'
+                    },
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 80,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'connectorProfile')
                         .map((profile) => profile.fullPath);
                     return (profiles.length > 0) ? profiles : undefined;
                 }

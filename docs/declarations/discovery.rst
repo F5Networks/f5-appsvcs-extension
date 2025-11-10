@@ -224,7 +224,7 @@ This creates two new named nodes in My_pool, **newNode1** and **newNode2** at th
 
 Service Discovery using HashiCorp Consul
 ````````````````````````````````````````
-This example uses Consul (specifically HashiCorp Consul) for service discovery.  For more information HashiCorp Consul, see https://www.consul.io/.  
+This example uses Consul (specifically HashiCorp Consul) for service discovery.  For more information HashiCorp Consul, see https://developer.hashicorp.com/consul.
 This declaration includes an optional Base64 encoded bearer token required to make requests to the Consul API with the ACL system enabled (stored in the declaration in an encrypted format).
 
 

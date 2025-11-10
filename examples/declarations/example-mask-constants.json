@@ -1,0 +1,23 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.55.0",
+    "DemoTenant": {
+        "class": "Tenant",
+        "constants": {
+            "class": "Constants",
+            "apiKey": "sidieXdie_DE",
+            "maskConstants": true
+        },
+        "DemoApp": {
+            "class": "Application",
+            "enable": false,
+            "template": "http",
+            "serviceMain": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "192.0.2.9"
+                ]
+            }
+        }
+    }
+}

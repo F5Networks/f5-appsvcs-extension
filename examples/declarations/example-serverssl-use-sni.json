@@ -1,0 +1,38 @@
+{
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.53.0",
+        "id": "virtual-server-sample",
+        "Sample_Tenant": {
+            "class": "Tenant",
+            "Sample_Application": {
+                "class": "Application",
+                "serviceMain": {
+                    "class": "Service_Generic",
+                    "virtualAddresses": [
+                        "192.0.2.10"
+                    ],
+                    "virtualPort": 80,
+                    "pool": "web_pool",
+                    "serversslUseSni": true
+                },
+                "web_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                "192.0.2.12",
+                                "192.0.2.13"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

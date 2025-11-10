@@ -1,0 +1,51 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.46.0",
+    "id": "Service_HTTP",
+    "Endpoint_Policy_L7Dos": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "testItem": {
+                "class": "Service_HTTP",
+                "virtualAddresses": [
+                    "10.1.40.50"
+                ],
+                "policyEndpoint": "endpointPolicy",
+                "profileBotDefense": {
+                    "bigip": "/Common/bot-defense"
+                }
+            },
+            "endpointPolicy": {
+                "class": "Endpoint_Policy",
+                "rules": [
+                    {
+                        "name": "enabledos",
+                        "conditions": [],
+                        "actions": [
+                            {
+                                "type": "l7dos",
+                                "profile": {
+                                    "use": "DOS_Profile"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "DOS_Profile": {
+                "class": "DOS_Profile",
+                "application": {
+                    "triggerIRule": true,
+                    "scrubbingDuration": 42,
+                    "remoteTriggeredBlackHoleDuration": 10,
+                    "stressBasedDetection": {
+                        "badActor": {
+                            "mitigationMode": "standard"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

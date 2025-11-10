@@ -17,7 +17,6 @@
 'use strict';
 
 const assert = require('assert');
-
 const EventEmitter = require('events');
 const sinon = require('sinon');
 const mapCli = require('../../../src/lib/map_cli');
@@ -588,8 +587,8 @@ describe('map_cli', () => {
                     '0 \\{  http-reply request redirect location \\"https://example.com/\\;one\\" \\}',
                     '1 \\{  http-reply response redirect location \\"tcl:https://www.example.com/\\;[HTTP::header value Host]\\" \\}',
                     '2 \\{  http-reply proxy-request redirect code 399 location \\"https://example.com/\\;three\\" \\}',
-                    '\\} \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ http-explicit http \\}',
-                    'controls replace-all-with \\{ forwarding \\}'
+                    '\\} \\} \\} strategy /Common/best-match controls replace-all-with \\{ forwarding \\} legacy ',
+                    'requires replace-all-with \\{ http-explicit http \\}'
                 ].join(' ')
             );
         });
@@ -633,8 +632,52 @@ describe('map_cli', () => {
                         'ordinal 0 conditions none actions replace-all-with \\{',
                         '0 \\{  bot-defense request disable \\}',
                         '1 \\{  bot-defense request enable from-profile /Common/myProfile \\}',
-                        '\\} \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ http \\}',
-                        'controls replace-all-with \\{ bot-defense \\}'
+                        '\\} \\} \\} strategy /Common/best-match controls replace-all-with \\{ bot-defense \\} legacy ',
+                        'requires replace-all-with \\{ http \\}'
+                    ].join(' ')
+                );
+            });
+
+            it('should handle "controls" l7dos', () => {
+                const config = {
+                    rules: {
+                        default: {
+                            ordinal: 0,
+                            conditions: {},
+                            actions: {
+                                0: {
+                                    policyString: 'l7dos request disable'
+                                },
+                                1: {
+                                    policyString: 'l7dos request enable from-profile /Common/myProfile'
+                                }
+                            }
+                        }
+                    },
+                    strategy: '/Common/best-match'
+                };
+                const diff = {
+                    command: 'ltm policy',
+                    kind: 'N',
+                    path: ['/tenant/app/policy'],
+                    lhsCommand: '',
+                    rhsCommand: 'ltm policy',
+                    rhs: {
+                        command: 'ltm policy',
+                        properties: config
+                    },
+                    tags: ['tmsh']
+                };
+                const result = mapCli.tmshCreate(context, diff, config);
+                assert.strictEqual(
+                    result.commands[0],
+                    [
+                        'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{',
+                        'ordinal 0 conditions none actions replace-all-with \\{',
+                        '0 \\{  l7dos request disable \\}',
+                        '1 \\{  l7dos request enable from-profile /Common/myProfile \\}',
+                        '\\} \\} \\} strategy /Common/best-match controls replace-all-with \\{ l7dos \\} legacy ',
+                        'requires replace-all-with \\{ http \\}'
                     ].join(' ')
                 );
             });
@@ -669,7 +712,19 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp client-accepted address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/Drafts/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp client-accepted address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none'
+                );
+                assert.strictEqual(
+                    result.postTrans[0],
+                    'tmsh::publish ltm policy /tenant/app/Drafts/policy'
+                );
+                assert.strictEqual(
+                    result.postTrans[1],
+                    'tmsh::delete sys folder /tenant/app/Drafts/'
+                );
+                assert.strictEqual(
+                    result.rollback[0],
+                    'tmsh::create sys folder /tenant/app/Drafts/'
                 );
             });
 
@@ -701,7 +756,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp proxy-connect address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp http-connect \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp proxy-connect address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp http-connect \\}'
                 );
             });
 
@@ -733,7 +788,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp proxy-request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp http-explicit \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp proxy-request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp http-explicit \\}'
                 );
             });
 
@@ -765,7 +820,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp http \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp http \\}'
                 );
             });
 
@@ -797,7 +852,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp classification-detected address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp classification \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp classification-detected address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp classification \\}'
                 );
             });
 
@@ -829,7 +884,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-client-serverhello-send address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp client-ssl \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-client-serverhello-send address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp client-ssl \\}'
                 );
             });
 
@@ -861,7 +916,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-server-handshake address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp server-ssl \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-server-handshake address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp server-ssl \\}'
                 );
             });
 
@@ -893,7 +948,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-cert address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp ssl-persistence \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ssl-cert address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp ssl-persistence \\}'
                 );
             });
 
@@ -925,7 +980,7 @@ describe('map_cli', () => {
                 const result = mapCli.tmshCreate(context, diff, config);
                 assert.strictEqual(
                     result.commands[0],
-                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ws-request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match legacy  requires replace-all-with \\{ tcp websocket \\} controls none'
+                    'tmsh::create ltm policy /tenant/app/policy rules replace-all-with \\{ default \\{ ordinal 0 conditions replace-all-with \\{ 0 \\{  tcp ws-request address matches values \\{ 10.10.10.10 \\} \\} \\} actions none \\} \\} strategy /Common/best-match controls none legacy  requires replace-all-with \\{ tcp websocket \\}'
                 );
             });
         });
@@ -2459,6 +2514,313 @@ describe('map_cli', () => {
                     preTrans: [],
                     commands: [
                         'tmsh::modify net route-domain /Common/10 fw-enforced-policy none'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+    });
+
+    describe('sys file ifile', () => {
+        it('should get create command without ignoreChanges property if ignoreChanges flag is set', () => {
+            const diff = {
+                kind: 'N',
+                path: [
+                    '/tenantId/appId/itemId-ifile',
+                    'properties',
+                    'iControl_post'
+                ],
+                rhs: {
+                    reference: '/tenantId/appId/itemId-ifile',
+                    path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                    method: 'POST',
+                    ctype: 'application/octet-stream',
+                    send: 'Look, an iFile!',
+                    why: 'upload ifile'
+                },
+                tags: ['tmsh'],
+                command: 'sys file ifile',
+                lhsCommand: 'sys file ifile',
+                rhsCommand: 'sys file ifile'
+            };
+            const targetConfig = {
+                'source-path': 'file:/var/config/rest/downloads/_tenantId_appId_itemId',
+                iControl_post: {
+                    reference: '/tenantId/appId/itemId-ifile',
+                    path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                    method: 'POST',
+                    ctype: 'application/octet-stream',
+                    send: 'Look, an iFile!',
+                    why: 'upload ifile'
+                },
+                ignoreChanges: false
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::create sys file ifile /tenantId/appId/itemId-ifile source-path file:/var/config/rest/downloads/_tenantId_appId_itemId'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+
+        it('should get create command without ignoreChanges property if ignoreChanges flag is not set', () => {
+            const diff = {
+                kind: 'N',
+                path: [
+                    '/tenantId/appId/itemId-ifile',
+                    'properties',
+                    'iControl_post'
+                ],
+                rhs: {
+                    reference: '/tenantId/appId/itemId-ifile',
+                    path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                    method: 'POST',
+                    ctype: 'application/octet-stream',
+                    send: 'Look, an iFile!',
+                    why: 'upload ifile'
+                },
+                tags: ['tmsh'],
+                command: 'sys file ifile',
+                lhsCommand: 'sys file ifile',
+                rhsCommand: 'sys file ifile'
+            };
+            const targetConfig = {
+                'source-path': 'file:/var/config/rest/downloads/_tenantId_appId_itemId',
+                iControl_post: {
+                    reference: '/tenantId/appId/itemId-ifile',
+                    path: '/mgmt/shared/file-transfer/uploads/_tenantId_appId_itemId',
+                    method: 'POST',
+                    ctype: 'application/octet-stream',
+                    send: 'Look, an iFile!',
+                    why: 'upload ifile'
+                }
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::create sys file ifile /tenantId/appId/itemId-ifile source-path file:/var/config/rest/downloads/_tenantId_appId_itemId'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+    });
+
+    describe('security ip-intelligence policy', () => {
+        it('should get create command with ip-intelligence policy config', () => {
+            const diff = {
+                kind: 'N',
+                path: [
+                    '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy'
+                ],
+                rhs: {
+                    command: 'security ip-intelligence policy',
+                    properties: {
+                        'default-action': 'drop',
+                        'default-log-blacklist-hit-only': 'limited',
+                        'default-log-blacklist-whitelist-hit': 'no',
+                        'blacklist-categories': {
+                            botnets: {
+                                action: 'accept',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'no',
+                                'match-direction-override': 'match-source-and-destination'
+                            },
+                            additional: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-destination'
+                            },
+                            phishing: {
+                                action: 'drop',
+                                'log-blacklist-hit-only': 'no',
+                                'log-blacklist-whitelist-hit': 'yes',
+                                'match-direction-override': 'match-source'
+                            }
+                        },
+                        'feed-lists': {
+                            '/Common/feed2': '',
+                            '/Common/feed1': ''
+                        }
+                    },
+                    ignore: []
+                },
+                tags: [
+                    'tmsh'
+                ],
+                command: 'security ip-intelligence policy',
+                lhsCommand: '',
+                rhsCommand: 'security ip-intelligence policy'
+            };
+            const targetConfig = {
+                'default-action': 'drop',
+                'default-log-blacklist-hit-only': 'limited',
+                'default-log-blacklist-whitelist-hit': 'no',
+                'blacklist-categories': {
+                    botnets: {
+                        action: 'accept',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'no',
+                        'match-direction-override': 'match-source-and-destination'
+                    },
+                    additional: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-destination'
+                    },
+                    phishing: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-source'
+                    }
+                },
+                'feed-lists': {
+                    '/Common/feed2': '',
+                    '/Common/feed1': ''
+                }
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::create security ip-intelligence policy /Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy default-action drop default-log-blacklist-hit-only limited default-log-blacklist-whitelist-hit no blacklist-categories replace-all-with \\{ botnets \\{ action accept log-blacklist-hit-only no log-blacklist-whitelist-hit no match-direction-override match-source-and-destination \\} additional \\{ action drop log-blacklist-hit-only no log-blacklist-whitelist-hit yes match-direction-override match-destination \\} phishing \\{ action drop log-blacklist-hit-only no log-blacklist-whitelist-hit yes match-direction-override match-source \\} \\} feed-lists replace-all-with \\{ /Common/feed2  /Common/feed1  \\}'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+
+        it('should get create command with ip-intelligence policy config having updation to empty blacklist-categories', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    'properties',
+                    'blacklist-categories'
+                ],
+                lhs: {
+                    additional: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-destination'
+                    },
+                    botnets: {
+                        action: 'accept',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'no',
+                        'match-direction-override': 'match-source-and-destination'
+                    },
+                    phishing: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-source'
+                    }
+                },
+                tags: [
+                    'tmsh'
+                ],
+                command: 'security ip-intelligence policy',
+                lhsCommand: 'security ip-intelligence policy',
+                rhsCommand: 'security ip-intelligence policy'
+            };
+            const targetConfig = {
+                'default-action': 'drop',
+                'default-log-blacklist-hit-only': 'limited',
+                'default-log-blacklist-whitelist-hit': 'no',
+                'feed-lists': {
+                    '/Common/feed2': '',
+                    '/Common/feed1': ''
+                }
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::create security ip-intelligence policy /Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy default-action drop default-log-blacklist-hit-only limited default-log-blacklist-whitelist-hit no feed-lists replace-all-with \\{ /Common/feed2  /Common/feed1  \\} blacklist-categories none'
+                    ],
+                    postTrans: [],
+                    rollback: []
+                }
+            );
+        });
+
+        it('should get create command with ip-intelligence policy config having updation to empty feed-lists', () => {
+            const diff = {
+                kind: 'D',
+                path: [
+                    '/Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy',
+                    'properties',
+                    'feed-lists'
+                ],
+                lhs: {
+                    '/Common/feed1': '',
+                    '/Common/feed2': ''
+                },
+                tags: [
+                    'tmsh'
+                ],
+                command: 'security ip-intelligence policy',
+                lhsCommand: 'security ip-intelligence policy',
+                rhsCommand: 'security ip-intelligence policy'
+            };
+            const targetConfig = {
+                'default-action': 'drop',
+                'default-log-blacklist-hit-only': 'limited',
+                'default-log-blacklist-whitelist-hit': 'no',
+                'blacklist-categories': {
+                    botnets: {
+                        action: 'accept',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'no',
+                        'match-direction-override': 'match-source-and-destination'
+                    },
+                    additional: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-destination'
+                    },
+                    phishing: {
+                        action: 'drop',
+                        'log-blacklist-hit-only': 'no',
+                        'log-blacklist-whitelist-hit': 'yes',
+                        'match-direction-override': 'match-source'
+                    }
+                }
+            };
+
+            const results = mapCli.tmshCreate(context, diff, targetConfig);
+            assert.deepStrictEqual(
+                results,
+                {
+                    preTrans: [],
+                    commands: [
+                        'tmsh::create security ip-intelligence policy /Test_IP_Intelligence_Policy/SampleApp/Example_IP_Intelligence_Policy default-action drop default-log-blacklist-hit-only limited default-log-blacklist-whitelist-hit no blacklist-categories replace-all-with \\{ botnets \\{ action accept log-blacklist-hit-only no log-blacklist-whitelist-hit no match-direction-override match-source-and-destination \\} additional \\{ action drop log-blacklist-hit-only no log-blacklist-whitelist-hit yes match-direction-override match-destination \\} phishing \\{ action drop log-blacklist-hit-only no log-blacklist-whitelist-hit yes match-direction-override match-source \\} \\} feed-lists none'
                     ],
                     postTrans: [],
                     rollback: []

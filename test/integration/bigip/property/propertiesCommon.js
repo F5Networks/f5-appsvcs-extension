@@ -352,6 +352,16 @@ function _waitForCompleteStatus(id, host) {
             return response.body;
         })
         .catch((err) => {
+            // Check for AsyncContext timeout errors and retry
+            if (err.message && err.message.includes('AsyncContext timeout')) {
+                logEvent(`AsyncContext timeout detected, retrying in 5 seconds: ${err.message}`);
+                return promiseUtil.delay(5000).then(() => _waitForCompleteStatus(id, host));
+            }
+            // Check for HTTP 500 errors that might be related to timeout
+            if (err.statusCode === 500) {
+                logEvent(`HTTP 500 error detected, retrying in 5 seconds: ${err.message}`);
+                return promiseUtil.delay(5000).then(() => _waitForCompleteStatus(id, host));
+            }
             logError(`Error while waiting for complete status: ${err.message}`);
             throw err;
         });
@@ -1083,6 +1093,7 @@ function configurePromiseForSuccess(declaration, partition, as3Class, properties
             if (index === 0) {
                 // AS3 could be busy from failure in previous test
                 // Retry on 503 for 2 and a half minutes on first post.
+                // Also retry on AsyncContext timeout errors
                 const options = {
                     delay: 10000,
                     retries: (2.5 * 60 * 1000) / 10000
@@ -1092,6 +1103,11 @@ function configurePromiseForSuccess(declaration, partition, as3Class, properties
                     .then((result) => {
                         if (result.results.some((r) => r.code === 503)) {
                             throw new Error('AS3 is busy');
+                        }
+                        // Check for AsyncContext timeout in response
+                        if (result.results.some((r) => r.response && r.response.includes('AsyncContext timeout'))) {
+                            logEvent('AsyncContext timeout detected in response, retrying...');
+                            throw new Error('AsyncContext timeout detected');
                         }
                         return result;
                     }), options, [declaration, logInfo, queryParams]);

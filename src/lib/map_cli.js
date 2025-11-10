@@ -158,6 +158,8 @@ const prefix = {
     'security firewall rule-list vlans': 'replace-all-with',
     'security firewall rule-list addresses': 'replace-all-with',
     'security firewall rule-list ports': 'replace-all-with',
+    'security ip-intelligence policy blacklist-categories': 'replace-all-with',
+    'security ip-intelligence policy feed-lists': 'replace-all-with',
     'security nat policy address-lists': 'replace-all-with',
     'security nat policy port-lists': 'replace-all-with',
     'security nat policy rules': 'replace-all-with',
@@ -800,8 +802,19 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 if (diff.path.find((p) => p === 'metadata')) {
                     commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members modify \\{ ${memberName} \\{ metadata delete \\{ ${diff.path.pop()} \\} \\} \\}`];
                 } else {
-                    commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${memberName}" \\}`];
-                    commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} members add \\{ ${memberName} \\{${stringify(diff.rhsCommand, currentMember, true)} \\} \\}`);
+                    const paths = util.simpleCopy(diff.path);
+                    // Pool Member description deletion.
+                    if (paths.length > 4 && paths.pop() === 'description') {
+                        const poolMember = util.simpleCopy(currentMember);
+                        poolMember.description = 'none';
+                        if (typeof poolMember.fqdn !== 'undefined') {
+                            delete poolMember.fqdn;
+                        }
+                        commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members modify \\{ ${memberName} \\{${stringify(diff.rhsCommand, poolMember, true)} \\} \\}`];
+                    } else {
+                        commandObj.commands = [`tmsh::modify ltm pool ${diff.path[0]} members delete \\{ "${memberName}" \\}`];
+                        commandObj.rollback.push(`tmsh::modify ltm pool ${diff.path[0]} members add \\{ ${memberName} \\{${stringify(diff.rhsCommand, currentMember, true)} \\} \\}`);
+                    }
                 }
 
                 // For edits, we also need to re-create the pool
@@ -813,6 +826,22 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
             }
 
             if (diff.kind === 'N') {
+                // Pool Member description addition.
+                if (diff.path.length > 4) {
+                    const poolMember = util.simpleCopy(targetConfig.members[diff.path[3]]);
+                    if (typeof poolMember.fqdn !== 'undefined') {
+                        delete poolMember.fqdn;
+                    }
+                    const poolMembers = {
+                        members: {
+                            [diff.path[3]]: poolMember
+                        }
+                    };
+                    let command = `tmsh::modify ltm pool ${diff.path[0]}${stringify(diff.rhsCommand, poolMembers, escapeQuote)}`;
+                    command = command.replace('members replace-all-with', 'members modify');
+                    commandObj.commands.push(command);
+                    return commandObj;
+                }
                 const poolMembers = {
                     members: {
                         [diff.path[3]]: util.simpleCopy(targetConfig.members[diff.path[3]])
@@ -832,8 +861,7 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         }
 
         break;
-    case 'ltm policy':
-        targetConfig.legacy = '';
+    case 'ltm policy': {
         Object.keys(targetConfig.rules || {}).forEach((key) => {
             if (targetConfig.rules[key].conditions) {
                 adjustPolicyStringObject(targetConfig.rules[key].conditions);
@@ -842,9 +870,24 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
                 adjustPolicyStringObject(targetConfig.rules[key].actions);
             }
         });
-        targetConfig.requires = getPolicyRequires(targetConfig);
+        const requireObj = getPolicyRequires(targetConfig);
         targetConfig.controls = getPolicyControls(targetConfig);
+        if (Object.keys(requireObj).length === 1 && Object.keys(requireObj)[0] === 'tcp') {
+            const path = diff.path[0].split('/');
+            const draftPath = util.simpleCopy(path);
+            path[path.length - 1] = `Drafts/${path[path.length - 1]}`;
+            draftPath[draftPath.length - 1] = 'Drafts/';
+            diff.path[0] = path.join('/');
+            commandObj.commands = [`${instruction} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)}`];
+            commandObj.postTrans = [`tmsh::publish ${diff.rhsCommand} ${diff.path[0]}`];
+            commandObj.postTrans.push(`tmsh::delete sys folder ${draftPath.join('/')}`);
+            commandObj.rollback.push(`tmsh::create sys folder ${draftPath.join('/')}`);
+            return commandObj;
+        }
+        targetConfig.legacy = '';
+        targetConfig.requires = requireObj;
         break;
+    }
     case 'ltm policy-strategy':
         adjustPolicyStringObject(targetConfig.operands);
         break;
@@ -1229,6 +1272,27 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         mapEnabledDisabled(targetConfig);
         break;
     }
+    case 'sys file ifile': {
+        // Deleting the ignoreChanges property for cli command generation
+        if (targetConfig.ignoreChanges !== undefined) {
+            delete targetConfig.ignoreChanges;
+        }
+        break;
+    }
+    case 'security ip-intelligence policy':
+        if (diff.kind === 'D' && diff.path.indexOf('blacklist-categories') > -1
+        && (diff.lhs && Object.keys(diff.lhs).length > 0 && util.isEmptyOrUndefined(targetConfig['blacklist-categories']))) {
+            // If we are deleting a blacklist category, we need to modify the policy to remove it
+            commandObj.commands = [`${instruction} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)} blacklist-categories none`];
+            return commandObj;
+        }
+        if (diff.kind === 'D' && diff.path.indexOf('feed-lists') > -1
+        && (diff.lhs && Object.keys(diff.lhs).length > 0 && util.isEmptyOrUndefined(targetConfig['feed-lists']))) {
+            // If we are deleting a feed list, we need to modify the policy to remove it
+            commandObj.commands = [`${instruction} ${diff.path[0]}${stringify(diff.rhsCommand, targetConfig, escapeQuote)} feed-lists none`];
+            return commandObj;
+        }
+        break;
     default:
     }
 

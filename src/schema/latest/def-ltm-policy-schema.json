@@ -163,7 +163,8 @@
                         "clientSsl",
                         "persist",
                         "tcl",
-                        "log"
+                        "log",
+                        "l7dos"
                     ]
                 }
             },
@@ -220,6 +221,10 @@
                 {
                     "if": { "properties": { "type": { "const": "log" } } },
                     "then": { "$ref": "#/definitions/Policy_Action_Log" }
+                },
+                {
+                    "if": { "properties": { "type": { "const": "l7dos" } } },
+                    "then": { "$ref": "#/definitions/Policy_Action_L7_Dos" }
                 }
             ],
 
@@ -1068,6 +1073,27 @@
                 }
             },
             "required": ["write"]
+        },
+
+        "Policy_Action_L7_Dos": {
+            "type": "object",
+            "description": "Enable or disable L7 Dos processing",
+            "properties": {
+                "event": {
+                    "type": "string",
+                    "description": "When to run this event in the request-response cycle",
+                    "enum": [
+                        "client-accepted",
+                        "proxy-request",
+                        "request"
+                    ],
+                    "default": "request"
+                },
+                "profile": {
+                    "$ref": "#/definitions/Pointer_DOS_Profile"
+                }
+            },
+            "required": []
         },
 
         "Policy_Condition": {

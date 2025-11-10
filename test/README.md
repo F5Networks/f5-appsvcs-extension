@@ -159,7 +159,7 @@ More info at https://logz.io/blog/jaeger-and-the-elk-stack/
     + Name: as3-jaeger-collector
     + Image: Ubuntu18.04LTS-pristine
     + Size: m1.medium
-    + AdminNetwork2
+    + AdminNetwork
 
     Set root user password to our usual
 
@@ -236,3 +236,8 @@ This has to be done through a service ticket. Look at our `DISCOVERY_AWS_ID` and
 * base64 encode the file that is downloaded to your computer.
 * Update the `DISCOVERY_GCE_SECRET` value with the base64 encoded data.
 * Delete the downloaded file.
+
+## GitLab Runners (SME - Rob Cupples)
+We have often had our own GitLab Runner(s) to handle deployment, integration testing, and tear down. We have a page in our team's docs space that describes how we have been setting them up.
+
+If you ever have problems with them rebooting the instance almost always quick-fixes it. If you need to login,check the CI/CD variables.

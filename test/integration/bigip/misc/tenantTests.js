@@ -184,6 +184,7 @@ describe('Test Tenants (__smoke)', function () {
                         nat64Enabled: false,
                         httpMrfRoutingEnabled: false,
                         rateLimit: 0,
+                        serversslUseSni: false,
                         adminState: 'enable'
                     }
                 );
@@ -262,6 +263,7 @@ describe('Test Tenants (__smoke)', function () {
                         nat64Enabled: false,
                         httpMrfRoutingEnabled: false,
                         rateLimit: 0,
+                        serversslUseSni: false,
                         adminState: 'enable'
                     }
                 );
@@ -780,6 +782,7 @@ describe('Test Tenants (__smoke)', function () {
                         nat64Enabled: false,
                         httpMrfRoutingEnabled: false,
                         rateLimit: 0,
+                        serversslUseSni: false,
                         adminState: 'enable'
                     }
                 );
@@ -809,20 +812,21 @@ describe('Test Tenants (__smoke)', function () {
                 );
 
                 // Note: Other tenants should be nearly identical
-                assert.deepStrictEqual(Object.keys(response),
-                    [
-                        'testTenant0',
-                        'testTenant1',
-                        'testTenant2',
-                        'testTenant3',
-                        'testTenant4',
-                        'testTenant5',
-                        'class',
-                        'schemaVersion',
-                        'id',
-                        'updateMode',
-                        'controls'
-                    ]);
+                // Check that all expected properties exist (order-agnostic)
+                const expectedKeys = [
+                    'testTenant0',
+                    'testTenant1',
+                    'testTenant2',
+                    'testTenant3',
+                    'testTenant4',
+                    'testTenant5',
+                    'class',
+                    'schemaVersion',
+                    'id',
+                    'updateMode',
+                    'controls'
+                ];
+                assert.deepStrictEqual(Object.keys(response).sort(), expectedKeys.sort());
             }));
 
         it('should GET multiple tenants declare show=expanded', () => Promise.resolve()
@@ -838,7 +842,7 @@ describe('Test Tenants (__smoke)', function () {
                     'when HTTP_REQUEST {\r\n   HTTP::redirect https://[getfield [HTTP::host] ":" 1][HTTP::uri]\r\n}'
                 );
                 // Note: Other tenants should be nearly identical
-                assert.deepStrictEqual(Object.keys(response),
+                assert.deepStrictEqual(Object.keys(response).sort(),
                     [
                         'testTenant0',
                         'testTenant1',
@@ -851,7 +855,7 @@ describe('Test Tenants (__smoke)', function () {
                         'id',
                         'updateMode',
                         'controls'
-                    ]);
+                    ].sort());
             }));
 
         it('should GET specific tenants declare testTenant0,testTenant1 show=full', () => Promise.resolve()
@@ -886,13 +890,14 @@ describe('Test Tenants (__smoke)', function () {
                         translateServerPort: true,
                         nat64Enabled: false,
                         httpMrfRoutingEnabled: false,
+                        serversslUseSni: false,
                         rateLimit: 0,
                         adminState: 'enable'
                     }
                 );
                 assert.deepStrictEqual(response.testTenant0.Application.redirect.expand, true);
                 // Note: Other tenants should be nearly identical
-                assert.deepStrictEqual(Object.keys(response),
+                assert.deepStrictEqual(Object.keys(response).sort(),
                     [
                         'testTenant0',
                         'testTenant1',
@@ -901,7 +906,7 @@ describe('Test Tenants (__smoke)', function () {
                         'id',
                         'updateMode',
                         'controls'
-                    ]);
+                    ].sort());
             }));
 
         it('should DELETE specific tenants testTenant2,testTenant0', () => Promise.resolve()

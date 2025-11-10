@@ -103,7 +103,8 @@ class AsyncHandler {
 
         function getDeclaration(record) {
             if (record.results && record.results.response && record.results.response.declaration) {
-                return record.results.response.declaration;
+                const constMaskedDeclaration = util.maskSensitiveConstants(record.results.response.declaration);
+                return constMaskedDeclaration;
             }
             return {};
         }

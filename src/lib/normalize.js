@@ -19,7 +19,20 @@
 const properties = require('./properties.json');
 const util = require('./util/util');
 
-const quoteString = function quoteString(str) {
+const quoteString = function quoteString(str, isSpecialChars = false) {
+    if (isSpecialChars) {
+        return `"${str
+            .replace(/\x5c/g, '')
+            .replace(/\x0d/g, '\\r')
+            .replace(/\x0a/g, '\\n')
+            .replace(/\x09/g, '\\t')
+            .replace(/\x0c/g, '\\f')
+            .replace(/\x08/g, '\\b')
+            .replace(/(\\)?"/g, (a, b) => (b ? a : '\\"'))
+            .replace(/[\x00-\x1f\x7f]/g, '.')
+            .replace(/([?*])/g, '\\\\$1')
+            .replace(/([;$[\]{}])/g, '\\$1')}"`;
+    }
     return `"${str
         .replace(/\x0d/g, '\\r')
         .replace(/\x0a/g, '\\n')
@@ -119,7 +132,7 @@ const assignProperty = function assignProperty(context, obj, mcpCommand, p) {
         // Leave default values unquoted to handle BIG-IP "description none", which has no quotes.
         if (p.quotedString && (obj[p.id] !== undefined)
             && (obj[p.id] !== 'none') && (obj[p.id][0] !== undefined && obj[p.id][0] !== '"')) {
-            obj[p.id] = quoteString(obj[p.id]);
+            obj[p.id] = quoteString(obj[p.id], p.specialChars);
         }
 
         rval = obj[p.id].bigip || obj[p.id].use || obj[p.id];
@@ -190,7 +203,7 @@ const assignProperty = function assignProperty(context, obj, mcpCommand, p) {
         obj[p.id].forEach((item) => {
             if (p.quotedString && (obj[p.id] !== undefined)
                 && (item !== 'none') && (item[0] !== undefined && item[0] !== '"')) {
-                item = quoteString(item);
+                item = quoteString(item, p.specialChars);
             }
 
             let name = '';

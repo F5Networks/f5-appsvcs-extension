@@ -100,7 +100,7 @@ The memory size of restjavad can be increased by the following tmsh sys db comma
 
 .. WARNING:: These commands have changed for some versions of BIG-IP, see `K000133258: Sys DB restjavad.useextramb has been removed after upgrade <https://my.f5.com/manage/s/article/K000133258>`_ for details.
 
-.. IMPORTANT:: Do not provision more than 2400MB of memory for restjavad. For more information, see `K30042148: Restjavad memory provisioning threshold limit <https://support.f5.com/csp/article/K30042148>`_
+.. IMPORTANT:: Do not provision more than 2400MB of memory for restjavad. For more information, see `K000133258: Restjavad memory provisioning threshold limit <https://support.f5.com/csp/article/K000133258>`_
 
 ``tmsh modify sys db provision.extramb value <value>``
 

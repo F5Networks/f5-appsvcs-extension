@@ -69,13 +69,17 @@
   * eg: 
         * git checkout -b v3.53.0-docs original/v3.53.0
         * git push original v3.53.0-docs -f
+Double check the `CHANGELOG.md` to ensure we do not include internal links or customer names.
 Merge the release branch into `develop` and `main` following the steps below for each merge.
 * Navigate to the `Merge Requests` page and click on `New merge request` in the upper right corner.
 * Select the release branch as the `source branch`.
   * If merging into `develop` select `develop` as the `target branch`.
   * If merging into `main` select `main` as the `target branch`.
 * Click on `Compare branches and continue`.
-* On the next page do NOT select `Delete source branch` or `Squash commits`.  The release branch needs to be preserved in case a `.1` release is needed in the future.
+* On the next page:
+  * The release branch needs to be preserved in case a `.1` release is needed in the future. Make sure `Delete source branch` is NOT selected.
+  * If merging into `develop` do NOT select `Squash commits`.
+  * If merging into `main` select `Squash commits`.
 * Click on `Submit merge request`.
 * Note: If the GUI suggests a rebase, do a merge locally instead. DO NOT TRUST the GUI rebase tool.
   * Make sure that the version numbers in `package.json`, `package-lock.json`, `CHANGELOG.md`, etc... is correct. Rebase can sometimes rebase `develop` into the release branch.

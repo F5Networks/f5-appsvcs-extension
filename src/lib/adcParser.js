@@ -167,6 +167,7 @@ function validate(declaration) {
             this.postProcess = results.postProcess;
         })
         .then(() => this.validatePathLength(declaration))
+        .then(() => PostValidator.checkDuplicateNodes(declaration))
         .then(() => {
             const result = myValidator.hasDuplicate(declaration);
             log.notice(`Parser time: ${new Date() - parserTime} milliseconds`);
@@ -235,7 +236,27 @@ function as3Digest(declaration) {
                 // We are skipping postProcessing as it will be done after transformation in request context
                 return Promise.resolve();
             }
-            return PostProcessor.process(this.context, declaration, originalDeclaration, this.postProcess)
+            const updatedPostProcess = [];
+            let asmPolicyObject;
+            this.postProcess.forEach((postProces) => {
+                if (postProces.parentDataProperty && postProces.parentDataProperty === 'policy'
+                    && postProces.tag === 'bigComponent') {
+                    if (!asmPolicyObject) {
+                        const obj = util.simpleCopy(postProces);
+                        delete obj.instancePath;
+                        obj.instancePath = [postProces.instancePath];
+                        asmPolicyObject = obj;
+                    } else {
+                        asmPolicyObject.instancePath.push(postProces.instancePath);
+                    }
+                } else {
+                    updatedPostProcess.push(postProces);
+                }
+            });
+            if (asmPolicyObject) {
+                updatedPostProcess.push(asmPolicyObject);
+            }
+            return PostProcessor.process(this.context, declaration, originalDeclaration, updatedPostProcess)
                 .then((postProcessResults) => {
                     results.warnings = postProcessResults.warnings;
                 });

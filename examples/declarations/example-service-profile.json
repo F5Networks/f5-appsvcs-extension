@@ -1,0 +1,24 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.55.0",
+    "label": "Sample_Service",
+    "remark": "Sample_Service",
+    "Sample_Service": {
+        "class": "Tenant",
+        "Internal_Service": {
+            "class": "Application",
+            "service": {
+                "class": "Service_TCP",
+                "virtualType": "internal",
+                "sourceAddress": "192.0.2.0/24",
+                "profileService": {
+                    "use": "serviceProfile"
+                }
+            },
+            "serviceProfile": {
+                "class": "Service_Profile",
+                "type": "inline-http-explicit"
+            }
+        }
+    }
+}

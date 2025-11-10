@@ -285,7 +285,8 @@ describe('GSLB_Domain', function () {
                         ],
                         exposeRouteDomainsEnabled: true,
                         serverType: 'bigip',
-                        virtualServerDiscoveryMode: 'disabled'
+                        virtualServerDiscoveryMode: 'disabled',
+                        virtualServers: []
                     }
                 }
             }

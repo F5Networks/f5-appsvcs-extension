@@ -1847,6 +1847,42 @@ class Util {
         });
         return result; // Return the original
     }
+
+    static maskSensitiveConstants(obj) {
+    // Create a deep copy of the object to avoid mutating the original
+        if (!obj || typeof obj !== 'object') {
+            return obj; // Return the original object if it's not an object
+        }
+
+        const objCopy = JSON.parse(JSON.stringify(obj));
+
+        // Recursive function to traverse and mask sensitive data
+        function traverseAndMask(node) {
+        // Check if the current object matches the conditions
+            if (node && typeof node === 'object' && node.class === 'Constants' && node.maskConstants === true) {
+            // Mask all properties in this object except `maskConstants`
+                Object.keys(node).forEach((key) => {
+                    if (key !== 'maskConstants' && key !== 'class') {
+                        node[key] = '**MASKED**';
+                    }
+                });
+            }
+
+            // Handle nested objects or arrays
+            Object.keys(node).forEach((key) => {
+                const value = node[key];
+                if (value && typeof value === 'object') {
+                    traverseAndMask(value); // Recurse for nested objects/arrays
+                }
+            });
+        }
+
+        // Start traversal from the root object copy
+        traverseAndMask(objCopy);
+
+        // Return the updated copy
+        return objCopy;
+    }
 }
 
 module.exports = Util;

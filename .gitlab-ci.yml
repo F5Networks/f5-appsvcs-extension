@@ -37,6 +37,9 @@ variables:
   TEST_CODE_VERSION:
     description: AS3 branch/tag from which to get integration tests.
     value: "$CI_COMMIT_REF_NAME"
+  TEST_MANUAL_PATH:
+    description: Path to manual test file relative to test dir, only used when REGRESSION_SCHEDULE is set to manual.
+    value: "test/integration/bigip/REPLACE_WITH_YOUR_TEST_FILE.js"
   REGRESSION_SCHEDULE:
     description: Type of schedule to run for integration tests.
     value: nightly
@@ -45,6 +48,7 @@ variables:
       - performance
       - remote
       - smoke
+      - manual
   PARALLEL:
     description: Run integration tests in parallel. Deploy 3 BIGIP instances.
     value: "false"
@@ -119,7 +123,7 @@ update_shared_schema:
   tags: [cm-official-docker-executor]
 
 schema:
-  image: $DOCKER_URL/node:10
+  image: $DOCKER_URL/node:14
   stage: schema
   needs: []
   tags:
@@ -253,7 +257,7 @@ build_api_docs:
 .deploy_common: &deploy_common
   image: $INTEGRATION_DEPLOY_IMAGE
   tags:
-    - as3-test-docker-executor
+    - classy-crows-as3-docker-runner
   stage: deploy
   timeout: 2 hours
   script:
@@ -387,6 +391,8 @@ deploy_for_this_project:
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
     REGKEY: "$BIGIP_LICENSE"
+    TF_LOG: "DEBUG"  # Add this for detailed Terraform logs
+    TF_LOG_PATH: "/tmp/terraform.log"  # Optional: save logs to file
   before_script:
     # In case of update_shared_schema run we need to provide some extra vars
     - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
@@ -437,10 +443,10 @@ deploy_for_other_project:
   <<: *deploy_common
 
 .test_rpms_common: &test_rpms_common
-  image: $DOCKER_URL/node:12-buster
+  image: $DOCKER_URL/node:20
   stage: integration test
   tags:
-    - as3-test-docker-executor
+    - classy-crows-as3-docker-runner
   script:
     - apt-get update && apt-get install -y jq --no-install-recommends
     - npm ci --no-optional
@@ -484,11 +490,14 @@ deploy_for_other_project:
     - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
     -   ./scripts/dev/enable-perf-tracing.sh "$AS3_HOST" ${AS3_USERNAME}:${AS3_PASSWORD} "$JAEGER_ENDPOINT"
     -   npx mocha ${TEST_CODE_DIR}/test/integration/bigip/property $MOCHA_OPTS --exit
+    - elif [ "$REGRESSION_SCHEDULE" = "manual" ]; then
+    -   npx mocha ${TEST_CODE_DIR}/${TEST_MANUAL_PATH} $MOCHA_OPTS --exit
     - else
     -   npm run misc -- $MOCHA_OPTS --exit
     - fi
 
 test_rpms_in_azure:
+  image: $DOCKER_URL/node:12-buster
   timeout: 12 hours
   rules:
     - if: '$SKIP_TEST_IN_AZURE =~ /true/i'
@@ -513,6 +522,7 @@ test_rpms_in_azure:
       artifacts: true
 
 test_rpms_for_this_project:
+  image: $DOCKER_URL/node:12-buster
   timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
@@ -551,6 +561,7 @@ test_rpms_for_this_project:
       artifacts: true
 
 test_rpms_for_other_project:
+  image: $DOCKER_URL/node:12-buster
   timeout: 12 hours
   rules:
     - if: '$TEST_IN_AZURE =~ /true/i'
@@ -577,7 +588,7 @@ test_rpms_for_other_project:
 .teardown_common: &teardown_common
   image: $INTEGRATION_DEPLOY_IMAGE
   tags:
-      - as3-test-docker-executor
+      - classy-crows-as3-docker-runner
   stage: teardown
   script:
       - cd "$TF_ROOT"
@@ -682,14 +693,16 @@ create_docs:
     - echo "Checking grammar and style"
     # Runs the grammar check on everything except the /docs/drafts directory
     - vale --glob='*.rst' .
-    - echo "Checking links"
-    - make linkcheck
 
     # build developer documentation (optional)
     - if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
     -   npm install --registry $NPM_REGISTRY_URL -g jsdoc
     -   jsdoc src/nodejs/* -d contributing
     - fi
+
+    - echo "Checking links"
+    # Final link check, that we will error on if there are broken links
+    - make linkcheck
   tags:
     - cm-official-docker-executor
   artifacts:

@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-IP=$(openstack server --insecure show $1 -c addresses -f value | sed -r 's/^AdminNetwork2=(.*)$/\1/')
+IP=$(openstack server --insecure show $1 -c addresses -f value | sed -r 's/^AdminNetwork=(.*)$/\1/')
 
 if [ $1 = "as3-bigip-12.1" ]; then
     echo $IP

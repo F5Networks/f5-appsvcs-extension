@@ -28,6 +28,7 @@ const {
     deleteDeclaration,
     postBigipItems,
     deleteBigipItems,
+    getPath,
     GLOBAL_TIMEOUT
 } = require('../property/propertiesCommon');
 const {
@@ -559,6 +560,180 @@ describe('SNAT Pools and SNAT Translations', function () {
                 result = (response.body.items || [])
                     .find((n) => n.fullPath === '/SampleTenant/192.168.0.3%2549');
                 assert(result);
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('should handle to create node when same IP SNAT Translation exists', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2742', id: 2742 }
+            }
+        ];
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            updateMode: 'selective',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 2742,
+                app: {
+                    class: 'Application',
+                    L4Service1: {
+                        class: 'Service_L4',
+                        iRules: [],
+                        label: '',
+                        persistenceMethods: [],
+                        policyEndpoint: [],
+                        pool: 'pool_L4',
+                        profileL4: {
+                            bigip: '/Common/fastL4'
+                        },
+                        snat: 'self',
+                        virtualAddresses: [
+                            '192.0.2.0'
+                        ],
+                        virtualPort: 30010
+                    },
+                    pool_L4: {
+                        class: 'Pool',
+                        label: '',
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 1,
+                                remark: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                serverAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                servicePort: 32651
+                            }
+                        ],
+                        monitors: [
+                            {
+                                bigip: '/Common/http'
+                            }
+                        ]
+                    },
+                    template: 'generic'
+                }
+            }
+        };
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            updateMode: 'selective',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 2742,
+                app: {
+                    class: 'Application',
+                    L4Service1: {
+                        class: 'Service_L4',
+                        iRules: [],
+                        label: '',
+                        persistenceMethods: [],
+                        policyEndpoint: [],
+                        pool: 'pool_L4',
+                        profileL4: {
+                            bigip: '/Common/fastL4'
+                        },
+                        snat: 'self',
+                        virtualAddresses: [
+                            '192.0.2.3'
+                        ],
+                        virtualPort: 30010
+                    },
+                    pool_L4: {
+                        class: 'Pool',
+                        label: '',
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 1,
+                                remark: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                serverAddresses: [
+                                    '192.0.2.1'
+                                ],
+                                servicePort: 32651
+                            },
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 1,
+                                remark: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                serverAddresses: [
+                                    '192.0.2.4'
+                                ],
+                                servicePort: 32651
+                            },
+                            {
+                                adminState: 'enable',
+                                enable: true,
+                                ratio: 1,
+                                remark: '0ec91a62-2abc-492d-9848-3a7b42c39e9d',
+                                serverAddresses: [
+                                    '192.0.2.0'
+                                ],
+                                servicePort: 32651
+                            }
+                        ],
+                        monitors: [
+                            {
+                                bigip: '/Common/http'
+                            }
+                        ]
+                    },
+                    template: 'generic'
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~L4Service1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/L4Service1');
+                assert.strictEqual(response.destination, '/tenant/192.0.2.0%2742:30010');
+                assert.strictEqual(response.pool, '/tenant/app/pool_L4');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool_L4/members'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].fullPath, '/tenant/192.0.2.1%2742:32651');
+                assert.strictEqual(response.items[0].address, '192.0.2.1%2742');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~L4Service1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/L4Service1');
+                assert.strictEqual(response.destination, '/tenant/192.0.2.3%2742:30010');
+                assert.strictEqual(response.pool, '/tenant/app/pool_L4');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/pool/~tenant~app~pool_L4/members'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 3);
+                const expectedNames = ['192.0.2.0%2742:32651', '192.0.2.1%2742:32651', '192.0.2.4%2742:32651'];
+                const expectedAddresses = ['192.0.2.0%2742', '192.0.2.1%2742', '192.0.2.4%2742'];
+                const names = response.items.map((item) => item.name);
+                const addresses = response.items.map((item) => item.address);
+                assert.deepEqual(names, expectedNames);
+                assert.deepEqual(addresses, expectedAddresses);
             })
             .finally(() => deleteDeclaration()
                 .then(() => deleteBigipItems(bigipItems)));

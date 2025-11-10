@@ -575,4 +575,87 @@ describe('shareNodes', function () {
                 }
             ));
     });
+
+    it('should validate the AS3 if duplicate nodes are present in the declaration ', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    testVIP: {
+                        class: 'Service_L4',
+                        remark: 'app',
+                        layer4: 'any',
+                        pool: 'testPool',
+                        translateServerAddress: false,
+                        translateServerPort: false,
+                        persistenceMethods: [],
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 0,
+                        snat: 'none'
+                    },
+                    testPool: {
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                servers: [
+                                    {
+                                        name: 'ns1.test.local',
+                                        address: '192.0.2.0'
+                                    }
+                                ],
+                                servicePort: 0,
+                                shareNodes: true
+                            }
+                        ],
+                        class: 'Pool'
+                    },
+                    'testVIP-http': {
+                        class: 'Service_HTTP',
+                        remark: 'app',
+                        layer4: 'tcp',
+                        pool: 'testPool-http',
+                        translateServerAddress: true,
+                        translateServerPort: true,
+                        profileTCP: {
+                            bigip: '/Common/f5-tcp-progressive'
+                        },
+                        profileHTTP: {
+                            bigip: '/Common/http'
+                        },
+                        virtualAddresses: ['192.0.2.100'],
+                        virtualPort: 80,
+                        snat: 'auto'
+                    },
+                    'testPool-http': {
+                        loadBalancingMode: 'round-robin',
+                        members: [
+                            {
+                                servers: [
+                                    {
+                                        name: 'ns1.test.local',
+                                        address: '192.0.2.3'
+                                    }
+                                ],
+                                servicePort: 80,
+                                shareNodes: true
+                            }
+                        ],
+                        class: 'Pool'
+                    }
+                }
+            }
+        };
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'The node name must be unique throughout the declaration. Duplicate node name \'ns1.test.local\' found.');
+                assert.strictEqual(response.results[0].host, 'localhost');
+                assert.strictEqual(response.results[0].tenant[0], 'tenant');
+                assert.match(response.results[0].declarationId, /autogen_([0-9a-z]{4,}[-]){3,}/);
+            });
+    });
 });

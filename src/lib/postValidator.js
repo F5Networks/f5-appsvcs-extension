@@ -47,6 +47,36 @@ class postValidator {
 
         return promise;
     }
+
+    static checkDuplicateNodes(declaration) {
+        return Promise.resolve().then(() => checkDuplicateNodeNames(declaration));
+    }
+}
+
+function checkDuplicateNodeNames(declaration) {
+    const names = [];
+    const dupNames = [];
+    const pools = findItems(declaration, 'Pool');
+
+    pools.forEach((pool) => {
+        (pool.members || []).forEach((member) => {
+            (member.servers || []).forEach((server) => {
+                if (names.includes(server.name)) {
+                    dupNames.push(server.name);
+                } else {
+                    names.push(server.name);
+                }
+            });
+        });
+    });
+
+    if (dupNames.length > 0) {
+        const err = new Error(`The node name must be unique throughout the declaration. Duplicate node name '${dupNames.join(',')}' found.`);
+        err.statusCode = 422;
+        return Promise.reject(err);
+    }
+
+    return Promise.resolve();
 }
 
 function virtualAddressInspect(declaration) {

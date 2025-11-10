@@ -75,6 +75,10 @@ module.exports = {
             'ltm monitor udp'
         ],
         FTP_Profile: 'ltm profile ftp',
+        PPTP_Profile: 'ltm profile pptp',
+        Service_Profile: 'ltm profile service',
+        Splitsession_Client_Profile: 'ltm profile splitsessionclient',
+        Connector_Profile: 'ltm profile connector',
         RTSP_Profile: 'ltm profile rtsp',
         SIP_Profile: 'ltm profile sip',
         SMTPS_Profile: 'ltm profile smtps',
@@ -207,6 +211,7 @@ module.exports = {
         Cipher_Group: 'ltm cipher group',
         Protocol_Inspection_Profile: 'security protocol-inspection profile',
         Idle_Timeout_Policy: 'net timer-policy',
-        iFile: 'ltm ifile'
+        iFile: 'ltm ifile',
+        IP_Intelligence_Policy: 'security ip-intelligence policy'
     }
 };

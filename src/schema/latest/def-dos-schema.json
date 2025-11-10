@@ -841,6 +841,11 @@
                     "description": "Enables tls signature detection before the connection establishment. This property is available on BIGIP 14.1 and above.",
                     "type": "boolean",
                     "default": false
+                },
+                "useTlsPatternsForHostIdentification": {
+                    "description": "Enables use tls patterns as part of host identification detection before the connection establishment.",
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "additionalProperties": false

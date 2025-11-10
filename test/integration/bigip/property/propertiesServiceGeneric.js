@@ -255,6 +255,11 @@ describe('Service_Generic', function () {
                 expectedValue: ['disabled', 'enabled', 'disabled']
             },
             {
+                name: 'serversslUseSni',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['disabled', 'enabled', 'disabled']
+            },
+            {
                 name: 'persistenceMethods',
                 inputValue: [
                     [],
@@ -940,5 +945,54 @@ describe('Service_Generic', function () {
             }
         ];
         return assertServiceGenericClass(properties);
+    });
+
+    it('should attach Splitsession Client profiles', () => {
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [8080],
+                skipAssert: true
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileSplitsessionClient',
+                inputValue: [undefined, { use: 'splitsessionClientProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/splitsessionClientProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    splitsessionClientProfile: {
+                        class: 'Splitsession_Client_Profile',
+                        peerPort: 8080,
+                        peerIp: '192.0.2.1'
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'splitsessionClientProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceGenericClass(properties, options);
     });
 });

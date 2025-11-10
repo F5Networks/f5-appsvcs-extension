@@ -199,13 +199,15 @@ describe('DOS_Profile', function () {
             detectionEnabled: true,
             mitigationMode: 'standard',
             signatureDetectionEnabled: true,
-            useApprovedSignaturesOnly: true
+            useApprovedSignaturesOnly: true,
+            useTlsPatternsForHostIdentification: true
         };
         const badActorExpected = {
             dosDetection: 'enabled',
             mitigationMode: 'standard',
             signatures: signaturesExpected,
-            signaturesApprovedOnly: signaturesApprovedOnlyExpected
+            signaturesApprovedOnly: signaturesApprovedOnlyExpected,
+            tlsFp: 'enabled'
         };
         if (!util.versionLessThan(getBigIpVersion(), '14.1')) {
             badActorInput.acceleratedSignaturesEnabled = true;
@@ -219,9 +221,6 @@ describe('DOS_Profile', function () {
         } else if (!util.versionLessThan(getBigIpVersion(), '14.0')) {
             badActorInput.acceleratedSignaturesEnabled = true;
             badActorExpected.acceleratedSignatures = 'enabled';
-        }
-        if (!util.versionLessThan(getBigIpVersion(), '15.1')) {
-            badActorExpected.tlsFp = 'disabled';
         }
 
         const properties = [

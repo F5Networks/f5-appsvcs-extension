@@ -671,8 +671,8 @@ class DeclarationHandler {
                 const tenantListResult = fetch.tenantList(decl, context.request.perAppInfo);
                 context.tasks[context.currentIndex].firstPassNoDelete = tenantListResult.firstPassNoDelete;
                 const tenantList = tenantListResult.list;
-
-                log.debug({ message: 'All Tenants declaration', declaration: decl });
+                const constantsMaskedDecl = util.maskSensitiveConstants(decl);
+                log.debug({ message: 'All Tenants declaration', declaration: constantsMaskedDecl });
 
                 return Promise.resolve()
                     .then(() => {

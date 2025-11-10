@@ -65,8 +65,8 @@
     { "id":"records",                   "extend": "objArray" }
   ],
   "ltm data-group internal records": [
-    { "id":"name",                      "quotedString": true, "intToString": true },
-    { "id":"data",                      "altId": "value", "quotedString": true }
+    { "id":"name",                      "quotedString": true, "intToString": true, "specialChars": true },
+    { "id":"data",                      "altId": "value", "quotedString": true, "specialChars": true }
   ],
   "ltm monitor": [
     { "id":"accept-rcode",              "altId": "acceptRCODE"},
@@ -865,6 +865,30 @@
     { "id":"security",                  "altId": "securityEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"translate-extended",        "altId": "translateExtendedEnabled", "truth": "enabled", "falsehood": "disabled" }
   ],
+  "ltm profile pptp": [
+    { "id":"defaults-from",              "altId": "defaultsFrom",  "default": "none"  },
+    { "id":"description",               "altId": "description",  "quotedString": true, "default": "none" },
+    { "id":"csv-format",                 "altId": "csvFormat" , "truth": "enabled", "falsehood": "disabled"},
+    { "id":"include-destination-ip",    "altId": "includeDestinationIp", "truth": "enabled", "falsehood": "disabled" },
+    { "id":"publisher-name",            "altId": "publisherName", "default": "none"}
+  ],
+  "ltm profile service": [
+    { "id":"type" }
+  ],
+  "ltm profile splitsessionclient": [
+    { "id":"description",             "altId": "description",  "quotedString": true, "default": "none" },
+    { "id":"peer-port",               "altId": "peerPort" },
+    { "id":"peer-ip",                 "altId": "peerIp" },
+    { "id":"local-peer",              "altId": "localPeer" },
+    { "id":"http-header",             "altId": "httpHeader" },
+    { "id":"session-lookup-type",     "altId": "sessionLookupType" }
+  ],
+  "ltm profile connector": [
+    { "id":"entry-virtual-server",      "altId": "entryVirtualServer" },
+    { "id":"connection-timeout",        "altId": "connectionTimeout"  },
+    { "id":"service-down-action",       "altId": "serviceDownAction"  },
+    { "id":"connect-on-data",           "altId": "connectOnData",  "truth": "enabled", "falsehood": "disabled"  }
+  ],
   "ltm profile ipother": [
     { "id":"description",               "altId": "remark", "quotedString": true},
     { "id":"defaults-from",             "altId": "parentProfile"},
@@ -1220,6 +1244,7 @@
     { "id":"protocol",                   "minVersion": "14.1" },
     { "id":"destination-address-inline", "minVersion": "14.1" },
     { "id":"destination-address-list",   "minVersion": "14.1" },
+    { "id":"destination-port-inline",    "minVersion": "14.1" },
     { "id":"destination-port-list",      "minVersion": "14.1" },
     { "id":"source-address-inline",      "minVersion": "14.1" },
     { "id":"source-address-list",        "minVersion": "14.1" },
@@ -1261,6 +1286,7 @@
     { "id":"source-port",               "truth": "change", "falsehood": "preserve", "altId": "translateClientPort" },
     { "id":"translate-address",         "truth": "enabled", "falsehood": "disabled", "altId": "translateServerAddress" },
     { "id":"translate-port",            "truth": "enabled", "falsehood": "disabled", "altId": "translateServerPort" },
+    { "id":"serverssl-use-sni",         "truth": "enabled", "falsehood": "disabled", "altId": "serversslUseSni" },
     { "id":"traffic-matching-criteria", "minVersion": "14.1" },
     { "id":"nat64",                     "truth": "enabled", "falsehood": "disabled", "altId": "nat64Enabled" },
     { "id":"vlans",                     "extend":"array" },
@@ -1320,7 +1346,9 @@
   ],
   "sys file ifile": [
     { "id": "source-path" },
-    { "id": "iControl_post",            "extend": "object" }
+    { "id": "iControl_post",            "extend": "object" },
+    { "id":"ignoreChanges" }
+
   ],
   "net bwc policy": [
     { "id":"description",               "altId": "remark", "quotedString": true },
@@ -1508,7 +1536,7 @@
     { "id":"field-delimiter" },
     { "id":"fields",                    "extend": "array", "default": null },
     { "id":"type" },
-    { "id":"user-string",               "quotedString": true }
+    { "id":"user-string",               "quotedString": true, "specialChars": true }
   ],
   "security log profile application servers": [
     { "id":"name" }
@@ -2278,6 +2306,7 @@
   ],
   "gtm server devices": [
     { "id":"name" },
+    { "id":"description",              "altId": "remark", "quotedString": true },
     { "id":"addresses",                "extend": "objArray" }
   ],
   "gtm server devices addresses": [
@@ -2792,7 +2821,8 @@
       { "id":"signatures",                "altId": "signatureDetectionEnabled", "truth": "enabled", "falsehood": "disabled" },
       { "id":"signatures-approved-only",  "altId": "useApprovedSignaturesOnly",  "truth": "enabled", "falsehood": "disabled" },
       { "id":"accelerated-signatures",    "altId": "acceleratedSignaturesEnabled", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.0" },
-      { "id":"tls-signatures",            "altId": "tlsSignaturesEnabled", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" }
+      { "id":"tls-signatures",            "altId": "tlsSignaturesEnabled", "truth": "enabled", "falsehood": "disabled", "minVersion": "14.1" },
+      { "id":"tls-fp",                    "altId": "useTlsPatternsForHostIdentification", "truth": "enabled", "falsehood": "disabled" }
   ],
   "security dos profile application tcp-dump": [
       { "id":"maximum-duration" },
@@ -3022,5 +3052,19 @@
   ],
   "security bot-defense profile class-overrides verification": [
     { "id":"action" }
+  ],
+  "security ip-intelligence policy": [
+    { "id":"description" },
+    { "id":"default-action" },
+    { "id":"default-log-blacklist-hit-only" },
+    { "id":"default-log-blacklist-whitelist-hit", "requiredModules": { "anyOf": [ "afm", "dos" ] } },
+    { "id":"blacklist-categories",        "altId": "blacklistCategories",   "extend": "namedObject" },
+    { "id":"feed-lists", "requiredModules": { "anyOf": [ "afm" ] } }
+  ],
+  "security ip-intelligence policy blacklist-categories": [
+    { "id":"action" },
+    { "id":"log-blacklist-hit-only",      "altId": "logBlacklistHitOnly" },
+    { "id":"log-blacklist-whitelist-hit", "altId": "logBlacklistWhitelistHit" },
+    { "id":"match-direction-override",    "altId": "matchDirectionOverride" }
   ]
 }

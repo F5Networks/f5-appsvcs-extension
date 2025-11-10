@@ -19,8 +19,35 @@
 const fs = require('fs');
 const propertiesCommon = require('./propertiesCommon');
 const requestUtil = require('../../../common/requestUtilPromise');
+const { retryWithExponentialBackoff } = require('../../../common/requestUtil');
 
 const eventLogName = 'eventLog';
+
+/**
+ * Common function to check if an error should trigger a retry for network-related issues
+ * @param {Error} error - The error to check
+ * @param {boolean} includeHttpErrors - Whether to include HTTP 502/503 errors (default: false)
+ * @returns {boolean} - True if the error should trigger a retry
+ */
+function isRetryableNetworkError(error, includeHttpErrors = false) {
+    if (!error || !error.message) {
+        return false;
+    }
+
+    const networkErrors = [
+        'socket hang up',
+        'ECONNRESET',
+        'ENOTFOUND',
+        'timeout',
+        'ECONNREFUSED'
+    ];
+
+    const httpErrors = ['502', '503'];
+
+    const errorsToCheck = includeHttpErrors ? [...networkErrors, ...httpErrors] : networkErrors;
+
+    return errorsToCheck.some((errorPattern) => error.message.includes(errorPattern));
+}
 
 let globalEventStream;
 let suiteEventStream;
@@ -99,7 +126,7 @@ exports.mochaHooks = {
                     return Promise.resolve();
                 }
                 return Promise.resolve()
-                    .then(() => requestUtil.delete({ path: '/mgmt/shared/appsvcs/declare' }))
+                    .then(() => propertiesCommon.deleteDeclaration())
                     .catch((error) => {
                         error.message = `Unable to clear AS3 state: ${error.message}`;
                         throw error;
@@ -121,8 +148,24 @@ exports.mochaHooks = {
                         .then((token) => {
                             propertiesCommon.getDefaultOptions().token = token;
                         })
+                        .then(() => {
+                            // Clean AS3 state before each test to prevent "no change" issues
+                            propertiesCommon.logEvent('Cleaning AS3 state before test...');
+
+                            // Use centralized retry for AS3 cleanup with network error handling
+                            const cleanupFunction = () => propertiesCommon.deleteDeclaration();
+                            const shouldRetryCleanup = (error) => isRetryableNetworkError(error, true);
+
+                            return retryWithExponentialBackoff(
+                                cleanupFunction,
+                                3, // maxRetries
+                                2000, // initialDelay (2 seconds)
+                                2, // backoffMultiplier
+                                shouldRetryCleanup
+                            );
+                        })
                         .catch((error) => {
-                            error.message = `Unable to fetch auth token: ${error.message}`;
+                            error.message = `Unable to fetch auth token or clean AS3 state: ${error.message}`;
                             throw error;
                         });
                 }
@@ -176,28 +219,48 @@ function getProvisionedModulesAsync() {
     if (propertiesCommon.getDefaultOptions().dryRun) {
         return Promise.resolve(['afm', 'asm', 'gtm', 'pem', 'ltm', 'avr']);
     }
-    return Promise.resolve()
-        .then(() => {
-            const requestOptions = {
-                path: '/mgmt/tm/sys/provision',
-                host: process.env.TARGET_HOST || process.env.AS3_HOST
-            };
-            return requestUtil.get(requestOptions);
-        })
-        .then((response) => {
-            const body = response.body;
-            if (!body.items) {
-                throw new Error(`Could not find provisioned modules:\n${JSON.stringify(body, null, 2)}`);
-            }
 
-            return body.items
-                .filter((m) => m.level !== 'none')
-                .map((m) => m.name);
-        })
-        .catch((error) => {
-            error.message = `Unable to get BIG-IP module list: ${error.message}`;
-            throw error;
-        });
+    // Define the function to attempt connection
+    function attemptConnection() {
+        console.log('Attempting to connect to BIG-IP...');
+        return Promise.resolve()
+            .then(() => {
+                const requestOptions = {
+                    path: '/mgmt/tm/sys/provision',
+                    host: process.env.TARGET_HOST || process.env.AS3_HOST,
+                    retryCount: 2,
+                    retryInterval: 1000,
+                    retryIf: (error) => isRetryableNetworkError(error)
+                };
+                return requestUtil.get(requestOptions);
+            })
+            .then((response) => {
+                const body = response.body;
+                if (!body.items) {
+                    throw new Error(`Could not find provisioned modules:\n${JSON.stringify(body, null, 2)}`);
+                }
+
+                console.log('Successfully connected to BIG-IP and retrieved module list');
+                return body.items
+                    .filter((m) => m.level !== 'none')
+                    .map((m) => m.name);
+            });
+    }
+
+    // Define retry condition for network-related errors
+    const shouldRetry = (error) => isRetryableNetworkError(error);
+
+    // Use centralized retry with exponential backoff
+    return retryWithExponentialBackoff(
+        attemptConnection,
+        5, // maxRetries
+        3000, // initialDelay (3 seconds)
+        2, // backoffMultiplier
+        shouldRetry
+    ).catch((error) => {
+        error.message = `Unable to get BIG-IP module list: ${error.message}`;
+        throw error;
+    });
 }
 
 function getBigIpVersionAsync() {

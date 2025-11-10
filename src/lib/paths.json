@@ -183,6 +183,15 @@
             "modules": ["afm", "apm", "pem"]
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/service"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/splitsessionclient"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/connector"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/html-rule/comment-raise-event"
         },
         {
@@ -527,6 +536,9 @@
             "endpoint": "/mgmt/tm/ltm/profile/ftp"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/pptp"
+        },
+        {
             "endpoint": "/mgmt/tm/security/bot-defense/profile",
             "modules": ["asm"],
             "minimumVersion": "14.1"
@@ -573,6 +585,10 @@
         },
         {
             "endpoint": "/mgmt/tm/net/route-domain"
+        },
+        {
+            "endpoint": "/mgmt/tm/security/ip-intelligence/policy",
+            "modules": ["afm", "asm"]
         }
     ],
     "referred": [
@@ -644,6 +660,9 @@
         },
         {
             "endpoint": "certValidatorsReference"
+        },
+        {
+            "endpoint": "nameReference"
         }
     ],
     "subReferred": [

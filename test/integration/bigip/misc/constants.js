@@ -207,4 +207,60 @@ describe('constants', function () {
                 assert.deepStrictEqual(profile.fullPath, '/Common/Shared/newHttpProfile');
             });
     });
+
+    it('verify maskConstants properties of Constants class', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            CONSTANTS_T1: {
+                class: 'Tenant',
+                constants: {
+                    class: 'Constants',
+                    constKey: 'oldValue',
+                    maskConstants: true
+                },
+                DemoApp: {
+                    class: 'Application',
+                    enable: false,
+                    template: 'http',
+                    serviceMain: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            '192.0.2.9'
+                        ]
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => assert.isFulfilled( // first POST
+                postDeclaration(declaration, { declarationIndex: 0 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                console.log(JSON.stringify(response));
+                assert.strictEqual(response.declaration.CONSTANTS_T1.constants.constKey, '**MASKED**');
+            })
+            .then(() => assert.isFulfilled(
+                getPath('/mgmt/shared/appsvcs/declare')
+            ))
+            .then((response) => {
+                assert.strictEqual(response.CONSTANTS_T1.constants.constKey, '**MASKED**');
+                delete declaration.CONSTANTS_T1.constants.maskConstants;
+            })
+            .then(() => assert.isFulfilled( // second POST
+                postDeclaration(declaration, { declarationIndex: 1 })
+            ))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.declaration.CONSTANTS_T1.constants.constKey, 'oldValue');
+            })
+            .then(() => assert.isFulfilled(
+                getPath('/mgmt/shared/appsvcs/declare')
+            ))
+            .then((response) => {
+                assert.strictEqual(response.CONSTANTS_T1.constants.constKey, 'oldValue');
+            });
+    });
 });

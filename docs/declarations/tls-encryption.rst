@@ -371,11 +371,16 @@ Referencing multiple SSL profiles on a single virtual service
 `````````````````````````````````````````````````````````````
 This example shows how you can reference multiple client and server SSL (TLS) profiles (that already exist on the BIG-IP) on a single virtual service. This allows for flexibility in implementing different authentication types in a single virtual server.
 
+In the AS3 declaration, the ``clientTLS`` and ``serverTLS`` profiles support three types of objects: **string**, **object**, and **arrayOfObject**.
+
 **IMPORTANT**: When using multiple SSL profiles, you MUST adhere to the following rules:
 
 - The SSL profiles must exist on the BIG-IP device.
 - One of the existing client/server SSL profiles must be configured as the SNI default (the **Default SSL Profile for SNI** check box in the BIG-IP Configuration utility).
 - When using multiple existing client SSL profiles (serverTLS in AS3), you must set the **server-name** (**Server Name** in the BIG-IP Configuration utility) field, and it must be different in each profile.
+- This configuration example demonstrates for setting up an HTTPS virtual server on the BIG-IP platform.
+- It utilizes a designated IP address (192.0.2.1) and port (8080), to ensure secure communication between client and server through TLS.
+- Both the server and client profiles are set up with a certificate named (webcert), and session renegotiation has been disabled for both parties.
 
 To use multiple SSL profiles, you simply create an array of existing SSL profiles referenced with the **bigip** pointer, as shown in the following example.
 
@@ -386,13 +391,62 @@ This declaration creates the following objects on the BIG-IP:
 - An Application named **MyHttps**.
 - A virtual server named **service** that includes an array of Client and Server SSL profiles.
 
-.. literalinclude:: ../../examples/declarations/example-multiple-client-server-ssl-profiles.json
+Examples
+`````````
+
+Object Type: **String**
+
+This refers to the string type clientTLS and serverTLS objects on the virtual server.   
+
+
+.. literalinclude:: ../../examples/declarations/example-string-client-server-tls-virtual.json
    :language: json
 
 
 :ref:`Back to top<ck-examples>` 
 
 |
+
+Object Type: **Object**
+
+This refers to the clientTLS and serverTLS objects on the virtual server. 
+
+.. literalinclude:: ../../examples/declarations/example-object-client-server-tls-virtual.json
+   :language: json
+
+
+:ref:`Back to top<ck-examples>` 
+
+|
+
+Object type: **Object**
+
+Another example of Object Type: **Object** 
+
+This example refers to the existing SSL profiles on BIG-IP.   
+
+.. literalinclude:: ../../examples/declarations/example-object-client-server-tls-virtual-ssl-profile-bigip.json
+   :language: json
+
+
+:ref:`Back to top<ck-examples>` 
+
+|
+
+Object type: **arrayOfObject**
+
+This refers to the arrayOfObject type for clientTLS and serverTLS objects on the virtual server.  
+
+This example also refers to the existing SSL profiles on BIG-IP.  
+
+.. literalinclude:: ../../examples/declarations/example-arrayofobject-client-server-tls-virtual-ssl-bigip.json
+   :language: json
+
+
+:ref:`Back to top<ck-examples>` 
+
+|
+
 
 .. _tlsoption:
 

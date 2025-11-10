@@ -1910,6 +1910,123 @@
                 "pool"
             ],
             "additionalProperties": false
+        },
+
+        "IP_Intelligence_Policy": {
+            "title": "IP_Intelligence_Policy",
+            "description": "Configures a IP Intelligence (Dynamic White/Black List) policy",
+            "type": "object",
+            "f5PostProcess": {
+                "tag": "modules",
+                "data": ["afm", "asm"]
+            },
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "IP_Intelligence_Policy"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "description": {
+                    "description": "Description for the IP Intelligence Policy.",
+                    "type": "string"
+                },
+                "defaultAction": {
+                    "type": "string",
+                    "description": "Specifies the default enforcement action.",
+                    "enum": [
+                        "drop",
+                        "accept"
+                    ],
+                    "default": "drop"
+                },
+                "defaultLogBlacklistHitOnly": {
+                    "type": "string",
+                    "description": "Specifies the default blacklist hit only logging action.",
+                    "enum": [
+                        "no",
+                        "yes",
+                        "limited"
+                    ],
+                    "default": "no"
+                },
+                "defaultLogBlacklistWhitelistHit": {
+                    "type": "string",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm", "dos"]
+                    },
+                    "description": "Specifies the default blacklist and whitelist hit logging action.",
+                    "enum": [
+                        "no",
+                        "yes"
+                    ]
+                },
+                "blacklistCategories": {
+                    "type": "array",
+                    "description": "Specifies List of IP Intelligence blacklist categories with the enforcement and logging settings per category.",
+                    "items": {
+                        "$ref": "#/definitions/Blacklist_Categories"
+                    }
+                },
+                "feedLists": {
+                    "type": "array",
+                    "f5PostProcess": {
+                        "tag": "modules",
+                        "data": ["afm"]
+                    },
+                    "description": "Specifies IP Intelligence feed lists that are applied to all.",
+                    "items": {
+                        "$ref": "#/definitions/Pointer_IP_Intelligence_Feed_List"
+                    }
+                }
+            },
+            "required": [ "class" ]
+        },
+
+        "Blacklist_Categories": {
+            "description": "IP Intelligence blacklist categories with the enforcement and logging settings per category.",
+            "type": "object",
+            "properties": {
+                "blacklistCategory": {
+                    "$ref": "#/definitions/Pointer_Denylist_Category"
+                },
+                "action": {
+                    "type": "string",
+                    "description": "Specifies the default enforcement action.",
+                    "enum": [
+                        "accept",
+                        "drop"
+                    ]
+                },
+                "logBlacklistHitOnly" : {
+                    "type": "string",
+                    "description": "Specifies the default blacklist hit only logging action.",
+                    "enum": [
+                        "limited",
+                        "yes",
+                        "no"
+                    ]
+                },
+                "logBlacklistWhitelistHit": {
+                    "type": "string",
+                    "description": "Specifies the default blacklist and whitelist hit logging action.",
+                    "enum": [
+                        "yes",
+                        "no"
+                    ]
+                },
+                "matchDirectionOverride": {
+                    "type": "string",
+                    "description": "Specifies the source/destination IP match direction setting",
+                    "enum": [
+                        "match-source",
+                        "match-destination",
+                        "match-source-and-destination"
+                    ]
+                }
+            }
         }
     }
 }

@@ -92,7 +92,8 @@ describe('GSLB Pool', function () {
                     class: 'GSLB_Server',
                     dataCenter: { use: 'testDataCenter' },
                     devices: [{ address: '10.10.5.5' }],
-                    virtualServerDiscoveryMode: 'enabled-no-delete'
+                    virtualServerDiscoveryMode: 'enabled-no-delete',
+                    virtualServers: []
                 },
                 testDataCenter: {
                     class: 'GSLB_Data_Center'
