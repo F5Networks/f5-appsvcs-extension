@@ -2,6 +2,11 @@
 .idea/
 .vscode/
 .DS_Store
+src/lib/
+src/nodejs/
+scripts/
+packages/
+test/
 f5-appsvcs-extension.code-workspace
 jsconfig.json
 test/.DS_Store

@@ -38,7 +38,7 @@ Changes to this project are documented in this file. More detail (including info
 
 ### Changed
 - Optimize the post process ASM call in AS3.
-- AUTOTOOL-4850: Update to Service Discovery 1.24.0-6 to address package dependency cves
+- AUTOTOOL-4850: Update to Service Discovery 1.24.0-7 to address package dependency cves
 
 ### Removed
 
@@ -62,7 +62,7 @@ Changes to this project are documented in this file. More detail (including info
 ### Added
 - AUTOTOOL-4580: ([Github Issue 112](https://github.com/F5Networks/f5-appsvcs-extension/issues/112)) Monitor will get added to node same like pool monitors, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-node-monitor.json).
 - 1755469: Create and reference multiple TLS profiles with a single declaration listing
-- AUTOTOOL-4642: [AS3]: There is a need to avoid traffic impact in pool management
+- AUTOTOOL-4642: There is a need to avoid traffic impact in pool management
 - 1599197: ([Github Issue 865](https://github.com/F5Networks/f5-appsvcs-extension/issues/865)) Ability to create a custom BIG-IP type GSLB monitor with AS3, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-bigip-monitor.json).
 - AUTOTOOL-4649: ([Github Issue 887](https://github.com/F5Networks/f5-appsvcs-extension/issues/887)) Add support for oneconnect-status-reuse in http profile via AS3 #887, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-http-multiplex-properties.json).
 
@@ -72,12 +72,12 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4388: AS3 declaration fails with error 0107176c:3: Invalid Virtual Address, the IP address X%X already exists
 - AUTOTOOL-4620: ([Github Issue 885](https://github.com/F5Networks/f5-appsvcs-extension/issues/885)) GSLB WideIP - "poolsCname" object is not allowed along with "pools", [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-gslb-pools_with_poolsCname.json).
 - 1673189: Unable to create the GSLB_Data_Center object if the prober pool does not exist.
-- AUTOTOOL-4640: [AS3] AS3 CLI SCRIPT responds with very minimal information
+- AUTOTOOL-4640: AS3 CLI SCRIPT responds with very minimal information
 - 1771465: AS3 Declaration for data group with ipv6 addresses fails when no mask is specified
 - AUTOTOOL-4638: Escape characters are getting added to actions for LTM Policy creation
-- AUTOTOOL-4657: [AS3]: When "bigip" is used with "virtualAddresses" it picks up wrong IP
-- AUTOTOOL-4662: [AS3] Unable to rename GSLB Monitor through AS3
-- AUTOTOOL-4629: [AS3]: WAF_Policy object ignoreChanges property is ignored for tenant names with dots
+- AUTOTOOL-4657: When "bigip" is used with "virtualAddresses" it picks up wrong IP
+- AUTOTOOL-4662: Unable to rename GSLB Monitor through AS3
+- AUTOTOOL-4629: WAF_Policy object ignoreChanges property is ignored for tenant names with dots
 
 ### Changed
 - Updated to Service Discovery 1.23.0-1
