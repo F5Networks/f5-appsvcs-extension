@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -981,7 +981,8 @@ describe('Service_Generic', function () {
                     splitsessionClientProfile: {
                         class: 'Splitsession_Client_Profile',
                         peerPort: 8080,
-                        peerIp: '192.0.2.1'
+                        peerIp: '192.0.2.1',
+                        remark: 'Test remark'
                     }
                 },
                 extractFunction: (o) => {

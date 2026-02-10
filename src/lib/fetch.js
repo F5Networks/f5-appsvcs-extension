@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1992,12 +1992,11 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
     const createMon = 'tmsh::create ltm monitor';
 
     const delHttpsMon = 'tmsh::delete ltm monitor https';
-    const createHttpMon = 'tmsh::create ltm monitor http';
 
     const poolEntries = trans.filter((t) => t.indexOf(delPool) > -1 && t.indexOf(createPool) > -1);
     const monitorEntries = trans.filter((t) => t.indexOf(delMon) > -1 && t.indexOf(createMon) > -1);
-    const httpMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1
-    && t.indexOf(createHttpMon) > -1 && t.indexOf(`${createHttpMon}s`) === -1);
+    const changedMonitorEntries = trans.filter((t) => t.indexOf(delHttpsMon) > -1
+    && t.indexOf(createMon) > -1 && t.indexOf(`${createMon} https`) === -1);
 
     const indexOfDeleteGtmMonCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm monitor') > -1);
     const indexOfDeleteGtmPoolCmd = trans.findIndex((t) => t.indexOf('tmsh::delete gtm pool') > -1);
@@ -2162,7 +2161,7 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
         }
         const indexOfFirstPoolCreate = rollback.findIndex((t) => t.indexOf('tmsh::modify ltm pool') > -1);
         rollback.splice(indexOfFirstPoolCreate, 0, monitorRollbackCmd.join('\n'));
-    } else if (httpMonitorEntries.length) {
+    } else if (changedMonitorEntries.length) {
         const newTransCmds = [];
         const newDelMonTransCmds = [];
         const newRollbackTransCmds = [];
@@ -2176,7 +2175,8 @@ const updateWildcardMonitorCommands = function (trans, currentConfig, desiredCon
                     const isDeleteCmd = cmd.indexOf(delHttpsMon) > -1;
                     const monName = isDeleteCmd ? cmd.substring(cmd.lastIndexOf(' ') + 1) : '';
                     const nextCmd = commands[index + 1];
-                    const isNextCreate = isDeleteCmd && nextCmd && nextCmd.indexOf(`${createHttpMon} ${monName}`) > -1;
+                    const isNextCreate = (isDeleteCmd && nextCmd && nextCmd.indexOf(`${createMon}`) > -1
+                          && nextCmd.indexOf(`${monName}`) > -1 && nextCmd.indexOf(`${createMon} https`) === -1);
                     const pools = getPoolsPerMonitor(monName);
                     if (isNextCreate) {
                         existingTransCmds1.push(Object.keys(pools).map((p) => detachMonitorFromPoolCmd(p)).join('\n'));
@@ -2272,7 +2272,7 @@ const updatePostTransVirtuals = function (
                         // We might be moving the virtual address from one tenant to another so
                         // we also need to check the transaction commands to see if we are creating
                         // the same address there
-                        const isRecreate = trans.find((transCommand) => {
+                        let isRecreate = trans.find((transCommand) => {
                             if (transCommand.startsWith(createVirtualAddressPrefix)) {
                                 const createAddress = transCommand.substring(createVirtualAddressPrefix.length + 1);
                                 let createAddressWithoutTenant = createAddress.split('/')[2];
@@ -2282,6 +2282,12 @@ const updatePostTransVirtuals = function (
                             }
                             return false;
                         });
+                        if (!isRecreate) {
+                            // Only if the transactions do not have the traffic-matching-criteria command,
+                            // then the virtual-address should be recreated.
+                            const tmcCmds = trans.filter((cmd) => cmd.indexOf('ltm traffic-matching-criteria') > -1);
+                            isRecreate = (tmcCmds.length === 0);
+                        }
                         if (isRecreate) {
                             trans.push(command);
                             commandList.splice(i, 1);
@@ -2889,7 +2895,7 @@ const tmshUpdateScript = function (context, desiredConfig, currentConfig, config
                         const commands = diffUpdates.commands.split('\n');
                         commands.forEach((command) => {
                             if (command.indexOf('modify sys') > -1) {
-                                postTrans.push(command);
+                                postTrans.unshift(command);
                             } else if (command.indexOf('delete sys') > -1) {
                                 const updatedSSlProfileCmds = getUpdatedSSlProfileCommand(currentConfig, command);
                                 if (updatedSSlProfileCmds && trans.indexOf(updatedSSlProfileCmds) < 0) {

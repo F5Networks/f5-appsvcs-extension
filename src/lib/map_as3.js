@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,6 +112,22 @@ const bigipPath = function bigipPath(item, key, dfl) {
  * @returns {object}
  */
 const profile = function profile(item, key, context, declaration) {
+    function updateServerTLSProfile(path, name) {
+        const profileDef = declaration[path[1]][path[2]][path[3]];
+        if (profileDef) {
+            (profileDef.certificates || []).forEach((certObj, i) => {
+                let profName;
+                if (profileDef.namingScheme === 'certificate') {
+                    profName = name.replace(/([^/]*)$/, certObj.certificate.split('/').pop());
+                } else {
+                    profName = i === 0 ? name : `${name}-${i}-`;
+                }
+                if (!(profileDef.hybrid || false) || i === 0) {
+                    item.profiles.push({ name: profName, context });
+                }
+            });
+        }
+    }
     if (typeof item[key] !== 'undefined' && item[key] !== '') {
         context = context || 'all';
         item.profiles = item.profiles || [];
@@ -134,21 +150,7 @@ const profile = function profile(item, key, context, declaration) {
             }
 
             if (key === 'serverTLS') {
-                const path = item[key].split('/');
-                const profileDef = declaration[path[1]][path[2]][path[3]];
-                if (profileDef) {
-                    (profileDef.certificates || []).forEach((certObj, i) => {
-                        let profName;
-                        if (profileDef.namingScheme === 'certificate') {
-                            profName = n.replace(/([^/]*)$/, certObj.certificate.split('/').pop());
-                        } else {
-                            profName = i === 0 ? n : `${n}-${i}-`;
-                        }
-                        if (!(profileDef.hybrid || false) || i === 0) {
-                            item.profiles.push({ name: profName, context });
-                        }
-                    });
-                }
+                updateServerTLSProfile(item[key].split('/'), n);
             } else {
                 item.profiles.push({ name: n, context });
             }
@@ -161,25 +163,12 @@ const profile = function profile(item, key, context, declaration) {
                     path = `/${splitPath[1]}/${splitPath[3]}`;
                 }
 
-                if (key === 'serverTLS' && (typeof profileDef.use !== 'undefined')) {
-                    const pathServerTLS = path.split('/');
-                    const profileServerTLSDef = declaration[pathServerTLS[1]][pathServerTLS[2]][pathServerTLS[3]];
-                    if (profileServerTLSDef) {
-                        (profileServerTLSDef.certificates || []).forEach((certObj, i) => {
-                            let profName;
-                            if (profileServerTLSDef.namingScheme === 'certificate') {
-                                profName = path.replace(/([^/]*)$/, certObj.certificate.split('/').pop());
-                            } else {
-                                profName = i === 0 ? path : `${path}-${i}-`;
-                            }
-                            if (!(profileServerTLSDef.hybrid || false) || i === 0) {
-                                item.profiles.push({ name: profName, context });
-                            }
-                        });
-                    }
+                const flag = (key === 'serverTLS' && (typeof profileDef.use !== 'undefined'));
+                if (flag) {
+                    updateServerTLSProfile(path.split('/'), path);
                 }
 
-                if (path !== undefined) {
+                if (!flag && path !== undefined) {
                     const profileObj = {};
                     Object.assign(profileObj, item[key]);
                     profileObj.name = path;
@@ -195,7 +184,12 @@ const profile = function profile(item, key, context, declaration) {
                 path = `/${splitPath[1]}/${splitPath[3]}`;
             }
 
-            if (path !== undefined) {
+            const flag = (key === 'serverTLS' && (typeof item[key].use !== 'undefined'));
+            if (flag) {
+                updateServerTLSProfile(path.split('/'), path);
+            }
+
+            if (!flag && path !== undefined) {
                 item[key].name = path;
                 item[key].context = context;
                 item.profiles.push(item[key]);
@@ -1505,7 +1499,18 @@ const translate = {
         // first certificate as sniDefault. Unless user decided to explicitly set
         // this property to another certificate. So we need to check it first.
         // Schema default for sniDefault property is false.
-        const isSniDefaultSet = item.certificates.find((e) => e.sniDefault);
+        // Check ORIGINAL declaration, not processed certificates, to detect user intent
+        const orgDecl = (context.request || {}).body;
+        let originalDecl = util.getObjectNameWithClassName(orgDecl, 'ADC');
+        if (typeof originalDecl !== 'undefined') {
+            originalDecl = orgDecl[originalDecl];
+        } else {
+            originalDecl = orgDecl;
+        }
+        const originalTLSServer = util.getDeepValue(originalDecl, [tenantId, appId, itemId]);
+        const isSniDefaultSet = originalTLSServer
+            && originalTLSServer.certificates
+            && originalTLSServer.certificates.find((e) => e.sniDefault);
 
         if (item.hybrid || false) {
             const tlsItem = Object.create(item);
@@ -1549,17 +1554,27 @@ const translate = {
                 // Set sniDefault to first certificate if applicable.
                 // We set the sniDefault value of the first certificate to true only
                 // when the user does not provide the sniDefault property in the declaration
-                const certs = (index === 0) ? ((((((context.request || {}).body || {})[tenantId]
-                || {})[appId] || {})[itemId] || {}).certificates || []) : [];
+                const originalCerts = (originalTLSServer && originalTLSServer.certificates) || [];
+                const certs = (index === 0) ? originalCerts : [];
                 if (index === 0 && certs.length > 0 && typeof certs[0].sniDefault === 'undefined') {
-                    tlsItem.sniDefault = obj.sniDefault || !isSniDefaultSet;
+                    // User didn't specify sniDefault, apply backward-compatible default
+                    tlsItem.sniDefault = !isSniDefaultSet;
                 } else {
+                    // User explicitly specified sniDefault (true or false), respect their choice
                     tlsItem.sniDefault = obj.sniDefault;
                 }
                 tlsItem.matchToSNI = obj.matchToSNI || 'none';
                 tlsItem.mode = obj.enabled;
                 if (tlsItem.requireSNI && !tlsItem.sniDefault) {
                     tlsItem.requireSNI = false;
+                }
+                // We need to ignore the default values and read the original user provided certificate
+                // level authenticationFrequency and authenticationMode.
+                if ((originalCerts[index] || {}).authenticationFrequency) {
+                    tlsItem.authenticationFrequency = originalCerts[index].authenticationFrequency.replace('one-time', 'once').replace('every-time', 'always');
+                }
+                if ((originalCerts[index] || {}).authenticationMode) {
+                    tlsItem.authenticationMode = originalCerts[index].authenticationMode;
                 }
 
                 configs.push(normalize.actionableMcp(context, tlsItem, 'ltm profile client-ssl', path));
@@ -1647,7 +1662,7 @@ const translate = {
             }
             if (item.issuerCertificate) {
                 item['issuer-cert'] = bigipPath(item, 'issuerCertificate');
-                if (item['issuer-cert'].indexOf('.crt') !== item['issuer-cert'].length - 4) {
+                if ((typeof item.issuerCertificate.bigip) === 'undefined' && item['issuer-cert'].indexOf('.crt') !== item['issuer-cert'].length - 4) {
                     item['issuer-cert'] = `${item['issuer-cert']}.crt`;
                 }
             }
@@ -1975,7 +1990,11 @@ const translate = {
         item.remark = item.remark || 'none';
         item.pvaAcceleration = item.pvaAcceleration || 'full';
         if (item.clientTimeout === -1) item.clientTimeout = 86400;
-        if (item.idleTimeout === -1) item.idleTimeout = 'indefinite';
+        if (item.idleTimeout === 0) {
+            item.idleTimeout = 'immediate';
+        } else if (item.idleTimeout === -1) {
+            item.idleTimeout = 'indefinite';
+        }
         if (item.maxSegmentSize === -1) item.maxSegmentSize = 9162;
         if (item.tcpCloseTimeout === -1) {
             item.tcpCloseTimeout = 'indefinite';
@@ -2415,7 +2434,8 @@ const translate = {
             itemCopy.serverScope = 'any';
         }
         itemCopy.autoDelete = (itemCopy.autoDelete === undefined) ? 'true' : itemCopy.autoDelete;
-        const taggedId = `Service_Address-${itemId}`;
+        const name = item.useIpName ? parsedAddress.ip : itemId;
+        const taggedId = `Service_Address-${name}`;
         return { configs: [normalize.actionableMcp(context, itemCopy, 'ltm virtual-address', util.mcpPath(tenantId, newAppId, taggedId))] };
     },
 
@@ -2706,13 +2726,13 @@ const translate = {
                     refRouteDomain = ipUtil.parseIpAddress(addrMetadata.address).routeDomain;
                 } else {
                     const addrUse = addr.use.split('/').slice(1);
-                    parsAddr = [ipUtil.parseIpAddress(
-                        addrUse.reduce((accum, curr) => accum[curr], declaration).virtualAddress
-                    )];
+                    const vaObj = addrUse.reduce((accum, curr) => accum[curr], declaration);
+                    parsAddr = [ipUtil.parseIpAddress(vaObj.virtualAddress)];
+
                     destAddr = util.mcpPath(
                         addrUse[0],
                         (addrUse[0] === 'Common') ? 'Shared' : undefined,
-                        addrUse[2]
+                        (vaObj.useIpName) ? parsAddr[0].ip : addrUse[2]
                     );
                 }
 
@@ -2750,16 +2770,15 @@ const translate = {
                     refMsk = addrMetadata.mask;
                 } else {
                     const addrUse = addr[0].use.split('/').slice(1);
+                    const vaObj = addrUse.reduce((accum, curr) => accum[curr], declaration);
                     parsAddr = [
-                        ipUtil.parseIpAddress(
-                            addrUse.reduce((accum, curr) => accum[curr], declaration).virtualAddress
-                        ),
+                        ipUtil.parseIpAddress(vaObj.virtualAddress),
                         ipUtil.parseIpAddress(arrUtil.ensureArray(addr)[1])
                     ];
                     destAddr = util.mcpPath(
                         addrUse[0],
                         (addrUse[0] === 'Common') ? 'Shared' : undefined,
-                        addrUse[2]
+                        (vaObj.useIpName) ? parsAddr[0].ip : addrUse[2]
                     );
                 }
 
@@ -3043,6 +3062,9 @@ const translate = {
         item = profile(item, 'profileHTML');
         item = profile(item, 'profileHTTPCompression');
         item = profile(item, 'profileHTTPAcceleration');
+        if (!util.versionLessThan(context.target.tmosVersion, '21.0')) {
+            item = profile(item, 'profileJSON');
+        }
         item = profile(item, 'profileMultiplex');
         item = profile(item, 'profileNTLM');
         item = profile(item, 'profileAnalytics');
@@ -3053,6 +3075,9 @@ const translate = {
         item = profile(item, 'profileWebSocket');
         item = profile(item, 'profileService');
         item = profile(item, 'profileSplitsessionClient', 'serverside');
+        if (!util.versionLessThan(context.target.tmosVersion, '21.0')) {
+            item = profile(item, 'profileSSE');
+        }
         item = profile(item, 'profileConnector');
         if (!util.versionLessThan(context.target.tmosVersion, '14.1')) {
             item = profile(item, 'profileApiProtection');
@@ -3095,10 +3120,22 @@ const translate = {
             }
         }
 
-        if (!util.versionLessThan(context.target.tmosVersion, '14.1') && item.profileDOS
+        function pushBotDefenseProfileForDOS(itemServiceHTTP, path) {
+            itemServiceHTTP.profiles.push({ name: `${path}/f5_appsvcs_${bigipPath(itemServiceHTTP, 'profileDOS').split('/').pop()}_botDefense`, context: 'all' });
+        }
+
+        if (item.profileDOS
             && !item.profileDOS.bigip && !item.profileBotDefense && util.isOneOfProvisioned(context.target, ['asm'])) {
             const path = bigipPath(item, 'profileDOS').split('/').slice(0, -1).join('/');
-            item.profiles.push({ name: `${path}/f5_appsvcs_${bigipPath(item, 'profileDOS').split('/').pop()}_botDefense`, context: 'all' });
+
+            if (item.profileDOS.use) {
+                const dosProfilePath = item.profileDOS.use.split('/').slice(1);
+                const dosProfile = util.getDeepValue(declaration, dosProfilePath, '/');
+                if (util.getDeepValue(dosProfile, 'application.botDefense.createBotDefenseProfile') !== false) {
+                    // allows true or undefined (schema defaults to true)
+                    pushBotDefenseProfileForDOS(item, path);
+                }
+            }
         }
 
         const serviceTCP = translate.Service_TCP(context, tenantId, appId, itemId, item, declaration);
@@ -4420,171 +4457,126 @@ const translate = {
                 }
             }
 
-            if (util.versionLessThan(context.target.tmosVersion, '14.1')) {
-                if (item.application.botSignatures) {
-                    const categories = [];
+            botDefenseConfig.singlePageApplication = item.application.singlePageApplicationEnabled || false;
+            botDefenseConfig.crossDomainRequests = item.application.botDefense.crossDomainRequests || 'allow-all';
+            botDefenseConfig.gracePeriod = item.application.botDefense.gracePeriod || 300;
+            if (item.application.botDefense) {
+                botDefenseConfig.classOverrides = [];
+                const browser = {
+                    name: 'Browser',
+                    verification: { action: '' },
+                    mitigation: { action: 'none', rateLimitTps: 30 }
+                };
+                const unknown = {
+                    name: 'Unknown',
+                    mitigation: { action: 'tcp-reset', rateLimitTps: 30 },
+                    verification: { action: 'none' }
+                };
+                const suspiciousBrowser = {
+                    name: '"Suspicious Browser"',
+                    mitigation: { action: 'captcha', rateLimitTps: 30 },
+                    verification: { action: 'none' }
+                };
 
-                    if (item.application.botSignatures.blockedCategories) {
-                        item.application.botSignatures.blockedCategories.forEach((category) => {
-                            categories.push({
-                                name: bigipPath(category, 'bigip'),
-                                action: 'block'
-                            });
-                        });
-                    }
-                    if (item.application.botSignatures.reportedCategories) {
-                        item.application.botSignatures.reportedCategories.forEach((category) => {
-                            categories.push({
-                                name: bigipPath(category, 'bigip'),
-                                action: 'report'
-                            });
-                        });
-                    }
-                    item.application.botSignatures.categories = categories;
+                switch (item.application.botDefense.mode) {
+                case 'disabled':
+                    browser.verification.action = 'none';
+                    botDefenseConfig.dosMitigation = 'enabled';
+                    break;
+                case 'always':
+                    browser.verification.action = 'browser-verify-before-access';
+                    botDefenseConfig.classOverrides.push(unknown);
+                    botDefenseConfig.dosMitigation = 'disabled';
+                    break;
+                case 'during-attacks':
+                    browser.verification.action = 'none';
+                    botDefenseConfig.dosMitigation = 'enabled';
+                    // TODO: requires DOS protection profile
+                    break;
+                default:
+                    break;
                 }
 
-                if (item.application.mobileDefense) {
-                    item.application.mobileDefense.allowAnyAndroidPackage = item
-                        .application.mobileDefense.allowAndroidPublishers === undefined;
-                    item.application.mobileDefense.allowAnyIosPackage = item
-                        .application.mobileDefense.allowIosPackageNames === undefined;
-
-                    if (item.application.mobileDefense.clientSideChallengeMode === 'challenge') {
-                        item.application.mobileDefense.clientSideChallengeMode = 'cshui';
-                    }
-
-                    if (item.application.mobileDefense.allowAndroidPublishers) {
-                        const publishers = [];
-                        item.application.mobileDefense.allowAndroidPublishers.forEach((publisher) => {
-                            publishers.push({
-                                name: bigipPath(publisher, publisher.bigip ? 'bigip' : 'use')
-                            });
-                        });
-                        item.application.mobileDefense.allowAndroidPublishers = publishers;
-                    }
-                }
-            } else {
-                botDefenseConfig.singlePageApplication = item.application.singlePageApplicationEnabled || false;
-                botDefenseConfig.crossDomainRequests = item.application.botDefense.crossDomainRequests || 'allow-all';
-                botDefenseConfig.gracePeriod = item.application.botDefense.gracePeriod || 300;
-                if (item.application.botDefense) {
-                    botDefenseConfig.classOverrides = [];
-                    const browser = {
-                        name: 'Browser',
-                        verification: { action: '' },
-                        mitigation: { action: 'none' }
-                    };
-                    const unknown = {
-                        name: 'Unknown',
-                        mitigation: { action: 'tcp-reset' },
-                        verification: { action: 'none' }
-                    };
-                    const suspiciousBrowser = {
-                        name: '"Suspicious Browser"',
-                        mitigation: { action: 'captcha' },
-                        verification: { action: 'none' }
-                    };
-
-                    switch (item.application.botDefense.mode) {
-                    case 'disabled':
-                        browser.verification.action = 'none';
-                        botDefenseConfig.dosMitigation = 'enabled';
-                        break;
-                    case 'always':
+                // the schema defaults are actually mode:off, blockSuspiciousBrowser:true
+                // so ensure here that "off" or disabled mode does not turn on browser verification
+                if (item.application.botDefense.mode !== 'disabled') {
+                    // See issue note regarding enforcementMode
+                    botDefenseConfig.enforcementMode = 'blocking';
+                    if (item.application.botDefense.blockSuspiscousBrowsers) {
                         browser.verification.action = 'browser-verify-before-access';
-                        botDefenseConfig.classOverrides.push(unknown);
-                        botDefenseConfig.dosMitigation = 'disabled';
-                        break;
-                    case 'during-attacks':
-                        browser.verification.action = 'none';
-                        botDefenseConfig.dosMitigation = 'enabled';
-                        // TODO: requires DOS protection profile
-                        break;
-                    default:
-                        break;
-                    }
-
-                    // the schema defaults are actually mode:off, blockSuspiciousBrowser:true
-                    // so ensure here that "off" or disabled mode does not turn on browser verification
-                    if (item.application.botDefense.mode !== 'disabled') {
-                        // See issue note regarding enforcementMode
-                        botDefenseConfig.enforcementMode = 'blocking';
-                        if (item.application.botDefense.blockSuspiscousBrowsers) {
-                            browser.verification.action = 'browser-verify-before-access';
-                            if (item.application.botDefense.issueCaptchaChallenge) {
-                                botDefenseConfig.classOverrides.push(suspiciousBrowser);
-                            }
+                        if (item.application.botDefense.issueCaptchaChallenge) {
+                            botDefenseConfig.classOverrides.push(suspiciousBrowser);
                         }
-                    } else {
-                        botDefenseConfig.enforcementMode = 'transparent';
                     }
-
-                    botDefenseConfig.classOverrides.push(browser);
-
-                    botDefenseConfig.externalDomains = item.application.botDefense.externalDomains;
-                    botDefenseConfig.siteDomains = item.application.botDefense.siteDomains;
-                    botDefenseConfig.whitelist = [
-                        {
-                            matchOrder: 1,
-                            name: 'favicon_1',
-                            url: '/favicon.ico'
-                        },
-                        {
-                            matchOrder: 2,
-                            name: 'apple_touch_1',
-                            url: '/apple-touch-icon*.png'
-                        }
-                    ];
-                    if (item.application.botDefense.urlAllowlist) {
-                        item.application.botDefense.urlAllowlist.forEach((u, index) => {
-                            botDefenseConfig.whitelist.push({
-                                matchOrder: index + 3,
-                                name: `url_${index}`,
-                                url: u
-                            });
-                        });
-                    }
+                } else {
+                    botDefenseConfig.enforcementMode = 'transparent';
                 }
 
-                botDefenseConfig.mobileDefense = item.application.mobileDefense;
-                botDefenseConfig.mobileDefense.allowAnyAndroidPackage = item
-                    .application.mobileDefense.allowAndroidPublishers === undefined;
-                botDefenseConfig.mobileDefense.allowAnyIosPackage = item
-                    .application.mobileDefense.allowIosPackageNames === undefined;
-                if (item.application.mobileDefense.clientSideChallengeMode === 'challenge') {
-                    botDefenseConfig.mobileDefense.clientSideChallengeMode = 'cshui';
+                botDefenseConfig.classOverrides.push(browser);
+
+                botDefenseConfig.externalDomains = item.application.botDefense.externalDomains;
+                botDefenseConfig.siteDomains = item.application.botDefense.siteDomains;
+                botDefenseConfig.whitelist = [
+                    {
+                        matchOrder: 1,
+                        name: 'favicon_1',
+                        url: '/favicon.ico'
+                    },
+                    {
+                        matchOrder: 2,
+                        name: 'apple_touch_1',
+                        url: '/apple-touch-icon*.png'
+                    }
+                ];
+                if (item.application.botDefense.urlAllowlist) {
+                    item.application.botDefense.urlAllowlist.forEach((u, index) => {
+                        botDefenseConfig.whitelist.push({
+                            matchOrder: index + 3,
+                            name: `url_${index}`,
+                            url: u
+                        });
+                    });
+                }
+            }
+
+            botDefenseConfig.mobileDefense = item.application.mobileDefense;
+            botDefenseConfig.mobileDefense.allowAnyAndroidPackage = item
+                .application.mobileDefense.allowAndroidPublishers === undefined;
+            botDefenseConfig.mobileDefense.allowAnyIosPackage = item
+                .application.mobileDefense.allowIosPackageNames === undefined;
+            if (item.application.mobileDefense.clientSideChallengeMode === 'challenge') {
+                botDefenseConfig.mobileDefense.clientSideChallengeMode = 'cshui';
+            }
+
+            if (item.application.botSignatures) {
+                botDefenseConfig.signatureCategoryOverrides = [];
+                botDefenseConfig.signatureOverrides = [];
+                if (item.application.botSignatures.blockedCategories) {
+                    item.application.botSignatures.blockedCategories.forEach((category) => {
+                        botDefenseConfig.signatureCategoryOverrides.push({
+                            name: bigipPath(category, 'bigip'),
+                            action: 'block'
+                        });
+                    });
                 }
 
-                if (item.application.botSignatures) {
-                    botDefenseConfig.signatureCategoryOverrides = [];
-                    botDefenseConfig.signatureOverrides = [];
-                    if (item.application.botSignatures.blockedCategories) {
-                        item.application.botSignatures.blockedCategories.forEach((category) => {
-                            botDefenseConfig.signatureCategoryOverrides.push({
-                                name: bigipPath(category, 'bigip'),
-                                action: 'block'
-                            });
+                if (item.application.botSignatures.reportedCategories) {
+                    item.application.botSignatures.reportedCategories.forEach((category) => {
+                        botDefenseConfig.signatureCategoryOverrides.push({
+                            name: bigipPath(category, 'bigip'),
+                            action: 'alarm'
                         });
-                    }
+                    });
+                }
 
-                    if (item.application.botSignatures.reportedCategories) {
-                        item.application.botSignatures.reportedCategories.forEach((category) => {
-                            botDefenseConfig.signatureCategoryOverrides.push({
-                                name: bigipPath(category, 'bigip'),
-                                action: 'alarm'
-                            });
+                if (item.application.botSignatures.disabledSignatures) {
+                    item.application.botSignatures.disabledSignatures.forEach((signature) => {
+                        botDefenseConfig.signatureOverrides.push({
+                            name: bigipPath(signature, 'bigip'),
+                            action: 'alarm'
                         });
-                    }
-
-                    if (item.application.botSignatures.disabledSignatures) {
-                        item.application.botSignatures.disabledSignatures.forEach((signature) => {
-                            botDefenseConfig.signatureOverrides.push({
-                                name: bigipPath(signature, 'bigip'),
-                                action: 'alarm'
-                            });
-                        });
-                        delete item.application.botSignatures.disabledSignatures;
-                    }
+                    });
+                    delete item.application.botSignatures.disabledSignatures;
                 }
             }
 
@@ -4607,7 +4599,7 @@ const translate = {
             }
 
             item.application = [item.application];
-        } else if (!util.versionLessThan(context.target.tmosVersion, '14.1')) {
+        } else {
             botDefenseConfig.dosMitigation = 'enabled';
             botDefenseConfig.enforcementMode = 'transparent';
             botDefenseConfig.whitelist = [
@@ -4705,8 +4697,28 @@ const translate = {
             });
         }
 
+        // Updated the botDefense profile newly added properties with default values.
+        if (typeof botDefenseConfig.signatureStagingUponUpdate === 'undefined') {
+            botDefenseConfig.signatureStagingUponUpdate = 'disabled';
+        }
+        if (typeof botDefenseConfig.enforcementReadinessPeriod === 'undefined') {
+            botDefenseConfig.enforcementReadinessPeriod = 7;
+        }
+        if (typeof botDefenseConfig.allowBrowserAccess === 'undefined') {
+            botDefenseConfig.allowBrowserAccess = 'enabled';
+        }
+        if (typeof botDefenseConfig.browserMitigationAction === 'undefined') {
+            botDefenseConfig.browserMitigationAction = 'none';
+        }
+        if (typeof botDefenseConfig.deviceidMode === 'undefined') {
+            botDefenseConfig.deviceidMode = 'generate-after-access';
+        }
+        if (typeof botDefenseConfig.performChallengeInTransparent === 'undefined') {
+            botDefenseConfig.performChallengeInTransparent = 'disabled';
+        }
+
         configs.push(config);
-        if (botDefenseConfig && !util.versionLessThan(context.target.tmosVersion, '14.1') && util.isOneOfProvisioned(context.target, ['asm'])) {
+        if (util.getDeepValue(item, 'application.0.botDefense.createBotDefenseProfile') !== false && botDefenseConfig && util.isOneOfProvisioned(context.target, ['asm'])) {
             configs.push(normalize.actionableMcp(context, botDefenseConfig, 'security bot-defense profile', util.mcpPath(tenantId, appId, `f5_appsvcs_${itemId}_botDefense`)));
         }
 
@@ -5008,7 +5020,7 @@ const translate = {
 
     PPTP_Profile(context, tenantId, appId, itemId, item) {
         item = profile(item, 'publisherName');
-        item = profile(item, 'defaultsFrom');
+        item = profile(item, 'parentProfile');
         return { configs: [normalize.actionableMcp(context, item, 'ltm profile pptp', util.mcpPath(tenantId, appId, itemId))] };
     },
 
@@ -5021,6 +5033,10 @@ const translate = {
             item.localPeer = `${item.localPeer}`;
         }
         return { configs: [normalize.actionableMcp(context, item, 'ltm profile splitsessionclient', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
+    SSE_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile sse', util.mcpPath(tenantId, appId, itemId))] };
     },
 
     Connector_Profile(context, tenantId, appId, itemId, item) {
@@ -5054,6 +5070,10 @@ const translate = {
         return { configs };
     },
 
+    JSON_Profile(context, tenantId, appId, itemId, item) {
+        return { configs: [normalize.actionableMcp(context, item, 'ltm profile json', util.mcpPath(tenantId, appId, itemId))] };
+    },
+
     Adapt_Profile(context, tenantId, appId, itemId, item) {
         const configs = [];
 
@@ -5079,6 +5099,12 @@ const translate = {
         }
 
         if (item.namedGroups) {
+            // The newly added namedGroup params support is available from 17.5.1 onwards.
+            // So If user using the verssion less than 17.5.1, then we need to remove the newly added params.
+            if (util.versionLessThan(context.target.tmosVersion, '17.5.1')) {
+                item.namedGroups = item.namedGroups.filter((nameGroup) => constants
+                    .cipherSupport_17_5_1.indexOf(nameGroup) === -1);
+            }
             item.dhGroups = item.namedGroups.join(':');
         }
 
@@ -5180,6 +5206,108 @@ const translate = {
         }
 
         configs.push(normalize.actionableMcp(context, item, 'security ip-intelligence policy', util.mcpPath(tenantId, appId, itemId)));
+        return { configs };
+    },
+
+    Bot_Defense_Profile(context, tenantId, appId, itemId, item) {
+        const configs = [];
+
+        if (typeof item.singlePageApplicationEnabled !== 'undefined') {
+            item.singlePageApplication = item.singlePageApplicationEnabled;
+        }
+        if (typeof item.deviceIDMode !== 'undefined') {
+            item.deviceidMode = item.deviceIDMode;
+        }
+        if (!item.stagedSignatures || item.stagedSignatures === 'none') {
+            item.stagedSignatures = [];
+        }
+        if (item.mitigationSettings) {
+            item.classOverrides = [];
+            (item.mitigationSettings || []).forEach((msObj) => {
+                const classObj = {};
+                msObj.mitigationType = msObj.mitigationType.includes(' ') ? `"${msObj.mitigationType}"` : msObj.mitigationType;
+                if (msObj.mitigationSettingsAction === 'rate-limit') {
+                    classObj.name = msObj.mitigationType;
+                    classObj.mitigation = {};
+                    classObj.mitigation.action = msObj.mitigationSettingsAction;
+                    classObj.mitigation.rateLimitTps = msObj.rateLimitTps;
+                    classObj.verification = {};
+                    classObj.verification.action = msObj.verificationSettingsAction;
+                    item.classOverrides.push(classObj);
+                } else {
+                    classObj.name = msObj.mitigationType;
+                    classObj.mitigation = {};
+                    classObj.mitigation.action = msObj.mitigationSettingsAction;
+                    classObj.mitigation.rateLimitTps = 30;
+                    classObj.verification = {};
+                    classObj.verification.action = msObj.verificationSettingsAction;
+                    item.classOverrides.push(classObj);
+                }
+            });
+            delete item.mitigationSettings;
+        }
+
+        if (item.mobileDefense) {
+            item.mobileDefense.allowAnyAndroidPackage = item
+                .mobileDefense.allowAndroidPublishers === undefined;
+            item.mobileDefense.allowAnyIosPackage = item
+                .mobileDefense.allowIosPackageNames === undefined;
+
+            if (item.mobileDefense.clientSideChallengeMode === 'challenge') {
+                item.mobileDefense.clientSideChallengeMode = 'cshui';
+            }
+
+            if (item.mobileDefense.allowAndroidPublishers) {
+                const publishers = [];
+                item.mobileDefense.allowAndroidPublishers.forEach((publisher) => {
+                    publishers.push({
+                        name: bigipPath(publisher, publisher.bigip ? 'bigip' : 'use')
+                    });
+                });
+                item.mobileDefense.allowAndroidPublishers = publishers;
+            }
+
+            if (item.signatures) {
+                item.mobileDefense.signatures = item.signatures;
+                delete item.signatures;
+            }
+        }
+        if (!item.mobileDefense && item.signatures) {
+            item.mobileDefense = {};
+            item.mobileDefense.signatures = item.signatures;
+            delete item.signatures;
+        }
+        if (!item.mobileDefense || !item.mobileDefense.signatures || item.mobileDefense.signatures === 'none') {
+            if (!item.mobileDefense) {
+                item.mobileDefense = {};
+            }
+            item.mobileDefense.signatures = [];
+        }
+
+        item.whitelist = [
+            {
+                matchOrder: 1,
+                name: 'favicon_1',
+                url: '/favicon.ico'
+            },
+            {
+                matchOrder: 2,
+                name: 'apple_touch_1',
+                url: '/apple-touch-icon*.png'
+            }
+        ];
+        if (item.urlAllowlist) {
+            item.urlAllowlist.forEach((u, index) => {
+                item.whitelist.push({
+                    matchOrder: index + 3,
+                    name: `url_${index}`,
+                    url: u
+                });
+            });
+            delete item.urlAllowlist;
+        }
+
+        configs.push(normalize.actionableMcp(context, item, 'security bot-defense profile', util.mcpPath(tenantId, appId, itemId)));
         return { configs };
     }
 };

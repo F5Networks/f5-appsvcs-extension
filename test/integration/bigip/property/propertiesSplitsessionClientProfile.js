@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ describe('Splitsession_Client_Profile', function () {
     it('All properties', () => {
         const properties = [
             {
-                name: 'description',
+                name: 'remark',
                 inputValue: [undefined, 'title', 'value'],
                 expectedValue: ['none', 'title', 'value']
             },

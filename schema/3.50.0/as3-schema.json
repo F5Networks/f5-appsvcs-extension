@@ -37080,7 +37080,7 @@
       "title": "Property Use",
       "description": "Path to object in declaration",
       "type": "string",
-      "pattern": "^[A-Za-z-￿/][0-9A-Za-z-￿_./-]*$",
+      "pattern": "^[@A-Za-z\u0080-\uFFFF/][@0-9A-Za-z\u0080-\uFFFF_./-]*$",
       "maxLength": 573,
       "minLength": 1
     },

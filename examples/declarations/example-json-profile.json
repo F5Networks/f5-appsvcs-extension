@@ -1,0 +1,54 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.56.0",
+        "id": "json-profile-declaration",
+        "Sample_Tenant": {
+            "class": "Tenant",
+            "Sample_App": {
+                "class": "Application",
+                "template": "generic",
+                "jsonProfileSample": {
+                    "class": "JSON_Profile",
+                    "remark": "Sample JSON profile",
+                    "parentProfile": {
+                        "bigip": "/Common/json"
+                    },
+                    "maximumBytes": 65536,
+                    "maximumEntries": 2048,
+                    "maximumNonJsonBytes": 32768
+                },
+                "jsonService": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "192.0.2.10"
+                    ],
+                    "virtualPort": 1723,
+                    "snat": "auto",
+                    "pool": "jsonPool",
+                    "profileJSON": {
+                        "use": "jsonProfileSample"
+                    }
+                },
+                "jsonPool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 1723,
+                            "serverAddresses": [
+                                "192.0.2.12",
+                                "192.0.2.13"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

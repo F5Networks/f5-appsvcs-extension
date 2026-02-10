@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1613,6 +1613,173 @@ describe('map_as3', () => {
         });
     });
 
+    describe('JSON_Profile', () => {
+        it('should handle JSON_Profile config at 21.0', () => {
+            defaultContext.target.tmosVersion = '21.0';
+            const item = {
+                class: 'JSON_Profile',
+                remark: 'test Description',
+                parentProfile: '/Common/json',
+                maximumBytes: 64000,
+                maximumEntries: 2000,
+                maximumNonJsonBytes: 32000
+            };
+
+            const result = mapAs3.translate.JSON_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile json',
+                    properties: {
+                        description: '"test Description"',
+                        'defaults-from': '/Common/json',
+                        'maximum-bytes': 64000,
+                        'maximum-entries': 2000,
+                        'maximum-non-json-bytes': 32000
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    it('should handle Service_HTTP and JSON_Profile with version 21.0', () => {
+        defaultContext.target.tmosVersion = '21.0';
+        const sampleItem = {
+            class: 'Service_HTTP',
+            virtualAddresses: [
+                '192.0.2.0'
+            ],
+            profileHTTP: 'basic',
+            virtualPort: 80,
+            persistenceMethods: [
+                'cookie'
+            ],
+            virtualType: 'standard',
+            layer4: 'tcp',
+            profileTCP: 'normal',
+            profileJSON: 'jsonProfileSample',
+            serviceDownImmediateAction: 'none',
+            shareAddresses: false,
+            enable: true,
+            maxConnections: 0,
+            snat: 'auto',
+            addressStatus: true,
+            mirroring: 'none',
+            lastHop: 'default',
+            translateClientPort: false,
+            translateServerAddress: true,
+            translateServerPort: true,
+            serversslUseSni: false,
+            nat64Enabled: false,
+            httpMrfRoutingEnabled: false,
+            rateLimit: 0,
+            adminState: 'enable'
+        };
+        const sampleDelcaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        profileJSON: {
+                            use: 'jsonProfileSample'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', sampleItem, sampleDelcaration, false);
+
+        assert.deepStrictEqual(
+            result.configs[1].properties.profiles, // Pull the properties.profiles from the ltm virtual
+            {
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/jsonProfileSample': {
+                    context: 'all'
+                }
+            }
+        );
+    });
+
+    it('should handle Service_HTTP and JSON_Profile with pre-21.0 versions', () => {
+        defaultContext.target.tmosVersion = '17.5';
+        const sampleItem = {
+            class: 'Service_HTTP',
+            virtualAddresses: [
+                '192.0.2.0'
+            ],
+            profileHTTP: 'basic',
+            virtualPort: 80,
+            persistenceMethods: [
+                'cookie'
+            ],
+            virtualType: 'standard',
+            layer4: 'tcp',
+            profileTCP: 'normal',
+            profileJSON: 'jsonProfileSample',
+            serviceDownImmediateAction: 'none',
+            shareAddresses: false,
+            enable: true,
+            maxConnections: 0,
+            snat: 'auto',
+            addressStatus: true,
+            mirroring: 'none',
+            lastHop: 'default',
+            translateClientPort: false,
+            translateServerAddress: true,
+            translateServerPort: true,
+            serversslUseSni: false,
+            nat64Enabled: false,
+            httpMrfRoutingEnabled: false,
+            rateLimit: 0,
+            adminState: 'enable'
+        };
+        const sampleDelcaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        profileJSON: {
+                            use: 'jsonProfileSample'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', sampleItem, sampleDelcaration, false);
+
+        assert.deepStrictEqual(
+            result.configs[1].properties.profiles, // Pull the properties.profiles from the ltm virtual
+            {
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                }
+            }
+        );
+    });
+
     describe('RTSP_Profile', () => {
         it('should map default values', () => {
             const item = {
@@ -2922,6 +3089,40 @@ describe('map_as3', () => {
                 const results = translate.Service_Address(defaultContext, 'foo', 'bar', '10.10.0.12', item, declaration);
                 assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.12');
                 assert.strictEqual(results.configs[0].properties['auto-delete'], 'false');
+            });
+
+            it('should check useIpName flag value is false in Service Address', () => {
+                const item = {
+                    arp: true,
+                    icmpEcho: 'enable',
+                    spanning: false,
+                    shareAddresses: false,
+                    virtualAddress: '10.10.0.12',
+                    serverScope: 'all',
+                    autoDelete: false,
+                    useIpName: false
+                };
+
+                const results = translate.Service_Address(defaultContext, 'foo', 'bar', 'itemName', item, declaration);
+                assert.strictEqual(results.configs[0].path, '/foo/Service_Address-itemName');
+                assert.strictEqual(results.configs[0].properties.useIpName, undefined);
+            });
+
+            it('should check useIpName flag value is true in Service Address', () => {
+                const item = {
+                    arp: true,
+                    icmpEcho: 'enable',
+                    spanning: false,
+                    shareAddresses: false,
+                    virtualAddress: '10.10.0.12',
+                    serverScope: 'all',
+                    autoDelete: true,
+                    useIpName: true
+                };
+
+                const results = translate.Service_Address(defaultContext, 'foo', 'bar', 'itemName', item, declaration);
+                assert.strictEqual(results.configs[0].path, '/foo/Service_Address-10.10.0.12');
+                assert.strictEqual(results.configs[0].properties.useIpName, undefined);
             });
         });
     });
@@ -5506,21 +5707,36 @@ describe('map_as3', () => {
             };
         });
 
-        it('should check bot-defense profile is not added to profiles in 13.1', () => {
+        it('should check bot-defense profile is added to profiles under nominal conditions', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
             const expectedProfiles = {
                 '/Common/f5-tcp-progressive': { context: 'all' },
+                '/tenantId/appId/f5_appsvcs_dosProfile_botDefense': { context: 'all' },
                 '/Common/http': { context: 'all' },
                 '/tenantId/appId/dosProfile': { context: 'all' }
             };
             item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             declaration.tenantId.appId.item.profileDOS = { use: 'dosProfile' };
-            defaultContext.target.tmosVersion = '13.1';
 
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
-        it('should check profileDOS adds botDefense in 14.1 when ASM is provisioned', () => {
+        it('should check bot-defense profile is not added to profiles when profileDOS is bigip ref', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+            const expectedProfiles = {
+                '/Common/f5-tcp-progressive': { context: 'all' },
+                '/Common/http': { context: 'all' },
+                '/tenantId/appId/dosProfile': { context: 'all' }
+            };
+            item.profileDOS = { bigip: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.item.profileDOS = { use: 'dosProfile' };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should check profileDOS adds botDefense when ASM is provisioned and DOS_Profile botDefense is not specified', () => {
             sinon.stub(util, 'isOneOfProvisioned').returns(true);
             const expectedProfiles = {
                 '/Common/f5-tcp-progressive': { context: 'all' },
@@ -5530,13 +5746,76 @@ describe('map_as3', () => {
             };
             item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
-            defaultContext.target.tmosVersion = '14.1';
+            delete declaration.tenantId.appId.dosProfile.application.botDefense;
 
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
-        it('should check profileDOS does not add botDefense in 14.1 when ASM is provisioned and profileBotDefense specified', () => {
+        it('should check profileDOS does add botDefense when ASM is provisioned and DOS_Profile botDefense createBotDefenseProfile is true', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+            const expectedProfiles = {
+                '/Common/f5-tcp-progressive': { context: 'all' },
+                '/tenantId/appId/f5_appsvcs_dosProfile_botDefense': { context: 'all' },
+                '/tenantId/appId/dosProfile': { context: 'all' },
+                '/Common/http': { context: 'all' }
+            };
+            item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.dosProfile.application.botDefense = { createBotDefenseProfile: true };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should check profileDOS does not add botDefense when ASM is provisioned and DOS_Profile botDefense createBotDefenseProfile is not specified', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+            const expectedProfiles = {
+                '/Common/f5-tcp-progressive': { context: 'all' },
+                '/tenantId/appId/f5_appsvcs_dosProfile_botDefense': { context: 'all' },
+                '/tenantId/appId/dosProfile': { context: 'all' },
+                '/Common/http': { context: 'all' }
+            };
+            item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.dosProfile.application.botDefense = { };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should check profileDOS does not add botDefense when ASM is provisioned and DOS_Profile botDefense createBotDefenseProfile is false', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+            const expectedProfiles = {
+                '/Common/f5-tcp-progressive': { context: 'all' },
+                '/tenantId/appId/dosProfile': { context: 'all' },
+                '/Common/http': { context: 'all' }
+            };
+            item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.dosProfile.application.botDefense = { createBotDefenseProfile: false };
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should check profileDOS does add botDefense when ASM is provisioned and DOS_Profile botDefense and profileBotDefense are not specified', () => {
+            sinon.stub(util, 'isOneOfProvisioned').returns(true);
+            const expectedProfiles = {
+                '/Common/f5-tcp-progressive': { context: 'all' },
+                '/tenantId/appId/f5_appsvcs_dosProfile_botDefense': { context: 'all' },
+                '/tenantId/appId/dosProfile': { context: 'all' },
+                '/Common/http': { context: 'all' }
+            };
+            item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
+            delete declaration.tenantId.appId.dosProfile.application.botDefense;
+
+            const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
+            assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
+        });
+
+        it('should check profileDOS does not add botDefense when ASM is provisioned and profileBotDefense specified', () => {
             sinon.stub(util, 'isOneOfProvisioned').returns(true);
             const expectedProfiles = {
                 '/Common/f5-tcp-progressive': { context: 'all' },
@@ -5548,13 +5827,12 @@ describe('map_as3', () => {
             item.profileBotDefense = { bigip: '/Common/bot-defense' };
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
             declaration.tenantId.appId.item.profileBotDefense = { use: '/tenantId/appId/bot-defense' };
-            defaultContext.target.tmosVersion = '14.1';
 
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
         });
 
-        it('should not add a botDefense profile for profileDOS in 14.1 when ASM is not provisioned', () => {
+        it('should not add a botDefense profile for profileDOS when ASM is not provisioned', () => {
             const expectedProfiles = {
                 '/Common/f5-tcp-progressive': { context: 'all' },
                 '/tenantId/appId/profileDOS': { context: 'all' },
@@ -5562,7 +5840,6 @@ describe('map_as3', () => {
             };
             item.profileDOS = { use: '/tenantId/appId/profileDOS' };
             declaration.tenantId.appId.item.profileDOS = { use: '/tenantId/appId/dosProfile' };
-            defaultContext.target.tmosVersion = '14.1';
 
             const results = translate.Service_HTTP(defaultContext, 'tenantId', 'appId', 'itemId', item, declaration, false);
             assert.deepEqual(results.configs[1].properties.profiles, expectedProfiles);
@@ -8549,80 +8826,83 @@ describe('map_as3', () => {
     });
 
     describe('Automatically generated objects', () => {
-        const declaration = {
-            class: 'ADC',
-            schemaVersion: '3.0.0',
-            id: 'TLS_Server',
-            tenantId: {
-                class: 'Tenant',
-                appId: {
-                    class: 'Application',
-                    template: 'https',
-                    serviceMain: {
-                        class: 'Service_HTTPS',
-                        virtualAddresses: [
-                            '192.0.2.91',
-                            '192.0.2.92'
-                        ],
-                        serverTLS: 'tlsServer'
-                    },
-                    tlsServer: {
-                        class: 'TLS_Server',
-                        certificates: [
-                            {
-                                matchToSNI: 'www.somehost.com',
-                                certificate: 'webcert1'
-                            },
-                            {
-                                certificate: 'webcert2'
-                            }]
-                    },
-                    webcert1: {
-                        class: 'Certificate',
-                        certificate: 'some cert value'
-                    },
-                    webcert2: {
-                        class: 'Certificate',
-                        certificate: 'another cert value'
-                    },
-                    webcert3: {
-                        class: 'Certificate',
-                        certificate: 'last cert value'
-                    },
-                    webcert4: {
-                        class: 'Certificate',
-                        certificate: 'last cert value',
-                        passphrase: {
-                            ciphertext: 'JE0kZEckTmQwckRjc1R5S3NtN1hQV2xmM3l1dz09',
-                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
-                            miniJWE: true,
-                            ignoreChanges: true
+        let declaration;
+        beforeEach(() => {
+            declaration = {
+                class: 'ADC',
+                schemaVersion: '3.0.0',
+                id: 'TLS_Server',
+                tenantId: {
+                    class: 'Tenant',
+                    appId: {
+                        class: 'Application',
+                        template: 'https',
+                        serviceMain: {
+                            class: 'Service_HTTPS',
+                            virtualAddresses: [
+                                '192.0.2.91',
+                                '192.0.2.92'
+                            ],
+                            serverTLS: 'tlsServer'
+                        },
+                        tlsServer: {
+                            class: 'TLS_Server',
+                            certificates: [
+                                {
+                                    matchToSNI: 'www.somehost.com',
+                                    certificate: 'webcert1'
+                                },
+                                {
+                                    certificate: 'webcert2'
+                                }]
+                        },
+                        webcert1: {
+                            class: 'Certificate',
+                            certificate: 'some cert value'
+                        },
+                        webcert2: {
+                            class: 'Certificate',
+                            certificate: 'another cert value'
+                        },
+                        webcert3: {
+                            class: 'Certificate',
+                            certificate: 'last cert value'
+                        },
+                        webcert4: {
+                            class: 'Certificate',
+                            certificate: 'last cert value',
+                            passphrase: {
+                                ciphertext: 'JE0kZEckTmQwckRjc1R5S3NtN1hQV2xmM3l1dz09',
+                                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJmNXN2In0=',
+                                miniJWE: true,
+                                ignoreChanges: true
+                            }
+                        }
+                    }
+                },
+                Common: {
+                    class: 'Tenant',
+                    Shared: {
+                        class: 'Application',
+                        template: 'shared',
+                        webcert5: {
+                            class: 'Certificate',
+                            certificate: 'shared cert value'
+                        },
+                        webcert6: {
+                            class: 'Certificate',
+                            certificate: 'last shared cert value',
+                            passphrase: {
+                                ciphertext: 'IA==',
+                                protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0',
+                                miniJWE: true,
+                                ignoreChanges: true
+                            }
                         }
                     }
                 }
-            },
-            Common: {
-                class: 'Tenant',
-                Shared: {
-                    class: 'Application',
-                    template: 'shared',
-                    webcert5: {
-                        class: 'Certificate',
-                        certificate: 'shared cert value'
-                    },
-                    webcert6: {
-                        class: 'Certificate',
-                        certificate: 'last shared cert value',
-                        passphrase: {
-                            ciphertext: 'IA==',
-                            protected: 'eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0',
-                            miniJWE: true,
-                            ignoreChanges: true
-                        }
-                    }
-                }
-            }
-        };
+            };
+        });
 
         describe('Service_HTTPS', () => {
             it('should create addtl service when there are multiple virtual addresses and redirect80 is enabled', () => {
@@ -8870,15 +9150,231 @@ describe('map_as3', () => {
                     }
                 );
             });
+
+            it('should handle serverTLS property is object in Service_HTTPS class', () => {
+                const item = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: [
+                        '192.0.2.91',
+                        '192.0.2.92'
+                    ],
+                    enable: true,
+                    redirect80: true,
+                    profileTCP: {
+                        egress: {
+                            use: 'tcpProfile'
+                        }
+                    },
+                    profileHTTP: 'basic',
+                    httpMrfRoutingEnabled: true,
+                    profileHTTP2: {
+                        egress: {
+                            use: 'http2Profile'
+                        }
+                    },
+                    serverTLS: {
+                        use: '/tenantId/appId/tlsServer'
+                    },
+                    virtualPort: 443,
+                    virtualType: 'standard'
+                };
+
+                defaultContext.target.tmosVersion = '14.1';
+                defaultContext.targetHost = 'localhost';
+
+                const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
+                const profiles = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain').properties.profiles;
+
+                assert.deepStrictEqual(profiles.http2Profile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles.tcpProfile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles['/Common/http'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/Common/httprouter'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer-1-'], { context: 'clientside' });
+            });
+
+            it('should handle serverTLS property is object with namingScheme in Service_HTTPS class', () => {
+                const item = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: [
+                        '192.0.2.91',
+                        '192.0.2.92'
+                    ],
+                    enable: true,
+                    redirect80: true,
+                    profileTCP: {
+                        egress: {
+                            use: 'tcpProfile'
+                        }
+                    },
+                    profileHTTP: 'basic',
+                    httpMrfRoutingEnabled: true,
+                    profileHTTP2: {
+                        egress: {
+                            use: 'http2Profile'
+                        }
+                    },
+                    serverTLS: {
+                        use: '/tenantId/appId/tlsServer'
+                    },
+                    virtualPort: 443,
+                    virtualType: 'standard'
+                };
+
+                defaultContext.target.tmosVersion = '14.1';
+                defaultContext.targetHost = 'localhost';
+                declaration.tenantId.appId.tlsServer.namingScheme = 'certificate';
+
+                const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
+                const profiles = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain').properties.profiles;
+
+                assert.deepStrictEqual(profiles.http2Profile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles.tcpProfile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles['/Common/http'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/Common/httprouter'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert1'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert2'], { context: 'clientside' });
+            });
+
+            it('should handle serverTLS property is array of objects in Service_HTTPS class', () => {
+                const item = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: [
+                        '192.0.2.91',
+                        '192.0.2.92'
+                    ],
+                    enable: true,
+                    redirect80: true,
+                    profileTCP: {
+                        egress: {
+                            use: 'tcpProfile'
+                        }
+                    },
+                    profileHTTP: 'basic',
+                    httpMrfRoutingEnabled: true,
+                    profileHTTP2: {
+                        egress: {
+                            use: 'http2Profile'
+                        }
+                    },
+                    serverTLS: [
+                        {
+                            use: '/tenantId/appId/tlsServer'
+                        },
+                        {
+                            use: '/tenantId/appId/tlsServer1'
+                        }
+                    ],
+                    virtualPort: 443,
+                    virtualType: 'standard'
+                };
+
+                defaultContext.target.tmosVersion = '14.1';
+                defaultContext.targetHost = 'localhost';
+                declaration.tenantId.appId.tlsServer1 = {
+                    class: 'TLS_Server',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            certificate: 'webcert3'
+                        },
+                        {
+                            certificate: 'webcert4'
+                        }
+                    ]
+                };
+
+                const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
+                const profiles = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain').properties.profiles;
+
+                assert.deepStrictEqual(profiles.http2Profile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles.tcpProfile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles['/Common/http'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/Common/httprouter'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer-1-'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer1'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/tlsServer1-1-'], { context: 'clientside' });
+            });
+
+            it('should handle serverTLS property is array of objects with namingScheme in Service_HTTPS class', () => {
+                const item = {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: [
+                        '192.0.2.91',
+                        '192.0.2.92'
+                    ],
+                    enable: true,
+                    redirect80: true,
+                    profileTCP: {
+                        egress: {
+                            use: 'tcpProfile'
+                        }
+                    },
+                    profileHTTP: 'basic',
+                    httpMrfRoutingEnabled: true,
+                    profileHTTP2: {
+                        egress: {
+                            use: 'http2Profile'
+                        }
+                    },
+                    serverTLS: [
+                        {
+                            use: '/tenantId/appId/tlsServer'
+                        },
+                        {
+                            use: '/tenantId/appId/tlsServer1'
+                        }
+                    ],
+                    virtualPort: 443,
+                    virtualType: 'standard'
+                };
+
+                defaultContext.target.tmosVersion = '14.1';
+                defaultContext.targetHost = 'localhost';
+                declaration.tenantId.appId.tlsServer.namingScheme = 'certificate';
+                declaration.tenantId.appId.tlsServer1 = {
+                    class: 'TLS_Server',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            certificate: 'webcert3'
+                        },
+                        {
+                            certificate: 'webcert4'
+                        }
+                    ],
+                    namingScheme: 'certificate'
+                };
+
+                const results = translate.Service_HTTPS(defaultContext, 'tenantId', 'appId', 'serviceMain', item, declaration);
+                const profiles = results.configs.find((r) => r.path === '/tenantId/appId/serviceMain').properties.profiles;
+
+                assert.deepStrictEqual(profiles.http2Profile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles.tcpProfile, { context: 'serverside' });
+                assert.deepStrictEqual(profiles['/Common/http'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/Common/httprouter'], { context: 'all' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert1'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert2'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert3'], { context: 'clientside' });
+                assert.deepStrictEqual(profiles['/tenantId/appId/webcert4'], { context: 'clientside' });
+            });
         });
 
         describe('TLS Server', () => {
-            it('should create add TLS_Server profile when there are multiple certificates with sniDefault and enable requireSNI', () => {
-                const context = {
+            let context;
+            beforeEach(() => {
+                context = {
                     target: {
                         tmosVersion: '14.0'
+                    },
+                    request: {
+                        body: declaration
                     }
                 };
+            });
+
+            it('should create add TLS_Server profile when there are multiple certificates with sniDefault and enable requireSNI', () => {
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -8913,6 +9409,12 @@ describe('map_as3', () => {
                         class: 'Certificate',
                         certificate: 'last cert value'
                     }
+                };
+                // Populate declaration so code can read original certificate sniDefault values
+                declaration.tenantId = declaration.tenantId || {};
+                declaration.tenantId.appId = declaration.tenantId.appId || {};
+                declaration.tenantId.appId.tlsServer = {
+                    certificates: item.certificates
                 };
                 const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
 
@@ -8972,11 +9474,6 @@ describe('map_as3', () => {
             });
 
             it('should create add TLS_Server profile when there are multiple certificates with sniDefault and disable requireSNI', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9011,6 +9508,12 @@ describe('map_as3', () => {
                         class: 'Certificate',
                         certificate: 'last cert value'
                     }
+                };
+                // Populate declaration so code can read original certificate sniDefault values
+                declaration.tenantId = declaration.tenantId || {};
+                declaration.tenantId.appId = declaration.tenantId.appId || {};
+                declaration.tenantId.appId.tlsServer = {
+                    certificates: item.certificates
                 };
                 const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
 
@@ -9070,11 +9573,6 @@ describe('map_as3', () => {
             });
 
             it('should create addtl profile when there are multiple certificates', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9162,11 +9660,7 @@ describe('map_as3', () => {
             });
 
             it('should create standard options on < version 14', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '13.1'
-                    }
-                };
+                context.target.tmosVersion = '13.1';
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9202,11 +9696,6 @@ describe('map_as3', () => {
             });
 
             it('should create standard options on > version 14', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9243,11 +9732,6 @@ describe('map_as3', () => {
             });
 
             it('should create standard options but add and remove tls options if instructed', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9290,11 +9774,6 @@ describe('map_as3', () => {
             });
 
             it('should handle passphrase object in certificate', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9328,11 +9807,7 @@ describe('map_as3', () => {
             });
 
             it('should create proxy certificate if provided', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '13.0'
-                    }
-                };
+                context.target.tmosVersion = '13.0';
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9372,11 +9847,6 @@ describe('map_as3', () => {
             });
 
             it('should create proxy certificate if provided (14.0+)', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9418,11 +9888,6 @@ describe('map_as3', () => {
             });
 
             it('should handle certificate and proxy certificate in Common tenant', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9463,11 +9928,6 @@ describe('map_as3', () => {
             });
 
             it('should handle certificate naming scheme', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9510,11 +9970,6 @@ describe('map_as3', () => {
             });
 
             it('should update indefinite to 4294967295', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.1'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: '',
@@ -9538,26 +9993,7 @@ describe('map_as3', () => {
             });
 
             it('should set sniDefault to first certificate when the sniDefault property is not present in the declaration', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    },
-                    request: {
-                        body: {
-                            tenantId: {
-                                appId: {
-                                    tlsServer: {
-                                        certificates: [
-                                            {
-                                                certificate: '/tenantId/appId/webcert1'
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
+                context.request.body.tenantId.appId.tlsServer.certificates[0].certificate = '/tenantId/appId/webcert1';
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9592,27 +10028,7 @@ describe('map_as3', () => {
             });
 
             it('should set sniDefault to first certificate when the sniDefault property is disabled in the declaration', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    },
-                    request: {
-                        body: {
-                            tenantId: {
-                                appId: {
-                                    tlsServer: {
-                                        certificates: [
-                                            {
-                                                certificate: '/tenantId/appId/webcert1',
-                                                sniDefault: false
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
+                context.request.body.tenantId.appId.tlsServer.certificates[0].sniDefault = false;
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9647,27 +10063,7 @@ describe('map_as3', () => {
             });
 
             it('should set sniDefault to first certificate when the sniDefault property is enabled in the declaration', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    },
-                    request: {
-                        body: {
-                            tenantId: {
-                                appId: {
-                                    tlsServer: {
-                                        certificates: [
-                                            {
-                                                certificate: '/tenantId/appId/webcert1',
-                                                sniDefault: true
-                                            }
-                                        ]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
+                context.request.body.tenantId.appId.tlsServer.certificates[0].sniDefault = true;
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9702,11 +10098,6 @@ describe('map_as3', () => {
             });
 
             it('should set authenticationDepth to custom value for class TLSServer', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9730,11 +10121,6 @@ describe('map_as3', () => {
             });
 
             it('should set authenticationDepth to default value for class TLSServer', () => {
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9758,11 +10144,6 @@ describe('map_as3', () => {
             it('should create single profile when there are multiple certificates and hybrid flag is enabled', () => {
                 const savedDeclaration = util.simpleCopy(declaration);
                 savedDeclaration.tenantId.appId.tlsServer.hybrid = true;
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9831,11 +10212,6 @@ describe('map_as3', () => {
             it('should create multiple profiles when there are multiple certificates and hybrid flag is disable', () => {
                 const savedDeclaration = util.simpleCopy(declaration);
                 savedDeclaration.tenantId.appId.tlsServer.hybrid = false;
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -9964,11 +10340,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
+                context.request.body = decl;
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -10062,11 +10434,7 @@ describe('map_as3', () => {
                         }
                     }
                 };
-                const context = {
-                    target: {
-                        tmosVersion: '14.0'
-                    }
-                };
+                context.request.body = decl;
                 const item = {
                     class: 'TLS_Server',
                     authenticationFrequency: 'one-time',
@@ -10116,6 +10484,124 @@ describe('map_as3', () => {
                 assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
                 assert.deepEqual(profile1.properties['sni-default'], 'true');
                 assert.deepEqual(profile1.properties.mode, 'enabled');
+            });
+
+            it('should handle TLS_Server profiles with authenticationMode', () => {
+                declaration.tenantId.appId.tlsServer.certificates[0].authenticationMode = 'ignore';
+                declaration.tenantId.appId.tlsServer.certificates[0].authenticationFrequency = 'every-time';
+                declaration.tenantId.appId.tlsServer.certificates[1].authenticationMode = 'require';
+                declaration.tenantId.appId.tlsServer.certificates[1].authenticationFrequency = 'one-time';
+                declaration.tenantId.appId.tlsServer.certificates.push({
+                    certificate: '/tenantId/appId/webcert3',
+                    authenticationMode: 'request',
+                    authenticationFrequency: 'every-time'
+                });
+
+                const item = {
+                    class: 'TLS_Server',
+                    authenticationFrequency: 'one-time',
+                    certificates: [
+                        {
+                            matchToSNI: 'www.somehost.com',
+                            enabled: false,
+                            certificate: '/tenantId/appId/webcert1',
+                            authenticationMode: 'ignore',
+                            authenticationFrequency: 'every-time',
+                            sniDefault: true
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert2',
+                            authenticationMode: 'require',
+                            authenticationFrequency: 'one-time',
+                            sniDefault: false
+                        },
+                        {
+                            enabled: true,
+                            certificate: '/tenantId/appId/webcert3',
+                            authenticationMode: 'request',
+                            authenticationFrequency: 'every-time',
+                            sniDefault: false
+                        }
+                    ],
+                    requireSNI: true,
+                    webcert1: {
+                        class: 'Certificate',
+                        certificate: 'some cert value'
+                    },
+                    webcert2: {
+                        class: 'Certificate',
+                        certificate: 'another cert value'
+                    },
+                    webcert3: {
+                        class: 'Certificate',
+                        certificate: 'last cert value'
+                    }
+                };
+                const results = translate.TLS_Server(context, 'tenantId', 'appId', 'tlsServer', item, declaration);
+
+                const profile1 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer');
+                assert.strictEqual(profile1.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile1.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert1.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert1.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile1.properties['server-name'], 'www.somehost.com');
+                assert.deepEqual(profile1.properties['sni-default'], 'true');
+                assert.deepEqual(profile1.properties['sni-require'], 'true');
+                assert.deepEqual(profile1.properties.mode, 'disabled');
+                assert.deepEqual(profile1.properties.authenticate, 'always');
+                assert.deepEqual(profile1.properties['authenticate-depth'], 9);
+                assert.deepEqual(profile1.properties['peer-cert-mode'], 'ignore');
+
+                const profile2 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-1-');
+                assert.strictEqual(profile2.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile2.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert2.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert2.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile2.properties['server-name'], 'none');
+                assert.deepEqual(profile2.properties['sni-default'], 'false');
+                assert.deepEqual(profile2.properties['sni-require'], 'false');
+                assert.deepEqual(profile2.properties.mode, 'enabled');
+                assert.deepEqual(profile2.properties.authenticate, 'once');
+                assert.deepEqual(profile2.properties['authenticate-depth'], 9);
+                assert.deepEqual(profile2.properties['peer-cert-mode'], 'require');
+
+                const profile3 = results.configs.find((r) => r.path === '/tenantId/appId/tlsServer-2-');
+                assert.strictEqual(profile3.command, 'ltm profile client-ssl');
+                assert.deepEqual(
+                    profile3.properties['cert-key-chain'],
+                    {
+                        set0: {
+                            cert: '/tenantId/appId/webcert3.crt',
+                            chain: 'none',
+                            key: '/tenantId/appId/webcert3.key',
+                            usage: 'SERVER'
+                        }
+                    }
+                );
+                assert.deepEqual(profile3.properties['server-name'], 'none');
+                assert.deepEqual(profile3.properties['sni-default'], 'false');
+                assert.deepEqual(profile3.properties['sni-require'], 'false');
+                assert.deepEqual(profile3.properties.mode, 'enabled');
+                assert.deepEqual(profile3.properties.authenticate, 'always');
+                assert.deepEqual(profile3.properties['authenticate-depth'], 9);
+                assert.deepEqual(profile3.properties['peer-cert-mode'], 'request');
             });
         });
 
@@ -10497,7 +10983,7 @@ describe('map_as3', () => {
             const item = {
                 remark: 'The item description',
                 cipherSuites: ['ECDHE', 'RSA', 'ECDHE_ECDSA', '!SSLV3'],
-                namedGroups: ['P256', 'P384'],
+                namedGroups: ['X25519MLKEM768', 'X25519KYBER768', 'P256', 'P384'],
                 signatureAlgorithms: ['DSA-SHA256', 'DSA-SHA512', 'ECDSA-SHA384']
             };
             const results = translate.Cipher_Rule(defaultContext, 'tenantId', 'appId', 'itemId', item);
@@ -10511,6 +10997,32 @@ describe('map_as3', () => {
                         description: '"The item description"',
                         cipher: 'ECDHE:RSA:ECDHE_ECDSA:!SSLV3',
                         'dh-groups': 'P256:P384',
+                        'signature-algorithms': 'DSA-SHA256:DSA-SHA512:ECDSA-SHA384'
+                    }
+                }
+            );
+        });
+
+        it('should return correct Cipher_Rule config in BIG-IP-17.5.1', () => {
+            // Currently normalize.actionableMcp() does not utilize context and instead uses globals
+            defaultContext.target.tmosVersion = '17.5.1';
+            const item = {
+                remark: 'The item description',
+                cipherSuites: ['ECDHE', 'RSA', 'ECDHE_ECDSA', '!SSLV3'],
+                namedGroups: ['X25519MLKEM768', 'X25519KYBER768', 'P256', 'P384'],
+                signatureAlgorithms: ['DSA-SHA256', 'DSA-SHA512', 'ECDSA-SHA384']
+            };
+            const results = translate.Cipher_Rule(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                results.configs[0],
+                {
+                    command: 'ltm cipher rule',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        description: '"The item description"',
+                        cipher: 'ECDHE:RSA:ECDHE_ECDSA:!SSLV3',
+                        'dh-groups': 'X25519MLKEM768:X25519KYBER768:P256:P384',
                         'signature-algorithms': 'DSA-SHA256:DSA-SHA512:ECDSA-SHA384'
                     }
                 }
@@ -10785,6 +11297,9 @@ describe('map_as3', () => {
             const context = {
                 target: {
                     tmosVersion: '14.0'
+                },
+                request: {
+                    body: declaration
                 }
             };
             const item = {
@@ -10812,6 +11327,9 @@ describe('map_as3', () => {
             const context = {
                 target: {
                     tmosVersion: '14.0'
+                },
+                request: {
+                    body: declaration
                 }
             };
             const item = {
@@ -10896,9 +11414,9 @@ describe('map_as3', () => {
                         whitelist: 'testAllowlist'
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
 
             it('should alias DOS_Profile.applicationAllowlist', () => {
@@ -10919,9 +11437,9 @@ describe('map_as3', () => {
                         'http-whitelist': 'testApplicationAllowList'
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
 
             it('should alias DOS_Profile_Application_Bot_Defense.urlAllowlist', () => {
@@ -10935,7 +11453,8 @@ describe('map_as3', () => {
                             urlAllowlist: [
                                 'www.bing.com'
                             ]
-                        }
+                        },
+                        mobileDefense: {}
                     }
                 };
                 const expected = {
@@ -10965,6 +11484,12 @@ describe('map_as3', () => {
                                     'url-whitelist': {
                                         'www.bing.com': {}
                                     }
+                                },
+                                'mobile-detection': {
+                                    'allow-any-android-package': 'true',
+                                    'allow-any-ios-package': 'true',
+                                    'android-publishers': {},
+                                    'ios-allowed-package-names': {}
                                 }
                             }
                         },
@@ -10973,9 +11498,9 @@ describe('map_as3', () => {
                         'protocol-sip': {}
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
 
             it('should alias DOS_Profile_Application.allowlistedGeolocations', () => {
@@ -10987,7 +11512,9 @@ describe('map_as3', () => {
                         allowlistedGeolocations: [
                             'Bonaire, Saint Eustatius and Saba',
                             'Cote D\'Ivoire'
-                        ]
+                        ],
+                        botDefense: {},
+                        mobileDefense: {}
                     }
                 };
                 const expected = {
@@ -10997,6 +11524,11 @@ describe('map_as3', () => {
                     properties: {
                         application: {
                             undefined: {
+                                'bot-defense': {
+                                    'external-domains': {},
+                                    'site-domains': {},
+                                    'url-whitelist': {}
+                                },
                                 'captcha-response': {
                                     failure: {
                                         type: 'default'
@@ -11013,6 +11545,12 @@ describe('map_as3', () => {
                                         'white-listed': ' '
                                     }
                                 },
+                                'mobile-detection': {
+                                    'allow-any-android-package': 'true',
+                                    'allow-any-ios-package': 'true',
+                                    'android-publishers': {},
+                                    'ios-allowed-package-names': {}
+                                },
                                 'rtbh-duration-sec': 300,
                                 'rtbh-enable': 'disabled',
                                 'scrubbing-duration-sec': 600,
@@ -11024,9 +11562,9 @@ describe('map_as3', () => {
                         'protocol-sip': {}
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
 
             it('should alias DOS_Profile_Application.denylistedGeolocations', () => {
@@ -11034,11 +11572,13 @@ describe('map_as3', () => {
                 const item = {
                     class: 'DOS_Profile',
                     application: {
+                        botDefense: {},
                         captchaResponse: {},
                         denylistedGeolocations: [
                             'Timor-Leste',
                             'Cocos (Keeling) Islands'
-                        ]
+                        ],
+                        mobileDefense: {}
                     }
                 };
                 const expected = {
@@ -11048,6 +11588,11 @@ describe('map_as3', () => {
                     properties: {
                         application: {
                             undefined: {
+                                'bot-defense': {
+                                    'external-domains': {},
+                                    'site-domains': {},
+                                    'url-whitelist': {}
+                                },
                                 'captcha-response': {
                                     failure: {
                                         type: 'default'
@@ -11064,6 +11609,12 @@ describe('map_as3', () => {
                                         'black-listed': ' '
                                     }
                                 },
+                                'mobile-detection': {
+                                    'allow-any-android-package': 'true',
+                                    'allow-any-ios-package': 'true',
+                                    'android-publishers': {},
+                                    'ios-allowed-package-names': {}
+                                },
                                 'rtbh-duration-sec': 300,
                                 'rtbh-enable': 'disabled',
                                 'scrubbing-duration-sec': 600,
@@ -11075,9 +11626,9 @@ describe('map_as3', () => {
                         'protocol-sip': {}
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
 
             it('should alias DOS_Profile_Network_Vectors.autoDenylistSettings', () => {
@@ -11124,9 +11675,9 @@ describe('map_as3', () => {
                         'protocol-sip': {}
                     }
                 };
-                const context = { target: { tmosVersion: '14.0' } };
-                const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
                 assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
             });
         });
 
@@ -11135,19 +11686,25 @@ describe('map_as3', () => {
             let item = {
                 class: 'DOS_Profile',
                 application: {
+                    botDefense: {},
                     scrubbingDuration: 0,
                     remoteTriggeredBlackHoleDuration: 0,
-                    captchaResponse: {}
+                    captchaResponse: {},
+                    mobileDefense: {}
                 }
             };
 
-            const context = { target: { tmosVersion: '13.1' } };
             const expected = {
                 path: '/tenantId/appId/itemId',
                 command: 'security dos profile',
                 properties: {
                     application: {
                         undefined: {
+                            'bot-defense': {
+                                'external-domains': {},
+                                'site-domains': {},
+                                'url-whitelist': {}
+                            },
                             'captcha-response': {
                                 failure: {
                                     type: 'default'
@@ -11157,6 +11714,12 @@ describe('map_as3', () => {
                                 }
                             },
                             geolocations: {},
+                            'mobile-detection': {
+                                'allow-any-android-package': 'true',
+                                'allow-any-ios-package': 'true',
+                                'android-publishers': {},
+                                'ios-allowed-package-names': {}
+                            },
                             'rtbh-duration-sec': 300,
                             'rtbh-enable': 'disabled',
                             'scrubbing-duration-sec': 600,
@@ -11170,17 +11733,21 @@ describe('map_as3', () => {
                 ignore: []
             };
 
-            let results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            let results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepEqual(results.configs[0], expected);
+            assert.strictEqual(results.configs.length, 2);
 
             item = {
                 class: 'DOS_Profile',
                 application: {
-                    captchaResponse: {}
+                    botDefense: {},
+                    captchaResponse: {},
+                    mobileDefense: {}
                 }
             };
-            results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepEqual(results.configs[0], expected);
+            assert.strictEqual(results.configs.length, 2);
         });
 
         it('should change malformed vectors to dns-malformed and sip-malformed', () => {
@@ -11200,11 +11767,6 @@ describe('map_as3', () => {
                             type: 'malformed'
                         }
                     ]
-                }
-            };
-            const context = {
-                target: {
-                    tmosVersion: '14.0'
                 }
             };
             const expected = {
@@ -11235,8 +11797,88 @@ describe('map_as3', () => {
                 ignore: []
             };
 
-            const results = translate.DOS_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
             assert.deepEqual(results.configs[0], expected);
+            assert.strictEqual(results.configs.length, 2);
+        });
+
+        describe('Bot Defense Profile Creation', () => {
+            let item;
+            let expected;
+
+            beforeEach(() => {
+                sinon.stub(util, 'isOneOfProvisioned').returns(true);
+                item = {
+                    class: 'DOS_Profile',
+                    application: {
+                        botDefense: {
+                            createBotDefenseProfile: false
+                        },
+                        captchaResponse: {},
+                        mobileDefense: {}
+                    }
+                };
+
+                expected = {
+                    command: 'security dos profile',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        application: {
+                            undefined: {
+                                'bot-defense': {
+                                    'external-domains': {},
+                                    'site-domains': {},
+                                    'url-whitelist': {}
+                                },
+                                'captcha-response': {
+                                    failure: {
+                                        type: 'default'
+                                    },
+                                    first: {
+                                        type: 'default'
+                                    }
+                                },
+                                geolocations: {},
+                                'mobile-detection': {
+                                    'allow-any-android-package': 'true',
+                                    'allow-any-ios-package': 'true',
+                                    'android-publishers': {},
+                                    'ios-allowed-package-names': {}
+                                },
+                                'rtbh-duration-sec': 300,
+                                'rtbh-enable': 'disabled',
+                                'scrubbing-duration-sec': 600,
+                                'scrubbing-enable': 'disabled'
+                            }
+                        },
+                        'dos-network': {},
+                        'protocol-dns': {},
+                        'protocol-sip': {}
+                    }
+                };
+            });
+
+            it('should not create bot profile when asm provisioned and botDefense createBotDefenseProfile is false', () => {
+                item.application.botDefense.createBotDefenseProfile = false;
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 1);
+            });
+
+            it('should create bot profile when botDefense createBotDefenseProfile is true', () => {
+                item.application.botDefense.createBotDefenseProfile = true;
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
+            });
+
+            it('should create bot profile when botDefense createBotDefenseProfile is missing', () => {
+                delete item.application.botDefense.createBotDefenseProfile;
+                const results = translate.DOS_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+                assert.deepEqual(results.configs[0], expected);
+                assert.strictEqual(results.configs.length, 2);
+            });
         });
     });
 
@@ -15165,6 +15807,29 @@ describe('map_as3', () => {
                 }
             );
         });
+        it('should map some 0 values to immediate', () => {
+            const item = {
+                idleTimeout: 0,
+                tcpCloseTimeout: 0,
+                tcpHandshakeTimeout: 0
+            };
+            const result = mapAs3.translate.L4_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    command: 'ltm profile fastl4',
+                    ignore: [],
+                    path: '/tenantId/appId/itemId',
+                    properties: {
+                        description: 'none',
+                        'idle-timeout': 'immediate',
+                        'tcp-close-timeout': 'immediate',
+                        'tcp-handshake-timeout': 'immediate',
+                        'pva-acceleration': 'full'
+                    }
+                }
+            );
+        });
         it('should handle L4_Profile pvaAcceleration property properly', () => {
             function testPvaAcceleration(expectedValue) {
                 const item = {
@@ -15980,10 +16645,9 @@ describe('map_as3', () => {
         it('should handle PPTP_Profile config', () => {
             const item = {
                 class: 'PPTP_Profile',
-                description: 'Sample PPTP profile',
                 label: 'test',
                 remark: 'test',
-                defaultsFrom: {
+                parentProfile: {
                     bigip: '/Common/pptp'
                 },
                 csvFormat: true,
@@ -16001,7 +16665,12 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId',
                     command: 'ltm profile pptp',
                     properties: {
-                        'defaults-from': '/Common/pptp', description: '"Sample PPTP profile"', 'csv-format': 'enabled', 'include-destination-ip': 'enabled', 'publisher-name': '/Common/local-db-publisher'
+                        'defaults-from': '/Common/pptp',
+                        // eslint-disable-next-line no-useless-escape
+                        description: '\"test\"',
+                        'csv-format': 'enabled',
+                        'include-destination-ip': 'enabled',
+                        'publisher-name': '/Common/local-db-publisher'
                     },
                     ignore: []
                 }
@@ -16037,6 +16706,7 @@ describe('map_as3', () => {
             const item = {
                 class: 'Splitsession_Client_Profile',
                 peerPort: 80,
+                remark: 'test remark',
                 peerIp: '192.0.2.0',
                 httpHeader: 'none',
                 localPeer: false,
@@ -16051,7 +16721,8 @@ describe('map_as3', () => {
                     path: '/tenantId/appId/itemId',
                     command: 'ltm profile splitsessionclient',
                     properties: {
-                        description: 'none',
+                        // eslint-disable-next-line no-useless-escape
+                        description: '\"test remark\"',
                         'peer-ip': '192.0.2.0',
                         'peer-port': 80,
                         'http-header': 'none',
@@ -16062,6 +16733,171 @@ describe('map_as3', () => {
                 }
             );
         });
+    });
+
+    describe('SSE_Profile', () => {
+        it('should handle SSE_Profile config at 21.0', () => {
+            defaultContext.target.tmosVersion = '21.0';
+            const item = {
+                class: 'SSE_Profile',
+                remark: 'test Description',
+                parentProfile: '/Common/sse',
+                maxFieldNameSize: 64,
+                maxBufferedMsgBytes: 104567
+            };
+
+            const result = mapAs3.translate.SSE_Profile(defaultContext, 'tenantId', 'appId', 'itemId', item);
+
+            assert.deepStrictEqual(
+                result.configs[0],
+                {
+                    path: '/tenantId/appId/itemId',
+                    command: 'ltm profile sse',
+                    properties: {
+                        description: '"test Description"',
+                        'defaults-from': '/Common/sse',
+                        'max-field-name-size': 64,
+                        'max-buffered-msg-bytes': 104567
+                    },
+                    ignore: []
+                }
+            );
+        });
+    });
+
+    it('should handle Service_HTTP and SSE_Profile with version 21.0', () => {
+        defaultContext.target.tmosVersion = '21.0';
+        const sampleItem = {
+            class: 'Service_HTTP',
+            virtualAddresses: [
+                '192.0.2.0'
+            ],
+            profileHTTP: 'basic',
+            virtualPort: 80,
+            persistenceMethods: [
+                'cookie'
+            ],
+            virtualType: 'standard',
+            layer4: 'tcp',
+            profileTCP: 'normal',
+            profileSSE: 'sseProfileSample',
+            serviceDownImmediateAction: 'none',
+            shareAddresses: false,
+            enable: true,
+            maxConnections: 0,
+            snat: 'auto',
+            addressStatus: true,
+            mirroring: 'none',
+            lastHop: 'default',
+            translateClientPort: false,
+            translateServerAddress: true,
+            translateServerPort: true,
+            serversslUseSni: false,
+            nat64Enabled: false,
+            httpMrfRoutingEnabled: false,
+            rateLimit: 0,
+            adminState: 'enable'
+        };
+        const sampleDelcaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        profileSSE: {
+                            use: 'sseProfileSample'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', sampleItem, sampleDelcaration, false);
+
+        assert.deepStrictEqual(
+            result.configs[1].properties.profiles, // Pull the properties.profiles from the ltm virtual
+            {
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                },
+                '/Common/sseProfileSample': {
+                    context: 'all'
+                }
+            }
+        );
+    });
+
+    it('should handle Service_HTTP and SSE_Profile with pre-21.0 versions', () => {
+        defaultContext.target.tmosVersion = '17.5';
+        const sampleItem = {
+            class: 'Service_HTTP',
+            virtualAddresses: [
+                '192.0.2.0'
+            ],
+            profileHTTP: 'basic',
+            virtualPort: 80,
+            persistenceMethods: [
+                'cookie'
+            ],
+            virtualType: 'standard',
+            layer4: 'tcp',
+            profileTCP: 'normal',
+            profileSSE: 'sseProfileSample',
+            serviceDownImmediateAction: 'none',
+            shareAddresses: false,
+            enable: true,
+            maxConnections: 0,
+            snat: 'auto',
+            addressStatus: true,
+            mirroring: 'none',
+            lastHop: 'default',
+            translateClientPort: false,
+            translateServerAddress: true,
+            translateServerPort: true,
+            serversslUseSni: false,
+            nat64Enabled: false,
+            httpMrfRoutingEnabled: false,
+            rateLimit: 0,
+            adminState: 'enable'
+        };
+        const sampleDelcaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        profileSSE: {
+                            use: 'sseProfileSample'
+                        }
+                    }
+                }
+            }
+        };
+
+        const result = translate.Service_HTTP(defaultContext, 'dot.test', 'test_http', 'test_http', sampleItem, sampleDelcaration, false);
+
+        assert.deepStrictEqual(
+            result.configs[1].properties.profiles, // Pull the properties.profiles from the ltm virtual
+            {
+                '/Common/f5-tcp-progressive': {
+                    context: 'all'
+                },
+                '/Common/http': {
+                    context: 'all'
+                }
+            }
+        );
     });
 
     describe('Connector_Profile', () => {
@@ -16468,6 +17304,457 @@ describe('map_as3', () => {
                     }
                 }
             );
+        });
+    });
+
+    describe('Bot_Defense_Profile', () => {
+        it('should handle all properties of Bot_Defense_Profile', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'blocking',
+                signatureStagingUponUpdate: 'enabled',
+                enforcementReadinessPeriod: 10,
+                mitigationSettings: [
+                    {
+                        mitigationType: 'Unknown',
+                        mitigationSettingsAction: 'tcp-reset',
+                        verificationSettingsAction: 'none',
+                        rateLimitTps: 30
+                    },
+                    {
+                        mitigationType: 'Suspicious Browser',
+                        mitigationSettingsAction: 'block',
+                        verificationSettingsAction: 'none',
+                        rateLimitTps: 30
+                    }
+                ],
+                allowBrowserAccess: 'enabled',
+                gracePeriod: 4000,
+                deviceIDMode: 'generate-after-access',
+                dosMitigation: 'enabled',
+                performChallengeInTransparent: 'enabled',
+                singlePageApplicationEnabled: true,
+                crossDomainRequests: 'validate-bulk',
+                siteDomains: ['www.google.com'],
+                externalDomains: ['www.yahoo.com'],
+                mobileDefense: {
+                    enabled: true,
+                    allowAndroidPublishers: [
+                        {
+                            bigip: '/Common/default.crt'
+                        }
+                    ],
+                    allowAndroidRootedDevice: true,
+                    allowIosPackageNames: ['theName'],
+                    allowJailbrokenDevices: true,
+                    allowEmulators: true,
+                    clientSideChallengeMode: 'challenge'
+                },
+                signatures: [
+                    {
+                        bigip: '/Common/TEST_BP'
+                    }
+                ],
+                stagedSignatures: [
+                    {
+                        bigip: '/Common/TEST_BP1'
+                    }
+                ],
+                urlAllowlist: ['www.bing.com'],
+                browserMitigationAction: 'none'
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'allow-browser-access': 'enabled',
+                    'browser-mitigation-action': 'none',
+                    'class-overrides': {
+                        '"Suspicious Browser"': {
+                            mitigation: {
+                                action: 'block',
+                                'rate-limit-tps': 30
+                            },
+                            verification: {
+                                action: 'none'
+                            }
+                        },
+                        Unknown: {
+                            mitigation: {
+                                action: 'tcp-reset',
+                                'rate-limit-tps': 30
+                            },
+                            verification: {
+                                action: 'none'
+                            }
+                        }
+                    },
+                    'cross-domain-requests': 'validate-bulk',
+                    'deviceid-mode': 'generate-after-access',
+                    'dos-attack-strict-mitigation': 'enabled',
+                    'enforcement-mode': 'blocking',
+                    'enforcement-readiness-period': 10,
+                    'external-domains': {
+                        'www.yahoo.com': {}
+                    },
+                    'grace-period': 4000,
+                    'mobile-detection': {
+                        'allow-android-rooted-device': 'enabled',
+                        'allow-any-android-package': 'disabled',
+                        'allow-any-ios-package': 'disabled',
+                        'allow-emulators': 'enabled',
+                        'allow-jailbroken-devices': 'enabled',
+                        'android-publishers': {
+                            '/Common/default.crt': {}
+                        },
+                        'client-side-challenge-mode': 'cshui',
+                        'ios-allowed-packages': {
+                            theName: {}
+                        },
+                        signatures: {
+                            '/Common/TEST_BP': {}
+                        }
+                    },
+                    'perform-challenge-in-transparent': 'enabled',
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'signature-staging-upon-update': 'enabled',
+                    'single-page-application': 'enabled',
+                    'site-domains': {
+                        'www.google.com': {}
+                    },
+                    'staged-signatures': {
+                        '/Common/TEST_BP1': {}
+                    },
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        },
+                        url_0: {
+                            'match-order': 3,
+                            url: 'www.bing.com'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
+        });
+
+        it('should handle Bot_Defense_Profile with mitigationSettings', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'blocking',
+                mitigationSettings: [
+                    {
+                        mitigationType: 'Unknown',
+                        mitigationSettingsAction: 'tcp-reset',
+                        verificationSettingsAction: 'none',
+                        rateLimitTps: 30
+                    },
+                    {
+                        mitigationType: 'Suspicious Browser',
+                        mitigationSettingsAction: 'block',
+                        verificationSettingsAction: 'none',
+                        rateLimitTps: 30
+                    }
+                ]
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'class-overrides': {
+                        '"Suspicious Browser"': {
+                            mitigation: {
+                                action: 'block',
+                                'rate-limit-tps': 30
+                            },
+                            verification: {
+                                action: 'none'
+                            }
+                        },
+                        Unknown: {
+                            mitigation: {
+                                action: 'tcp-reset',
+                                'rate-limit-tps': 30
+                            },
+                            verification: {
+                                action: 'none'
+                            }
+                        }
+                    },
+                    'enforcement-mode': 'blocking',
+                    'external-domains': {},
+                    'mobile-detection': {
+                        'android-publishers': {},
+                        'ios-allowed-packages': {},
+                        signatures: {}
+                    },
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'site-domains': {},
+                    'staged-signatures': {},
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
+        });
+
+        it('should handle Bot_Defense_Profile with mobileDefense', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'transparent',
+                mobileDefense: {
+                    enabled: true,
+                    allowAndroidPublishers: [
+                        {
+                            bigip: '/Common/default.crt'
+                        }
+                    ],
+                    allowAndroidRootedDevice: true,
+                    allowIosPackageNames: ['theName'],
+                    allowJailbrokenDevices: true,
+                    allowEmulators: true,
+                    clientSideChallengeMode: 'challenge'
+                },
+                signatures: [
+                    {
+                        bigip: '/Common/TEST_BP'
+                    }
+                ]
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'class-overrides': {},
+                    'enforcement-mode': 'transparent',
+                    'mobile-detection': {
+                        'allow-android-rooted-device': 'enabled',
+                        'allow-any-android-package': 'disabled',
+                        'allow-any-ios-package': 'disabled',
+                        'allow-emulators': 'enabled',
+                        'allow-jailbroken-devices': 'enabled',
+                        'android-publishers': {
+                            '/Common/default.crt': {}
+                        },
+                        'client-side-challenge-mode': 'cshui',
+                        'ios-allowed-packages': {
+                            theName: {}
+                        },
+                        signatures: {
+                            '/Common/TEST_BP': {}
+                        }
+                    },
+                    'external-domains': {},
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'site-domains': {},
+                    'staged-signatures': {},
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
+        });
+
+        it('should handle Bot_Defense_Profile without mobileDefense with signatures', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'transparent',
+                signatures: [
+                    {
+                        bigip: '/Common/TEST_BP'
+                    },
+                    {
+                        bigip: '/Common/TEST_BP1'
+                    },
+                    {
+                        bigip: '/Common/TEST_BP2'
+                    }
+                ]
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'class-overrides': {},
+                    'enforcement-mode': 'transparent',
+                    'mobile-detection': {
+                        'android-publishers': {},
+                        'ios-allowed-packages': {},
+                        signatures: {
+                            '/Common/TEST_BP': {},
+                            '/Common/TEST_BP1': {},
+                            '/Common/TEST_BP2': {}
+                        }
+                    },
+                    'external-domains': {},
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'site-domains': {},
+                    'staged-signatures': {},
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
+        });
+
+        it('should handle Bot_Defense_Profile with stagedSignatures', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'blocking',
+                stagedSignatures: [
+                    {
+                        bigip: '/Common/TEST_BP1'
+                    },
+                    {
+                        bigip: '/Common/TEST_BP2'
+                    },
+                    {
+                        bigip: '/Common/TEST_BP3'
+                    }
+                ]
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'class-overrides': {},
+                    'enforcement-mode': 'blocking',
+                    'external-domains': {},
+                    'mobile-detection': {
+                        'android-publishers': {},
+                        'ios-allowed-packages': {},
+                        signatures: {}
+                    },
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'site-domains': {},
+                    'staged-signatures': {
+                        '/Common/TEST_BP1': {},
+                        '/Common/TEST_BP2': {},
+                        '/Common/TEST_BP3': {}
+                    },
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
+        });
+
+        it('should handle Bot_Defense_Profile with urlAllowlist', () => {
+            const item = {
+                class: 'Bot_Defense_Profile',
+                enforcementMode: 'blocking',
+                urlAllowlist: ['www.bing.com', 'www.abc.com']
+            };
+
+            const expected = {
+                command: 'security bot-defense profile',
+                ignore: [],
+                path: '/tenantId/appId/itemId',
+                properties: {
+                    'class-overrides': {},
+                    'enforcement-mode': 'blocking',
+                    'external-domains': {},
+                    'mobile-detection': {
+                        'android-publishers': {},
+                        'ios-allowed-packages': {},
+                        signatures: {}
+                    },
+                    'signature-category-overrides': {},
+                    'signature-overrides': {},
+                    'site-domains': {},
+                    'staged-signatures': {},
+                    whitelist: {
+                        apple_touch_1: {
+                            'match-order': 2,
+                            url: '/apple-touch-icon*.png'
+                        },
+                        favicon_1: {
+                            'match-order': 1,
+                            url: '/favicon.ico'
+                        },
+                        url_0: {
+                            'match-order': 3,
+                            url: 'www.bing.com'
+                        },
+                        url_1: {
+                            'match-order': 4,
+                            url: 'www.abc.com'
+                        }
+                    }
+                }
+            };
+
+            const context = { target: { tmosVersion: '15.0' } };
+            const results = translate.Bot_Defense_Profile(context, 'tenantId', 'appId', 'itemId', item);
+            assert.deepEqual(results.configs[0], expected);
         });
     });
 });

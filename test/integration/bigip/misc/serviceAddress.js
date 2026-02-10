@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -462,6 +462,199 @@ describe('serviceAddress', function () {
             });
     });
 
+    it('should allow non-defaultRouteDomain suffix in VirtualAddress property for Tenant with non-0 defaultRouteDomain', () => {
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.51.0',
+            tenant: {
+                class: 'Tenant',
+                defaultRouteDomain: 1,
+                App1rd0: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%0'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                },
+                App1rd2: {
+                    class: 'Application',
+                    template: 'generic',
+                    a1_80_vs: {
+                        class: 'Service_TCP',
+                        virtualAddresses: ['192.0.2.25%2'],
+                        virtualPort: 80,
+                        pool: 'app1_pool'
+                    },
+                    app1_pool: {
+                        class: 'Pool',
+                        monitors: [
+                            'http'
+                        ],
+                        members: [
+                            {
+                                servicePort: 8081,
+                                serverAddresses: []
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '1', id: 1 }
+            },
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '2', id: 2 }
+            }
+        ];
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl1, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd0~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%0:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd0/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0/0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~App1rd2~a1_80_vs'))
+            .then((response) => {
+                assert.strictEqual(response.destination, '/tenant/192.0.2.25%2:80');
+                assert.strictEqual(response.pool, '/tenant/App1rd2/app1_pool');
+                assert.strictEqual(response.source, '0.0.0.0%2/0');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('changing VirtualServer name should not change VirtualAddress properties', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/route-domain',
+                data: { name: '4' }
+            }
+        ];
+
+        const decl0 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample--socks--8080': {
+                        class: 'Service_TCP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            Sample: {
+                app0: {
+                    class: 'Application',
+                    'va--192.0.2.25': {
+                        class: 'Service_Address',
+                        routeAdvertisement: 'selective',
+                        virtualAddress: '192.0.2.25'
+                    },
+                    'Sample-http--8080': {
+                        class: 'Service_HTTP',
+                        virtualAddresses: [
+                            {
+                                use: 'va--192.0.2.25'
+                            }
+                        ],
+                        virtualPort: 8080
+                    }
+                },
+                class: 'Tenant',
+                defaultRouteDomain: 4
+            },
+            schemaVersion: '3.51.0',
+            updateMode: 'selective'
+        };
+
+        return Promise.resolve()
+            .then(() => postBigipItems(bigipItems))
+            .then(() => postDeclaration(decl0, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~Sample~va--192.0.2.25'))
+            .then((response) => {
+                assert.strictEqual(response.routeAdvertisement, 'selective');
+                assert.strictEqual(response.address, '192.0.2.25%4');
+            })
+            .then(() => postDeclaration(decl0, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .finally(() => deleteDeclaration()
+                .then(() => deleteBigipItems(bigipItems)));
+    });
+
     it('should show more information for \'Common\' tenant', () => {
         const decl = {
             class: 'ADC',
@@ -698,6 +891,189 @@ describe('serviceAddress', function () {
             .then((response) => {
                 assert.strictEqual(response.results[0].code, 200);
                 assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('When the source address list is a net address list and the virtual address is a service address, rename the virtual address name to its IP address.', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'l4',
+                    service_address: {
+                        class: 'Service_Address',
+                        icmpEcho: 'selective',
+                        virtualAddress: '192.0.2.0',
+                        useIpName: true
+                    },
+                    serviceMain: {
+                        class: 'Service_L4',
+                        layer4: 'tcp',
+                        sourceAddress: {
+                            use: 'allow_list'
+                        },
+                        virtualAddresses: [
+                            {
+                                use: 'service_address'
+                            }
+                        ],
+                        virtualPort: 25
+                    },
+                    allow_list: {
+                        class: 'Net_Address_List',
+                        addresses: ['192.0.2.1', '192.0.2.2']
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~serviceMain'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/serviceMain');
+                assert.strictEqual(response.trafficMatchingCriteria, '/tenant/app/serviceMain_VS_TMC_OBJ');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/traffic-matching-criteria/~tenant~app~serviceMain_VS_TMC_OBJ'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/serviceMain_VS_TMC_OBJ');
+                assert.strictEqual(response.destinationAddressInline, '192.0.2.0/32');
+                assert.strictEqual(response.destinationPortInline, '25');
+                assert.strictEqual(response.protocol, 'tcp');
+                assert.strictEqual(response.sourceAddressInline, '0.0.0.0');
+                assert.strictEqual(response.sourceAddressList, '/tenant/app/allow_list');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~tenant~192.0.2.0'))
+            .then((response) => {
+                assert.strictEqual(response.name, '192.0.2.0');
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0');
+                assert.strictEqual(response.address, '192.0.2.0');
+                assert.strictEqual(response.icmpEcho, 'selective');
+                assert.strictEqual(response.mask, '255.255.255.255');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/virtual-address/~tenant~service_address'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Virtual Address (/tenant/service_address) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should handle the multiple shareAddresses with useIpName on Virtual Server', () => {
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    theService: {
+                        class: 'Service_HTTP',
+                        virtualPort: 123,
+                        virtualAddresses: [
+                            {
+                                use: 'serviceAddress'
+                            },
+                            {
+                                use: 'serviceAddress1'
+                            }
+                        ]
+                    },
+                    serviceAddress: {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.0',
+                        icmpEcho: 'disable',
+                        useIpName: true
+                    },
+                    serviceAddress1: {
+                        class: 'Service_Address',
+                        virtualAddress: '192.0.2.1',
+                        icmpEcho: 'disable',
+                        useIpName: false
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~theService'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/theService');
+                assert.strictEqual(response.destination, '/tenant/192.0.2.0:123');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~tenant~192.0.2.0'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.0');
+                assert.strictEqual(response.address, '192.0.2.0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~theService-1-'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/theService-1-');
+                assert.strictEqual(response.destination, '/tenant/serviceAddress1:123');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~tenant~serviceAddress1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/serviceAddress1');
+                assert.strictEqual(response.address, '192.0.2.1');
+            })
+            .then(() => {
+                decl.tenant.app.serviceAddress.useIpName = false;
+                decl.tenant.app.serviceAddress1.useIpName = true;
+                return postDeclaration(decl, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~theService'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/theService');
+                assert.strictEqual(response.destination, '/tenant/serviceAddress:123');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/virtual-address/~tenant~192.0.2.0'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Virtual Address (/tenant/192.0.2.0) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~tenant~serviceAddress'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/serviceAddress');
+                assert.strictEqual(response.address, '192.0.2.0');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~tenant~app~theService-1-'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/app/theService-1-');
+                assert.strictEqual(response.destination, '/tenant/192.0.2.1:123');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/virtual-address/~tenant~serviceAddress1'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested Virtual Address (/tenant/serviceAddress1) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/virtual-address/~tenant~192.0.2.1'))
+            .then((response) => {
+                assert.strictEqual(response.fullPath, '/tenant/192.0.2.1');
+                assert.strictEqual(response.address, '192.0.2.1');
             })
             .finally(() => deleteDeclaration());
     });

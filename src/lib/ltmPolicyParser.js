@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ function getSource() {
 function findMatchingToken(inputTokens, searchStrings) {
     let match = null;
     searchStrings.forEach((searchString) => {
-        if (inputTokens.find((inputToken) => inputToken === searchString)) {
+        // Fix for AUTOTOOL-4937. The match value should not be overridden.
+        if (match === null && inputTokens.find((inputToken) => inputToken === searchString)) {
             match = searchString;
         }
     });

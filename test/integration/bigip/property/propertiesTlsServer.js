@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,10 +123,12 @@ describe('TLS_Server', function () {
                 inputValue: [
                     [{ certificate: 'tlsservercert' }],
                     [{ certificate: 'tlsservercert', sniDefault: true }],
+                    [{ certificate: 'tlsservercert' }],
                     [{ certificate: 'tlsservercert', sniDefault: false }]
                 ],
                 expectedValue: [
-                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'false'],
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
+                    [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
                     [`/TEST_${testName}/Application/tlsservercert.crt`, 'true'],
                     [`/TEST_${testName}/Application/tlsservercert.crt`, 'false']
                 ],

@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1392,6 +1392,85 @@ describe('Service_HTTP', function () {
                 extractFunction: (o) => {
                     const profiles = o.profiles
                         .filter((p) => p.name === 'splitsessionClientProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            }
+        ];
+
+        return assertServiceHTTPClass(properties, options);
+    });
+
+    it('should attach JSON and SSE profiles', function () {
+        // JSON and SSE Profiles are first supported on v21.0
+        if (util.versionLessThan(getBigIpVersion(), '21.0')) {
+            this.skip();
+        }
+        const tenantName = 'Tenant';
+        const applicationName = 'Application';
+
+        const options = {
+            tenantName,
+            applicationName
+        };
+
+        const properties = [
+            {
+                name: 'virtualPort',
+                inputValue: [80],
+                expectedValue: ['80'],
+                extractFunction: (o) => o.destination.split(':')[1]
+            },
+            {
+                name: 'virtualAddresses',
+                inputValue: [['192.0.2.0']],
+                skipAssert: true
+            },
+            {
+                name: 'profileJSON',
+                inputValue: [undefined, { use: 'jsonProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/jsonProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    jsonProfile: {
+                        class: 'JSON_Profile',
+                        maximumBytes: 60000,
+                        maximumEntries: 2000,
+                        maximumNonJsonBytes: 32000
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'jsonProfile')
+                        .map((profile) => profile.fullPath);
+                    return (profiles.length > 0) ? profiles : undefined;
+                }
+            },
+            {
+                name: 'profileSSE',
+                inputValue: [undefined, { use: 'sseProfile' }, undefined],
+                expectedValue: [
+                    undefined,
+                    [
+                        `/${tenantName}/${applicationName}/sseProfile`
+                    ],
+                    undefined
+                ],
+                referenceObjects: {
+                    sseProfile: {
+                        class: 'SSE_Profile',
+                        maxFieldNameSize: 526,
+                        maxBufferedMsgBytes: 104800
+                    }
+                },
+                extractFunction: (o) => {
+                    const profiles = o.profiles
+                        .filter((p) => p.name === 'sseProfile')
                         .map((profile) => profile.fullPath);
                     return (profiles.length > 0) ? profiles : undefined;
                 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -266,7 +266,8 @@ const filterConfigForPerApp = function (context, config, declaration) {
     const alwaysNeededCommands = [
         'auth partition',
         'ltm node',
-        'ltm virtual-address'
+        'ltm virtual-address',
+        'ltm snat-translation'
     ];
 
     function isNeeded(tenantName, itemName, configItem, requiredApps) {

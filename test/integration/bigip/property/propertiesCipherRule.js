@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ describe('Cipher_Rule', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     it('should handle Ciper_Rule class', function () {
+        const namedGroupsActualValue = util.versionLessThan(getBigIpVersion(), '17.5.1') ? undefined : ['X25519MLKEM768', 'X25519KYBER768'];
+        const namedGroupsExpectedValue = util.versionLessThan(getBigIpVersion(), '17.5.1') ? undefined : 'X25519MLKEM768:X25519KYBER768';
         const properties = [
             {
                 name: 'remark',
@@ -65,12 +67,12 @@ describe('Cipher_Rule', function () {
                         'P256',
                         'P384'
                     ],
-                    undefined
+                    namedGroupsActualValue
                 ],
                 expectedValue: [
                     undefined,
                     'P256:P384',
-                    undefined
+                    namedGroupsExpectedValue
                 ],
                 extractFunction: (o) => o.dhGroups
             },

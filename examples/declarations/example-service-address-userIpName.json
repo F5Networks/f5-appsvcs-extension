@@ -1,0 +1,43 @@
+{
+    "class":"ADC",
+    "schemaVersion":"3.56.0",
+    "id":"Service_Address",
+    "Sample_misc_05":{
+        "class":"Tenant",
+        "Application":{
+            "class":"Application",
+            "theService": {
+                "class": "Service_HTTP",
+                "virtualPort": 123,
+                "virtualAddresses": [
+                    {
+                        "use": "serviceAddress"
+                    },
+                    {
+                        "use": "serviceAddress1"
+                    }
+                ]
+            },
+            "serviceAddress":{
+                "class":"Service_Address",
+                "virtualAddress":"123.123.123.123",
+                "arpEnabled":false,
+                "icmpEcho":"disable",
+                "routeAdvertisement":"any",
+                "spanningEnabled":true,
+                "trafficGroup":"/Common/traffic-group-local-only",
+                "useIpName": false
+            },
+            "serviceAddress1":{
+                "class":"Service_Address",
+                "virtualAddress":"123.123.124.124",
+                "arpEnabled":false,
+                "icmpEcho":"disable",
+                "routeAdvertisement":"any",
+                "spanningEnabled":true,
+                "trafficGroup":"/Common/traffic-group-local-only",
+                "useIpName": true
+            }
+        }
+    }
+}

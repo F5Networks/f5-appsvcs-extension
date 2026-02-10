@@ -131,6 +131,10 @@
             "endpoint": "/mgmt/tm/ltm/profile/http-compression"
         },
         {
+            "endpoint": "/mgmt/tm/ltm/profile/json",
+            "minimumVersion": "21.0"
+        },
+        {
             "endpoint": "/mgmt/tm/ltm/profile/web-acceleration"
         },
         {
@@ -187,6 +191,10 @@
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/splitsessionclient"
+        },
+        {
+            "endpoint": "/mgmt/tm/ltm/profile/sse",
+            "minimumVersion": "21.0"
         },
         {
             "endpoint": "/mgmt/tm/ltm/profile/connector"
@@ -663,6 +671,9 @@
         },
         {
             "endpoint": "nameReference"
+        },
+        {
+            "endpoint": "stagedSignaturesReference"
         }
     ],
     "subReferred": [

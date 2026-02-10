@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 'use strict';
 
 const forge = require('node-forge');
+const fs = require('fs');
+const { execSync } = require('child_process');
+const os = require('os');
+const path = require('path');
 
 const util = require('./util');
 const LongSecretTag = require('../tag/longSecretTag');
 const declarationUtil = require('./declarationUtil');
+const log = require('../log');
 
 // PFX (Personal inFormation eXchange)
 // - version
@@ -263,11 +268,9 @@ const parsePkcs12 = function (pkcs12Item, options) {
     // being the same as encrypted private key passphrase (privacy)
     // see -twopass arg for openssl: https://linux.die.net/man/1/pkcs12
     let pkcs12Obj = {};
-    if (typeof options.importPassword === 'undefined') {
-        pkcs12Obj = forge.pkcs12.pkcs12FromAsn1(pkcs12Asn1);
-    } else {
-        pkcs12Obj = forge.pkcs12.pkcs12FromAsn1(pkcs12Asn1, options.importPassword);
-    }
+    // node-forge 1.3.2+ requires explicit empty string for passwordless PKCS#12
+    const password = typeof options.importPassword === 'undefined' ? '' : options.importPassword;
+    pkcs12Obj = forge.pkcs12.pkcs12FromAsn1(pkcs12Asn1, password);
     return {
         certificates: getCertFromPkcs12(pkcs12Obj),
         privateKey: getKeyFromPkcs12(pkcs12Obj, options)
@@ -275,10 +278,43 @@ const parsePkcs12 = function (pkcs12Item, options) {
 };
 
 const checkIfSelfSigned = function (cert) {
-    const pki = forge.pki;
-    const caStore = pki.createCaStore([cert]);
-    const addedCert = caStore.listAllCertificates()[0];
-    return addedCert.isIssuer(addedCert);
+    try {
+        const pki = forge.pki;
+        const caStore = pki.createCaStore([cert]);
+        const addedCert = caStore.listAllCertificates()[0];
+        return addedCert.isIssuer(addedCert);
+    } catch (e) {
+        if (e.message.indexOf('OID is not RSA') > -1) {
+            // Create unique temporary file
+            const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cert-'));
+            const tempCertPath = path.join(tempDir, 'cert.pem');
+            try {
+                fs.writeFileSync(tempCertPath, cert);
+                log.debug('certFile was created.');
+
+                const output = execSync(`openssl x509 -in ${tempCertPath} -noout -issuer -subject`).toString();
+                const fields = output.split('\n');
+                let issuer = fields.find((line) => line.startsWith('issuer='));
+                let subject = fields.find((line) => line.startsWith('subject='));
+                issuer = issuer.replace('issuer=', '').trim();
+                subject = subject.replace('subject=', '').trim();
+
+                return issuer && subject && issuer.trim() === subject.trim();
+            } catch (error) {
+                return false;
+            } finally {
+                // Cleanup entire temp directory
+                try {
+                    fs.unlinkSync(tempCertPath);
+                    fs.rmdirSync(tempDir);
+                    log.debug('certFile was deleted.');
+                } catch (unlinkError) {
+                    log.debug(`Unable to delete temp directory due to ${unlinkError}`);
+                }
+            }
+        }
+        return false;
+    }
 };
 
 // Ensures class certificate in decl and private key does not have passphrase/url/bigip to encode/decode keys

@@ -2,9 +2,9 @@
 
 set -e
 
-# Colors
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# Source common utilities
+source "scripts/dev/common-utils.sh"
+
 if [ -z "$1" ]; then
     echo "Target machine is required for installation."
     exit 0
@@ -31,7 +31,7 @@ if [ -z "$TARGET_RPM" ]; then
 fi
 
 RPM_NAME=$(basename $TARGET_RPM)
-CURL_FLAGS="--silent --write-out \n --insecure -u $CREDS"
+CURL_FLAGS="--silent --insecure --connect-timeout 10 --max-time 30 -u $CREDS"
 
 poll_task () {
     STATUS="STARTED"
@@ -47,24 +47,6 @@ poll_task () {
     done
 }
 
-check_echo_js_endpoint() {
-    ECHO_JS_URL="https://$TARGET/mgmt/shared/echo-js"
-    MAX_TRIES=300
-    counter=1
-    set +e
-    INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$ECHO_JS_URL")
-    until [[ -n $(echo $INFO | jq -r .stage) || $counter -gt $MAX_TRIES ]]; do
-        ((counter++))
-        sleep 10
-        INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$ECHO_JS_URL")
-    done
-    if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $ECHO_JS_URL on $TARGET${NC}"
-        exit 1
-    fi
-    set -e
-}
-
 check_info_endpoint() {
     INFO_URL=$1
     MAX_TRIES=300
@@ -73,13 +55,19 @@ check_info_endpoint() {
     INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$INFO_URL")
     until [[ -n $(echo $INFO | jq -r .version) || $counter -gt $MAX_TRIES ]]; do
         ((counter++))
+        # Print progress every 30 seconds
+        if (( counter % 30 == 0 )); then
+            echo "  Still waiting for $INFO_URL... (attempt $counter/$MAX_TRIES, elapsed: ${counter}s)"
+        fi
         sleep 1
         INFO=$(curl ${CURL_FLAGS} --write-out "" --fail --silent "$INFO_URL")
     done
     if [[ $counter -gt $MAX_TRIES ]]; then
-        echo -e "${RED}Max tries reached while waiting for $INFO_URL on $TARGET${NC}"
+        echo -e "${RED}Max tries reached (${MAX_TRIES}s elapsed) while waiting for $INFO_URL on $TARGET${NC}"
+        echo -e "${RED}Last response: $INFO${NC}"
         exit 1
     fi
+    echo "  Endpoint is now available (took ${counter}s)"
     set -e
 }
 
@@ -93,21 +81,27 @@ wait_for_curl_response_with_retries() {
     until [[ $counter -gt MAX_TRIES ]]; do
         response=$(curl ${CURL_FLAGS} "$url" | jq -r .items[0].failoverState)
 
-        if [[ "$response" == "active" ]]; then
-            echo "$TARGET's MCPD is in $response state."
+        # Accept active, standby, or forced-offline as valid states
+        if [[ "$response" == "active" ]] || [[ "$response" == "standby" ]] || [[ "$response" == "forced-offline" ]]; then
+            echo "  $TARGET's MCPD is in $response state (took $((counter * interval))s)"
             return 0  # Success
         fi
 
-        retries=$((retries + 1))
+        # Print progress every 3 attempts (30 seconds)
+        if (( counter % 3 == 0 )); then
+            echo "  Waiting for MCPD to be active... (current: $response, attempt $counter/$MAX_TRIES, elapsed: $((counter * interval))s)"
+        fi
+
+        counter=$((counter + 1))
         sleep $interval
     done
 
-    echo "${RED}Maximum number of retries ($MAX_TRIES) reached. MCPD on $TARGET is in $response state${NC}"
+    echo "${RED}Maximum number of retries ($MAX_TRIES) reached ($((MAX_TRIES * interval))s elapsed). MCPD on $TARGET is in $response state${NC}"
     return 1  # Maximum retries reached
 }
 
-echo "Waiting for REST framework to be available on $TARGET"
-check_echo_js_endpoint
+echo "[install-rpm.sh] Waiting for REST framework to be available on $TARGET"
+check_echo_js_endpoint "$TARGET" "$CURL_FLAGS"
 
 # If this is AS3, get list of existing f5-appsvcs packages on target and uninstall them
 if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
@@ -142,18 +136,40 @@ TASK=$(curl ${CURL_FLAGS} "https://$TARGET/mgmt/shared/iapp/package-management-t
     --data $DATA -H "Origin: https://$TARGET" -H "Content-Type: application/json;charset=UTF-8")
 poll_task $(echo $TASK | jq -r .id)
 
-# If this is AS3, check availability
+# If this is AS3, restart restnoded immediately to ensure clean load, then wait for system stability
 if echo "$RPM_NAME" | egrep -q '^f5-appsvcs'; then
+    # Restart restnoded to ensure AS3 loads cleanly after installation
+    echo "Restarting restnoded service on $TARGET to ensure AS3 loads properly..."
+    RESTART_RESULT=$(curl ${CURL_FLAGS} -X POST \
+        "https://$TARGET/mgmt/tm/sys/service" \
+        -H "Content-Type: application/json" \
+        -d '{"command":"restart","name":"restnoded"}' 2>/dev/null)
+
+    echo "  Waiting 20 seconds for restnoded to restart and load AS3 worker..."
+    sleep 20
+
+    echo "Waiting for $TARGET device's MCPD to reach stable state before checking AS3"
+    wait_for_curl_response_with_retries
+
+    # Wait for REST framework to come back online
+    echo "  Verifying REST framework is back online..."
+    check_echo_js_endpoint "$TARGET" "$CURL_FLAGS"
+
+    # Debug: Check if AS3 files exist
+    RESTNODED_STATUS=$(curl ${CURL_FLAGS} "https://$TARGET/mgmt/shared/echo-js/info" 2>/dev/null | jq -r .version || echo "REST unavailable")
+
     echo "Waiting for appsvcs/info endpoint to be available on $TARGET"
     check_info_endpoint "https://$TARGET/mgmt/shared/appsvcs/info"
 
     echo "Waiting for service-discovery/info endpoint to be available on $TARGET"
     check_info_endpoint "https://$TARGET/mgmt/shared/service-discovery/info"
+
+    echo "Installed $RPM_NAME on $TARGET"
+else
+    echo "Installed $RPM_NAME on $TARGET"
+
+    echo "Waiting for $TARGET device's MCPD to be active"
+    wait_for_curl_response_with_retries
 fi
-
-echo "Installed $RPM_NAME on $TARGET"
-
-echo "Waiting for $TARGET device's MCPD to be active"
-wait_for_curl_response_with_retries
 
 exit 0

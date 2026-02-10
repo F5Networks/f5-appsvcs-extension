@@ -1,0 +1,63 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.0.0",
+        "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab915d",
+        "label": "Sample 1",
+        "remark": "Simple MCP application",
+        "Sample_01": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "mySSEProfile": {
+                    "class": "SSE_Profile"
+                },
+                "myJSONProfile": {
+                    "class": "JSON_Profile"
+                },
+                "service": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.0.1.10"
+                    ],
+                    "pool": "mcp_pool",
+                    "iRules": [
+                        "persistenceiRule"
+                    ],
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "proflieSSE": {
+                        "use": "mySSEProfile"
+                    },
+                    "profileJSON": {
+                        "use": "myJSONProfile"
+                    }
+                },
+                "mcp_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                "192.0.1.10",
+                                "192.0.1.11"
+                            ]
+                        }
+                    ]
+                },
+                "persistenceiRule": {
+                    "class": "iRule",
+                    "iRule": "when HTTP_REQUEST {\n    set is_req_to_sse_endpoint false\n\n    if { [HTTP::path] eq \"/sse\" } {\n        # SSE endpoint for 2024-11-05 version of MCP Spec\n        set is_req_to_sse_endpoint true\n        return\n    }\n\n    if { [HTTP::path] eq \"/messages\" } {\n        # Message endpoint for 2024-11-05 version of MCP Spec\n        # Decode persist secret in URI of request\n        set query_string [HTTP::query]\n        set f5_sess_found false\n        set new_query_string \"\"\n        set query_separator \"\"\n        set queries [split $query_string \"&\"]\n        foreach query $queries {\n            if { $f5_sess_found } {\n                # On queries after the F5 session. Retain them.\n                append new_query_string \"${query_separator}${query}\"\n                set query_separator \"&\"\n            } elseif { [string match \"f5Session=*\" $query] } {\n                # Here's our persistence secret. Handle It.\n                set pmbr_info [URI::decode [string range $query 10 end]]\n                set pmbr_parts [split $pmbr_info \",\"]\n                if { [llength $pmbr_parts] == 2} {\n                    set pmbr_tuple [split [lindex $pmbr_parts 1] \":\"]\n                    if { [llength $pmbr_tuple] == 2 } {\n                        # Found a valid pool record. Tell the proxy.\n                        pool [lindex $pmbr_parts 0] member [lindex $pmbr_parts 1]\n                        set f5_sess_found true\n                    } else {\n                        HTTP::respond 404 noserver\n                        return\n                    }\n                } else {\n                    HTTP::respond 404 noserver\n                    return\n                }\n            } else {\n                # Another query. Haven't found the F5 secret yet.\n                # Append to query string we will forward.\n                append new_query_string \"${query_separator}${query}\"\n                set query_separator \"&\"\n            }\n        }\n        if { $f5_sess_found } {\n            HTTP::query $new_query_string\n        } else {\n            HTTP::respond 404 noserver\n        }\n        return\n    }\n\n    if { [HTTP::path] eq \"/mcp\" } {\n        # MCP endpoint for 2025-03-26 version of MCP Spec\n        if { [HTTP::header exists \"Mcp-Session-Id\"] } {\n            # Decode persist secret in session header\n            set header_value [HTTP::header \"Mcp-Session-Id\"]\n            set header_parts [split $header_value \",\"]\n\n            if { [llength $header_parts] == 3 } {\n                set pmbr_tuple [split [lindex $header_parts 1] \":\"]\n                if { [llength $pmbr_tuple] == 2 } {\n                    HTTP::header replace \"Mcp-Session-Id\" [lindex $header_parts 2]\n                    pool [lindex $header_parts 0] member [lindex $header_parts 1]\n                } else {\n                    HTTP::respond 404 noserver\n                }\n            } else {\n                HTTP:: respond 404 noserver\n            }\n        }\n    }\n}\n\nwhen HTTP_RESPONSE {\n    if { [HTTP::header exists \"Mcp-Session-Id\"] } {\n        # Using session header - 2025-03-26 spec - insert persist secret\n\n        # Get the current pool member's IP and port\n        set pool_member [LB::server pool],[IP::remote_addr]:[TCP::remote_port]\n\n        # Prepend the pool member IP and port to the header value\n        set header_value [HTTP::header \"Mcp-Session-Id\"]\n        set new_header_value \"$pool_member,$header_value\"\n        HTTP::header replace \"Mcp-Session-Id\" $new_header_value\n    }\n}\n\nwhen SSE_RESPONSE {\n    if { $is_req_to_sse_endpoint && [SSE::field get event] eq \"endpoint\" } {\n        # Server sending MCP message endpoint. Insert persist secret\n        set sse_data [SSE::field get data]\n\n        # Extract existing URI info from SSE endpoint data\n        set old_path [URI::path $sse_data][URI::basename $sse_data]\n        set old_queries [URI::query $sse_data]\n        if { [string length $old_queries] == 0} {\n            set query_separator \"\"\n        } else {\n            set query_separator \"&\"\n        }\n\n        # Create a new query param encoding current pool member's info\n        set new_query \"f5Session=[URI::encode [LB::server pool],[IP::remote_addr]:[TCP::remote_port]]\"\n\n        # Construct new full endpoint, inserting F5 session info\n        set new_endpoint \"${old_path}?${new_query}${query_separator}${old_queries}\"\n        SSE::field set data $new_endpoint\n    }\n}",
+                    "expand": true
+                }
+            }
+        }
+    }
+}

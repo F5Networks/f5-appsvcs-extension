@@ -12,6 +12,7 @@ mkdir -p $PREFIX/scripts
 cp source-raw/scripts/build/*buildRpm.sh $PREFIX/scripts
 cp source-raw/scripts/build/schema-build.js $PREFIX/scripts/
 cp source-raw/scripts/build/schema-check.js $PREFIX/scripts/
+cp source-raw/scripts/build/per-app-schema-check.js $PREFIX/scripts/
 cp source-raw/scripts/dev/install-rpm.sh $PREFIX/scripts/
 cp source-raw/package.json $PREFIX/
 cp source-raw/package-lock.json $PREFIX/

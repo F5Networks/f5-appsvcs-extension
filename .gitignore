@@ -2,11 +2,6 @@
 .idea/
 .vscode/
 .DS_Store
-src/lib/
-src/nodejs/
-scripts/
-packages/
-test/
 f5-appsvcs-extension.code-workspace
 jsconfig.json
 test/.DS_Store
@@ -23,6 +18,7 @@ src/schema/latest/adc-schema.json
 src/schema/latest/as3-schema.json
 src/schema/latest/def-pointers-schema.json
 src/schema/latest/def-shared-schema-core.json
+src/schema/latest/per-app-schema.json
 test/logs
 examples/as3.examples.collection.json
 examples/example-all.json

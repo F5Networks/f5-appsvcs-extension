@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -981,108 +981,22 @@ describe('DOS_Profile', function () {
         return assertDosProfile(properties);
     });
 
-    it('Mobile defense', function () {
-        if (!util.versionLessThan(getBigIpVersion(), '14.1')) {
-            this.skip();
-        }
-
-        assertModuleProvisioned.call(this, 'afm');
-        assertModuleProvisioned.call(this, 'asm');
-
-        const expectedMobileDefense = {
-            name: 'undefined',
-            rtbhDurationSec: 10,
-            rtbhEnable: 'enabled',
-            scrubbingDurationSec: 42,
-            scrubbingEnable: 'enabled',
-            singlePageApplication: 'disabled',
-            triggerIrule: 'disabled',
-            mobileDetection: {
-                allowAndroidRootedDevice: 'true',
-                allowAnyAndroidPackage: 'false',
-                allowAnyIosPackage: 'false',
-                allowEmulators: 'true',
-                allowJailbrokenDevices: 'true',
-                clientSideChallengeMode: 'cshui',
-                enabled: 'enabled',
-                iosAllowedPackageNames: [
-                    'theName'
-                ],
-                androidPublishers: [
-                    {
-                        name: 'default.crt',
-                        partition: 'Common'
-                    },
-                    {
-                        name: 'testCert',
-                        partition: 'TEST_DOS_Profile',
-                        subPath: 'Application'
-                    }
-                ]
-            }
-        };
-
-        const properties = [
-            {
-                name: 'application',
-                inputValue: [
-                    undefined,
-                    {
-                        scrubbingDuration: 42,
-                        remoteTriggeredBlackHoleDuration: 10,
-                        mobileDefense: {
-                            enabled: true,
-                            allowAndroidPublishers: [
-                                { bigip: '/Common/default.crt' },
-                                { use: 'testCert' }
-                            ],
-                            allowAndroidRootedDevice: true,
-                            allowIosPackageNames: [
-                                'theName'
-                            ],
-                            allowJailbrokenDevices: true,
-                            allowEmulators: true,
-                            clientSideChallengeMode: 'challenge'
-                        }
-                    },
-                    undefined
-                ],
-                expectedValue: [
-                    undefined,
-                    expectedMobileDefense,
-                    undefined
-                ],
-                referenceObjects: {
-                    testCert: {
-                        class: 'Certificate',
-                        certificate: '-----BEGIN CERTIFICATE-----\nMIIDSjCCAjKgAwIBAgIEEYGlyTANBgkqhkiG9w0BAQsFADBnMQswCQYDVQQGEwJV\nUzELMAkGA1UECBMCV0ExEDAOBgNVBAcTB1NlYXR0bGUxCzAJBgNVBAoTAkY1MREw\nDwYDVQQLEwhEZXYvVGVzdDEZMBcGA1UEAxMQVGVzdCBPQ1NQIFNpZ25lcjAeFw0x\nOTA0MjMxNzU0MTdaFw0yNDA0MjExNzU0MTdaMGcxCzAJBgNVBAYTAlVTMQswCQYD\nVQQIEwJXQTEQMA4GA1UEBxMHU2VhdHRsZTELMAkGA1UEChMCRjUxETAPBgNVBAsT\nCERldi9UZXN0MRkwFwYDVQQDExBUZXN0IE9DU1AgU2lnbmVyMIIBIjANBgkqhkiG\n9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6mUjd2Vsclqv5NDcoPyqW2RDn7bHkCj8zemZ\ntadBNDSsoCNVNu/BAptTBgD4fRHjLlHR6NOIHCzuqnklpEQze4/1SDXL1hkDBmFS\nfon2UKUvpoUWfPjt41auEfTx1DgIHoKqT+0+C5pfCRSLy1JIQBQyh7kYiIbFzYYq\nEND2GNGrHOuX0f58ae4eU/XmAZQVJXfqsyyhak0kLOxU+vIBJpweisZKxa9C7nuX\nLI2nIGIDqexK8C5RrIc0bY2OHn0pEMv1/tYgFYjOqos6/2Sl1/ZXGX/O0kyYmzai\nnkxdM3Ozj/Q9hoLbBn40pl8BhFh6oYl5g/3nhm5Mzr1lQkvPqwIDAQABMA0GCSqG\nSIb3DQEBCwUAA4IBAQDc3ZSvM/aez6S63kKRP79/VE9H37woZ+sDGQkjf5yoz9hm\n+3WnbpYVw93rAbf4lkASFdRvq4ZA9UG7YWUmVKB33vrSxqEttdN7szjOBrfCOmpx\nEvftuvHPOovqkiuVcDIDxoBsmeqhtprppjl+MzaibkFx9UFHLzS0ZXo85BVtwTK+\nMSj4uv9HFT+EpmlsLOZ8PiYTkIxb5FHAArXd2Q3lkHp1n//5bUE5jurBiZqx8N6F\ndVXXIA7ghE7azooDPKBtx4pcsKpyrEdao1G4wiSICyoS/EoxTm9Vd2DybMKymIbq\nzcSE8j03hrI+dqduGxmOxwYDUBSvn9SvLW9SqBGw\n-----END CERTIFICATE-----',
-                        privateKey: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDqZSN3ZWxyWq/k\n0Nyg/KpbZEOftseQKPzN6Zm1p0E0NKygI1U278ECm1MGAPh9EeMuUdHo04gcLO6q\neSWkRDN7j/VINcvWGQMGYVJ+ifZQpS+mhRZ8+O3jVq4R9PHUOAgegqpP7T4Lml8J\nFIvLUkhAFDKHuRiIhsXNhioQ0PYY0asc65fR/nxp7h5T9eYBlBUld+qzLKFqTSQs\n7FT68gEmnB6KxkrFr0Lue5csjacgYgOp7ErwLlGshzRtjY4efSkQy/X+1iAViM6q\nizr/ZKXX9lcZf87STJibNqKeTF0zc7OP9D2GgtsGfjSmXwGEWHqhiXmD/eeGbkzO\nvWVCS8+rAgMBAAECggEAAmDeWELOM+bZrA+2fWey7tR4nzFCmyLfVdON/LrivX3f\nVoylO7Z5Feavk/sEinhY/spTv/INioOmNFKgYCdVAmb2jTIGjHiagEESjjgmKLFU\nZ3MoREJeX5UslQAQSB/9bRnUUpVMsN9zIWt08641D3lk/d2R8yiy7x/yY1NLe/r3\nsc2XecCl2DmUPnYzrl61Q264xEifPNVsikyeB5N26I7HtlQX5d1eHoIJ83TGn3Wp\nBRfxkCe0sOU+iq2f6l8PjI6mbUUaY9J81zaKZpaXK4/MlgEfeM0QNCILHIX4xUQR\nmvVo5uvIQrdIe2IvK5JaFlHI2utC8ppuOt9laGVgQQKBgQD3vW+RHzfEm+gL1YdH\nW82GXPZ3PxWrtjEtNrWhMNMrKyVG475wF14WsKo6tZnPe1DqMBRZt8GjpUZnoTBK\nYyuW/WmO6JvTsm75zvE6/fTpc7ORd987zLJUmAu8cJwkI4hY05m3Aj31cIF4DORs\nrIzpZhghS8kVX9N1f9aqcea2ywKBgQDyNcxgQxbx+6vPfqU6uN+4sKTKc/Cl10Vl\njXF5lfXX5ga244tsmQq7HEPnPtpnh7NeeqCjzhJF22Ru5bUxQUtxHbOiyWqMtGAG\nP4uFJyqJIg8hU/oWUsYmS3IF6YSb5/HyyQ0zn1aJAMwnv1Vpb6eDHXcNRBhikFLq\n0xZbbGNOoQKBgFz/1hPqXisGQ9O9cq0M/1hDKZqWKfJt0IQil4hNJdh8t9+muuSl\nQQLPivfDGFxU9IkVR25ulthxwL5COjiShdiGhMvK8kREJXjNgK0ejIPelTg0ga6X\nJxKuiSlSNKs0U4jU1k1nIA81DsUcQdux4qvzUXeeVXwanuzq8pDFdVCFAoGAWIR+\nx6NdLFxsou1G11ofMPElmHOcvA8bZoy1rti2Owvu4kHwf2TC/jTLQCTBTtrSG7I3\nKQYzuWH/p2O9v118g792GgUAMqHtAfuRMr1olytiWizFlgj0L6Sc7Do2Y3/19WOy\ntm4CAxnOgqwzO9A5aPqIuslrHAJguz8fyZOoC2ECgYEA9Y+Zp+sWjlVtMi9DoewF\nblil86us3/aCT0xFeaTPEEnJqC/Zz3xF6Bxb2B3/JT+2nvlY6ewRebUYAQrkkApM\no8MrB1IiUiot0UsyxhhoGMeOa8EgkvcyGhqK4yMaIgpgZDwX6WN6XiV8bL+bltze\nV5FCB6O5SaXnYIhegxrsfHw=\n-----END PRIVATE KEY-----'
-                    }
-                },
-                extractFunction: (o) => {
-                    const extracted = extractObject((o.application || [])[0]);
-                    if (!extracted) return extracted;
-
-                    extracted.mobileDetection.androidPublishers
-                        .forEach((p) => delete p.nameReference);
-
-                    delete extracted.fastl4AccelerationProfileReference;
-                    delete extracted.captchaResponse;
-                    delete extracted.heavyUrls;
-                    delete extracted.botDefense;
-                    delete extracted.botSignatures;
-                    delete extracted.stressBased;
-                    delete extracted.tcpDump;
-                    delete extracted.tpsBased;
-
-                    return extracted;
-                }
-            }
-        ];
-        return assertDosProfile(properties);
-    });
-
     it('should succeed if only asm is enabled', function () {
+        // THIS TEST NO LONGER WORKS AND I DON'T KNOW HOW LONG IT HAS BEEN BROKEN
+        // in path.json we see this endpoint which we need to test against
+        // {
+        //    "endpoint": "/mgmt/tm/security/dos/profile",
+        //    "modules": ["afm", "asm"]
+        // },
+        //
+        // This line in propertiesCommon mcpClasses filters it out becaues not
+        // all of the modules are met during asm only. We will likely need to move
+        // this test to the misc category if we want to keep it.
+        //
+        // return (!found || (
+        //    ((!found.minimumVersion || !util.versionLessThan(BIGIP_VERSION, found.minimumVersion))
+        //    && (!found.modules || (found.modules || []).every((m) => getProvisionedModules().includes(m))))));
+        //
         const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
         const afm = ['afm'].every((m) => getProvisionedModules().includes(m));
         if ((asm && afm) || (!asm)) {
@@ -1100,11 +1014,25 @@ describe('DOS_Profile', function () {
                     || o.application.rtbhEnable)
             }
         ];
-
         return assertDosProfile(properties);
     });
 
     it('should ERROR if only asm is enabled and these variables are set', function () {
+        // THIS TEST NO LONGER WORKS AND I DON'T KNOW HOW LONG IT HAS BEEN BROKEN
+        // in path.json we see this endpoint which we need to test against
+        // {
+        //    "endpoint": "/mgmt/tm/security/dos/profile",
+        //    "modules": ["afm", "asm"]
+        // },
+        //
+        // This line in propertiesCommon mcpClasses filters it out becaues not
+        // all of the modules are met during asm only. We will likely need to move
+        // this test to the misc category if we want to keep it.
+        //
+        // return (!found || (
+        //    ((!found.minimumVersion || !util.versionLessThan(BIGIP_VERSION, found.minimumVersion))
+        //    && (!found.modules || (found.modules || []).every((m) => getProvisionedModules().includes(m))))));
+        //
         const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
         const afm = ['afm'].every((m) => getProvisionedModules().includes(m));
         if ((asm && afm) || (!asm)) {
@@ -1271,6 +1199,73 @@ describe('DOS_Profile', function () {
             }
         };
 
+        const modeOff = {
+            remoteTriggeredBlackHoleDuration: 10,
+            singlePageApplicationEnabled: true,
+            scrubbingDuration: 1000,
+            botDefense: {
+                mode: 'off',
+                blockSuspiscousBrowsers: true,
+                issueCaptchaChallenge: true,
+                gracePeriod: 5000000,
+                crossDomainRequests: 'validate-upon-request',
+                siteDomains: [
+                    'www.yahoo.com'
+                ],
+                externalDomains: [
+                    'www.bing.com'
+                ],
+                urlAllowlist: [
+                    'www.google.com'
+                ]
+            },
+            botSignatures: {
+                checkingEnabled: true,
+                blockedCategories: [
+                    {
+                        bigip: '/Common/Search Engine'
+                    },
+                    {
+                        bigip: '/Common/DOS Tool'
+                    }
+                ],
+                reportedCategories: [
+                    {
+                        bigip: '/Common/Crawler'
+                    },
+                    {
+                        bigip: '/Common/Exploit Tool'
+                    }
+                ],
+                disabledSignatures: [
+                    {
+                        bigip: '/Common/Yandex'
+                    }
+                ]
+            },
+            mobileDefense: {
+                enabled: true,
+                allowAndroidPublishers: [
+                    {
+                        bigip: '/Common/default.crt'
+                    },
+                    {
+                        bigip: '/Common/ca-bundle.crt'
+                    },
+                    {
+                        use: 'testCert'
+                    }
+                ],
+                allowAndroidRootedDevice: true,
+                allowIosPackageNames: [
+                    'theName'
+                ],
+                allowJailbrokenDevices: true,
+                allowEmulators: true,
+                clientSideChallengeMode: 'challenge'
+            }
+        };
+
         const properties = [
             {
                 name: 'application',
@@ -1280,7 +1275,8 @@ describe('DOS_Profile', function () {
                         scrubbingDuration: 52
                     },
                     modeDuringAttacks,
-                    modeAlways
+                    modeAlways,
+                    modeOff
                 ],
                 referenceObjects: {
                     testCert: {
@@ -1420,6 +1416,90 @@ describe('DOS_Profile', function () {
                         ],
                         dosAttackStrictMitigation: 'disabled',
                         enforcementMode: 'blocking',
+                        gracePeriod: 5000000,
+                        mobileDetection: {
+                            allowAndroidRootedDevice: 'enabled',
+                            allowAnyAndroidPackage: 'disabled',
+                            allowAnyIosPackage: 'disabled',
+                            allowEmulators: 'enabled',
+                            allowJailbrokenDevices: 'enabled',
+                            blockDebuggerEnabledDevice: 'enabled',
+                            clientSideChallengeMode: 'cshui',
+                            androidPublishers: [
+                                {
+                                    name: 'ca-bundle.crt',
+                                    partition: 'Common'
+                                },
+                                {
+                                    name: 'default.crt',
+                                    partition: 'Common'
+                                },
+                                {
+                                    name: 'testCert',
+                                    partition: 'TEST_DOS_Profile',
+                                    subPath: 'Application'
+                                }
+                            ],
+                            iosAllowedPackages: [
+                                {
+                                    name: 'theName'
+                                }
+                            ]
+                        },
+                        name: `${PREFIX}${getItemName({ tenantName, maxPathLength: MAX_PATH_LENGTH })}${POSTFIX}`,
+                        singlePageApplication: 'enabled',
+                        signatureCategoryOverrides: [
+                            {
+                                name: 'Crawler',
+                                action: 'alarm'
+                            },
+                            {
+                                name: 'DOS Tool',
+                                action: 'block'
+                            },
+                            {
+                                name: 'Exploit Tool',
+                                action: 'alarm'
+                            },
+                            {
+                                name: 'Search Engine',
+                                action: 'block'
+                            }
+                        ],
+                        signatureOverrides: [
+                            {
+                                name: 'Yandex',
+                                action: 'alarm'
+                            }
+                        ],
+                        siteDomains: [
+                            {
+                                name: 'www.yahoo.com'
+                            }
+                        ],
+                        whitelist: [
+                            {
+                                name: 'url_0',
+                                url: 'www.google.com'
+                            }
+                        ],
+                        externalDomains: [
+                            {
+                                name: 'www.bing.com'
+                            }
+                        ]
+                    },
+                    {
+                        crossDomainRequests: 'validate-upon-request',
+                        classOverrides: [
+                            {
+                                name: 'Browser',
+                                mitigation: { action: 'none' },
+                                verification: { action: 'none' }
+                            }
+                        ],
+                        dosAttackStrictMitigation: 'enabled',
+                        enforcementMode: 'transparent',
                         gracePeriod: 5000000,
                         mobileDetection: {
                             allowAndroidRootedDevice: 'enabled',

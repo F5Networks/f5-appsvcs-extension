@@ -35,8 +35,10 @@
   * rm schema/latest/*
   * cp as3-schema-`<version>-<build>`.json schema/latest/
   * cp as3-schema-`<version>-<build>`.json schema/latest/as3-schema.json
+  * cp per-app-schema-`<version>-<build>`.json schema/latest/per-app-schema.json
   * cp as3-schema-`<version>-<build>`.json schema/`<version>`/
   * cp as3-schema-`<version>-<build>`.json schema/`<version>`/as3-schema.json
+  * cp per-app-schema-`<version>-<build>`.json schema/`<version>`/per-app-schema.json
   * git add schema/latest schema/`<version>`
   * git commit -m 'Update schema files for release'
   * git push
@@ -93,15 +95,6 @@ Merge the release branch into `develop` and `main` following the steps below for
   * Choose the `main` branch from the `Create from` list.
   * Click on `Create Tag`.
 
-* Update f5-appsvcs-schema with the new AS3 version.
-  * Navigate to the f5-appsvcs-schema repository.
-  * Create a new branch off of `main`.
-  * Update the `schemaVersion.anyOf[1].const` property in `schemas/core-schema.json` using the preexisting format. The `pattern` property should also be updated to allow the new version (e.g. if going from 3.49.0 to 3.50.0, we'll add `|5[0]`).
-  * Run `npm ci`.
-  * Run `npm run compile-schema`. If you don't have the typescript compiler (tsc) installed, you will need to run `npm install -g typescript`.
-  * Be sure to update the invalid_schema test case as well since the error uses the `pattern`.
-  * Add and commit your changes, then push your branch.
-  * Publish an MR and ask for approval in the `AppSvcs Schema` channel.
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
 
 ### Release Manager tasks

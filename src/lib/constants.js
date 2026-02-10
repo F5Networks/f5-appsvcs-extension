@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,5 +78,6 @@ module.exports = {
     externalMonitorFile: 'mExternalMonitor',
     encryptedDeclLocation: '/var/config/rest/iapps/f5-appsvcs/encryptedDeclaration',
     encryptedDeclCounter: '/var/config/rest/iapps/f5-appsvcs/declRetryAttempts',
-    redirectSuffix: '-Redirect-'
+    redirectSuffix: '-Redirect-',
+    cipherSupport_17_5_1: ['X25519MLKEM768', 'X25519KYBER768']
 };

@@ -865,9 +865,16 @@
     { "id":"security",                  "altId": "securityEnabled", "truth": "enabled", "falsehood": "disabled" },
     { "id":"translate-extended",        "altId": "translateExtendedEnabled", "truth": "enabled", "falsehood": "disabled" }
   ],
+  "ltm profile json": [
+    { "id":"defaults-from",             "altId": "parentProfile" },
+    { "id":"description",               "altId": "remark", "quotedString": true, "default": "none" },
+    { "id":"maximum-bytes",             "altId": "maximumBytes" },
+    { "id":"maximum-entries",           "altId": "maximumEntries" },
+    { "id":"maximum-non-json-bytes",    "altId": "maximumNonJsonBytes" }
+  ],
   "ltm profile pptp": [
-    { "id":"defaults-from",              "altId": "defaultsFrom",  "default": "none"  },
-    { "id":"description",               "altId": "description",  "quotedString": true, "default": "none" },
+    { "id":"defaults-from",              "altId": "parentProfile",  "default": "none"  },
+    { "id":"description",               "altId": "remark",  "quotedString": true, "default": "none" },
     { "id":"csv-format",                 "altId": "csvFormat" , "truth": "enabled", "falsehood": "disabled"},
     { "id":"include-destination-ip",    "altId": "includeDestinationIp", "truth": "enabled", "falsehood": "disabled" },
     { "id":"publisher-name",            "altId": "publisherName", "default": "none"}
@@ -876,12 +883,18 @@
     { "id":"type" }
   ],
   "ltm profile splitsessionclient": [
-    { "id":"description",             "altId": "description",  "quotedString": true, "default": "none" },
+    { "id":"description",             "altId": "remark",  "quotedString": true, "default": "none" },
     { "id":"peer-port",               "altId": "peerPort" },
     { "id":"peer-ip",                 "altId": "peerIp" },
     { "id":"local-peer",              "altId": "localPeer" },
     { "id":"http-header",             "altId": "httpHeader" },
     { "id":"session-lookup-type",     "altId": "sessionLookupType" }
+  ],
+  "ltm profile sse": [
+    { "id": "defaults-from",          "altId": "parentProfile",       "default": "none" },
+    { "id": "description",            "altId": "remark",         "quotedString": true, "default": "none" },
+    { "id": "max-field-name-size",    "altId": "maxFieldNameSize",    "default": 1024 },
+    { "id": "max-buffered-msg-bytes", "altId": "maxBufferedMsgBytes", "default": 65536 }
   ],
   "ltm profile connector": [
     { "id":"entry-virtual-server",      "altId": "entryVirtualServer" },
@@ -2999,7 +3012,17 @@
     { "id":"whitelist",                   "extend": "objArray", "minVersion": "14.1" },
     { "id":"enforcement-mode",            "minVersion": "14.1"},
     { "id":"class-overrides",             "extend": "objArray", "minVersion": "14.1" },
-    { "id":"dos-attack-strict-mitigation", "altId": "dosMitigation", "minVersion": "14.1"}
+    { "id":"dos-attack-strict-mitigation", "altId": "dosMitigation", "minVersion": "14.1"},
+    { "id":"signature-staging-upon-update","minVersion": "14.1" },
+    { "id":"enforcement-readiness-period", "minVersion": "14.1" },
+    { "id":"allow-browser-access",         "minVersion": "14.1" },
+    { "id": "browser-mitigation-action",   "minVersion": "14.1"},
+    { "id":"deviceid-mode",                "minVersion": "14.1" },
+    { "id":"perform-challenge-in-transparent", "minVersion": "14.1" },
+    { "id":"staged-signatures",            "extend": "objArray", "minVersion": "14.1" }
+  ],
+  "security bot-defense profile staged-signatures": [
+    { "id":"name" }
   ],
   "security bot-defense profile external-domains": [
     { "id":"name" }
@@ -3015,7 +3038,11 @@
     { "id":"allow-jailbroken-devices",    "truth": "enabled", "falsehood": "disabled" },
     { "id":"client-side-challenge-mode" },
     { "id":"ios-allowed-packages",        "altId": "allowIosPackageNames", "extend": "objArray" },
-    { "id":"android-publishers",          "altId": "allowAndroidPublishers", "extend": "objArray" }
+    { "id":"android-publishers",          "altId": "allowAndroidPublishers", "extend": "objArray" },
+    { "id":"signatures",                  "extend": "objArray" }
+  ],
+  "security bot-defense profile mobile-detection signatures": [
+    { "id":"name" }
   ],
   "security bot-defense profile mobile-detection ios-allowed-packages": [
     { "id":"name" }
@@ -3048,7 +3075,8 @@
     { "id":"verification",               "extend":"object"}
   ],
   "security bot-defense profile class-overrides mitigation": [
-    { "id":"action" }
+    { "id":"action" },
+    { "id":"rate-limit-tps" }
   ],
   "security bot-defense profile class-overrides verification": [
     { "id":"action" }

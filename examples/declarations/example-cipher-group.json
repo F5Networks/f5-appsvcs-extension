@@ -58,6 +58,8 @@
                     "!3DES"
                 ],
                 "namedGroups": [
+                    "X25519MLKEM768",
+                    "X25519KYBER768",
                     "P256",
                     "P384"
                 ],

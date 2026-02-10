@@ -1,0 +1,79 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.56.0",
+    "id": "TLS_Server_AuthenticationMode",
+    "AS3_Tenant": {
+        "class": "Tenant",
+        "AS3_App": {
+            "class": "Application",
+            "service": {
+                "class": "Service_HTTPS",
+                "virtualAddresses": [
+                    "192.0.2.0"
+                ],
+                "serverTLS": "tlsServer",
+                "virtualPort": 443
+            },
+            "tlsServer": {
+                "class": "TLS_Server",
+                "requireSNI": true,
+                "certificates": [
+                    {
+                        "matchToSNI": "",
+                        "certificate": "snidefault",
+                        "authenticationMode": "ignore",
+                        "authenticationFrequency": "every-time"
+                    },
+                    {
+                        "matchToSNI": "https.example1.com",
+                        "certificate": "sni1",
+                        "authenticationMode": "require",
+                        "authenticationFrequency": "one-time"
+                    },
+                    {
+                        "matchToSNI": "https.example2.com",
+                        "certificate": "sni2",
+                        "authenticationMode": "request",
+                        "authenticationFrequency": "every-time"
+                    }
+                ]
+            },
+            "snidefault": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                },
+                "chainCA": {
+                    "bigip": "/Common/ca-bundle.crt"
+                }
+            },
+            "sni1": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                },
+                "chainCA": {
+                    "bigip": "/Common/ca-bundle.crt"
+                }
+            },
+            "sni2": {
+                "class": "Certificate",
+                "certificate": {
+                    "bigip": "/Common/default.crt"
+                },
+                "privateKey": {
+                    "bigip": "/Common/default.key"
+                },
+                "chainCA": {
+                    "bigip": "/Common/ca-bundle.crt"
+                }
+            }
+        }
+    }
+}

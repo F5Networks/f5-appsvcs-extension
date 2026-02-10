@@ -13,10 +13,9 @@
                 "template": "generic",
                 "pptpProfileSample": {
                     "class": "PPTP_Profile",
-                    "description": "Sample PPTP profile",
                     "label": "test",
                     "remark": "test",
-                    "defaultsFrom": {
+                    "parentProfile": {
                         "bigip": "/Common/pptp"
                     },
                     "csvFormat": true,

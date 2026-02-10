@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1060,6 +1060,54 @@ describe('map_cli', () => {
                     'tmsh::modify sys file ssl-cert /Tenant/App/cert cert-validation-options \\{ ocsp \\} cert-validators add \\{ 0 \\} issuer-cert /Common/issuer'
                 ]
             );
+        });
+
+        it('should return create and modify command for Client SSL profile', () => {
+            const diff = {
+                kind: 'N',
+                path: ['/server_OCSP/app/client_ssl_profile'],
+                rhs: {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'ocsp-stapling': 'enabled'
+                    }
+                },
+                command: 'ltm profile client-ssl',
+                lhsCommand: '',
+                rhsCommand: 'ltm profile client-ssl'
+            };
+            const targetConfig = {
+                'ocsp-stapling': 'enabled'
+            };
+            const currentConfig = {};
+            const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.deepStrictEqual(result.postTrans, ['tmsh::modify ltm profile client-ssl /server_OCSP/app/client_ssl_profile ocsp-stapling enabled']);
+            assert.deepStrictEqual(result.commands, ['tmsh::create ltm profile client-ssl /server_OCSP/app/client_ssl_profile ocsp-stapling disabled']);
+        });
+
+        it('should return create command for Client SSL profile', () => {
+            const diff = {
+                kind: 'N',
+                path: ['/server_OCSP/app/client_ssl_profile'],
+                rhs: {
+                    command: 'ltm profile client-ssl',
+                    properties: {
+                        'ocsp-stapling': 'enabled'
+                    }
+                },
+                command: 'ltm profile client-ssl',
+                lhsCommand: '',
+                rhsCommand: 'ltm profile client-ssl'
+            };
+            const targetConfig = {
+                'ocsp-stapling': 'enabled'
+            };
+            const currentConfig = {
+                '/server_OCSP/app/client_ssl_profile': {}
+            };
+            const result = mapCli.tmshCreate(context, diff, targetConfig, currentConfig);
+            assert.deepStrictEqual(result.postTrans, []);
+            assert.deepStrictEqual(result.commands, ['tmsh::create ltm profile client-ssl /server_OCSP/app/client_ssl_profile ocsp-stapling enabled']);
         });
 
         it('should generate create command', () => {

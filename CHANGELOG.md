@@ -1,6 +1,35 @@
 # Changelog
 Changes to this project are documented in this file. More detail (including information on releases before 3.4) and links can be found in the AS3 [Document Revision History](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/refguide/revision-history.html).
 
+## 3.56.0
+
+### Added
+- COREBIP-33944: Support for JSON profiles, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-json-profile.json)
+- COREBIP-33943: Support for SSE profiles, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-sse-profile.json)
+- AUTOTOOL-4844: ([Github Issue 931](https://github.com/F5Networks/f5-appsvcs-extension/issues/931)) AS3 support for X25519MLKEM768 [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-cipher-group.json)
+- COREBIP-34097: Add example of MCP iRule with SSE and JSON profiles [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-mcp-irule.json)
+- AUTOTOOL-4747: ([Github Issue 810](https://github.com/F5Networks/f5-appsvcs-extension/issues/810)) AS3 will now ship with a separate consolidated schema file for validation against per-application declarations
+- AUTOTOOL-4912: ([Github Issue 218](https://github.com/F5Networks/f5-appsvcs-extension/issues/218)) Expand available settings for Bot Defense - Github #218, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-bot-defense-complete-profile.json)
+- AUTOTOOL-4726: Implement AS3 feature to set option for authenticationMode for sub sni profiles, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-tls-server-authenticationMode.json)
+- AUTOTOOL-4856: DOS_Profile will now not create a bot defense profile if the new property application.botDefense.createBotDefenseProfile is set to false.
+
+### Fixed
+- AUTOTOOL-4886: ([Github Issue 935](https://github.com/F5Networks/f5-appsvcs-extension/issues/935)) Duplicate node name error
+- AUTOTOOL-4839: ([Github Issue 903](https://github.com/F5Networks/f5-appsvcs-extension/issues/903)) Fix provided for AS3 issue 903 does not work with certificate nameingScheme
+- AUTOTOOL-4817: Issue enabling OCSP Stapling with ECC Certificates
+- AUTOTOOL-4868: ([Github Issue 929](https://github.com/F5Networks/f5-appsvcs-extension/issues/929)) L4_Profile idleTimeout property does not accept "immediate", "indefinite", or 0
+- AUTOTOOL-4913: AS3: Changing HTTPS Monitor to (TCP, TCP-HALF-OPEN, or UDP) adds "user-defined CIPHERLIST DEFAULT" (DUP ID1694621)
+- AUTOTOOL-4937: ([Github Issue 859](https://github.com/F5Networks/f5-appsvcs-extension/issues/859)) Wrong traffic policy rule for the declared one to insert X-Forwarded-Proto header with "http" value
+- AUTOTOOL-4943: ([Github Issue 943](https://github.com/F5Networks/f5-appsvcs-extension/issues/943)) SNAT_Translation ipIdleTimeout tcpIdleTimeout udpIdleTimeout values are not updated when deployed using per-app
+- AUTOTOOL-4904: AS3 - Invalid Virtual Address, the IP address <IP> already exists, [Example](https://github.com/F5Networks/f5-appsvcs-extension/blob/main/examples/declarations/example-service-address-userIpName.json)
+- AUTOTOOL-4923: Cannot specify the "/Common/udp" Pool monitor with the string shortcut "udp"
+- AUTOTOOL-4920: AS3 per-app deployment fails when there is existing cipherGroup configured
+- AUTOTOOL-4964: ([Github Issue 943](https://github.com/F5Networks/f5-appsvcs-extension/issues/946)) Invalid characters in published schema may break tools trying to read it
+
+### Changed
+
+### Removed
+
 ## 3.55.0
 
 ### Added

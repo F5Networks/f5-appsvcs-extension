@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+
+const oauth = require('../../../common/oauth');
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
@@ -389,386 +391,6 @@ describe('LTM Policy', function () {
             .then(() => deleteDeclaration());
     });
 
-    it('should allow to use of policy or use referring an existing ASM Policy on the BIG-IP for policyWAF', function () {
-        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
-        if (!asm) {
-            this.skip();
-        }
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Common: {
-                class: 'Tenant',
-                Shared: {
-                    class: 'Application',
-                    template: 'shared',
-                    AppPolicy01: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    }
-                }
-            }
-        };
-
-        const decl1 = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Tenant: {
-                class: 'Tenant',
-                Application: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.0'],
-                        policyWAF: {
-                            bigip: '/Common/Shared/AppPolicy01'
-                        }
-                    }
-                }
-            }
-        };
-
-        return postDeclaration(decl, { declarationIndex: 0 })
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.results[1].code, 200);
-                assert.strictEqual(response.results[1].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy01');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => deleteDeclaration());
-    });
-
-    it('should allow policyWAF to use of policy or use referring an existing ASM Policy on the BIG-IP for WAF_Policy', function () {
-        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
-        if (!asm) {
-            this.skip();
-        }
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Common: {
-                class: 'Tenant',
-                Shared: {
-                    class: 'Application',
-                    template: 'shared',
-                    AppPolicy01: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    }
-                }
-            }
-        };
-
-        const decl1 = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Tenant: {
-                class: 'Tenant',
-                Application: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.0'],
-                        policyWAF: {
-                            use: 'wafPolicy'
-                        }
-                    },
-                    wafPolicy: {
-                        class: 'WAF_Policy',
-                        policy: {
-                            bigip: '/Common/Shared/AppPolicy01'
-                        },
-                        ignoreChanges: false
-                    }
-                }
-            }
-        };
-
-        const decl2 = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Tenant: {
-                class: 'Tenant',
-                Application: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.0'],
-                        policyWAF: {
-                            bigip: '/Common/Shared/AppPolicy01'
-                        }
-                    }
-                }
-            }
-        };
-
-        return postDeclaration(decl, { declarationIndex: 0 })
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.results[1].code, 200);
-                assert.strictEqual(response.results[1].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy01');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => postDeclaration(decl2, { declarationIndex: 2 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => postDeclaration(decl1, { declarationIndex: 3 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => deleteDeclaration());
-    });
-
-    it('should allow policyWAF to use of policy or use referring an existing ASM Policy on the BIG-IP for WAF_Policy and policyWAF', function () {
-        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
-        if (!asm) {
-            this.skip();
-        }
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Common: {
-                class: 'Tenant',
-                Shared: {
-                    class: 'Application',
-                    template: 'shared',
-                    AppPolicy01: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    },
-                    AppPolicy02: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    }
-                }
-            }
-        };
-
-        const decl1 = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Tenant: {
-                class: 'Tenant',
-                Application: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.0'],
-                        policyWAF: {
-                            use: 'wafPolicy'
-                        }
-                    },
-                    service1: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.1'],
-                        policyWAF: {
-                            bigip: '/Common/Shared/AppPolicy02'
-                        }
-                    },
-                    wafPolicy: {
-                        class: 'WAF_Policy',
-                        policy: {
-                            bigip: '/Common/Shared/AppPolicy01'
-                        },
-                        ignoreChanges: false
-                    }
-                }
-            }
-        };
-
-        return postDeclaration(decl, { declarationIndex: 0 })
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.results[1].code, 200);
-                assert.strictEqual(response.results[1].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy01');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy02&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy02');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy02');
-            })
-            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service1/rules/default/actions/0'))
-            .then((response) => {
-                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy02');
-            })
-            .then(() => deleteDeclaration());
-    });
-
-    it('should not allow to use reference of the WAF_Policy', function () {
-        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
-        if (!asm) {
-            this.skip();
-        }
-        const decl = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Common: {
-                class: 'Tenant',
-                Shared: {
-                    class: 'Application',
-                    template: 'shared',
-                    AppPolicy01: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    },
-                    AppPolicy02: {
-                        class: 'WAF_Policy',
-                        url: {
-                            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
-                            ignoreChanges: false
-                        }
-                    }
-                }
-            }
-        };
-
-        const decl1 = {
-            class: 'ADC',
-            schemaVersion: '3.55.0',
-            Tenant: {
-                class: 'Tenant',
-                Application: {
-                    class: 'Application',
-                    service: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.0'],
-                        policyWAF: {
-                            use: 'wafPolicy'
-                        }
-                    },
-                    service1: {
-                        class: 'Service_HTTP',
-                        virtualAddresses: ['192.0.2.1'],
-                        policyWAF: {
-                            bigip: '/Common/Shared/AppPolicy02'
-                        }
-                    },
-                    wafPolicy: {
-                        class: 'WAF_Policy',
-                        policy: {
-                            use: 'otherWafPolicy'
-                        },
-                        ignoreChanges: false
-                    },
-                    otherWafPolicy: {
-                        class: 'WAF_Policy',
-                        policy: {
-                            use: 'wafPolicy'
-                        },
-                        ignoreChanges: false
-                    }
-                }
-            }
-        };
-
-        return postDeclaration(decl, { declarationIndex: 0 })
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 200);
-                assert.strictEqual(response.results[0].message, 'success');
-                assert.strictEqual(response.results[1].code, 200);
-                assert.strictEqual(response.results[1].message, 'success');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy01');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
-            })
-            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy02&%24select=fullPath,name'))
-            .then((response) => {
-                assert.strictEqual(response.items.length, 1);
-                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
-                assert.strictEqual(response.items[0].name, 'AppPolicy02');
-                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy02');
-            })
-            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
-            .then((response) => {
-                assert.strictEqual(response.results[0].code, 422);
-                assert.strictEqual(response.results[0].message, 'declaration is invalid');
-                assert.strictEqual(response.results[0].errors.length, 1);
-                assert.strictEqual(response.results[0].errors[0], '/Tenant/Application/wafPolicy/policy: should NOT have additional properties');
-            })
-            .then(() => deleteDeclaration());
-    });
-
     it('should handle the clientSsl enabled action value in Endpoint_Policy', function () {
         const declaration = {
             class: 'ADC',
@@ -879,6 +501,621 @@ describe('LTM Policy', function () {
             })
             .finally(() => deleteDeclaration());
     });
+
+    it('should handle traffic policy rule for the declared one to insert X-Forwarded-Proto header with "http" value in action', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    policyjson: {
+                        strategy: 'first-match',
+                        class: 'Endpoint_Policy',
+                        rules: [
+                            {
+                                conditions: [],
+                                name: 'rule1',
+                                actions: [
+                                    {
+                                        event: 'request',
+                                        type: 'httpHeader',
+                                        insert: {
+                                            name: 'X-Forwarded-Proto',
+                                            value: 'http'
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => assert.strictEqual(response.results[0].code, 200))
+            .then(() => getPath('/mgmt/tm/ltm/policy/~tenant~app~policyjson/rules/rule1/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.httpHeader, true);
+                assert.strictEqual(response.tmName, 'X-Forwarded-Proto');
+                assert.strictEqual(response.value, 'http');
+            })
+            .then(() => deleteDeclaration());
+    });
+});
+
+describe('LTM Monitor', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    it('should change the ltm monitor type from https to tcp', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https',
+                        interval: 5,
+                        timeout: 16
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => {
+                declaration.tenant.app.testMonitor.monitorType = 'tcp';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/app/testMonitor","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/tcp/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should change the ltm monitor type from https to tcp-half-open', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https',
+                        interval: 5,
+                        timeout: 16
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => {
+                declaration.tenant.app.testMonitor.monitorType = 'tcp-half-open';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/app/testMonitor","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/tcp-half-open/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should change the ltm monitor type from https to udp', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            tenant: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    testMonitor: {
+                        class: 'Monitor',
+                        monitorType: 'https',
+                        interval: 5,
+                        timeout: 16
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .then(() => {
+                declaration.tenant.app.testMonitor.monitorType = 'udp';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/monitor/https/~tenant~app~testMonitor'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"Object not found - /tenant/app/testMonitor","errorStack":[],"apiError":1}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/monitor/udp/~tenant~app~testMonitor'))
+            .then((response) => {
+                assert.strictEqual(response['user-defined'], undefined);
+            })
+            .finally(() => deleteDeclaration());
+    });
+});
+
+describe('WAF Policy', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    let accessToken;
+
+    beforeEach(function () {
+        if (process.env.TEST_IN_AZURE === 'true') {
+            return oauth.getTokenForTest()
+                .then((token) => {
+                    accessToken = token;
+                });
+        }
+        return Promise.resolve();
+    });
+
+    it('should allow to use of policy or use referring an existing ASM Policy on the BIG-IP for policyWAF', function () {
+        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
+        if (!asm) {
+            this.skip();
+        }
+
+        const wafUrl = {
+            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
+            ignoreChanges: false
+        };
+
+        if (process.env.TEST_IN_AZURE === 'true') {
+            wafUrl.authentication = {
+                method: 'bearer-token',
+                token: accessToken
+            };
+        }
+
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    AppPolicy01: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        policyWAF: {
+                            bigip: '/Common/Shared/AppPolicy01'
+                        }
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(decl, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy01');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
+            })
+            .catch((error) => {
+                throw error;
+            })
+            .then(() => deleteDeclaration());
+    });
+
+    it('should allow policyWAF to use of policy or use referring an existing ASM Policy on the BIG-IP for WAF_Policy', function () {
+        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
+        if (!asm) {
+            this.skip();
+        }
+        const wafUrl = {
+            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
+            ignoreChanges: false
+        };
+
+        if (process.env.TEST_IN_AZURE === 'true') {
+            wafUrl.authentication = {
+                method: 'bearer-token',
+                token: accessToken
+            };
+        }
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    AppPolicy01: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        policyWAF: {
+                            use: 'wafPolicy'
+                        }
+                    },
+                    wafPolicy: {
+                        class: 'WAF_Policy',
+                        policy: {
+                            bigip: '/Common/Shared/AppPolicy01'
+                        },
+                        ignoreChanges: false
+                    }
+                }
+            }
+        };
+
+        const decl2 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        policyWAF: {
+                            bigip: '/Common/Shared/AppPolicy01'
+                        }
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(decl, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy01');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => postDeclaration(decl2, { declarationIndex: 2 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 3 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => deleteDeclaration());
+    });
+
+    it('should allow policyWAF to use of policy or use referring an existing ASM Policy on the BIG-IP for WAF_Policy and policyWAF', function () {
+        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
+        if (!asm) {
+            this.skip();
+        }
+        const wafUrl = {
+            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
+            ignoreChanges: false
+        };
+
+        if (process.env.TEST_IN_AZURE === 'true') {
+            wafUrl.authentication = {
+                method: 'bearer-token',
+                token: accessToken
+            };
+        }
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    AppPolicy01: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    },
+                    AppPolicy02: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        policyWAF: {
+                            use: 'wafPolicy'
+                        }
+                    },
+                    service1: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.1'],
+                        policyWAF: {
+                            bigip: '/Common/Shared/AppPolicy02'
+                        }
+                    },
+                    wafPolicy: {
+                        class: 'WAF_Policy',
+                        policy: {
+                            bigip: '/Common/Shared/AppPolicy01'
+                        },
+                        ignoreChanges: false
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(decl, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy01');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy02&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy02');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy02');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/policy/~Tenant~Application~_WAF_service1/rules/default/actions/0'))
+            .then((response) => {
+                assert.strictEqual(response.policy, '/Common/Shared/AppPolicy02');
+            })
+            .then(() => deleteDeclaration());
+    });
+
+    it('should not allow to use reference of the WAF_Policy', function () {
+        const asm = ['asm'].every((m) => getProvisionedModules().includes(m));
+        if (!asm) {
+            this.skip();
+        }
+        const wafUrl = {
+            url: `https://${process.env.TEST_RESOURCES_URL}/asm-policy/sharepoint_template_12.1.xml`,
+            ignoreChanges: false
+        };
+
+        if (process.env.TEST_IN_AZURE === 'true') {
+            wafUrl.authentication = {
+                method: 'bearer-token',
+                token: accessToken
+            };
+        }
+        const decl = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Common: {
+                class: 'Tenant',
+                Shared: {
+                    class: 'Application',
+                    template: 'shared',
+                    AppPolicy01: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    },
+                    AppPolicy02: {
+                        class: 'WAF_Policy',
+                        url: wafUrl
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Tenant: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    service: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.0'],
+                        policyWAF: {
+                            use: 'wafPolicy'
+                        }
+                    },
+                    service1: {
+                        class: 'Service_HTTP',
+                        virtualAddresses: ['192.0.2.1'],
+                        policyWAF: {
+                            bigip: '/Common/Shared/AppPolicy02'
+                        }
+                    },
+                    wafPolicy: {
+                        class: 'WAF_Policy',
+                        policy: {
+                            use: 'otherWafPolicy'
+                        },
+                        ignoreChanges: false
+                    },
+                    otherWafPolicy: {
+                        class: 'WAF_Policy',
+                        policy: {
+                            use: 'wafPolicy'
+                        },
+                        ignoreChanges: false
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(decl, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+                assert.strictEqual(response.results[1].code, 200);
+                assert.strictEqual(response.results[1].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy01&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy01');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy01');
+            })
+            .then(() => getPath('/mgmt/tm/asm/policies?%24filter=fullPath%20eq%20/Common/Shared/AppPolicy02&%24select=fullPath,name'))
+            .then((response) => {
+                assert.strictEqual(response.items.length, 1);
+                assert.strictEqual(response.items[0].kind, 'tm:asm:policies:policystate');
+                assert.strictEqual(response.items[0].name, 'AppPolicy02');
+                assert.strictEqual(response.items[0].fullPath, '/Common/Shared/AppPolicy02');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 422);
+                assert.strictEqual(response.results[0].message, 'declaration is invalid');
+                assert.strictEqual(response.results[0].errors.length, 1);
+                assert.strictEqual(response.results[0].errors[0], '/Tenant/Application/wafPolicy/policy: should NOT have additional properties');
+            })
+            .then(() => deleteDeclaration());
+    });
 });
 
 describe('DOS Profile', function () {
@@ -979,6 +1216,168 @@ describe('DOS Profile', function () {
     });
 });
 
+describe('Bot Defense Profile', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    it('should refer the botDefense profile to Service_HTTP', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            Example_BotDefense_Refer: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    ServiceHTTP: {
+                        class: 'Service_HTTP',
+                        virtualPort: 8080,
+                        virtualAddresses: ['192.0.2.0'],
+                        profileBotDefense: {
+                            use: 'botProfile'
+                        }
+                    },
+                    botProfile: {
+                        class: 'Bot_Defense_Profile'
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/virtual/~Example_BotDefense_Refer~Application~ServiceHTTP/profiles/~Example_BotDefense_Refer~Application~botProfile'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:ltm:virtual:profiles:profilesstate');
+                assert.strictEqual(response.name, 'botProfile');
+                assert.strictEqual(response.fullPath, '/Example_BotDefense_Refer/Application/botProfile');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should create the botDefense profile along with Dos botDefense profile', function () {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            Example_BotDefense: {
+                class: 'Tenant',
+                Application: {
+                    class: 'Application',
+                    botProfile: {
+                        class: 'Bot_Defense_Profile',
+                        enforcementMode: 'blocking',
+                        signatureStagingUponUpdate: 'enabled',
+                        enforcementReadinessPeriod: 10,
+                        mitigationSettings: [
+                            {
+                                mitigationType: 'Unknown',
+                                mitigationSettingsAction: 'tcp-reset',
+                                verificationSettingsAction: 'none'
+                            },
+                            {
+                                mitigationType: 'Suspicious Browser',
+                                mitigationSettingsAction: 'block',
+                                verificationSettingsAction: 'none'
+                            }
+                        ],
+                        allowBrowserAccess: 'enabled',
+                        gracePeriod: 4000,
+                        deviceIDMode: 'generate-after-access',
+                        dosMitigation: 'enabled',
+                        performChallengeInTransparent: 'enabled',
+                        singlePageApplicationEnabled: true,
+                        crossDomainRequests: 'validate-bulk',
+                        siteDomains: ['www.google.com'],
+                        externalDomains: ['www.yahoo.com'],
+                        mobileDefense: {
+                            enabled: true,
+                            allowAndroidPublishers: [
+                                {
+                                    bigip: '/Common/default.crt'
+                                }
+                            ],
+                            allowAndroidRootedDevice: true,
+                            allowIosPackageNames: ['theName'],
+                            allowJailbrokenDevices: true,
+                            allowEmulators: true,
+                            clientSideChallengeMode: 'challenge'
+                        },
+                        urlAllowlist: ['www.bing.com']
+                    },
+                    dosProfile: {
+                        class: 'DOS_Profile',
+                        application: {
+                            scrubbingDuration: 42,
+                            remoteTriggeredBlackHoleDuration: 10,
+                            botDefense: {
+                                mode: 'during-attacks',
+                                blockSuspiscousBrowsers: true,
+                                issueCaptchaChallenge: true,
+                                gracePeriod: 3000,
+                                crossDomainRequests: 'validate-bulk',
+                                siteDomains: ['www.google.com'],
+                                externalDomains: ['www.yahoo.com'],
+                                urlAllowlist: ['www.bing.com']
+                            },
+                            mobileDefense: {
+                                enabled: true,
+                                allowAndroidPublishers: [
+                                    {
+                                        bigip: '/Common/default.crt'
+                                    }
+                                ],
+                                allowAndroidRootedDevice: true,
+                                allowIosPackageNames: ['theName'],
+                                allowJailbrokenDevices: true,
+                                allowEmulators: true,
+                                clientSideChallengeMode: 'challenge'
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        return postDeclaration(declaration, { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => getPath('/mgmt/tm/security/dos/profile/~Example_BotDefense~Application~dosProfile'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:security:dos:profile:profilestate');
+                assert.strictEqual(response.name, 'dosProfile');
+                assert.strictEqual(response.fullPath, '/Example_BotDefense/Application/dosProfile');
+            })
+            .then(() => getPath('/mgmt/tm/security/bot-defense/profile/~Example_BotDefense~Application~botProfile'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:security:bot-defense:profile:profilestate');
+                assert.strictEqual(response.name, 'botProfile');
+                assert.strictEqual(response.fullPath, '/Example_BotDefense/Application/botProfile');
+                assert.strictEqual(response.gracePeriod, 4000);
+            })
+            .then(() => getPath('/mgmt/tm/security/bot-defense/profile/~Example_BotDefense~Application~f5_appsvcs_dosProfile_botDefense'))
+            .then((response) => {
+                assert.strictEqual(response.kind, 'tm:security:bot-defense:profile:profilestate');
+                assert.strictEqual(response.name, 'f5_appsvcs_dosProfile_botDefense');
+                assert.strictEqual(response.fullPath, '/Example_BotDefense/Application/f5_appsvcs_dosProfile_botDefense');
+                assert.strictEqual(response.gracePeriod, 3000);
+            })
+            .finally(() => deleteDeclaration());
+    });
+});
+
 describe('PPTP Profile', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
@@ -997,10 +1396,9 @@ describe('PPTP Profile', function () {
                         template: 'generic',
                         pptpProfileSample: {
                             class: 'PPTP_Profile',
-                            description: 'Sample PPTP profile',
                             label: 'test',
                             remark: 'test',
-                            defaultsFrom: {
+                            parentProfile: {
                                 bigip: '/Common/pptp'
                             },
                             csvFormat: true,

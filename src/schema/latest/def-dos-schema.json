@@ -117,6 +117,262 @@
             ]
         },
 
+        "Bot_Defense_Profile": {
+            "title": "Bot_Defense_Profile",
+            "description": "Configures a Bot Defense profile",
+            "type": "object",
+            "properties": {
+                "class": {
+                    "title": "Class",
+                    "type": "string",
+                    "const": "Bot_Defense_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "enforcementMode": {
+                    "description": "Specifies the enforcementMode for bot defense profile",
+                    "type": "string",
+                    "enum": [
+                        "blocking",
+                        "transparent"
+                    ],
+                    "default": "transparent"
+                },
+                "signatureStagingUponUpdate": {
+                    "description": "Specifies the signatureStagingUponUpdate for bot defense profile",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled"
+                    ],
+                    "default": "disabled"
+                },
+                "enforcementReadinessPeriod": {
+                    "description": "How many days, since the bot defense profile was last changed, that the profile remains in staging mode before the system suggests you enforce the. The system does not enforce profile entities and attack signatures in staging. Staging allows you to test the bot defense profile entities and the attack signatures for false positives without enforcing them.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 7
+                },
+                "mitigationSettings": {
+                    "description": "Bot Defense classifies client traffic, performs anomaly detection and applies configured mitigation actions.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Bot_Defense_Profile_Mitigation_Settings"
+                    }
+                },
+                "allowBrowserAccess": {
+                    "description": "Many server applications are mobile application specific and not for browser access. Therefore, browsers that do access these mobile applications are typically driven by attackers and should be blocked.",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled"
+                    ],
+                    "default": "enabled"
+                },
+                "gracePeriod": {
+                    "description": "The length of time (in seconds) before the system blocks suspected bots. The grace period allows web application pages with both HTML and non-HTML (like images, JS, and CSS) to load completely without being blocked. The grace period starts after client validation, a configuration change, or when proactive bot defense is activated as a result of a detected attack or high latency. This property is available on BIGIP 14.1 and above.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 300
+                },
+                "deviceIDMode": {
+                    "description": "Specifies the deviceIDMode for bot defense profile",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "generate-after-access",
+                        "generate-before-access"
+                    ],
+                    "default": "generate-after-access"
+                },
+                "dosMitigation": {
+                    "description": "If DoS Attack Mitigation Mode option is enabled the following Mitigation and Verification Settings will be in effect during a DoS attack: (Browser: Verify Before Access,Trusted Bots: Alarm,Untrusted Bots: Block,Suspicious Browsers: Block,Malicious Bots: Block,Unknown: Block). DoS Attack Mitigation Mode requires a DoS protection enabled.",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled"
+                    ],
+                    "default": "enabled"
+                },
+                "performChallengeInTransparent": {
+                    "description": "Enable to allow challenges and JavaScript injects even though the profile is configured with Transparent Enforcement Mode and no mitigations will be done. The challenges be logged.",
+                    "type": "string",
+                    "enum": [
+                        "disabled",
+                        "enabled"
+                    ],
+                    "default": "disabled"
+                },
+                "singlePageApplicationEnabled": {
+                    "description": "Specifies that your website is a Single Page Application, meaning a web application that loads new content without triggering a full page-reload. This property is available on BIGIP 14.1 and above.",
+                    "type": "boolean",
+                    "default": false
+                },
+                "browserMitigationAction": {
+                    "description": "Many server applications are mobile application specific and not for browser access. Therefore, browsers that do access these mobile applications are typically driven by attackers and should be blocked.",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "block",
+                        "honeypot-page",
+                        "redirect-to-pool",
+                        "tcp-reset"
+                    ],
+                    "default": "none"
+                }, 
+                "crossDomainRequests": {
+                    "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+                    "type": "string",
+                    "enum": [
+                        "allow-all",
+                        "validate-bulk",
+                        "validate-upon-request"
+                    ],
+                    "default": "allow-all"
+                },
+                "siteDomains": {
+                    "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "externalDomains": {
+                    "description": "Specifies the external referring domains (that are not part of your website) that are allowed to link to resources in your website. These domains are not protected with proactive bot defense, but the system allows them if they pass the system's redirect-cookie challenge. This property is available on BIGIP 14.1 and above.",
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "mobileDefense": {
+                    "description": "This feature detects mobile applications built with the Anti-Bot Mobile SDK and defines how requests from these mobile application clients are handled",
+                    "allOf": [
+                        { "$ref": "#/definitions/DOS_Profile_Application_Mobile_Defense" }
+                    ],
+                    "default": {}
+                },
+                "signatures": {
+                    "description": "Select one or more applications to allow.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": [ "none" ]
+                        },
+                        {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/Pointer_Bot_Signature" }
+                        }
+                    ],
+                    "default": "none"
+                },
+                "stagedSignatures": {
+                    "description": "This feature detects mobile applications built with the Anti-Bot Mobile SDK and defines how requests from these mobile application clients are handled",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": [ "none" ]
+                        },
+                        {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/Pointer_Bot_Signature" }
+                        }
+                    ],
+                    "default": "none"
+                },
+                "urlAllowlist": {
+                    "description": "Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            },
+
+            "dependencies": {
+                "allowBrowserAccess": {
+                    "if": { "properties": { "allowBrowserAccess": { "const": "disabled" } } },
+                    "then": {
+                        "not": {
+                            "properties": {
+                                "browserMitigationAction": { "const": "none" }
+                            },
+                            "required": [ "browserMitigationAction" ]
+                        }
+                    }
+                },
+                "siteDomains": {
+                    "properties": { "crossDomainRequests": { "enum": ["validate-bulk", "validate-upon-request"] } }
+                },
+                "externalDomains": {
+                    "properties": { "crossDomainRequests": { "enum": ["validate-bulk", "validate-upon-request"] } }
+                }
+            },
+            "additionalProperties": false
+        },
+
+        "Bot_Defense_Profile_Mitigation_Settings": {
+            "description": "Bot Defense classifies client traffic, performs anomaly detection and applies configured mitigation actions.",
+            "type": "object",
+            "properties": {
+                "mitigationType": {
+                    "description": "These are the available mitigation actions.",
+                    "type": "string",
+                    "enum": [
+                        "Trusted Bot",
+                        "Untrusted Bot",
+                        "Suspicious Browser",
+                        "Malicious Bot",
+                        "Unknown"
+                    ]
+                },
+                "mitigationSettingsAction": {
+                    "description": "Specifies the mitigation action for Bot Defense profile",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "alarm",
+                        "block",
+                        "captcha",
+                        "honeypot-page",
+                        "rate-limit",
+                        "redirect-to-pool",
+                        "tcp-reset"
+                    ]
+                },
+                "verificationSettingsAction": {
+                    "description": "Specifies the verification action for Bot Defense profile",
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "browser-challenge-free-verification",
+                        "browser-verify-after-access-detection",
+                        "mobile-verify-integrity",
+                        "browser-verify-after-access-blocking",
+                        "browser-verify-before-access"
+                    ]
+                },
+                "rateLimitTps": {
+                    "description": "Specifies the rate-limit action rate-limit-tps value for Bot Defense profile",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295,
+                    "default": 30
+                }
+            },
+            "dependencies": {
+                "mitigationType": {
+                    "if": { "properties": { "mitigationType": { "const": true } } },
+                    "then": {
+                        "oneOf": [
+                            { "required": [ "mitigationSettingsAction" ] },
+                            { "required": [ "verificationSettingsAction" ] }
+                        ]
+                    }
+                },
+                "mitigationSettingsAction": {
+                    "if": { "properties": { "mitigationSettingsAction": { "const": "rate-limit" } } },
+                    "then": { "required": [ "rateLimitTps" ] }
+                }
+            },
+            "additionalProperties": false
+        },
+
         "DOS_Auto_Denylist_Settings": {
             "description": "Adds the source IP address to the denylist category assigned to the Denial-of-Service (DoS) vector",
             "type": "object",
@@ -260,6 +516,11 @@
                         "always"
                     ],
                     "default": "off"
+                },
+                "createBotDefenseProfile": {
+                    "description": "Specifies whether AS3 should create a complimentary bot defense profile when needed. It is advised to leave this setting enabled unless bot defense is not licensed or a bot defense profile will be provided otherwise for your Service.",
+                    "type": "boolean",
+                    "default": true
                 },
                 "blockSuspiscousBrowsers": {
                     "$comment": "maps to application.bot-defense.browser-legit-enabled",

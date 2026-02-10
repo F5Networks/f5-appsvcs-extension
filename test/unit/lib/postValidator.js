@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,8 +158,14 @@ describe('postValidator', () => {
                 'The node name must be unique throughout the declaration. Duplicate node name \'ns1.test.local\' found.'
             ));
 
-            it('should not validate the AS3 if no duplicate nodes are present in the declaration', () => {
+            it('should validate the AS3 if no duplicate nodes are present in the declaration', () => {
                 decl.tenant.app.testPool.members[0].servers[0].name = 'ns1.test.local1';
+                return assert.isFulfilled(PostValidator.checkDuplicateNodes(decl));
+            });
+
+            it('should validate the AS3 if duplicate nodes are present with same address in the declaration', () => {
+                decl.tenant.app.testPool.members[0].servers[0].name = 'ns1.test.local';
+                decl.tenant.app.testPool.members[0].servers[0].address = '192.0.2.3';
                 return assert.isFulfilled(PostValidator.checkDuplicateNodes(decl));
             });
         });

@@ -1,0 +1,78 @@
+{
+    "class": "ADC",
+    "schemaVersion": "3.56.0",
+    "id": "Bot_Defense_Profile",
+    "Sample_Bot_Defense": {
+        "class": "Tenant",
+        "Application": {
+            "class": "Application",
+            "ServiceHTTP": {
+                "class": "Service_HTTP",
+                "virtualPort": 8080,
+                "virtualAddresses": ["1.2.3.4"],
+                "profileBotDefense": {
+                    "use": "botProfile"
+                }
+            },
+            "botProfile": {
+                "class": "Bot_Defense_Profile",
+                "enforcementMode": "blocking",
+                "signatureStagingUponUpdate": "enabled",
+                "enforcementReadinessPeriod": 10,
+                "mitigationSettings": [
+                    {
+                        "mitigationType": "Unknown",
+                        "mitigationSettingsAction": "tcp-reset",
+                        "verificationSettingsAction": "none"
+                    },
+                    {
+                        "mitigationType": "Suspicious Browser",
+                        "mitigationSettingsAction": "block",
+                        "verificationSettingsAction": "none"
+                    }
+                ],
+                "allowBrowserAccess": "enabled",
+                "gracePeriod": 4000,
+                "deviceIDMode": "generate-after-access",
+                "dosMitigation": "enabled",
+                "performChallengeInTransparent": "enabled",
+                "singlePageApplicationEnabled": true,
+                "crossDomainRequests": "validate-bulk",
+                "siteDomains": [
+                    "www.google.com"
+                ],
+                "externalDomains": [
+                    "www.yahoo.com"
+                ],
+                "mobileDefense": {
+                    "enabled": true,
+                    "allowAndroidPublishers": [
+                        {
+                            "bigip": "/Common/default.crt"
+                        }
+                    ],
+                    "allowAndroidRootedDevice": true,
+                    "allowIosPackageNames": [
+                        "theName"
+                    ],
+                    "allowJailbrokenDevices": true,
+                    "allowEmulators": true,
+                    "clientSideChallengeMode": "challenge"
+                },
+                "signatures": [
+                    {
+                        "bigip": "/Common/TEST_BP"
+                    }
+                ],
+                "stagedSignatures": [
+                    {
+                        "bigip": "/Common/TEST_BP1"
+                    }
+                ],
+                "urlAllowlist": [
+                    "www.bing.com"
+                ]
+            }
+        }
+    }
+}

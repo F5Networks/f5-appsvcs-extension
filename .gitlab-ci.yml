@@ -68,7 +68,7 @@ variables:
   TF_HTTP_RETRY_WAIT_MIN: 3
   TEST_REPORTER_OPTIONS: "--reporter mocha-multi-reporters --reporter-options configFile=test/mochaReporterConfig.json"
   CURL_CONTENT: "Content-Type: application/json"
-  SECRETS_ANALYZER_VERSION: '6.14.0'
+  SECRETS_ANALYZER_VERSION: '5.1.16'
 
 # This inherits all the jobs defined in the parent template
 # Override variables in this project as needed
@@ -90,33 +90,26 @@ lint:
     - schema
   allow_failure: false
 
+.vault_id_token: &vault_id_token
+  VAULT_ID_TOKEN:
+    aud: $VAULT_SERVER_URL
+
 update_autotool_deps:
   stage: update
   rules:
     - if: '$UPDATE_DEPS =~ /true/i'
   needs: []
+  id_tokens: *vault_id_token
+  secrets:
+    AS3_ACCESS_TOKEN_PATH:
+      vault: pipeline/secrets/AS3_ACCESS_TOKEN@kv
   variables:
     UPDATE_BRANCH_NAME: update_autotool_deps
   script:
+    - export AS3_ACCESS_TOKEN=$(cat "$AS3_ACCESS_TOKEN_PATH")
     - . ./scripts/dev/update-as3-deps.sh
     - >
       if [ "$AUTOTOOL_DIFF" = "true" ]; then
-        git push -f origin ${UPDATE_BRANCH_NAME}
-        node ./scripts/dev/createMR.js
-      fi
-  tags: [cm-official-docker-executor]
-
-update_shared_schema:
-  stage: update
-  rules:
-    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
-  needs: []
-  variables:
-    UPDATE_BRANCH_NAME: update_shared_schema
-  script:
-    - . ./scripts/dev/update-shared-schema.sh
-    - >
-      if [ "$SHARED_SCHEMA_DIFF" = "true" ]; then
         git push -f origin ${UPDATE_BRANCH_NAME}
         node ./scripts/dev/createMR.js
       fi
@@ -136,6 +129,7 @@ schema:
     paths:
       - src/schema/latest/adc-schema.json
       - src/schema/latest/as3-schema.json
+      - src/schema/latest/per-app-schema.json
 
 coverage:
   image: $DOCKER_URL/node:16
@@ -151,36 +145,6 @@ coverage:
     paths:
       - coverage
   coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
-
-node:6:
-  image: $DOCKER_URL/node:12-buster
-  stage: test
-  needs:
-    - schema
-  tags:
-    - cm-official-docker-executor
-  script:
-    # npm install fails for some packages on older versions of node, so use a newer
-    # version just for the install
-    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-    - export NVM_DIR="$HOME/.nvm"
-    - source "$NVM_DIR/nvm.sh"
-    # add nvm retry
-    - n=0
-    - until [ "$n" -ge 3 ]; do
-    -   nvm install 6 && nvm install --latest-npm 12 && break
-    -   n=$((n+1))
-    -   sleep 15
-    - done
-    - nvm use 12
-    - npm ci --no-optional
-    - npm install mocha@5.2.0
-    - nvm use 6
-    - npm run test-no-build -- $TEST_REPORTER_OPTIONS
-  artifacts:
-    when: always
-    reports:
-      junit: test_report.xml
 
 node:8:
   image: $DOCKER_URL/node:8
@@ -220,6 +184,7 @@ build_rpm:
       - dist
       - src/schema/latest/adc-schema.json
       - src/schema/latest/as3-schema.json
+      - src/schema/latest/per-app-schema.json
 
 create_source:
   stage: post build
@@ -261,80 +226,138 @@ build_api_docs:
   stage: deploy
   timeout: 2 hours
   script:
+    - export QRT_PASSPHRASE=$(cat "$QRT_PASSPHRASE_PATH")
+    - export REGKEY=$(cat "$REGKEY_PATH")
     - apk update
-    - apk add npm gettext
-    - cd "$TF_ROOT"
-    - terraform init
-    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
-        # $SKIP_DEPLOYMENT may be undefined so we check for true
-    -   terraform destroy
-    -   terraform apply
-    - fi
-    - if [[ "$PARALLEL" = "true" ]]; then
-    -   BIGIPS_ADDRESSES=($(terraform output --json admin_ip | jq -rc .[]))
-    - else
-    -   AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
-    -   if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -     TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
-    -   fi
-    - fi
-    - AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
-    - AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
-    - cd -
-    - if [[ -n "$RPM_PACKAGE_URL" ]]; then
-    -   echo using RPM "$RPM_PACKAGE_URL" from RPM_PACKAGE_URL env var
-    -   export RPM_PACKAGE=$(basename "$RPM_PACKAGE_URL")
-    -   curl -o "$RPM_PACKAGE" "$RPM_PACKAGE_URL"
-    - elif [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
-    -   echo using RPM from cross-project pipeline
-    -   RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
-    - else
-    -   echo using RPM from our pipeline
-    -   RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
-    - fi
-    - if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
-    -   mkdir -p "$DO_DOWNLOAD_DIR"
-    -   DO_RPM_FILE=$(scripts/dev/download-latest-do.sh "$DO_DOWNLOAD_DIR" "${DO_INTEGRATION_VERSION}")
-    -   npm install --no-optional
-    -   if [[ "$PARALLEL" = "true" ]]; then
-    -     for IP in "${BIGIPS_ADDRESSES[@]}"; do
-    -       echo "Configuring $IP"
-    -       source scripts/dev/instance-config.sh "$IP:8443" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
-    -     done
-    -     for job in $(jobs -p); do
-    -       echo "Jobs $(jobs -p)"
-    -       echo "Job we're waiting $job"
-    -       wait $job
-    -       RC=$?
-    -       if [[ $RC != 0 ]]; then
-    -         exit $RC
-    -       fi
-    -     done
-    -     SERVER_SET_JSON=$(source scripts/dev/build-server-set.sh)
-    -     echo "Posting server set to reservation server $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
-    -     SERVER_SET=$(curl -s --retry 5 --retry-max-time 300 -H "$CURL_CONTENT" -d "$SERVER_SET_JSON" -X POST http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets | jq .id | tr -d '"')
-    -     echo "Server set id is $SERVER_SET"
-    -     echo "SERVER_SET=$SERVER_SET" >> deploy.env
-    -   else
-    -     echo "Configuring host $AS3_HOST"
-    -     echo "AS3_HOST=$AS3_HOST" >> deploy.env
-    -     echo "AS3_USERNAME=$AS3_USERNAME" >> deploy.env
-    -     echo "AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
-    -     source scripts/dev/instance-config.sh "$AS3_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
-    -     if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -       echo "Configuring target host $TARGET_HOST"
-    -       echo "TARGET_HOST=$TARGET_HOST" >> deploy.env
-    -       source scripts/dev/instance-config.sh "$TARGET_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
-    -     fi
-    -     wait
-    -   fi
-    - else
-    -   echo "skipping DO install due to SKIP_DEPLOYMENT"
-    - fi
+    - |
+      if [[ "${TEST_IN_AZURE,,}" != "true" ]]; then
+        echo "Using QRT-based deployment"
+        apk add npm gettext bash jq build-base python3 cmake
+        # Set machine count based on test type
+        # Note we use TF_VAR_bigip_count to unify Azure and OpenStack deployments
+        if [[ "$PARALLEL" = "true" ]]; then
+          export TF_VAR_bigip_count=3
+        elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+          export TF_VAR_bigip_count=2
+        else
+          export TF_VAR_bigip_count=1
+        fi
+        # Save previous unified password if harness file exists (for retry scenarios)
+        if [[ -f "qrt_harness_file.json" ]]; then
+          export PREVIOUS_UNIFIED_PASSWORD=$(jq -r '.machines[0].password // empty' qrt_harness_file.json 2>/dev/null)
+          if [[ -n "$PREVIOUS_UNIFIED_PASSWORD" ]]; then
+            echo "Saved previous unified password from existing harness file for retry"
+          fi
+        fi
+        # Reserve machines using QRT
+        source scripts/dev/reserve_machines.sh
+        # Extract unified password from first machine for password synchronization
+        export UNIFIED_SSH_PASSWORD=$(echo "$QRT_MACHINES_JSON" | jq -r '.[0].password')
+        echo "Using unified password from first machine for all machines"
+        # Prepare machines (remove unwanted config, apply base settings, unify passwords)
+        # prepare_machines.sh reads directly from QRT_MACHINES_JSON environment variable
+        source scripts/dev/prepare_machines.sh
+        # Extract credentials and IPs from QRT_MACHINES_JSON
+        BIGIPS_ADDRESSES=($(echo "$QRT_MACHINES_JSON" | jq -r '.[].ip'))
+        AS3_USERNAME=$(echo "$QRT_MACHINES_JSON" | jq -r '.[0].username')
+        AS3_PASSWORD=$(echo "$QRT_MACHINES_JSON" | jq -r '.[0].password')
+        # Create harness file for teardown stage
+        bash scripts/dev/create_qrt_harness.sh "$QRT_RESERVATION_IDS" "$TF_VAR_bigip_count" "$QRT_MACHINES_JSON"
+      else
+        echo "Using Terraform-based deployment"
+        apk add npm gettext
+        cd "$TF_ROOT"
+        terraform init
+        if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+          # $SKIP_DEPLOYMENT may be undefined so we check for true
+          terraform destroy
+          terraform apply
+        fi
+        if [[ "$PARALLEL" = "true" ]]; then
+          BIGIPS_ADDRESSES=($(terraform output --json admin_ip | jq -rc .[]))
+        else
+          # Single NIC deployment uses port 8443 for management IP
+          AS3_HOST=$(terraform output --json admin_ip | jq -rc .[0]):8443
+          if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+            TARGET_HOST=$(terraform output --json admin_ip | jq -rc .[1]):8443
+          fi
+        fi
+        AS3_USERNAME=$(terraform output --json admin_username | jq -rc .)
+        AS3_PASSWORD=$(terraform output --json admin_password | jq -rc .)
+        cd -
+      fi
+    - |
+      if [[ -n "$RPM_PACKAGE_URL" ]]; then
+        echo using RPM "$RPM_PACKAGE_URL" from RPM_PACKAGE_URL env var
+        export RPM_PACKAGE=$(basename "$RPM_PACKAGE_URL")
+        curl -o "$RPM_PACKAGE" "$RPM_PACKAGE_URL"
+      elif [[ $CI_PIPELINE_SOURCE == "pipeline" ]]; then
+        echo using RPM from cross-project pipeline
+        RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+      else
+        echo using RPM from our pipeline
+        RPM_PACKAGE=$(ls ${CI_PROJECT_DIR}/dist/*.rpm)
+      fi
+    - |
+      if [[ "$SKIP_DEPLOYMENT" != "true" ]]; then
+        mkdir -p "$DO_DOWNLOAD_DIR"
+        DO_RPM_FILE=$(scripts/dev/download-latest-do.sh "$DO_DOWNLOAD_DIR" "${DO_INTEGRATION_VERSION}")
+        npm install --no-optional
+        if [[ "$PARALLEL" = "true" ]]; then
+          for IP in "${BIGIPS_ADDRESSES[@]}"; do
+            echo "Configuring $IP"
+            source scripts/dev/instance-config.sh "$IP" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+          done
+          for job in $(jobs -p); do
+            echo "Jobs $(jobs -p)"
+            echo "Job we're waiting $job"
+            wait $job
+            RC=$?
+            if [[ $RC != 0 ]]; then
+              exit $RC
+            fi
+          done
+          SERVER_SET_JSON=$(source scripts/dev/build-server-set.sh)
+          echo "Posting server set to reservation server $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+          CURL_RESPONSE=$(curl -s --retry 5 --retry-max-time 300 -H "$CURL_CONTENT" -d "$SERVER_SET_JSON" -X POST http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets)
+          if ! echo "$CURL_RESPONSE" | jq empty 2>/dev/null; then
+            echo "ERROR: Invalid JSON response from reservation server:"
+            echo "$CURL_RESPONSE"
+            exit 1
+          fi
+          SERVER_SET=$(echo "$CURL_RESPONSE" | jq -r .id)
+          echo "Server set id is $SERVER_SET"
+          echo "SERVER_SET=$SERVER_SET" >> deploy.env
+        else
+          # For non-parallel, construct AS3_HOST if not already set (QRT case)
+          if [[ -z "$AS3_HOST" ]]; then
+            AS3_HOST="${BIGIPS_ADDRESSES[0]}"
+          fi
+          echo "Configuring host $AS3_HOST"
+          echo "AS3_HOST=$AS3_HOST" >> deploy.env
+          echo "AS3_USERNAME=$AS3_USERNAME" >> deploy.env
+          echo "AS3_PASSWORD=$AS3_PASSWORD" >> deploy.env
+          source scripts/dev/instance-config.sh "$AS3_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+          if [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+            # For remote, construct TARGET_HOST if not already set (QRT case)
+            if [[ -z "$TARGET_HOST" ]]; then
+              TARGET_HOST="${BIGIPS_ADDRESSES[1]}"
+            fi
+            echo "Configuring target host $TARGET_HOST"
+            echo "TARGET_HOST=$TARGET_HOST" >> deploy.env
+            source scripts/dev/instance-config.sh "$TARGET_HOST" "$AS3_USERNAME:$AS3_PASSWORD" "$DO_RPM_FILE" "$TF_ROOT/onboard.json" "$RPM_PACKAGE" &
+          fi
+          wait
+        fi
+      else
+        echo "skipping DO install due to SKIP_DEPLOYMENT"
+      fi
   artifacts:
     when: always
     reports:
       dotenv: deploy.env
+    paths:
+      - qrt_harness_file.json
     expire_in: 1 day
   retry:
     max: 2
@@ -348,21 +371,27 @@ deploy_to_azure:
       artifacts: true
     - job: schema
       artifacts: true
+  id_tokens: *vault_id_token
+  secrets:
+    QRT_PASSPHRASE_PATH:
+      vault: pipeline/secrets/QRT_PASSPHRASE@kv
+    REGKEY_PATH:
+      vault: pipeline/secrets/BIGIP_LICENSE_AZURE@kv
   variables:
     F5_DISABLE_CERT_VERIFY: 'true'
     TF_VAR_f5_cidr_blocks: "${F5_CIDR_BLOCKS}"
     TF_ROOT: "$TF_DIRECTORY/plans/azure"
-    REGKEY: "$BIGIP_LICENSE_AZURE"
   before_script:
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [[ "$PARALLEL" = "true" ]]; then
-    -   export TF_VAR_bigip_count=3
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
-    - else
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
-    - fi
+    - |
+      if [[ "$PARALLEL" = "true" ]]; then
+        export TF_VAR_bigip_count=3
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+      else
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+      fi
     - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
     - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
   <<: *deploy_common
@@ -375,12 +404,6 @@ deploy_for_this_project:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
-      # Don't run deploy in case of scheduled shared schema run
-    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
-      when: never
-      # In case of update_shared_schema branch we would like to have an integration
-      #  testing run, so enable it here
-    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
   needs:
@@ -388,32 +411,33 @@ deploy_for_this_project:
       artifacts: true
     - job: schema
       artifacts: true
+  id_tokens: *vault_id_token
+  secrets:
+    QRT_PASSPHRASE_PATH:
+      vault: pipeline/secrets/QRT_PASSPHRASE@kv
+    REGKEY_PATH:
+      vault: pipeline/secrets/BIGIP_LICENSE@kv
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
-    REGKEY: "$BIGIP_LICENSE"
     TF_LOG: "DEBUG"  # Add this for detailed Terraform logs
     TF_LOG_PATH: "/tmp/terraform.log"  # Optional: save logs to file
   before_script:
-    # In case of update_shared_schema run we need to provide some extra vars
-    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
-    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
-    -   export PARALLEL=true
-    - fi
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [[ "$PARALLEL" = "true" ]]; then
-    -   export TF_VAR_bigip_count=3
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
-    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   export TF_VAR_bigip_count=2
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
-    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
-    -   export TF_VAR_performance_test=true
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
-    - else
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
-    - fi
+    - |
+      if [[ "$PARALLEL" = "true" ]]; then
+        export TF_VAR_bigip_count=3
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+      elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+        export TF_VAR_bigip_count=2
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+      elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+        export TF_VAR_performance_test=true
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+      else
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+      fi
     - export TF_HTTP_LOCK_ADDRESS="$TF_HTTP_ADDRESS/lock"
     - export TF_HTTP_UNLOCK_ADDRESS=$TF_HTTP_LOCK_ADDRESS
   <<: *deploy_common
@@ -426,13 +450,19 @@ deploy_for_other_project:
       job: "$UPSTREAM_JOB"
       ref: "$UPSTREAM_REF"
       artifacts: true
+  id_tokens: *vault_id_token
+  secrets:
+    QRT_PASSPHRASE_PATH:
+      vault: pipeline/secrets/QRT_PASSPHRASE@kv
+    REGKEY_PATH:
+      vault: pipeline/secrets/BIGIP_LICENSE@kv
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
-    REGKEY: "$BIGIP_LICENSE"
   before_script:
-    - if [ -n "$UPSTREAM_RPM_PATH" ]; then
-    -   export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
-    - fi
+    - |
+      if [ -n "$UPSTREAM_RPM_PATH" ]; then
+        export RPM_PACKAGE=$(ls ${UPSTREAM_RPM_PATH}/*.rpm)
+      fi
     - export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
     - export TF_VAR_bigip_version="${BIGIP_IMAGE}"
     # terraform doesn't support '.' in backend address.
@@ -447,7 +477,30 @@ deploy_for_other_project:
   stage: integration test
   tags:
     - classy-crows-as3-docker-runner
+  id_tokens: *vault_id_token
+  secrets:
+    ARM_CLIENT_ID_PATH:
+      vault: pipeline/secrets/ARM_CLIENT_ID@kv
+    ARM_CLIENT_SECRET_PATH:
+      vault: pipeline/secrets/ARM_CLIENT_SECRET@kv
+    ARM_SUBSCRIPTION_ID_PATH:
+      vault: pipeline/secrets/ARM_SUBSCRIPTION_ID@kv
+    ARM_TENANT_ID_PATH:
+      vault: pipeline/secrets/ARM_TENANT_ID@kv
+    DISCOVERY_AWS_ID_PATH:
+      vault: pipeline/secrets/DISCOVERY_AWS_ID@kv
+    DISCOVERY_AWS_SECRET_PATH:
+      vault: pipeline/secrets/DISCOVERY_AWS_SECRET@kv
+    DISCOVERY_GCE_SECRET_PATH:
+      vault: pipeline/secrets/DISCOVERY_GCE_SECRET@kv
   script:
+    - export ARM_CLIENT_ID=$(cat "$ARM_CLIENT_ID_PATH")
+    - export ARM_TENANT_ID=$(cat "$ARM_TENANT_ID_PATH")
+    - export ARM_CLIENT_SECRET=$(cat "$ARM_CLIENT_SECRET_PATH")
+    - export ARM_SUBSCRIPTION_ID=$(cat "$ARM_SUBSCRIPTION_ID_PATH")
+    - export DISCOVERY_AWS_ID=$(cat "$DISCOVERY_AWS_ID_PATH")
+    - export DISCOVERY_AWS_SECRET=$(cat "$DISCOVERY_AWS_SECRET_PATH")
+    - export DISCOVERY_GCE_SECRET=$(cat "$DISCOVERY_GCE_SECRET_PATH")
     - apt-get update && apt-get install -y jq --no-install-recommends
     - npm ci --no-optional
     - npm install --no-optional
@@ -529,21 +582,8 @@ test_rpms_for_this_project:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
-      # Don't run test in case of scheduled shared schema run
-    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
-      when: never
-      # In case of update_shared_schema branch we would like to have an integration
-      #  testing run, so enable it here
-    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
-  before_script:
-    # In case of update_shared_schema run we need to provide some extra vars
-    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
-    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
-    -   export PARALLEL=true
-    -   export REGRESSION_SCHEDULE=nightly
-    - fi
   <<: *test_rpms_common
   artifacts:
     name: f5-appsvcs-extension-$CI_COMMIT_SHA
@@ -590,14 +630,28 @@ test_rpms_for_other_project:
   tags:
       - classy-crows-as3-docker-runner
   stage: teardown
+  id_tokens: *vault_id_token
+  secrets:
+    QRT_PASSPHRASE_PATH:
+      vault: pipeline/secrets/QRT_PASSPHRASE@kv
   script:
-      - cd "$TF_ROOT"
-      - terraform init
-      - terraform destroy --var bigip_version="${BIGIP_IMAGE}"
-      - if [[ "$PARALLEL" = "true" ]]; then
-      -   echo "Delete server-set $SERVER_SET from $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
-      -   curl -s --retry 5 --retry-max-time 300 -X DELETE http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets/id/$SERVER_SET
-      - fi
+      - export QRT_PASSPHRASE=$(cat "$QRT_PASSPHRASE_PATH")
+      - |
+        if [[ "${TEST_IN_AZURE,,}" != "true" ]]; then
+          echo "Using QRT-based teardown"
+          bash scripts/dev/release_machines.sh
+        else
+          echo "Using Terraform-based teardown"
+          cd "$TF_ROOT"
+          terraform init
+          terraform destroy --var bigip_version="${BIGIP_IMAGE}"
+          cd -
+        fi
+      - |
+        if [[ "$PARALLEL" = "true" ]]; then
+          echo "Delete server-set $SERVER_SET from $RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT"
+          curl -s --retry 5 --retry-max-time 300 -X DELETE http://$RESERVATION_SERVER_HOST:$RESERVATION_SERVER_PORT/reservations/api/server-sets/id/$SERVER_SET
+        fi
   retry:
     max: 1
     when: script_failure
@@ -615,11 +669,12 @@ teardown_azure:
   before_script:
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [[ "$PARALLEL" = "true" ]]; then
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
-    - else
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
-    - fi
+    - |
+      if [[ "$PARALLEL" = "true" ]]; then
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-azure-$TRIM_VERSION"
+      else
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/azure-$TRIM_VERSION"
+      fi
   <<: *teardown_common
 
 teardown_openstack:
@@ -630,44 +685,34 @@ teardown_openstack:
       when: never
     - if: '$UPDATE_DEPS =~ /true/i'
       when: never
-      # Don't run test in case of scheduled shared schema run
-    - if: '$UPDATE_SHARED_SCHEMA =~ /true/i'
-      when: never
-      # In case of update_shared_schema branch we would like to have an integration
-      #  testing run, so enable it here
-    - if: '$CI_COMMIT_BRANCH == "update_shared_schema"'
-      when: always
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: always
     - if: '$TRIGGER_INTEGRATION_TEST =~ /true/i'
       when: always
     - if: '$FORCE_INTEGRATION_TEST =~ /true/i'
       when: always
+  when: always
   variables:
     TF_ROOT: "$TF_DIRECTORY/plans/openstack"
   before_script:
-    # In case of update_shared_schema run we need to provide some extra vars
-    - if [[ "$CI_COMMIT_BRANCH" == "update_shared_schema" ]]; then
-    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
-    -   export PARALLEL=true
-    - fi
     # terraform doesn't support '.' in backend address.
     - export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    - if [[ "$PARALLEL" = "true" ]]; then
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
-    - elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
-    -   export TF_VAR_bigip_count=2
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
-    - elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
-    -   export TF_VAR_performance_test=true
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
-    - elif [ "$TRIGGER_INTEGRATION_TEST" = "true" ]; then
-    -   export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
-    -   export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
-    - else
-    -   export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
-    - fi
+    - |
+      if [[ "$PARALLEL" = "true" ]]; then
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/parallel-openstack-$TRIM_VERSION"
+      elif [ "$REGRESSION_SCHEDULE" = "remote" ]; then
+        export TF_VAR_bigip_count=2
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/remote-openstack-$TRIM_VERSION"
+      elif [ "$REGRESSION_SCHEDULE" = "performance" ]; then
+        export TF_VAR_performance_test=true
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/performance-openstack-$TRIM_VERSION"
+      elif [ "$TRIGGER_INTEGRATION_TEST" = "true" ]; then
+        export BIGIP_IMAGE="${BIGIP_IMAGE_DEFAULT}"
+        export TRIM_VERSION="$(echo ${BIGIP_IMAGE} | cut -d '-' -f 2 | tr '.' -)"
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/atg-build-openstack-$TRIM_VERSION"
+      else
+        export TF_HTTP_ADDRESS="$TF_STATE_URL/openstack-$TRIM_VERSION"
+      fi
   <<: *teardown_common
 
 # DOCS
@@ -683,7 +728,7 @@ create_docs:
     - node scripts/build/schema-to-rst.js
     - node scripts/build/create-examples-collection.js
     - if [ "$CI_COMMIT_REF_NAME" = "docs-staging" ] || [ "$CI_COMMIT_REF_NAME" = "docs-0.0" ] || [ "$CI_COMMIT_REF_NAME" = "docs-latest" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.13.1" ] || [ "$CI_COMMIT_REF_NAME" = "docs-3.5.1" ]; then
-    -   rm -rf docs/_templates
+    -    rm -rf docs/_templates
     - fi
     - npm install mocha@10.2
     - make html
@@ -695,10 +740,11 @@ create_docs:
     - vale --glob='*.rst' .
 
     # build developer documentation (optional)
-    - if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-    -   npm install --registry $NPM_REGISTRY_URL -g jsdoc
-    -   jsdoc src/nodejs/* -d contributing
-    - fi
+    - |
+      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
+        npm install --registry $NPM_REGISTRY_URL -g jsdoc
+        jsdoc src/nodejs/* -d contributing
+      fi
 
     - echo "Checking links"
     # Final link check, that we will error on if there are broken links

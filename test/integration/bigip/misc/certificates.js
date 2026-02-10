@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ const assert = chai.assert;
 const {
     postDeclaration,
     deleteDeclaration,
+    postBigipItems,
+    deleteBigipItems,
     getPath,
     getBigIpVersion,
     GLOBAL_TIMEOUT
@@ -2050,6 +2052,551 @@ describe('certificates', function () {
                 assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server1-2-');
                 assert.strictEqual(response.sniDefault, 'false');
                 assert.strictEqual(response.sniRequire, 'false');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should handle serverTLS property is object or array of objects in Service_HTTPS class', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Sample_01: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    virtualServer: {
+                        class: 'Service_HTTPS',
+                        virtualAddresses: ['192.0.2.1'],
+                        virtualPort: 443,
+                        layer4: 'tcp',
+                        profileHTTP: 'basic',
+                        profileTCP: 'normal',
+                        persistenceMethods: [],
+                        snat: {
+                            use: 'snatpool'
+                        },
+                        serverTLS: {
+                            use: 'ssl_server'
+                        },
+                        enable: true,
+                        httpMrfRoutingEnabled: true
+                    },
+                    snatpool: {
+                        class: 'SNAT_Pool',
+                        snatAddresses: ['192.0.2.1']
+                    },
+                    ssl_server: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                certificate: 'webCert',
+                                matchToSNI: '',
+                                sniDefault: true
+                            }
+                        ]
+                    },
+                    webCert: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration), { declarationIndex: 0 })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.Sample_01.app.ssl_server.namingScheme = 'certificate';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested ClientSSL Profile (/Sample_01/app/ssl_server) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~webCert'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'webCert');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/webCert');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                delete declaration.Sample_01.app.ssl_server.namingScheme;
+                declaration.Sample_01.app.virtualServer.serverTLS = [{ use: 'ssl_server' }, { use: 'ssl_server1' }];
+                declaration.Sample_01.app.ssl_server1 = {
+                    class: 'TLS_Server',
+                    certificates: [
+                        {
+                            certificate: 'webCert1',
+                            matchToSNI: 'test.com',
+                            sniDefault: false
+                        }
+                    ]
+                };
+                declaration.Sample_01.app.webCert1 = {
+                    class: 'Certificate',
+                    certificate: {
+                        bigip: '/Common/default.crt'
+                    },
+                    privateKey: {
+                        bigip: '/Common/default.key'
+                    },
+                    chainCA: {
+                        bigip: '/Common/ca-bundle.crt'
+                    }
+                };
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server1'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server1');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server1');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => {
+                declaration.Sample_01.app.ssl_server.namingScheme = 'certificate';
+                declaration.Sample_01.app.virtualServer.serverTLS = [{ use: 'ssl_server' }, { use: 'ssl_server1' }];
+                declaration.Sample_01.app.ssl_server1 = {
+                    class: 'TLS_Server',
+                    certificates: [
+                        {
+                            certificate: 'webCert1',
+                            matchToSNI: 'test.com',
+                            sniDefault: false
+                        }
+                    ],
+                    namingScheme: 'certificate'
+                };
+                declaration.Sample_01.app.webCert1 = {
+                    class: 'Certificate',
+                    certificate: {
+                        bigip: '/Common/default.crt'
+                    },
+                    privateKey: {
+                        bigip: '/Common/default.key'
+                    },
+                    chainCA: {
+                        bigip: '/Common/ca-bundle.crt'
+                    }
+                };
+                return postDeclaration(declaration, { declarationIndex: 3 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested ClientSSL Profile (/Sample_01/app/ssl_server) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => assert.isRejected(
+                getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server1'),
+                'Unable to GET declaration: Error: Received unexpected 404 status code: {"code":404,"message":"01020036:3: The requested ClientSSL Profile (/Sample_01/app/ssl_server1) was not found.","errorStack":[],"apiError":3}'
+            ))
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~webCert'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'webCert');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/webCert');
+                assert.strictEqual(response.sniDefault, 'true');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~webCert1'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'webCert1');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/webCert1');
+                assert.strictEqual(response.sniDefault, 'false');
+                assert.strictEqual(response.sniRequire, 'false');
+            })
+            .finally(() => deleteDeclaration());
+    });
+
+    it('should create the TLS Client profile with enable OCSP and create a issuerCertificate', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/dns-resolver',
+                data: {
+                    name: '198.51.100.10',
+                    partition: 'Common',
+                    routeDomain: '/Common/0'
+                }
+            }
+        ];
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Sample_OCSP: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    testItem: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                certificate: 'cert'
+                            }
+                        ],
+                        staplerOCSPEnabled: true
+                    },
+                    cert1: {
+                        class: 'Certificate',
+                        certificate: '-----BEGIN CERTIFICATE-----\nMIIBgDCCASegAwIBAgIUa6S69aFq0ry0bD/TZWaNZqufHW4wCgYIKoZIzj0EAwIw\nFjEUMBIGA1UEAwwLRUNDIFJvb3QgQ0EwHhcNMjUxMDAzMTcwNzQ3WhcNMjYxMDAz\nMTcwNzQ3WjAWMRQwEgYDVQQDDAtFQ0MgUm9vdCBDQTBZMBMGByqGSM49AgEGCCqG\nSM49AwEHA0IABEKyg6rRM86+UA+XEYFoDSz6jk3ZPYP8VqG/3PKUylDB3U5xKp8V\nEP9TWeYtURADT7fC91vGiIt/1ANKilI4L3ujUzBRMB0GA1UdDgQWBBRaeua7d4oY\na0/v6ejyLylD7ZHqIzAfBgNVHSMEGDAWgBRaeua7d4oYa0/v6ejyLylD7ZHqIzAP\nBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQCIDVrpmn8GUQ43F8GyhaI\n27HTkewwMBaUuuv1VM8oxRXAAiBdasX0Y6Be0Qlb5/FwLJhgKO4o/+EnCTiZV90j\nnF4xTQ==\n-----END CERTIFICATE-----'
+                    },
+                    cert: {
+                        class: 'Certificate',
+                        certificate: '-----BEGIN CERTIFICATE-----\nMIIBJDCBywIUBj3XbO1ceN0Vx/ST1Vrfw/fh89wwCgYIKoZIzj0EAwIwFjEUMBIGA1UEAwwLRUNDIFJvb3QgQ0EwHhcNMjUxMDAzMTcwODAwWhcNMjYxMDAzMTcwODAwWjAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATHetTH75W5CisGRIkgti2kP2HOlRW5ZqOxBvCkyqW/MQeoYIwlCyR2hVW9DkrZ7PrY3Bb7EGGFvQFVrN38JwSqMAoGCCqGSM49BAMCA0gAMEUCIEbi1YATaOunXUwKvM177GmD6C/cad5z6fm2U/2uTmmjAiEA7v6/0TDU/SPyW/P3OLUDgpmrvPTQB4MLuHB2ytEES/Y=\n-----END CERTIFICATE-----',
+                        privateKey: '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIJhDPPTh4uDMP32TLBbZigKStRcM9xOevDp2usykHeQaoAoGCCqGSM49AwEHoUQDQgAEx3rUx++VuQorBkSJILYtpD9hzpUVuWajsQbwpMqlvzEHqGCMJQskdoVVvQ5K2ez62NwW+xBhhb0BVazd/CcEqg==\n-----END EC PRIVATE KEY-----',
+                        staplerOCSP: {
+                            use: 'testOcsp'
+                        },
+                        issuerCertificate: {
+                            use: 'cert1'
+                        }
+                    },
+                    testOcsp: {
+                        class: 'Certificate_Validator_OCSP',
+                        dnsResolver: {
+                            bigip: '/Common/198.51.100.10'
+                        },
+                        timeout: 250,
+                        responderUrl: 'http://oscp.test.com'
+                    }
+                }
+            }
+        };
+
+        return postBigipItems(bigipItems)
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_OCSP~app~testItem'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testItem');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/testItem');
+                assert.strictEqual(response.ocspStapling, 'enabled');
+            })
+            .then(() => getPath('/mgmt/tm/sys/file/ssl-cert/~Sample_OCSP~app~cert.crt'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'cert.crt');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/cert.crt');
+                assert.strictEqual(response.issuerCert, '/Sample_OCSP/app/cert1.crt');
+                assert.strictEqual(response.certValidationOptions.length, 1);
+                assert.strictEqual(response.certValidationOptions[0], 'ocsp');
+                assert.strictEqual(response.keyType, 'ec-public');
+            })
+            .then(() => getPath('/mgmt/tm/sys/file/ssl-key/~Sample_OCSP~app~cert.key'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'cert.key');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/cert.key');
+                assert.strictEqual(response.keyType, 'ec-private');
+            })
+            .then(() => getPath('/mgmt/tm/sys/crypto/cert-validator/ocsp/~Sample_OCSP~app~testOcsp'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testOcsp');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/testOcsp');
+                assert.strictEqual(response.dnsResolver, '/Common/198.51.100.10');
+                assert.strictEqual(response.responderUrl, 'http://oscp.test.com');
+                assert.strictEqual(response.timeout, 250);
+            })
+            .finally(() => deleteDeclaration().then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('should create the TLS Client profile with enable OCSP and issuerCertificate reference', () => {
+        const bigipItems = [
+            {
+                endpoint: '/mgmt/tm/net/dns-resolver',
+                data: {
+                    name: '198.51.100.10',
+                    partition: 'Common',
+                    routeDomain: '/Common/0'
+                }
+            },
+            {
+                endpoint: '/mgmt/shared/file-transfer/uploads/ECC-CACRT',
+                data: '-----BEGIN CERTIFICATE-----\nMIIBgDCCASegAwIBAgIUa6S69aFq0ry0bD/TZWaNZqufHW4wCgYIKoZIzj0EAwIw\nFjEUMBIGA1UEAwwLRUNDIFJvb3QgQ0EwHhcNMjUxMDAzMTcwNzQ3WhcNMjYxMDAz\nMTcwNzQ3WjAWMRQwEgYDVQQDDAtFQ0MgUm9vdCBDQTBZMBMGByqGSM49AgEGCCqG\nSM49AwEHA0IABEKyg6rRM86+UA+XEYFoDSz6jk3ZPYP8VqG/3PKUylDB3U5xKp8V\nEP9TWeYtURADT7fC91vGiIt/1ANKilI4L3ujUzBRMB0GA1UdDgQWBBRaeua7d4oY\na0/v6ejyLylD7ZHqIzAfBgNVHSMEGDAWgBRaeua7d4oYa0/v6ejyLylD7ZHqIzAP\nBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0cAMEQCIDVrpmn8GUQ43F8GyhaI\n27HTkewwMBaUuuv1VM8oxRXAAiBdasX0Y6Be0Qlb5/FwLJhgKO4o/+EnCTiZV90j\nnF4xTQ==\n-----END CERTIFICATE-----',
+                headers: {
+                    'Content-Range': '0-581/582',
+                    'Content-Type': 'application/octet-stream'
+                }
+            },
+            {
+                endpoint: '/mgmt/tm/sys/crypto/cert',
+                data: {
+                    command: 'install',
+                    name: 'ECC-CACRT',
+                    partition: 'Common',
+                    'from-local-file': '/var/config/rest/downloads/ECC-CACRT'
+                }
+            }
+        ];
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.55.0',
+            Sample_OCSP: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    testItem: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                certificate: 'cert'
+                            }
+                        ],
+                        staplerOCSPEnabled: true
+                    },
+                    cert: {
+                        class: 'Certificate',
+                        certificate: '-----BEGIN CERTIFICATE-----\nMIIBJDCBywIUBj3XbO1ceN0Vx/ST1Vrfw/fh89wwCgYIKoZIzj0EAwIwFjEUMBIGA1UEAwwLRUNDIFJvb3QgQ0EwHhcNMjUxMDAzMTcwODAwWhcNMjYxMDAzMTcwODAwWjAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATHetTH75W5CisGRIkgti2kP2HOlRW5ZqOxBvCkyqW/MQeoYIwlCyR2hVW9DkrZ7PrY3Bb7EGGFvQFVrN38JwSqMAoGCCqGSM49BAMCA0gAMEUCIEbi1YATaOunXUwKvM177GmD6C/cad5z6fm2U/2uTmmjAiEA7v6/0TDU/SPyW/P3OLUDgpmrvPTQB4MLuHB2ytEES/Y=\n-----END CERTIFICATE-----',
+                        privateKey: '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIJhDPPTh4uDMP32TLBbZigKStRcM9xOevDp2usykHeQaoAoGCCqGSM49AwEHoUQDQgAEx3rUx++VuQorBkSJILYtpD9hzpUVuWajsQbwpMqlvzEHqGCMJQskdoVVvQ5K2ez62NwW+xBhhb0BVazd/CcEqg==\n-----END EC PRIVATE KEY-----',
+                        staplerOCSP: {
+                            use: 'testOcsp'
+                        },
+                        issuerCertificate: {
+                            bigip: '/Common/ECC-CACRT'
+                        }
+                    },
+                    testOcsp: {
+                        class: 'Certificate_Validator_OCSP',
+                        dnsResolver: {
+                            bigip: '/Common/198.51.100.10'
+                        },
+                        timeout: 250,
+                        responderUrl: 'http://oscp.test.com'
+                    }
+                }
+            }
+        };
+
+        return postBigipItems(bigipItems)
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_OCSP~app~testItem'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testItem');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/testItem');
+                assert.strictEqual(response.ocspStapling, 'enabled');
+            })
+            .then(() => getPath('/mgmt/tm/sys/file/ssl-cert/~Sample_OCSP~app~cert.crt'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'cert.crt');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/cert.crt');
+                assert.strictEqual(response.issuerCert, '/Common/ECC-CACRT');
+                assert.strictEqual(response.certValidationOptions.length, 1);
+                assert.strictEqual(response.certValidationOptions[0], 'ocsp');
+                assert.strictEqual(response.keyType, 'ec-public');
+            })
+            .then(() => getPath('/mgmt/tm/sys/file/ssl-key/~Sample_OCSP~app~cert.key'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'cert.key');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/cert.key');
+                assert.strictEqual(response.keyType, 'ec-private');
+            })
+            .then(() => getPath('/mgmt/tm/sys/crypto/cert-validator/ocsp/~Sample_OCSP~app~testOcsp'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'testOcsp');
+                assert.strictEqual(response.fullPath, '/Sample_OCSP/app/testOcsp');
+                assert.strictEqual(response.dnsResolver, '/Common/198.51.100.10');
+                assert.strictEqual(response.responderUrl, 'http://oscp.test.com');
+                assert.strictEqual(response.timeout, 250);
+            })
+            .finally(() => deleteDeclaration().then(() => deleteBigipItems(bigipItems)));
+    });
+
+    it('should handle TLS_Server profiles with authenticationMode', () => {
+        const declaration = {
+            class: 'ADC',
+            schemaVersion: '3.56.0',
+            Sample_01: {
+                class: 'Tenant',
+                app: {
+                    class: 'Application',
+                    template: 'generic',
+                    virtualServer: {
+                        class: 'Service_HTTPS',
+                        virtualAddresses: ['192.0.2.1'],
+                        redirect80: false,
+                        serverTLS: 'ssl_server'
+                    },
+                    ssl_server: {
+                        class: 'TLS_Server',
+                        certificates: [
+                            {
+                                matchToSNI: '',
+                                certificate: 'snidefault',
+                                authenticationMode: 'ignore',
+                                authenticationFrequency: 'every-time'
+                            },
+                            {
+                                matchToSNI: 'https1.example.com',
+                                certificate: 'sni1',
+                                authenticationMode: 'require',
+                                authenticationFrequency: 'one-time'
+                            },
+                            {
+                                matchToSNI: 'https2.example.com',
+                                certificate: 'sni2',
+                                authenticationMode: 'request',
+                                authenticationFrequency: 'every-time'
+                            }
+                        ]
+                    },
+                    snidefault: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    sni1: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    },
+                    sni2: {
+                        class: 'Certificate',
+                        certificate: {
+                            bigip: '/Common/default.crt'
+                        },
+                        privateKey: {
+                            bigip: '/Common/default.key'
+                        },
+                        chainCA: {
+                            bigip: '/Common/ca-bundle.crt'
+                        }
+                    }
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(declaration, { declarationIndex: 0 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server');
+                assert.strictEqual(response.authenticate, 'always');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'ignore');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server-1-');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server-1-');
+                assert.strictEqual(response.authenticate, 'once');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'require');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server-2-');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server-2-');
+                assert.strictEqual(response.authenticate, 'always');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'request');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 1 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => {
+                declaration.Sample_01.app.ssl_server.certificates[0].authenticationMode = 'request';
+                declaration.Sample_01.app.ssl_server.certificates[0].authenticationFrequency = 'one-time';
+                declaration.Sample_01.app.ssl_server.certificates[1].authenticationMode = 'require';
+                declaration.Sample_01.app.ssl_server.certificates[1].authenticationFrequency = 'every-time';
+                declaration.Sample_01.app.ssl_server.certificates[2].authenticationMode = 'ignore';
+                declaration.Sample_01.app.ssl_server.certificates[2].authenticationFrequency = 'one-time';
+                return postDeclaration(declaration, { declarationIndex: 2 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server');
+                assert.strictEqual(response.authenticate, 'once');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'request');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server-1-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server-1-');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server-1-');
+                assert.strictEqual(response.authenticate, 'always');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'require');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/profile/client-ssl/~Sample_01~app~ssl_server-2-'))
+            .then((response) => {
+                assert.strictEqual(response.name, 'ssl_server-2-');
+                assert.strictEqual(response.fullPath, '/Sample_01/app/ssl_server-2-');
+                assert.strictEqual(response.authenticate, 'once');
+                assert.strictEqual(response.authenticateDepth, 9);
+                assert.strictEqual(response.peerCertMode, 'ignore');
+            })
+            .then(() => postDeclaration(declaration, { declarationIndex: 3 }))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
             })
             .finally(() => deleteDeclaration());
     });

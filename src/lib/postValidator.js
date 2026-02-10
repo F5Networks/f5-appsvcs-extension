@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,17 +54,17 @@ class postValidator {
 }
 
 function checkDuplicateNodeNames(declaration) {
-    const names = [];
+    const names = {};
     const dupNames = [];
     const pools = findItems(declaration, 'Pool');
 
     pools.forEach((pool) => {
         (pool.members || []).forEach((member) => {
             (member.servers || []).forEach((server) => {
-                if (names.includes(server.name)) {
+                if (names[server.name] && names[server.name] !== server.address) {
                     dupNames.push(server.name);
                 } else {
-                    names.push(server.name);
+                    names[server.name] = server.address;
                 }
             });
         });

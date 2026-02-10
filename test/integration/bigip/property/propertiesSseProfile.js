@@ -1,0 +1,74 @@
+/**
+ * Copyright 2026 F5, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'use strict';
+
+const {
+    assertClass,
+    GLOBAL_TIMEOUT,
+    getBigIpVersion
+} = require('./propertiesCommon');
+
+const util = require('../../../../src/lib/util/util');
+
+describe('SSE_Profile', function () {
+    this.timeout(GLOBAL_TIMEOUT);
+
+    it('All properties', function () {
+        // SSE Profiles are first supported on v21.0
+        if (util.versionLessThan(getBigIpVersion(), '21.0')) {
+            this.skip();
+        }
+        const options = {
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/ltm/profile/sse',
+                    data: {
+                        name: 'sseProf',
+                        partition: 'Common',
+                        maxBufferedMsgBytes: 20,
+                        maxFieldNameSize: 10
+                    }
+                }
+            ]
+        };
+        const properties = [
+            {
+                name: 'parentProfile',
+                inputValue: [
+                    undefined,
+                    {
+                        bigip: '/Common/sseProf'
+                    },
+                    undefined
+                ],
+                expectedValue: ['sse', 'sseProf', 'sse'],
+                extractFunction: (o) => o.defaultsFrom.name
+            },
+            {
+                name: 'maxFieldNameSize',
+                inputValue: [undefined, 526, undefined],
+                expectedValue: [1024, 526, 1024]
+            },
+            {
+                name: 'maxBufferedMsgBytes',
+                inputValue: [undefined, 1048600, undefined],
+                expectedValue: [65536, 1048600, 65536]
+            }
+        ];
+        return assertClass('SSE_Profile', properties, options);
+    });
+});

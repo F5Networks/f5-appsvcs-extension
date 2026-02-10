@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,18 @@ describe('certUtil', () => {
 
         it('should return false', () => {
             const certificate = '-----BEGIN CERTIFICATE-----\nMIIFLTCCBBWgAwIBAgIMYaHn0gAAAABR02amMA0GCSqGSIb3DQEBCwUAMIG+MQswCQYDVQQGEwJVUzEWMBQGA1UEChMNRW50cnVzdCwgSW5jLjEoMCYGA1UECxMfU2VlIHd3dy5lbnRydXN0Lm5ldC9sZWdhbC10ZXJtczE5MDcGA1UECxMwKGMpIDIwMDkgRW50cnVzdCwgSW5jLiAtIGZvciBhdXRob3JpemVkIHVzZSBvbmx5MTIwMAYDVQQDEylFbnRydXN0IFJvb3QgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkgLSBHMjAeFw0xNDEyMTUxNTI1MDNaFw0zMDEwMTUxNTU1MDNaMIG6MQswCQYDVQQGEwJVUzEWMBQGA1UEChMNRW50cnVzdCwgSW5jLjEoMCYGA1UECxMfU2VlIHd3dy5lbnRydXN0Lm5ldC9sZWdhbC10ZXJtczE5MDcGA1UECxMwKGMpIDIwMTQgRW50cnVzdCwgSW5jLiAtIGZvciBhdXRob3JpemVkIHVzZSBvbmx5MS4wLAYDVQQDEyVFbnRydXN0IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IC0gTDFNMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0IHBOSPCsdHs91fdVSQ2kSAiSPf8ylIKsKs/M7WwhAf23056sPuYIj0BrFb7cW2y7rmgD1J3q5iTvjOK64dex6qwymmPQwhqPyK/MzlG1ZTy4kwFItlngJHxBEoOm3yiydJs/TwJhL39axSagR3nioPvYRZ1R5gTOw2QFpi/iuInMlOZmcP7lhw192LtjL1JcdJDQ6Gh4yEqI3CodT2ybEYGYW8YZ+QpfrI8wcVfCR5uRE7sIZlYFUj0VUgqtzS0BeN8SYwAWN46lsw53GEzVc4qLj/RmWLoquY0djGqr3kplnjLgRSvadr7BLlZg0SqCU+01CwBnZuUMWstoc/B5QIDAQABo4IBKzCCAScwDgYDVR0PAQH/BAQDAgEGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATASBgNVHRMBAf8ECDAGAQH/AgEAMDMGCCsGAQUFBwEBBCcwJTAjBggrBgEFBQcwAYYXaHR0cDovL29jc3AuZW50cnVzdC5uZXQwMAYDVR0fBCkwJzAloCOgIYYfaHR0cDovL2NybC5lbnRydXN0Lm5ldC9nMmNhLmNybDA7BgNVHSAENDAyMDAGBFUdIAAwKDAmBggrBgEFBQcCARYaaHR0cDovL3d3dy5lbnRydXN0Lm5ldC9ycGEwHQYDVR0OBBYEFMP30LUqMK2vDZEhcDlU3byJcMc6MB8GA1UdIwQYMBaAFGpyJnrQHu995ztpUdRsjZ+QEmarMA0GCSqGSIb3DQEBCwUAA4IBAQC0h8eEIhopwKR47PVPG7SEl2937tTPWa+oQ5YvHVjepvMVWy7ZQ5xMQrkXFxGttLFBx2YMIoYFp7Qi+8VoaIqIMthx1hGOjlJ+Qgld2dnADizvRGsf2yS89byxqsGK5Wbb0CTz34mmi/5e0FC6m3UAyQhKS3Q/WFOv9rihbISYJnz8/DVRZZgeO2x28JkPxLkJ1YXYJKd/KsLak0tkuHB8VCnTglTVz6WUwzOeTTRn4Dh2ZgCN0C/GqwmqcvrOLzWJ/MDtBgO334wlV/H77yiI2YIowAQPlIFpI+CRKMVe1QzX1CA778n4wI+nQc1XRG5sZ2L+hN/nYNjvv9QiHg3n\n-----END CERTIFICATE-----';
+            const result = certUtil.checkIfSelfSigned(certificate);
+            assert.deepStrictEqual(result, false);
+        });
+
+        it('should return true for non rsa certificate', () => {
+            const certificate = '-----BEGIN CERTIFICATE-----\nMIICaDCCAg2gAwIBAgIJAP13qQYRz0CPMAoGCCqGSM49BAMCMBYxFDASBgNVBAMM\nC2V4YW1wbGUuY29tMB4XDTI1MDcyNDEzMTIwMloXDTI2MDcyNDEzMTIwMlowFjEU\nMBIGA1UEAwwLZXhhbXBsZS5jb20wggFLMIIBAwYHKoZIzj0CATCB9wIBATAsBgcq\nhkjOPQEBAiEA/////wAAAAEAAAAAAAAAAAAAAAD///////////////8wWwQg////\n/wAAAAEAAAAAAAAAAAAAAAD///////////////wEIFrGNdiqOpPns+u9VXaYhrxl\nHQawzFOw9jvOPD4n0mBLAxUAxJ02CIbnBJNqZnjhE50mt4GffpAEQQRrF9Hy4SxC\nR/i85uVjpEDydwN9gS3rM6D0oTlF2JjClk/jQuL+Gn+bjufrSnwPnhYrzjNXazFe\nzsu2QGg3v1H1AiEA/////wAAAAD//////////7zm+q2nF56E87nKwvxjJVECAQED\nQgAEiiAyU5TVP/RHNVCUptrdC76GF1qIy0rid41QQUiL8GLq1IBmIJznMZC5To0D\nnH6RkBXLBx0gM6Gpv0vvbQ996aNQME4wHQYDVR0OBBYEFBYFj/M+v2+nxH0zPrGF\nQfbwvDiVMB8GA1UdIwQYMBaAFBYFj/M+v2+nxH0zPrGFQfbwvDiVMAwGA1UdEwQF\nMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAJiQGYNiJGSFzvc0Eyf5ikb6pCMqvmWC\nTITvMQP4OkASAiEAi2ZqngIfpC/c/699/wgLkH8gYU6K7jeonzOS1k7N8hY=\n-----END CERTIFICATE-----\n';
+            const result = certUtil.checkIfSelfSigned(certificate);
+            assert.deepStrictEqual(result, true);
+        });
+
+        it('should return false for non rsa certificate', () => {
+            const certificate = '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----\n';
             const result = certUtil.checkIfSelfSigned(certificate);
             assert.deepStrictEqual(result, false);
         });

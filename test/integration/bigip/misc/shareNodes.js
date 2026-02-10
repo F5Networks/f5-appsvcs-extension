@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -656,6 +656,52 @@ describe('shareNodes', function () {
                 assert.strictEqual(response.results[0].host, 'localhost');
                 assert.strictEqual(response.results[0].tenant[0], 'tenant');
                 assert.match(response.results[0].declarationId, /autogen_([0-9a-z]{4,}[-]){3,}/);
-            });
+            })
+            .then(() => {
+                declaration.tenant.app.testPool.members[0].servers[0].name = 'ns1.test.local1';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/pool/~tenant~app~testPool/members' }))
+            .then((response) => {
+                assert.strictEqual(response.body.items.length, 1);
+                assert.strictEqual(response.body.items[0].name, 'ns1.test.local1:0');
+                assert.strictEqual(response.body.items[0].fullPath, '/Common/ns1.test.local1:0');
+                assert.strictEqual(response.body.items[0].address, '192.0.2.0');
+            })
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/pool/~tenant~app~testPool-http/members' }))
+            .then((response) => {
+                assert.strictEqual(response.body.items.length, 1);
+                assert.strictEqual(response.body.items[0].name, 'ns1.test.local:80');
+                assert.strictEqual(response.body.items[0].fullPath, '/Common/ns1.test.local:80');
+                assert.strictEqual(response.body.items[0].address, '192.0.2.3');
+            })
+            .then(() => {
+                declaration.tenant.app.testPool.members[0].servers[0].name = 'ns1.test.local';
+                declaration.tenant.app.testPool.members[0].servers[0].address = '192.0.2.3';
+                return postDeclaration(declaration, { declarationIndex: 1 });
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/pool/~tenant~app~testPool/members' }))
+            .then((response) => {
+                assert.strictEqual(response.body.items.length, 1);
+                assert.strictEqual(response.body.items[0].name, 'ns1.test.local:0');
+                assert.strictEqual(response.body.items[0].fullPath, '/Common/ns1.test.local:0');
+                assert.strictEqual(response.body.items[0].address, '192.0.2.3');
+            })
+            .then(() => requestUtil.get({ path: '/mgmt/tm/ltm/pool/~tenant~app~testPool-http/members' }))
+            .then((response) => {
+                assert.strictEqual(response.body.items.length, 1);
+                assert.strictEqual(response.body.items[0].name, 'ns1.test.local:80');
+                assert.strictEqual(response.body.items[0].fullPath, '/Common/ns1.test.local:80');
+                assert.strictEqual(response.body.items[0].address, '192.0.2.3');
+            })
+            .finally(() => deleteDeclaration());
     });
 });

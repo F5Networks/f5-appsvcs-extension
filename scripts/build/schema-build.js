@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 'use strict';
 
 const fs = require('fs');
-const f5AppSvcsSchema = require('@automation-toolchain/f5-appsvcs-schema');
 
 const core = require('../../src/schema/latest/core-schema.json');
 const pointerData = require('../../src/schema/latest/pointers.json');
+const sharedSchema = require('../../src/schema/latest/shared-schema-core.json');
 
-const runChecks = require('./schema-check').runChecks;
+const runAdcChecks = require('./schema-check').runChecks;
+const runPerAppChecks = require('./per-app-schema-check').runChecks;
 
 const SCHEMA_DIR = `${__dirname}/../../src/schema/latest`;
 
@@ -63,9 +64,23 @@ function readSchema(name) {
     });
 }
 
+function stringifyPreservingUnicode(obj) {
+    // Custom JSON stringification that preserves Unicode escape sequences
+    let jsonString = JSON.stringify(obj, null, 2);
+
+    // Convert Unicode characters (U+0080 to U+FFFF) back to escape sequences
+    jsonString = jsonString.replace(/[\u0080-\uFFFF]/g, (char) => {
+        const hex = char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
+        return `\\u${hex}`;
+    });
+
+    return jsonString;
+}
+
 function writeSchema(name, schema) {
     return new Promise((resolve, reject) => {
-        fs.writeFile(`${SCHEMA_DIR}/${name}`, JSON.stringify(schema, null, 2), (error) => {
+        const jsonString = stringifyPreservingUnicode(schema);
+        fs.writeFile(`${SCHEMA_DIR}/${name}`, jsonString, (error) => {
             if (error) reject(error);
             else resolve();
         });
@@ -234,7 +249,16 @@ function buildToolSchema() {
 
 function checkAdcSchema() {
     return new Promise((resolve, reject) => {
-        runChecks(`${SCHEMA_DIR}/adc-schema.json`, (error) => {
+        runAdcChecks(`${SCHEMA_DIR}/adc-schema.json`, (error) => {
+            if (error) reject(error);
+            else resolve();
+        });
+    });
+}
+
+function checkPerAppSchema() {
+    return new Promise((resolve, reject) => {
+        runPerAppChecks(`${SCHEMA_DIR}/per-app-schema.json`, (error) => {
             if (error) reject(error);
             else resolve();
         });
@@ -242,7 +266,6 @@ function checkAdcSchema() {
 }
 
 function buildSharedSchema() {
-    const sharedSchema = f5AppSvcsSchema.getSchemaByRuntime('core');
     const supportedClasses = [
         'Analytics_Profile',
         'Analytics_TCP_Profile',
@@ -345,11 +368,60 @@ function buildSharedSchema() {
         }, {});
 
     return new Promise((resolve, reject) => {
-        fs.writeFile(`${SCHEMA_DIR}/def-shared-schema-core.json`, JSON.stringify(sharedSchema, null, 2), (error) => {
+        const jsonString = stringifyPreservingUnicode(sharedSchema);
+        fs.writeFile(`${SCHEMA_DIR}/def-shared-schema-core.json`, jsonString, (error) => {
             if (error) reject(error);
             else resolve();
         });
     });
+}
+
+function buildPerAppSchema() {
+    const as3SchemaPath = `${SCHEMA_DIR}/as3-schema.json`;
+
+    return Promise.resolve()
+        .then(() => readSchema('app-schema.json')
+            .then((data) => writeSchema('per-app-schema.json', JSON.parse(data))))
+        .then(() => {
+            // Verify as3-schema.json exists and read it
+            if (!fs.existsSync(as3SchemaPath)) {
+                throw new Error(`as3-schema.json does not exist at ${as3SchemaPath}`);
+            }
+            return readSchema('as3-schema.json');
+        })
+        .then((as3Data) => {
+            const as3Schema = JSON.parse(as3Data);
+
+            // Check if it contains a "definitions" object
+            if (!as3Schema.definitions || typeof as3Schema.definitions !== 'object') {
+                throw new Error('as3-schema.json does not contain a "definitions" object');
+            }
+
+            return as3Schema.definitions;
+        })
+        .then((definitions) => readSchema('per-app-schema.json')
+            .then((perAppData) => {
+                const perAppSchema = JSON.parse(perAppData);
+
+                // Copy the definitions object into per-app-schema
+                perAppSchema.definitions = definitions;
+
+                // Update properties.controls.$ref if it exists
+                if (perAppSchema.properties && perAppSchema.properties.controls) {
+                    perAppSchema.properties.controls.$ref = '#/definitions/Controls';
+                } else {
+                    console.log('Note: properties.controls object not found in per-app-schema.json');
+                }
+
+                // Update additionalProperties.$ref if it exists
+                if (perAppSchema.additionalProperties && typeof perAppSchema.additionalProperties === 'object') {
+                    perAppSchema.additionalProperties.$ref = '#/definitions/Application';
+                } else {
+                    console.log('Note: additionalProperties object not found in per-app-schema.json');
+                }
+
+                return writeSchema('per-app-schema.json', perAppSchema);
+            }));
 }
 
 function build() {
@@ -359,7 +431,9 @@ function build() {
         .then(combineDefinitions)
         .then(buildApplicationAdditionalProps)
         .then(checkAdcSchema)
-        .then(buildToolSchema);
+        .then(buildToolSchema)
+        .then(buildPerAppSchema)
+        .then(checkPerAppSchema);
 }
 
 module.exports = {

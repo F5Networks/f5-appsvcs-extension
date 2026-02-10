@@ -24,7 +24,7 @@
             },
             "splitsessionClient": {
                 "class": "Splitsession_Client_Profile",
-                "description": "none",
+                "remark": "none",
                 "peerPort": 80,
                 "peerIp": "192.0.2.1",
                 "localPeer": false,

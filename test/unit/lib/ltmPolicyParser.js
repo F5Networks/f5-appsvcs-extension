@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,15 @@ describe('LTM Policy Parsing', () => {
                 output = PolicyParser.normalizeString(fullCondition, 'condition');
             });
             assert.equal(fullCondition, output);
+        });
+
+        it('should do nothing if two specified action keys are there in the PolicyString', () => {
+            const sctionStr = 'http-header request insert name X-Forwarded-Proto value http';
+            let output = '';
+            assert.doesNotThrow(() => {
+                output = PolicyParser.normalizeString(sctionStr, 'action');
+            });
+            assert.equal(sctionStr, output);
         });
 
         it('should error on invalid input', () => {

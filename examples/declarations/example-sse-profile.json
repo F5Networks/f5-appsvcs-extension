@@ -1,0 +1,53 @@
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.56.0",
+        "id": "sse-profile-declaration",
+        "Sample_Tenant": {
+            "class": "Tenant",
+            "Sample_App": {
+                "class": "Application",
+                "template": "generic",
+                "sseProfileSample": {
+                    "class": "SSE_Profile",
+                    "remark": "Sample SSE profile",
+                    "parentProfile": {
+                        "bigip": "/Common/sse"
+                    },
+                    "maxBufferedMsgBytes": 65536,
+                    "maxFieldNameSize": 1024
+                },
+                "sseService": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "192.0.2.10"
+                    ],
+                    "virtualPort": 1723,
+                    "snat": "auto",
+                    "pool": "ssePool",
+                    "profileSSE": {
+                        "use": "sseProfileSample"
+                    }
+                },
+                "ssePool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 1723,
+                            "serverAddresses": [
+                                "192.0.2.12",
+                                "192.0.2.13"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

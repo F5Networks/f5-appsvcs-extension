@@ -33,6 +33,7 @@
     },
     "Bot_Defense_Profile": {
         "name": "bot defense profile",
+        "class": "Bot_Defense_Profile",
         "tmshPath": "security bot-defense profile"
     },
     "Bot_Signature": {
@@ -389,6 +390,11 @@
         "name": "IP Intelligence Feed List",
         "tmshPath": "security ip-intelligence feed-list"
     },
+    "JSON_Profile": {
+        "name": "JSON Profile",
+        "class": "JSON_Profile",
+        "tmshPath": "ltm profile json"
+    },
     "NAT_Source_Translation": {
         "name": "NAT Source Translation",
         "class": "NAT_Source_Translation",
@@ -496,6 +502,11 @@
         "name": "Splitsession_Client_Profile",
         "class": "Splitsession_Client_Profile",
         "tmshPath": "ltm profile splitsessionclient"
+    },
+    "SSE_Profile": {
+        "name": "SSE Profile",
+        "class": "SSE_Profile",
+        "tmshPath": "ltm profile sse"
     },
     "Connector_Profile": {
         "name": "Connector_Profile",

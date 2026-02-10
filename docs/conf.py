@@ -73,7 +73,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'F5 BIG-IP AS3'
-copyright = u'2024, F5 Networks'
+copyright = u'2026, F5 Networks'
 author = u'F5 Networks'
 
 # The version info for the project you're documenting, acts as replacement for

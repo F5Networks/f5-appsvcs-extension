@@ -1,0 +1,52 @@
+{
+  "class": "AS3",
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.25.0",
+    "id": "TCPProfileExample",
+    "tenantName": {
+      "class": "Tenant",
+      "applicationName": {
+        "class": "Application",
+        "template": "generic",
+        "myTcpProfile": {
+          "class": "TCP_Profile",
+          "autoProxyBufferSize": true,
+          "autoReceiveWindowSize": true,
+          "autoSendBufferSize": true,
+          "congestionControl": "cubic",
+          "initCwnd": 64,
+          "initRwnd": 64,
+          "nagle": "disable",
+          "proxyBufferHigh": 262144,
+          "proxyBufferLow": 65536,
+          "receiveWindowSize": 20971520,
+          "selectiveAcks": true,
+          "sendBufferSize": 20971520
+        },
+        "myServerPool": {
+          "class": "Pool",
+          "members": [
+            {
+              "servicePort": 80,
+              "serverAddresses": [
+                "10.1.1.10"
+              ]
+            }
+          ]
+        },
+        "myVirtualServer": {
+          "class": "Service_TCP",
+          "virtualAddresses": [
+            "10.2.2.10"
+          ],
+          "virtualPort": 252,
+          "pool": "myServerPool",
+          "profileTCP": {
+            "use": "myTcpProfile"
+          }
+        }
+      }
+    }
+  }
+}

@@ -37,7 +37,13 @@ if [ -z "$RPM_PACKAGE" ]; then
     exit 1
 fi
 
+echo "=== Starting instance configuration for $IP ==="
+echo "Step 1/4: Installing DO RPM"
 scripts/dev/install-rpm.sh "$IP" "$CREDS" "$DO_RPM_FILE" && \
+echo "Step 2/4: Running DO onboarding" && \
 scripts/dev/run-do.sh "$IP" "$CREDS" "$ONBOARD_FILE" && \
+echo "Step 3/4: Waiting for DO to complete" && \
 scripts/dev/wait-for-do.sh "$IP" "$CREDS" && \
-scripts/dev/install-rpm.sh "$IP" "$CREDS" "$RPM_PACKAGE"
+echo "Step 4/4: Installing AS3 RPM" && \
+scripts/dev/install-rpm.sh "$IP" "$CREDS" "$RPM_PACKAGE" && \
+echo "=== Instance configuration completed for $IP ==="

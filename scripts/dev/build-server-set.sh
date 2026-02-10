@@ -41,7 +41,7 @@ echo '"servers": ['
 for i in "${BIGIPS_ADDRESSES[@]}"
 do
     jq -n \
-        --arg ip "$i:8443" \
+        --arg ip "$i" \
         --arg admin_username "$AS3_USERNAME" \
         --arg admin_password "$AS3_PASSWORD" \
         '{ ip: $ip,

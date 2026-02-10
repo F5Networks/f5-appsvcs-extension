@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ module.exports = {
         PPTP_Profile: 'ltm profile pptp',
         Service_Profile: 'ltm profile service',
         Splitsession_Client_Profile: 'ltm profile splitsessionclient',
+        SSE_Profile: 'ltm profile sse',
         Connector_Profile: 'ltm profile connector',
         RTSP_Profile: 'ltm profile rtsp',
         SIP_Profile: 'ltm profile sip',
@@ -146,6 +147,7 @@ module.exports = {
             'security dos profile',
             'security bot-defense profile'
         ],
+        Bot_Defense_Profile: 'security bot-defense profile',
         Service_Address: 'ltm virtual-address',
         Traffic_Log_Profile: 'ltm profile request-log',
         HTTP_Profile: 'ltm profile http',
@@ -203,6 +205,7 @@ module.exports = {
         Ping_Access_Agent_Properties: 'apm aaa ping-access-properties-file',
         Ping_Access_Profile: 'apm profile ping-access',
         ICAP_Profile: 'ltm profile icap',
+        JSON_Profile: 'ltm profile json',
         Adapt_Profile: [
             'ltm profile request-adapt',
             'ltm profile response-adapt'

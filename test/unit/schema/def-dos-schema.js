@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,74 @@ describe('def-dos-schema.json', () => {
                 },
                 true
             ));
+        });
+    });
+
+    describe('Bot_Defense_Profile', () => {
+        it('should validate all properties of Bot_Defense_Profile', () => {
+            const decl = {
+                class: 'ADC',
+                schemaVersion: '3.56.0',
+                id: 'Bot_Defense_Profile_Sample',
+                theTenant: {
+                    class: 'Tenant',
+                    theApplication: {
+                        class: 'Application',
+                        botProfile: {
+                            class: 'Bot_Defense_Profile',
+                            enforcementMode: 'blocking',
+                            signatureStagingUponUpdate: 'enabled',
+                            enforcementReadinessPeriod: 10,
+                            mitigationSettings: [
+                                {
+                                    mitigationType: 'Unknown',
+                                    mitigationSettingsAction: 'tcp-reset',
+                                    verificationSettingsAction: 'none'
+                                },
+                                {
+                                    mitigationType: 'Suspicious Browser',
+                                    mitigationSettingsAction: 'block',
+                                    verificationSettingsAction: 'none'
+                                }
+                            ],
+                            allowBrowserAccess: 'enabled',
+                            gracePeriod: 4000,
+                            deviceIDMode: 'generate-after-access',
+                            performChallengeInTransparent: 'enabled',
+                            singlePageApplicationEnabled: true,
+                            crossDomainRequests: 'validate-bulk',
+                            siteDomains: ['www.google.com'],
+                            externalDomains: ['www.yahoo.com'],
+                            mobileDefense: {
+                                enabled: true,
+                                allowAndroidPublishers: [
+                                    {
+                                        bigip: '/Common/default.crt'
+                                    }
+                                ],
+                                allowAndroidRootedDevice: true,
+                                allowIosPackageNames: ['theName'],
+                                allowJailbrokenDevices: true,
+                                allowEmulators: true,
+                                clientSideChallengeMode: 'challenge'
+                            },
+                            signatures: [
+                                {
+                                    bigip: '/Common/default'
+                                }
+                            ],
+                            stagedSignatures: [
+                                {
+                                    bigip: '/Common/default1'
+                                }
+                            ],
+                            urlAllowlist: ['www.bing.com']
+                        }
+                    }
+                }
+            };
+
+            assert.ok(validate(decl), getErrorString(validate));
         });
     });
 });

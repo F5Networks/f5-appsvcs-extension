@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ const extractFunctions = {
     profilePPTPPublisherName(result) {
         const pptpProfile = result.publisherName;
         return pptpProfile ? pptpProfile.fullPath : 'none';
-    },
-    profilePPTPDefaultFrom(result) {
-        const pptpProfile = result.defaultsFrom;
-        return pptpProfile ? pptpProfile.fullPath : 'none';
     }
 };
 
@@ -36,9 +32,20 @@ describe('PPTP_Profile', function () {
     this.timeout(GLOBAL_TIMEOUT);
 
     it('All properties', () => {
+        const options = {
+            bigipItems: [
+                {
+                    endpoint: '/mgmt/tm/ltm/profile/pptp',
+                    data: {
+                        name: 'pptpProf',
+                        partition: 'Common'
+                    }
+                }
+            ]
+        };
         const properties = [
             {
-                name: 'description',
+                name: 'remark',
                 inputValue: ['Application', 'description', 'Application'],
                 expectedValue: ['Application', 'description', 'Application'],
                 extractFunction: (o) => o.description || 'Application'
@@ -54,12 +61,12 @@ describe('PPTP_Profile', function () {
                 expectedValue: ['disabled', 'enabled', 'disabled']
             },
             {
-                name: 'defaultsFrom',
+                name: 'parentProfile',
                 inputValue: [undefined, {
-                    bigip: '/Common/pptp'
+                    bigip: '/Common/pptpProf'
                 }, undefined],
-                expectedValue: ['/Common/pptp', '/Common/pptp', '/Common/pptp'],
-                extractFunction: extractFunctions.profilePPTPDefaultFrom
+                expectedValue: ['pptp', 'pptpProf', 'pptp'],
+                extractFunction: (o) => o.defaultsFrom.name
             },
             {
                 name: 'publisherName',
@@ -70,6 +77,6 @@ describe('PPTP_Profile', function () {
                 extractFunction: extractFunctions.profilePPTPPublisherName
             }
         ];
-        return assertClass('PPTP_Profile', properties);
+        return assertClass('PPTP_Profile', properties, options);
     });
 });

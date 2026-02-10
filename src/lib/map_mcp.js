@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -546,6 +546,9 @@ const translate = {
     'tm:ltm:profile:ftp:ftpstate': function (context, obj) {
         return profile(context, obj, 'ltm profile ftp', '');
     },
+    'tm:ltm:profile:json:jsonstate': function (context, obj) {
+        return profile(context, obj, 'ltm profile json', '');
+    },
     'tm:ltm:profile:pptp:pptpstate': function (context, obj) {
         return profile(context, obj, 'ltm profile pptp', '');
     },
@@ -554,6 +557,9 @@ const translate = {
     },
     'tm:ltm:profile:splitsessionclient:splitsessionclientstate': function (context, obj) {
         return profile(context, obj, 'ltm profile splitsessionclient', '');
+    },
+    'tm:ltm:profile:sse:ssestate': function (context, obj) {
+        return profile(context, obj, 'ltm profile sse', '');
     },
     'tm:ltm:profile:connector:connectorstate': function (context, obj) {
         return profile(context, obj, 'ltm profile connector', '');
@@ -1055,6 +1061,22 @@ const translate = {
             'security bot-defense profile',
             'class-overrides'
         );
+        const stagedSignatures = (referenceConfig || []).filter((ob) => {
+            if (ob.kind === 'tm:security:bot-defense:profile:staged-signatures:staged-signaturesstate') {
+                ob.name = ob.fullPath;
+                return true;
+            }
+            return false;
+        });
+        obj = pushReferences(
+            context,
+            obj,
+            stagedSignatures,
+            selfLink,
+            'tm:security:bot-defense:profile:staged-signatures:staged-signaturesstate',
+            'security bot-defense profile',
+            'staged-signatures'
+        );
         if (obj['class-overrides']) {
             obj['class-overrides'].forEach((cl) => {
                 cl.name = cl.name.includes(' ') ? `"${cl.name}"` : cl.name;
@@ -1065,6 +1087,18 @@ const translate = {
             obj.mobileDetection.androidPublishers = Object.keys(publishers)
                 .reduce((newCat, key) => {
                     const c = publishers[key];
+                    let name = util.mcpPath(c.partition, c['sub-path'] || c.subPath, c.name);
+                    name = name.includes(' ') ? `"${name}"` : name;
+                    newCat[name] = {};
+                    return newCat;
+                }, {});
+        }
+
+        if (obj.mobileDetection && obj.mobileDetection.signatures) {
+            const signatures = obj.mobileDetection.signatures;
+            obj.mobileDetection.signatures = Object.keys(signatures)
+                .reduce((newCat, key) => {
+                    const c = signatures[key];
                     let name = util.mcpPath(c.partition, c['sub-path'] || c.subPath, c.name);
                     name = name.includes(' ') ? `"${name}"` : name;
                     newCat[name] = {};

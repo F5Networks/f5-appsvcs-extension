@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -536,6 +536,232 @@ describe('Per-app tests', function () {
                         }
                     ]
                 );
+            });
+    });
+
+    it('should handle SNAT_Translation values are not updated when deployed using per-app', () => {
+        const decl = {
+            id: 'per-app-declaration',
+            schemaVersion: '3.56.0',
+            Application1: {
+                class: 'Application',
+                service: {
+                    class: 'Service_L4',
+                    virtualPort: 123,
+                    persistenceMethods: [],
+                    layer4: 'udp',
+                    virtualAddresses: [
+                        '192.0.2.1'
+                    ],
+                    snat: {
+                        use: 'snatPool'
+                    },
+                    pool: 'pool'
+                },
+                pool: {
+                    class: 'Pool',
+                    loadBalancingMode: 'least-connections-member',
+                    serviceDownAction: 'reset',
+                    monitors: [
+                        {
+                            bigip: '/Common/udp'
+                        },
+                        'icmp'
+                    ],
+                    minimumMonitors: 'all',
+                    members: [
+                        {
+                            servicePort: 123,
+                            serverAddresses: [
+                                '192.0.2.10'
+                            ]
+                        }
+                    ]
+                },
+                snatPool: {
+                    class: 'SNAT_Pool',
+                    snatAddresses: [
+                        '192.0.2.5',
+                        '192.0.2.6'
+                    ]
+                },
+                snat1: {
+                    class: 'SNAT_Translation',
+                    address: '192.0.2.5',
+                    ipIdleTimeout: 120,
+                    tcpIdleTimeout: 300,
+                    udpIdleTimeout: 60
+                },
+                snat2: {
+                    class: 'SNAT_Translation',
+                    address: '192.0.2.6',
+                    ipIdleTimeout: 120,
+                    tcpIdleTimeout: 300,
+                    udpIdleTimeout: 60
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/snat-translation/~tenant1~192.0.2.5'))
+            .then((response) => {
+                assert.strictEqual(response.name, '192.0.2.5');
+                assert.strictEqual(response.fullPath, '/tenant1/192.0.2.5');
+                assert.strictEqual(response.ipIdleTimeout, '120');
+                assert.strictEqual(response.tcpIdleTimeout, '300');
+                assert.strictEqual(response.udpIdleTimeout, '60');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/snat-translation/~tenant1~192.0.2.6'))
+            .then((response) => {
+                assert.strictEqual(response.name, '192.0.2.6');
+                assert.strictEqual(response.fullPath, '/tenant1/192.0.2.6');
+                assert.strictEqual(response.ipIdleTimeout, '120');
+                assert.strictEqual(response.tcpIdleTimeout, '300');
+                assert.strictEqual(response.udpIdleTimeout, '60');
+            })
+            .then(() => {
+                decl.Application1.snat1.ipIdleTimeout = 500;
+                decl.Application1.snat1.tcpIdleTimeout = 500;
+                decl.Application1.snat1.udpIdleTimeout = 500;
+                decl.Application1.snat2.ipIdleTimeout = 500;
+                decl.Application1.snat2.tcpIdleTimeout = 500;
+                decl.Application1.snat2.udpIdleTimeout = 500;
+                return postDeclaration(decl, { declarationIndex: 1 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications');
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/snat-translation/~tenant1~192.0.2.5'))
+            .then((response) => {
+                assert.strictEqual(response.name, '192.0.2.5');
+                assert.strictEqual(response.fullPath, '/tenant1/192.0.2.5');
+                assert.strictEqual(response.ipIdleTimeout, '500');
+                assert.strictEqual(response.tcpIdleTimeout, '500');
+                assert.strictEqual(response.udpIdleTimeout, '500');
+            })
+            .then(() => getPath('/mgmt/tm/ltm/snat-translation/~tenant1~192.0.2.6'))
+            .then((response) => {
+                assert.strictEqual(response.name, '192.0.2.6');
+                assert.strictEqual(response.fullPath, '/tenant1/192.0.2.6');
+                assert.strictEqual(response.ipIdleTimeout, '500');
+                assert.strictEqual(response.tcpIdleTimeout, '500');
+                assert.strictEqual(response.udpIdleTimeout, '500');
+            })
+            .then(() => postDeclaration(decl, { declarationIndex: 2 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'no change');
+            })
+            .then(() => {
+                const options = {
+                    path: '/mgmt/shared/appsvcs/declare/tenant1?async=true',
+                    logResponse: true
+                };
+                return deleteDeclaration(undefined, options);
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            });
+    });
+
+    it('should handle per-app deployment fails when there is existing cipherGroup configured', () => {
+        const decl = {
+            id: 'per-app-declaration',
+            schemaVersion: '3.56.0',
+            Application1: {
+                class: 'Application',
+                template: 'generic',
+                appTestVS: {
+                    class: 'Service_HTTPS',
+                    virtualAddresses: ['192.0.2.11'],
+                    virtualPort: 443,
+                    redirect80: false,
+                    profileHTTP: {
+                        bigip: '/Common/http'
+                    },
+                    profileTCP: {
+                        bigip: '/Common/tcp'
+                    },
+                    serverTLS: 'clientssl',
+                    clientTLS: {
+                        bigip: '/Common/serverssl'
+                    }
+                },
+                clientssl: {
+                    class: 'TLS_Server',
+                    certificates: [
+                        {
+                            certificate: 'cert',
+                            sniDefault: true
+                        }
+                    ],
+                    cipherGroup: {
+                        bigip: '/Common/f5-secure'
+                    }
+                },
+                cert: {
+                    class: 'Certificate',
+                    certificate: {
+                        bigip: '/Common/default.crt'
+                    },
+                    privateKey: {
+                        bigip: '/Common/default.key'
+                    }
+                }
+            }
+        };
+
+        const decl1 = {
+            id: 'per-app-declaration',
+            schemaVersion: '3.56.0',
+            Application2: {
+                class: 'Application',
+                service: {
+                    class: 'Service_HTTP',
+                    virtualAddresses: ['192.0.2.22'],
+                    pool: 'pool'
+                },
+                pool: {
+                    class: 'Pool',
+                    members: [
+                        {
+                            servicePort: 80,
+                            serverAddresses: ['192.0.2.222'],
+                            shareNodes: true
+                        }
+                    ]
+                }
+            }
+        };
+
+        return Promise.resolve()
+            .then(() => postDeclaration(decl, { declarationIndex: 0 }, undefined, '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => postDeclaration(decl1, { declarationIndex: 1 }, '?show=full', '/mgmt/shared/appsvcs/declare/tenant1/applications'))
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
+            })
+            .then(() => {
+                const options = {
+                    path: '/mgmt/shared/appsvcs/declare/tenant1?async=true',
+                    logResponse: true
+                };
+                return deleteDeclaration(undefined, options);
+            })
+            .then((response) => {
+                assert.strictEqual(response.results[0].code, 200);
+                assert.strictEqual(response.results[0].message, 'success');
             });
     });
 

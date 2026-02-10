@@ -1,6 +1,5 @@
-/* eslint-disable no-template-curly-in-string */
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/* eslint-disable no-template-curly-in-string */
 
 'use strict';
 
@@ -8872,8 +8873,9 @@ describe('fetch', () => {
                 '',
                 'tmsh::create ltm snat-translation /tenant/192.0.2.3%2742 address 192.0.2.3%2742 arp enabled connection-limit 0 enabled ip-idle-timeout indefinite tcp-idle-timeout indefinite traffic-group default udp-idle-timeout indefinite',
                 'tmsh::create ltm node /tenant/192.0.2.4%2742 address 192.0.2.4%2742 metadata none monitor default',
-                'tmsh::commit_transaction',
                 'tmsh::delete ltm virtual-address /tenant/192.0.2.0%2742',
+                'tmsh::commit_transaction',
+                '',
                 '} err] } {',
                 'catch { tmsh::cancel_transaction } e',
                 'regsub -all {"} $err {\\"} err',
@@ -10383,6 +10385,141 @@ describe('fetch', () => {
                     result.script,
                     'cli script __appsvcs_update {\nproc script::run {} {\nif {[catch {\ntmsh::modify ltm data-group internal __appsvcs_update records none\n} err]} {\ntmsh::create ltm data-group internal __appsvcs_update type string records none\n}\nif { [catch {\ntmsh::delete ltm virtual /portList/Application/tcpService\ntmsh::begin_transaction\ntmsh::modify auth partition portList description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"\ntmsh::delete ltm traffic-matching-criteria /portList/Application/tcpService_VS_TMC_OBJ\n\n\ntmsh::delete security firewall port-list /portList/Application/firewallPortList1\ntmsh::commit_transaction\ntmsh::delete ltm virtual-address /portList/192.0.2.1\ntmsh::delete sys folder /portList/Application/\ntmsh::delete sys folder /portList/\n} err] } {\ncatch { tmsh::cancel_transaction } e\nregsub -all {"} $err {\\"} err\ntmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}\n}}\n}'
                 );
+            });
+
+            it('should delete virtuals without transaction-matching-criteria inside of transaction', () => {
+                const desiredConfig = {
+                    '/TEST_Service_Address/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/TEST_Service_Address/Service_Address-123.123.123.123': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '123.123.123.123',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/TEST_Service_Address/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+                const currentConfig = {
+                    '/TEST_Service_Address/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/TEST_Service_Address/Service_Address-vsAddress': {
+                        command: 'ltm virtual-address',
+                        properties: {
+                            address: '123.123.123.123',
+                            arp: 'enabled',
+                            'icmp-echo': 'enabled',
+                            mask: '255.255.255.255',
+                            'route-advertisement': 'disabled',
+                            spanning: 'disabled',
+                            'server-scope': 'any',
+                            'traffic-group': 'default',
+                            'auto-delete': 'true'
+                        },
+                        ignore: []
+                    },
+                    '/TEST_Service_Address/Application/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'D',
+                        path: ['/TEST_Service_Address/Service_Address-vsAddress'],
+                        lhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '123.123.123.123',
+                                arp: 'enabled',
+                                'icmp-echo': 'enabled',
+                                mask: '255.255.255.255',
+                                'route-advertisement': 'disabled',
+                                spanning: 'disabled',
+                                'server-scope': 'any',
+                                'traffic-group': 'default',
+                                'auto-delete': 'true'
+                            },
+                            ignore: []
+                        },
+                        tags: ['tmsh'],
+                        command: 'ltm virtual-address',
+                        lhsCommand: 'ltm virtual-address',
+                        rhsCommand: ''
+                    },
+                    {
+                        kind: 'N',
+                        path: ['/TEST_Service_Address/Service_Address-123.123.123.123'],
+                        rhs: {
+                            command: 'ltm virtual-address',
+                            properties: {
+                                address: '123.123.123.123',
+                                arp: 'enabled',
+                                'icmp-echo': 'enabled',
+                                mask: '255.255.255.255',
+                                'route-advertisement': 'disabled',
+                                spanning: 'disabled',
+                                'server-scope': 'any',
+                                'traffic-group': 'default',
+                                'auto-delete': 'true'
+                            },
+                            ignore: []
+                        },
+                        tags: ['tmsh'],
+                        command: 'ltm virtual-address',
+                        lhsCommand: '',
+                        rhsCommand: 'ltm virtual-address'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    '',
+                    'tmsh::modify auth partition TEST_Service_Address description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::create ltm virtual-address /TEST_Service_Address/123.123.123.123 address 123.123.123.123 arp enabled icmp-echo enabled mask 255.255.255.255 route-advertisement disabled spanning disabled server-scope any traffic-group default auto-delete true',
+                    'tmsh::delete ltm virtual-address /TEST_Service_Address/vsAddress',
+                    'tmsh::commit_transaction',
+                    '',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
             });
 
             it('should find referenced address lists inside the transaction and move them out if necessary', () => {
@@ -14902,6 +15039,242 @@ describe('fetch', () => {
                 ];
                 assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
             });
+
+            it('should change the ltm monitor type from https to tcp', () => {
+                const desiredConfig = {
+                    '/tenant/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    },
+                    '/tenant/app/testMonitor': {
+                        command: 'ltm monitor tcp',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            recv: 'none',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: 'none',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            'up-interval': 0
+                        },
+                        ignore: []
+                    },
+                    '/tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    }
+                };
+                const currentConfig = {
+                    '/tenant/': {
+                        command: 'auth partition',
+                        properties: {
+                            'default-route-domain': 0
+                        },
+                        ignore: []
+                    },
+                    '/tenant/app/testMonitor': {
+                        command: 'ltm monitor https',
+                        properties: {
+                            adaptive: 'disabled',
+                            'adaptive-divergence-type': 'relative',
+                            'adaptive-divergence-value': 100,
+                            'adaptive-limit': 1000,
+                            'adaptive-sampling-timespan': 180,
+                            cert: 'none',
+                            cipherlist: 'DEFAULT',
+                            description: 'none',
+                            destination: '*:*',
+                            interval: 5,
+                            'ip-dscp': 0,
+                            key: 'none',
+                            recv: '\'HTTP/1.\'',
+                            'recv-disable': 'none',
+                            reverse: 'disabled',
+                            send: '\'HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\'',
+                            'ssl-profile': 'none',
+                            timeout: 16,
+                            'time-until-up': 0,
+                            transparent: 'disabled',
+                            username: 'none',
+                            'up-interval': 0
+                        },
+                        ignore: []
+                    },
+                    '/tenant/app/': {
+                        command: 'sys folder',
+                        properties: {},
+                        ignore: []
+                    }
+                };
+                const configDiff = [
+                    {
+                        kind: 'E',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'command'
+                        ],
+                        lhs: 'ltm monitor https',
+                        rhs: 'ltm monitor tcp',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'cert'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'cipherlist'
+                        ],
+                        lhs: 'DEFAULT',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'key'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'E',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'recv'
+                        ],
+                        lhs: '\'HTTP/1.\'',
+                        rhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'E',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'send'
+                        ],
+                        lhs: '\'HEAD / HTTP/1.0\\\\r\\\\n\\\\r\\\\n\'',
+                        rhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'ssl-profile'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    },
+                    {
+                        kind: 'D',
+                        path: [
+                            '/tenant/app/testMonitor',
+                            'properties',
+                            'username'
+                        ],
+                        lhs: 'none',
+                        tags: [
+                            'tmsh'
+                        ],
+                        command: 'ltm monitor https',
+                        lhsCommand: 'ltm monitor https',
+                        rhsCommand: 'ltm monitor tcp'
+                    }
+                ];
+
+                const result = fetch.tmshUpdateScript(context, desiredConfig, currentConfig, configDiff);
+                const expectedOutput = [
+                    'cli script __appsvcs_update {',
+                    'proc script::run {} {',
+                    'if {[catch {',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records none',
+                    '} err]} {',
+                    'tmsh::create ltm data-group internal __appsvcs_update type string records none',
+                    '}',
+                    'if { [catch {',
+                    'tmsh::begin_transaction',
+                    '',
+                    'tmsh::delete ltm monitor https /tenant/app/testMonitor',
+                    'tmsh::commit_transaction',
+                    'tmsh::begin_transaction',
+                    'tmsh::create ltm monitor tcp /tenant/app/testMonitor adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 5 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 16 time-until-up 0 transparent disabled up-interval 0',
+                    '',
+                    'tmsh::modify auth partition tenant description \\"Updated by AS3 at [clock format [clock seconds] -gmt true -format {%a, %d %b %Y %T %Z}]\\"',
+                    'tmsh::commit_transaction',
+                    '} err] } {',
+                    'catch { tmsh::cancel_transaction } e',
+                    'regsub -all {"} $err {\\"} err',
+                    'tmsh::modify ltm data-group internal __appsvcs_update records add \\{ error \\{ data \\"$err\\" \\} \\}',
+                    'tmsh::create ltm monitor https /tenant/app/testMonitor adaptive disabled adaptive-divergence-type relative adaptive-divergence-value 100 adaptive-limit 1000 adaptive-sampling-timespan 180 description none destination *:* interval 5 ip-dscp 0 recv none recv-disable none reverse disabled send none timeout 16 time-until-up 0 transparent disabled up-interval 0',
+                    '',
+                    '}}',
+                    '}'
+                ];
+                assert.deepStrictEqual(result.script.split('\n'), expectedOutput);
+            });
         });
     });
 
@@ -16095,6 +16468,7 @@ describe('fetch', () => {
                         newString: '/Common/default.key'
                     }
                 ];
+                context.request.body = declaration;
             });
 
             it('should add updates to context.request.postProcessing', () => fetch

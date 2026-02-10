@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ const {
     assertClass,
     GLOBAL_TIMEOUT
 } = require('./propertiesCommon');
+const util = require('../../../../src/lib/util/util');
 
 describe('Service_Address', function () {
     this.timeout(GLOBAL_TIMEOUT);
@@ -99,10 +100,19 @@ describe('Service_Address', function () {
                     '/Common/traffic-group-1'
                 ],
                 extractFunction: (o) => o.trafficGroup.fullPath
+            },
+            {
+                name: 'useIpName',
+                inputValue: [undefined, true, undefined],
+                expectedValue: ['test.item-foo.89', '123.123.123.123', 'test.item-foo.89'],
+                extractFunction: (o) => o.name
             }
         ];
 
-        return assertServiceAddressClass(properties);
+        const newOptions = util.simpleCopy(options);
+        newOptions.maxPathLength = 50;
+        newOptions.getMcpObject.itemNames = ['test.item-foo.89', '123.123.123.123', 'test.item-foo.89'];
+        return assertClass('Service_Address', properties, newOptions);
     });
 
     it('Wildcard IPv4', function () {

@@ -22,3 +22,4 @@ mkdir -p ${DIST_DIR}
 cp ${SRC_DIR}/lib/properties.json ${DIST_DIR}/as3-properties-latest.json
 cp ${SRC_DIR}/schema/latest/as3-schema.json ${DIST_DIR}/as3-schema-${VERSION}.json
 cp ${TOP_DIR}/examples/as3.examples.collection.json ${DIST_DIR}/as3-${VERSION}.examples.collection.json
+cp ${SRC_DIR}/schema/latest/per-app-schema.json ${DIST_DIR}/per-app-schema-${VERSION}.json

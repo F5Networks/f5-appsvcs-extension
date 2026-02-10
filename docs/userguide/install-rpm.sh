@@ -21,7 +21,7 @@ TARGET="$1"
 CREDS="$2"
 TARGET_RPM="$3"
 RPM_NAME=$(basename $TARGET_RPM)
-CURL_FLAGS="--silent --write-out \n --insecure -u $CREDS"
+CURL_FLAGS="--silent --insecure --connect-timeout 10 --max-time 30 -u $CREDS"
 
 poll_task () {
     STATUS="STARTED"

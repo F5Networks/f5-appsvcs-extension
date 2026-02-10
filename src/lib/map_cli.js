@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,8 @@ const prefix = {
     'security bot-defense profile signature-overrides': 'replace-all-with',
     'security bot-defense profile site-domains': 'replace-all-with',
     'security bot-defense profile whitelist': 'replace-all-with',
+    'security bot-defense profile signatures': 'replace-all-with',
+    'security bot-defense profile staged-signatures': 'replace-all-with',
     'security log profile application': 'replace-all-with',
     'security log profile bot-defense': 'replace-all-with',
     'security log profile elements': 'replace-all-with',
@@ -919,6 +921,13 @@ const tmshCreate = function (context, diff, targetConfig, currentConfig) {
         if (targetConfig['tcp-options'] !== 'none' && !targetConfig['tcp-options'].includes('"')) {
             const keyZero = `"${targetConfig['tcp-options']}"`;
             targetConfig['tcp-options'] = keyZero.replace(/{/g, '\\{').replace(/}/g, '\\}');
+        }
+        break;
+    }
+    case 'ltm profile client-ssl': {
+        if (targetConfig['ocsp-stapling'] === 'enabled' && (typeof currentConfig[diff.path[0]]) === 'undefined') {
+            commandObj.postTrans.push(`tmsh::modify ltm profile client-ssl ${diff.path[0]} ocsp-stapling enabled`);
+            targetConfig['ocsp-stapling'] = 'disabled';
         }
         break;
     }

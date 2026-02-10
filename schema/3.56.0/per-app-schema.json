@@ -1,24 +1,46 @@
 {
-  "$id": "urn:uuid:85626792-9ee7-46bb-8fc8-4ba708cfdc1d",
+  "$id": "urn:uuid:f23d7326-d355-4168-8772-c1ca4978acea",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "AS3 API Request",
-  "description": "BIG-IP AS3 API request body",
-  "oneOf": [
-    {
-      "$ref": "#/definitions/AS3"
+  "title": "Application Schema",
+  "description": "A per-app declarative configuration for an ADC such as F5 BIG-IP",
+  "type": "object",
+  "properties": {
+    "id": {
+      "title": "Declaration ID",
+      "description": "Unique identifier for this declaration (max 255 printable chars with no spaces, quotation marks, angle brackets, nor backslashes)",
+      "type": "string",
+      "pattern": "^[^\\x00-\\x20\\x22'<>\\x5c^`|\\x7f]*$",
+      "minLength": 0,
+      "maxLength": 255
     },
-    {
-      "$ref": "#/definitions/ADC"
+    "schemaVersion": {
+      "title": "Schema version",
+      "description": "Version of ADC Declaration schema this declaration uses",
+      "type": "string",
+      "anyOf": [
+        {
+          "description": "Any version of AS3.",
+          "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-6])($|[.][0-9]+$)"
+        },
+        {
+          "description": "The current version of AS3.",
+          "const": "3.56.0"
+        }
+      ]
     },
-    {
-      "$ref": "#/definitions/AS3_Patch_Body"
-    },
-    {
-      "$ref": "#/definitions/AS3_Array"
-    },
-    {
-      "$ref": "#/definitions/ADC_Array"
+    "controls": {
+      "$ref": "#/definitions/Controls"
     }
+  },
+  "additionalProperties": {
+    "$ref": "#/definitions/Application"
+  },
+  "propertyNames": {
+    "pattern": "^[A-Za-z][0-9A-Za-z_.-]*$",
+    "maxLength": 190
+  },
+  "required": [
+    "schemaVersion"
   ],
   "definitions": {
     "ADC": {
@@ -54,11 +76,11 @@
           "anyOf": [
             {
               "description": "Any version of AS3.",
-              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-5])($|[.][0-9]+$)"
+              "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-6])($|[.][0-9]+$)"
             },
             {
               "description": "The current version of AS3.",
-              "const": "3.55.0"
+              "const": "3.56.0"
             }
           ]
         },
@@ -725,6 +747,7 @@
               "FTP_Profile",
               "HTML_Rule",
               "HTML_Profile",
+              "JSON_Profile",
               "WebSocket_Profile",
               "Multiplex_Profile",
               "SOCKS_Profile",
@@ -744,6 +767,7 @@
               "PPTP_Profile",
               "Service_Profile",
               "Splitsession_Client_Profile",
+              "SSE_Profile",
               "Connector_Profile",
               "Firewall_Address_List",
               "Firewall_Port_List",
@@ -763,6 +787,7 @@
               "DNS_Zone",
               "DNS_Nameserver",
               "DOS_Profile",
+              "Bot_Defense_Profile",
               "GSLB_Domain",
               "GSLB_iRule",
               "GSLB_Monitor",
@@ -1094,6 +1119,18 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "JSON_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/JSON_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "WebSocket_Profile"
                 }
               }
@@ -1322,6 +1359,18 @@
             "if": {
               "properties": {
                 "class": {
+                  "const": "SSE_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/SSE_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
                   "const": "Connector_Profile"
                 }
               }
@@ -1544,6 +1593,18 @@
             },
             "then": {
               "$ref": "#/definitions/DOS_Profile"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "class": {
+                  "const": "Bot_Defense_Profile"
+                }
+              }
+            },
+            "then": {
+              "$ref": "#/definitions/Bot_Defense_Profile"
             }
           },
           {
@@ -2575,6 +2636,9 @@
         "profileSplitsessionClient": {
           "$ref": "#/definitions/Pointer_Splitsession_Client_Profile"
         },
+        "profileSSE": {
+          "$ref": "#/definitions/Pointer_SSE_Profile"
+        },
         "profileConnector": {
           "$ref": "#/definitions/Pointer_Connector_Profile"
         },
@@ -2669,6 +2733,9 @@
         },
         "profileHTML": {
           "$ref": "#/definitions/Pointer_HTML_Profile"
+        },
+        "profileJSON": {
+          "$ref": "#/definitions/Pointer_JSON_Profile"
         },
         "profileMultiplex": {
           "title": "Multiplex profile",
@@ -4995,6 +5062,12 @@
           "description": "If this is true, MCPD deletes the virtual address if it is not linked to any virtual. This option applies only to the Common Tenant.",
           "type": "boolean",
           "default": true
+        },
+        "useIpName": {
+          "title": "Use IPName",
+          "description": "If this is true, then need to disregard the current 'Service_Address' object name and replace it with the virtual server's (virtual-address) IP address as the new name for the 'Service_Address' object",
+          "type": "boolean",
+          "default": false
         }
       },
       "dependencies": {
@@ -6991,6 +7064,27 @@
                     ]
                   }
                 }
+              },
+              "authenticationMode": {
+                "title": "Authentication mode",
+                "description": "Client certificate authentication mode",
+                "type": "string",
+                "enum": [
+                  "ignore",
+                  "request",
+                  "require"
+                ],
+                "default": "ignore"
+              },
+              "authenticationFrequency": {
+                "title": "Authentication frequency",
+                "description": "Server certificate authentication frequency",
+                "type": "string",
+                "enum": [
+                  "one-time",
+                  "every-time"
+                ],
+                "default": "one-time"
               }
             },
             "additionalProperties": false,
@@ -7540,12 +7634,22 @@
         },
         {
           "if": {
-            "not": {
-              "required": [
-                "ciphers",
-                "cipherGroup"
-              ]
-            }
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "ciphers"
+                  ]
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "cipherGroup"
+                  ]
+                }
+              }
+            ]
           },
           "then": {
             "properties": {
@@ -8941,6 +9045,65 @@
           "items": {
             "$ref": "#/definitions/Pointer_HTML_Rule"
           }
+        }
+      },
+      "required": [
+        "class"
+      ],
+      "additionalProperties": false
+    },
+    "JSON_Profile": {
+      "title": "JSON_Profile",
+      "type": "object",
+      "description": "JSON profile with configurable options",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "JSON_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "parentProfile": {
+          "description": "Specifies the name of the profile object to inherit the settings from",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_JSON_Profile"
+            }
+          ],
+          "default": {
+            "bigip": "/Common/json"
+          },
+          "required": [
+            "bigip"
+          ]
+        },
+        "maximumBytes": {
+          "title": "Max Buffered Message Bytes",
+          "description": "Specifies the maximum number of bytes allowed for a JSON payload",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10485760,
+          "default": 65536
+        },
+        "maximumEntries": {
+          "title": "Max Buffered Message Bytes",
+          "description": "Specifies the maximum number of entries in the JSON payload, this value includes the nested entries",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2048,
+          "default": 2048
+        },
+        "maximumNonJsonBytes": {
+          "title": "Max Buffered Message Bytes",
+          "description": "Specifies the maximum number of non-JSON bytes that may be buffered while processing a request or a message whose JSON content comes after any non-JSON content, not counting the bytes of the JSON payload itself",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32768,
+          "default": 32768
         }
       },
       "required": [
@@ -10911,6 +11074,8 @@
           "items": {
             "type": "string",
             "enum": [
+              "X25519MLKEM768",
+              "X25519KYBER768",
               "DEFAULT",
               "P256",
               "P384",
@@ -11082,22 +11247,13 @@
         "remark": {
           "$ref": "#/definitions/Remark"
         },
-        "description": {
-          "description": "Description of the profile",
-          "type": "string"
-        },
-        "defaultsFrom": {
+        "parentProfile": {
           "description": "Parent profile to inherit settings from (none or another pptp profile)",
-          "type": "object",
-          "properties": {
-            "bigip": {
-              "title": "BIG-IP resolver",
-              "description": "Parent profile to inherit settings from (none or another pptp profile)",
-              "type": "string",
-              "format": "f5bigip"
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_PPTP_Profile"
             }
-          },
-          "additionalProperties": false,
+          ],
           "default": {
             "bigip": "/Common/pptp"
           },
@@ -11178,9 +11334,11 @@
           "type": "string",
           "const": "Splitsession_Client_Profile"
         },
-        "description": {
-          "description": "Description of the profile",
-          "type": "string"
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
         },
         "peerPort": {
           "title": "Peer Port",
@@ -11225,6 +11383,57 @@
         "class",
         "peerPort",
         "peerIp"
+      ]
+    },
+    "SSE_Profile": {
+      "title": "SSE Profile",
+      "type": "object",
+      "description": "Configures a SSE profile",
+      "properties": {
+        "class": {
+          "type": "string",
+          "const": "SSE_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "parentProfile": {
+          "description": "Specifies the name of the profile object to inherit the settings from",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Pointer_SSE_Profile"
+            }
+          ],
+          "default": {
+            "bigip": "/Common/sse"
+          },
+          "required": [
+            "bigip"
+          ]
+        },
+        "maxFieldNameSize": {
+          "title": "Max Field Name Size",
+          "description": "Specifies the maximum allowed size of any single field name in the SSE message, in bytes.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024,
+          "default": 1024
+        },
+        "maxBufferedMsgBytes": {
+          "title": "Max Buffered Message Bytes",
+          "description": "Specifies the maximum size of any single SSE message, in bytes, that can be stored on the system to enable irule inspection and adjustment of the message. This limit is only relevant when an SSE_RESPONSE irule event is configured.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10485760,
+          "default": 65536
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "class"
       ]
     },
     "Connector_Profile": {
@@ -15141,6 +15350,327 @@
         }
       ]
     },
+    "Bot_Defense_Profile": {
+      "title": "Bot_Defense_Profile",
+      "description": "Configures a Bot Defense profile",
+      "type": "object",
+      "properties": {
+        "class": {
+          "title": "Class",
+          "type": "string",
+          "const": "Bot_Defense_Profile"
+        },
+        "label": {
+          "$ref": "#/definitions/Label"
+        },
+        "remark": {
+          "$ref": "#/definitions/Remark"
+        },
+        "enforcementMode": {
+          "description": "Specifies the enforcementMode for bot defense profile",
+          "type": "string",
+          "enum": [
+            "blocking",
+            "transparent"
+          ],
+          "default": "transparent"
+        },
+        "signatureStagingUponUpdate": {
+          "description": "Specifies the signatureStagingUponUpdate for bot defense profile",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "default": "disabled"
+        },
+        "enforcementReadinessPeriod": {
+          "description": "How many days, since the bot defense profile was last changed, that the profile remains in staging mode before the system suggests you enforce the. The system does not enforce profile entities and attack signatures in staging. Staging allows you to test the bot defense profile entities and the attack signatures for false positives without enforcing them.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 7
+        },
+        "mitigationSettings": {
+          "description": "Bot Defense classifies client traffic, performs anomaly detection and applies configured mitigation actions.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Bot_Defense_Profile_Mitigation_Settings"
+          }
+        },
+        "allowBrowserAccess": {
+          "description": "Many server applications are mobile application specific and not for browser access. Therefore, browsers that do access these mobile applications are typically driven by attackers and should be blocked.",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "default": "enabled"
+        },
+        "gracePeriod": {
+          "description": "The length of time (in seconds) before the system blocks suspected bots. The grace period allows web application pages with both HTML and non-HTML (like images, JS, and CSS) to load completely without being blocked. The grace period starts after client validation, a configuration change, or when proactive bot defense is activated as a result of a detected attack or high latency. This property is available on BIGIP 14.1 and above.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 300
+        },
+        "deviceIDMode": {
+          "description": "Specifies the deviceIDMode for bot defense profile",
+          "type": "string",
+          "enum": [
+            "none",
+            "generate-after-access",
+            "generate-before-access"
+          ],
+          "default": "generate-after-access"
+        },
+        "dosMitigation": {
+          "description": "If DoS Attack Mitigation Mode option is enabled the following Mitigation and Verification Settings will be in effect during a DoS attack: (Browser: Verify Before Access,Trusted Bots: Alarm,Untrusted Bots: Block,Suspicious Browsers: Block,Malicious Bots: Block,Unknown: Block). DoS Attack Mitigation Mode requires a DoS protection enabled.",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "default": "enabled"
+        },
+        "performChallengeInTransparent": {
+          "description": "Enable to allow challenges and JavaScript injects even though the profile is configured with Transparent Enforcement Mode and no mitigations will be done. The challenges be logged.",
+          "type": "string",
+          "enum": [
+            "disabled",
+            "enabled"
+          ],
+          "default": "disabled"
+        },
+        "singlePageApplicationEnabled": {
+          "description": "Specifies that your website is a Single Page Application, meaning a web application that loads new content without triggering a full page-reload. This property is available on BIGIP 14.1 and above.",
+          "type": "boolean",
+          "default": false
+        },
+        "browserMitigationAction": {
+          "description": "Many server applications are mobile application specific and not for browser access. Therefore, browsers that do access these mobile applications are typically driven by attackers and should be blocked.",
+          "type": "string",
+          "enum": [
+            "none",
+            "block",
+            "honeypot-page",
+            "redirect-to-pool",
+            "tcp-reset"
+          ],
+          "default": "none"
+        },
+        "crossDomainRequests": {
+          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+          "type": "string",
+          "enum": [
+            "allow-all",
+            "validate-bulk",
+            "validate-upon-request"
+          ],
+          "default": "allow-all"
+        },
+        "siteDomains": {
+          "description": "Specifies how the system responds when receiving a request for non-HTML resources (images, CSS, XML, JavaScript, and Flash) without a valid cookie, and has a Referer header with a different domain than the host domain. This property is available on BIGIP 14.1 and above.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "externalDomains": {
+          "description": "Specifies the external referring domains (that are not part of your website) that are allowed to link to resources in your website. These domains are not protected with proactive bot defense, but the system allows them if they pass the system's redirect-cookie challenge. This property is available on BIGIP 14.1 and above.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mobileDefense": {
+          "description": "This feature detects mobile applications built with the Anti-Bot Mobile SDK and defines how requests from these mobile application clients are handled",
+          "allOf": [
+            {
+              "$ref": "#/definitions/DOS_Profile_Application_Mobile_Defense"
+            }
+          ],
+          "default": {}
+        },
+        "signatures": {
+          "description": "Select one or more applications to allow.",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Bot_Signature"
+              }
+            }
+          ],
+          "default": "none"
+        },
+        "stagedSignatures": {
+          "description": "This feature detects mobile applications built with the Anti-Bot Mobile SDK and defines how requests from these mobile application clients are handled",
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "none"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Pointer_Bot_Signature"
+              }
+            }
+          ],
+          "default": "none"
+        },
+        "urlAllowlist": {
+          "description": "Specifies excluded URLs. Requests to these URLs will not be blocked by Proactive Bot Defense, although they may still be blocked by the TPS-based / Stress-based attack mitigation",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "dependencies": {
+        "allowBrowserAccess": {
+          "if": {
+            "properties": {
+              "allowBrowserAccess": {
+                "const": "disabled"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "properties": {
+                "browserMitigationAction": {
+                  "const": "none"
+                }
+              },
+              "required": [
+                "browserMitigationAction"
+              ]
+            }
+          }
+        },
+        "siteDomains": {
+          "properties": {
+            "crossDomainRequests": {
+              "enum": [
+                "validate-bulk",
+                "validate-upon-request"
+              ]
+            }
+          }
+        },
+        "externalDomains": {
+          "properties": {
+            "crossDomainRequests": {
+              "enum": [
+                "validate-bulk",
+                "validate-upon-request"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Bot_Defense_Profile_Mitigation_Settings": {
+      "description": "Bot Defense classifies client traffic, performs anomaly detection and applies configured mitigation actions.",
+      "type": "object",
+      "properties": {
+        "mitigationType": {
+          "description": "These are the available mitigation actions.",
+          "type": "string",
+          "enum": [
+            "Trusted Bot",
+            "Untrusted Bot",
+            "Suspicious Browser",
+            "Malicious Bot",
+            "Unknown"
+          ]
+        },
+        "mitigationSettingsAction": {
+          "description": "Specifies the mitigation action for Bot Defense profile",
+          "type": "string",
+          "enum": [
+            "none",
+            "alarm",
+            "block",
+            "captcha",
+            "honeypot-page",
+            "rate-limit",
+            "redirect-to-pool",
+            "tcp-reset"
+          ]
+        },
+        "verificationSettingsAction": {
+          "description": "Specifies the verification action for Bot Defense profile",
+          "type": "string",
+          "enum": [
+            "none",
+            "browser-challenge-free-verification",
+            "browser-verify-after-access-detection",
+            "mobile-verify-integrity",
+            "browser-verify-after-access-blocking",
+            "browser-verify-before-access"
+          ]
+        },
+        "rateLimitTps": {
+          "description": "Specifies the rate-limit action rate-limit-tps value for Bot Defense profile",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295,
+          "default": 30
+        }
+      },
+      "dependencies": {
+        "mitigationType": {
+          "if": {
+            "properties": {
+              "mitigationType": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "oneOf": [
+              {
+                "required": [
+                  "mitigationSettingsAction"
+                ]
+              },
+              {
+                "required": [
+                  "verificationSettingsAction"
+                ]
+              }
+            ]
+          }
+        },
+        "mitigationSettingsAction": {
+          "if": {
+            "properties": {
+              "mitigationSettingsAction": {
+                "const": "rate-limit"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "rateLimitTps"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "DOS_Auto_Denylist_Settings": {
       "description": "Adds the source IP address to the denylist category assigned to the Denial-of-Service (DoS) vector",
       "type": "object",
@@ -15277,7 +15807,7 @@
       "additionalProperties": false
     },
     "DOS_Profile_Application_Bot_Defense": {
-      "description": "BIG-IP AS3 provides defense against bot attacks by detecting and stopping them before the attacks start to grow, by performing the following:\n\n* The system sends a client-side JavaScript challenge to the browser.\n* If the challenge is met, the system adds a cookie to the second request. This cookie is active until the session ends, and the system does not add any more cookies to further requests during that session.\n* The system drops requests sent by browsers that do not answer the system’s initial JavaScript challenge, assuming they are bots that do not support JavaScript.\n\nNote: This feature requires browsers to allow JavaScript.\n\nImportant: The proactive bot defense feature works also in Transparent mode. This means that the system will replace responses with client side JavaScript also in Transparent mode, and if the client cannot run JavaScript, it will not be able to receive the server responses.\n\nImportant: If you enable Proactive Bot Defense and your web site uses CORS (Cross-Origin Resource Sharing), we recommend that you add the CORS URLs to the proactive bot URL allowlist.\n\nThis method is intended to complement, not replace, the other mitigation methods.",
+      "description": "BIG-IP AS3 provides defense against bot attacks by detecting and stopping them before the attacks start to grow, by performing the following:\n\n* The system sends a client-side JavaScript challenge to the browser.\n* If the challenge is met, the system adds a cookie to the second request. This cookie is active until the session ends, and the system does not add any more cookies to further requests during that session.\n* The system drops requests sent by browsers that do not answer the system\u2019s initial JavaScript challenge, assuming they are bots that do not support JavaScript.\n\nNote: This feature requires browsers to allow JavaScript.\n\nImportant: The proactive bot defense feature works also in Transparent mode. This means that the system will replace responses with client side JavaScript also in Transparent mode, and if the client cannot run JavaScript, it will not be able to receive the server responses.\n\nImportant: If you enable Proactive Bot Defense and your web site uses CORS (Cross-Origin Resource Sharing), we recommend that you add the CORS URLs to the proactive bot URL allowlist.\n\nThis method is intended to complement, not replace, the other mitigation methods.",
       "type": "object",
       "properties": {
         "mode": {
@@ -15289,6 +15819,11 @@
             "always"
           ],
           "default": "off"
+        },
+        "createBotDefenseProfile": {
+          "description": "Specifies whether AS3 should create a complimentary bot defense profile when needed. It is advised to leave this setting enabled unless bot defense is not licensed or a bot defense profile will be provided otherwise for your Service.",
+          "type": "boolean",
+          "default": true
         },
         "blockSuspiscousBrowsers": {
           "$comment": "maps to application.bot-defense.browser-legit-enabled",
@@ -15916,7 +16451,7 @@
       "additionalProperties": false
     },
     "DOS_Profile_Application_Stress_Based_Detection": {
-      "description": "Configure the system to prevent DoS attacks based on the server’s health condition. An attack is detected if the system finds the server to be under stress and either of the TPS thresholds are crossed.",
+      "description": "Configure the system to prevent DoS attacks based on the server\u2019s health condition. An attack is detected if the system finds the server to be under stress and either of the TPS thresholds are crossed.",
       "type": "object",
       "properties": {
         "operationMode": {
@@ -16058,28 +16593,28 @@
           "default": {}
         },
         "denylistedGeolocations": {
-          "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
+          "description": "Override the DoS profile\u2019s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "blacklistedGeolocations": {
-          "description": "Deprecated. Replaced with functionally equivalent denylistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
+          "description": "Deprecated. Replaced with functionally equivalent denylistedGeolocations. Override the DoS profile\u2019s geolocation rate based threshold settings by selecting countries from which to block traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "allowlistedGeolocations": {
-          "description": "Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
+          "description": "Override the DoS profile\u2019s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "whitelistedGeolocations": {
-          "description": "Deprecated. Replaced with functionally equivalent allowlistedGeolocations. Override the DoS profile’s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
+          "description": "Deprecated. Replaced with functionally equivalent allowlistedGeolocations. Override the DoS profile\u2019s geolocation rate based threshold settings by selecting countries from which to allow traffic during a DoS attack",
           "type": "array",
           "items": {
             "type": "string"
@@ -27473,6 +28008,26 @@
       "description": "Reference to a bot defense profile",
       "type": "object",
       "properties": {
+        "use": {
+          "description": "AS3 pointer to bot defense profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "Bot_Defense_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
         "bigip": {
           "description": "Pathname of existing BIG-IP bot defense profile",
           "type": "string",
@@ -29898,6 +30453,50 @@
         }
       ]
     },
+    "Pointer_JSON_Profile": {
+      "description": "Reference to a JSON Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to JSON Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "JSON_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP JSON Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile json"
+            ]
+          }
+        }
+      ]
+    },
     "Pointer_NAT_Source_Translation": {
       "description": "Reference to a NAT Source Translation",
       "type": "object",
@@ -30741,6 +31340,50 @@
             "tag": "bigComponent",
             "data": [
               "query ltm profile splitsessionclient"
+            ]
+          }
+        }
+      ]
+    },
+    "Pointer_SSE_Profile": {
+      "description": "Reference to a SSE Profile",
+      "type": "object",
+      "properties": {
+        "use": {
+          "description": "AS3 pointer to SSE Profile declaration",
+          "type": "string",
+          "minLength": 1,
+          "f5PostProcess": {
+            "tag": "pointer",
+            "data": {
+              "properties": {
+                "class": {
+                  "enum": [
+                    "SSE_Profile"
+                  ]
+                }
+              },
+              "required": [
+                "class"
+              ]
+            }
+          }
+        },
+        "bigip": {
+          "description": "Pathname of existing BIG-IP SSE Profile",
+          "type": "string",
+          "format": "f5bigip"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "allOf": [
+        {
+          "f5PostProcess": {
+            "tag": "bigComponent",
+            "data": [
+              "query ltm profile sse"
             ]
           }
         }
@@ -31819,7 +32462,7 @@
       ]
     },
     "Analytics_Profile": {
-      "title": "Analytics Profile",
+      "title": "Analytics Profile test...",
       "type": "object",
       "description": "HTTP Analytics profile with configurable options",
       "properties": {
@@ -32222,7 +32865,8 @@
             "http2",
             "icmp",
             "tcp",
-            "tcp-half-open"
+            "tcp-half-open",
+            "udp"
           ]
         },
         {
@@ -34653,16 +35297,24 @@
         },
         "idleTimeout": {
           "title": "Idle timeout",
-          "type": "integer",
+          "type": [
+            "integer",
+            "string"
+          ],
           "default": 300,
-          "description": "Number of seconds (default 300; may not be 0) connection may remain idle before it becomes eligible for deletion. Value -1 (not recommended) means infinite",
-          "anyOf": [
+          "description": "Number of seconds connection may remain idle before it becomes eligible for deletion. Value -1 (not recommended) means indefinite. Value 0 means immediate",
+          "oneOf": [
             {
+              "type": "integer",
               "maximum": 86400,
-              "minimum": 1
+              "minimum": -1
             },
             {
-              "const": -1
+              "type": "string",
+              "enum": [
+                "immediate",
+                "indefinite"
+              ]
             }
           ]
         },
@@ -38740,7 +39392,7 @@
       "title": "Property Use",
       "description": "Path to object in declaration",
       "type": "string",
-      "pattern": "^[@A-Za-z-￿/][@0-9A-Za-z-￿_./-]*$",
+      "pattern": "^[@A-Za-z\u0080-\uFFFF/][@0-9A-Za-z\u0080-\uFFFF_./-]*$",
       "maxLength": 573,
       "minLength": 1
     },

@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ describe('L4_Profile', function () {
             },
             {
                 name: 'idleTimeout',
-                inputValue: [undefined, 600, undefined],
-                expectedValue: ['300', '600', '300']
+                inputValue: [undefined, 600, 0, -1, undefined],
+                expectedValue: ['300', '600', 'immediate', 'indefinite', '300']
             },
             {
                 name: 'keepAliveInterval',
@@ -87,13 +87,13 @@ describe('L4_Profile', function () {
             },
             {
                 name: 'tcpCloseTimeout',
-                inputValue: [undefined, 43200, undefined],
-                expectedValue: ['5', '43200', '5']
+                inputValue: [undefined, 43200, 0, -1, undefined],
+                expectedValue: ['5', '43200', 'immediate', 'indefinite', '5']
             },
             {
                 name: 'tcpHandshakeTimeout',
-                inputValue: [undefined, 43200, undefined],
-                expectedValue: ['5', '43200', '5']
+                inputValue: [undefined, 43200, 0, -1, undefined],
+                expectedValue: ['5', '43200', 'immediate', 'indefinite', '5']
             }
         ];
 

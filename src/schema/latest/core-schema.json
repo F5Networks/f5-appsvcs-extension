@@ -32,11 +32,11 @@
             "anyOf": [
                 {
                     "description": "Any version of AS3.",
-                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-5])($|[.][0-9]+$)"
+                    "pattern": "^3[.]([0-9]|[1234][0-9]|5[0-6])($|[.][0-9]+$)"
                 },
                 {
                     "description": "The current version of AS3.",
-                    "const": "3.55.0"
+                    "const": "3.56.0"
                 }
             ]
         },
@@ -755,6 +755,9 @@
                 "profileSplitsessionClient": {
                     "$ref": "#/definitions/Pointer_Splitsession_Client_Profile"
                 },
+                "profileSSE": {
+                    "$ref": "#/definitions/Pointer_SSE_Profile"
+                },
                 "profileConnector": {
                     "$ref": "#/definitions/Pointer_Connector_Profile"
                 },
@@ -830,6 +833,9 @@
                 },
                 "profileHTML": {
                     "$ref": "#/definitions/Pointer_HTML_Profile"
+                },
+                "profileJSON": {
+                    "$ref": "#/definitions/Pointer_JSON_Profile"
                 },
                 "profileMultiplex": {
                     "title": "Multiplex profile",
@@ -2657,6 +2663,12 @@
                     "description": "If this is true, MCPD deletes the virtual address if it is not linked to any virtual. This option applies only to the Common Tenant.",
                     "type": "boolean",
                     "default": true                   
+                },
+                "useIpName": {
+                    "title": "Use IPName",
+                    "description": "If this is true, then need to disregard the current 'Service_Address' object name and replace it with the virtual server's (virtual-address) IP address as the new name for the 'Service_Address' object",
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "dependencies": {
@@ -4334,6 +4346,20 @@
                                         "required": [ "class" ]
                                     }
                                 }
+                            },
+                            "authenticationMode": {
+                                "title": "Authentication mode",
+                                "description": "Client certificate authentication mode",
+                                "type": "string",
+                                "enum": [ "ignore", "request", "require" ],
+                                "default": "ignore"
+                            },
+                            "authenticationFrequency": {
+                                "title": "Authentication frequency",
+                                "description": "Server certificate authentication frequency",
+                                "type": "string",
+                                "enum": [ "one-time", "every-time" ],
+                                "default": "one-time"
                             }
                         },
                         "additionalProperties": false,
@@ -4800,12 +4826,10 @@
                 },
                 {
                     "if": {
-                        "not": {
-                            "required": [
-                                "ciphers",
-                                "cipherGroup"
-                            ]
-                        }
+                        "allOf": [
+                            { "not": { "required": ["ciphers"] } },
+                            { "not": { "required": ["cipherGroup"] } }
+                        ]
                     },
                     "then": {
                         "properties": {
@@ -6005,6 +6029,55 @@
                     "items": {
                         "$ref": "#/definitions/Pointer_HTML_Rule"
                     }
+                }
+            },
+            "required": [ "class" ],
+            "additionalProperties": false
+        },
+
+        "JSON_Profile": {
+            "title": "JSON_Profile",
+            "type": "object",
+            "description": "JSON profile with configurable options",
+
+            "properties": {
+                "class": {
+                    "type": "string",
+                    "const": "JSON_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "parentProfile": {
+                    "description": "Specifies the name of the profile object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_JSON_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/json" },
+                    "required": [ "bigip" ]
+                },
+                "maximumBytes": {
+                    "title": "Max Buffered Message Bytes",
+                    "description": "Specifies the maximum number of bytes allowed for a JSON payload",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10485760,
+                    "default": 65536
+                },
+                "maximumEntries": {
+                    "title": "Max Buffered Message Bytes",
+                    "description": "Specifies the maximum number of entries in the JSON payload, this value includes the nested entries",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2048,
+                    "default": 2048
+                },
+                "maximumNonJsonBytes": {
+                    "title": "Max Buffered Message Bytes",
+                    "description": "Specifies the maximum number of non-JSON bytes that may be buffered while processing a request or a message whose JSON content comes after any non-JSON content, not counting the bytes of the JSON payload itself",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 32768,
+                    "default": 32768
                 }
             },
             "required": [ "class" ],
@@ -7743,6 +7816,8 @@
                     "items": {
                         "type": "string",
                         "enum": [
+                            "X25519MLKEM768",
+                            "X25519KYBER768",
                             "DEFAULT",
                             "P256",
                             "P384",
@@ -7894,22 +7969,11 @@
                 },
                 "label": { "$ref": "#/definitions/Label" },
                 "remark": { "$ref": "#/definitions/Remark" },
-                "description": {
-                    "description": "Description of the profile",
-                    "type": "string"
-                },
-                "defaultsFrom": {
+                "parentProfile": {
                     "description": "Parent profile to inherit settings from (none or another pptp profile)",
-                    "type": "object",
-                    "properties": {
-                        "bigip": {
-                            "title": "BIG-IP resolver",
-                            "description": "Parent profile to inherit settings from (none or another pptp profile)",
-                            "type": "string",
-                            "format": "f5bigip"
-                        }
-                    },
-                    "additionalProperties": false,
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_PPTP_Profile"}
+                    ],
                     "default": { "bigip": "/Common/pptp" },
                     "required": [ "bigip" ]
                 },
@@ -7973,10 +8037,8 @@
                     "type": "string",
                     "const": "Splitsession_Client_Profile"
                 },
-                "description": {
-                    "description": "Description of the profile",
-                    "type": "string"
-                },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "label": { "$ref": "#/definitions/Label" },
                 "peerPort": {
                     "title": "Peer Port",
                     "description": "Specifies the port of the SplitSession peer connected to the out-of-band connection.",
@@ -8013,6 +8075,46 @@
             },
             "additionalProperties": false,
             "required": [ "class", "peerPort", "peerIp" ]
+        },
+
+        "SSE_Profile": {
+            "title": "SSE Profile",
+            "type": "object",
+            "description": "Configures a SSE profile",
+            "properties": {
+                "class": {
+                    "type": "string",
+                    "const": "SSE_Profile"
+                },
+                "label": { "$ref": "#/definitions/Label" },
+                "remark": { "$ref": "#/definitions/Remark" },
+                "parentProfile": {
+                    "description": "Specifies the name of the profile object to inherit the settings from",
+                    "allOf": [
+                        { "$ref": "#/definitions/Pointer_SSE_Profile" }
+                    ],
+                    "default": { "bigip": "/Common/sse" },
+                    "required": [ "bigip" ]
+                },
+                "maxFieldNameSize": {
+                    "title": "Max Field Name Size",
+                    "description": "Specifies the maximum allowed size of any single field name in the SSE message, in bytes.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1024,
+                    "default": 1024
+                },
+                "maxBufferedMsgBytes": {
+                    "title": "Max Buffered Message Bytes",
+                    "description": "Specifies the maximum size of any single SSE message, in bytes, that can be stored on the system to enable irule inspection and adjustment of the message. This limit is only relevant when an SSE_RESPONSE irule event is configured.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10485760,
+                    "default": 65536
+                }
+            },
+            "additionalProperties": false,
+            "required": [ "class" ]
         },
 
         "Connector_Profile": {

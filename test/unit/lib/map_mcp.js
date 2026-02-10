@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1086,6 +1086,42 @@ describe('map_mcp', () => {
             });
         });
 
+        describe('tm:ltm:profile:json:jsonstate', () => {
+            it('should convert a JSON profile', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:json:jsonstate',
+                    name: 'json_test',
+                    partition: 'Tenant',
+                    subPath: 'Application',
+                    fullPath: '/Tenant/Application/json_test',
+                    generation: 144,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/json/~Common~json_test?ver=21.0.0',
+                    appService: 'none',
+                    defaultsFrom: '/Common/json',
+                    defaultsFromReference: {
+                        link: 'https://localhost/mgmt/tm/ltm/profile/json/~Common~json?ver=21.0.0'
+                    },
+                    description: 'MyDescription',
+                    maximumBytes: 65536,
+                    maximumEntries: 2048,
+                    maximumNonJsonBytes: 32768
+                };
+                const results = translate[obj.kind](defaultContext, obj);
+                assert.deepStrictEqual(results[0], {
+                    path: '/Tenant/Application/json_test',
+                    command: 'ltm profile json',
+                    properties: {
+                        'defaults-from': '/Common/json',
+                        description: '"MyDescription"',
+                        'maximum-bytes': 65536,
+                        'maximum-entries': 2048,
+                        'maximum-non-json-bytes': 32768
+                    },
+                    ignore: []
+                });
+            });
+        });
+
         describe('tm:ltm:profile:fastl4:fastl4state', () => {
             it('should convert keepAliveInterval from disabled to 0', () => {
                 const obj = {
@@ -1209,6 +1245,38 @@ describe('map_mcp', () => {
                         'peer-ip': '192.0.2.1',
                         'peer-port': 80,
                         'session-lookup-type': 'flow'
+                    },
+                    ignore: []
+                });
+            });
+        });
+
+        describe('tm:ltm:profile:sse:ssestate', () => {
+            it('should create tm:ltm:profile:sse:ssestate', () => {
+                const obj = {
+                    kind: 'tm:ltm:profile:sse:ssestate',
+                    name: 'sseProfile',
+                    partition: 'MyTenant1',
+                    subPath: 'MyApp',
+                    fullPath: '/MyTenant1/MyApp/sseProfile',
+                    generation: 1,
+                    selfLink: 'https://localhost/mgmt/tm/ltm/profile/sse/~MyTenant1~MyApp~sseProfile',
+                    appService: 'none',
+                    remark: 'test Description',
+                    maxFieldNameSize: 64,
+                    maxBufferedMsgBytes: 1024
+                };
+
+                const results = translate[obj.kind](defaultContext, obj);
+
+                assert.deepStrictEqual(results[0], {
+                    path: '/MyTenant1/MyApp/sseProfile',
+                    command: 'ltm profile sse',
+                    properties: {
+                        'defaults-from': 'none',
+                        description: '"test Description"',
+                        'max-field-name-size': 64,
+                        'max-buffered-msg-bytes': 1024
                     },
                     ignore: []
                 });
@@ -6351,6 +6419,524 @@ describe('map_mcp', () => {
                         ignore: []
                     }
                 );
+            });
+        });
+
+        describe('tm:security:bot-defense:profile:profilestate', () => {
+            it('should create tm:security:bot-defense:profile:profilestate config', () => {
+                defaultContext.target.tmosVersion = '15.0';
+                const obj = {
+                    kind: 'tm:security:bot-defense:profile:profilestate',
+                    name: 'botProfile',
+                    partition: 'Sample_dos_02',
+                    subPath: 'Application',
+                    fullPath: '/Sample_dos_02/Application/botProfile',
+                    generation: 884,
+                    selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile?ver\u003d17.5.1',
+                    allowBrowserAccess: 'enabled',
+                    apiAccessStrictMitigation: 'disabled',
+                    blockingPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    browserMitigationAction: 'none',
+                    captchaResponse: {
+                        failure: {
+                            body: 'failure body content',
+                            type: 'default'
+                        },
+                        first: {
+                            body: 'first first',
+                            type: 'default'
+                        }
+                    },
+                    crossDomainRequests: 'validate-bulk',
+                    defaultsFrom: '/Common/bot-defense',
+                    defaultsFromReference: {
+                        link: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Common~bot-defense?ver\u003d17.5.1'
+                    },
+                    deviceidMode: 'none',
+                    dosAttackStrictMitigation: 'disabled',
+                    enforcementMode: 'blocking',
+                    enforcementReadinessPeriod: 10,
+                    gracePeriod: 4000,
+                    honeypotPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    mobileDetection: {
+                        allowAndroidRootedDevice: 'enabled',
+                        allowAnyAndroidPackage: 'disabled',
+                        allowAnyIosPackage: 'disabled',
+                        allowEmulators: 'enabled',
+                        allowJailbrokenDevices: 'enabled',
+                        blockDebuggerEnabledDevice: 'enabled',
+                        clientSideChallengeMode: 'cshui',
+                        androidPublishers: [
+                            {
+                                name: 'default.crt',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/sys/file/ssl-cert/~Common~default.crt?ver\u003d17.5.1'
+                                }
+                            }
+                        ],
+                        iosAllowedPackages: [
+                            {
+                                name: 'theName'
+                            }
+                        ],
+                        signatures: [
+                            {
+                                name: 'TEST_BP',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/security/bot-defense/signature/~Common~TEST_BP?ver\u003d17.5.1'
+                                }
+                            }
+                        ]
+                    },
+                    performChallengeInTransparent: 'enabled',
+                    signatureStagingUponUpdate: 'enabled',
+                    singlePageApplication: 'disabled',
+                    template: 'balanced'
+                };
+                const referenceObjs = [
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'apple_touch_1',
+                        fullPath: 'apple_touch_1',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/apple_touch_1?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 2,
+                        sourceAddress: '::/32',
+                        url: '/apple-touch-icon*.png'
+                    },
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'favicon_1',
+                        fullPath: 'favicon_1',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/favicon_1?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 1,
+                        sourceAddress: '::/32',
+                        url: '/favicon.ico'
+                    },
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'url_0',
+                        fullPath: 'url_0',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/url_0?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 3,
+                        sourceAddress: '::/32',
+                        url: 'www.bing.com'
+                    },
+                    {
+                        kind: 'tm:security:bot-defense:profile:staged-signatures:staged-signaturesstate',
+                        name: 'TEST_BP1',
+                        partition: 'Common',
+                        fullPath: '/Common/TEST_BP1',
+                        generation: 1177,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/staged-signatures/~Common~TEST_BP1?ver\u003d17.5.1',
+                        since: '1970-01-01T00:00:00Z'
+                    }
+                ];
+
+                const expected = {
+                    command: 'security bot-defense profile',
+                    ignore: [],
+                    path: '/Sample_dos_02/Application/botProfile',
+                    properties: {
+                        'allow-browser-access': 'enabled',
+                        'browser-mitigation-action': 'none',
+                        'class-overrides': {},
+                        'cross-domain-requests': 'validate-bulk',
+                        'deviceid-mode': 'none',
+                        'dos-attack-strict-mitigation': 'disabled',
+                        'enforcement-mode': 'blocking',
+                        'enforcement-readiness-period': 10,
+                        'external-domains': {},
+                        'grace-period': 4000,
+                        'mobile-detection': {
+                            'allow-android-rooted-device': 'enabled',
+                            'allow-any-android-package': 'disabled',
+                            'allow-any-ios-package': 'disabled',
+                            'allow-emulators': 'enabled',
+                            'allow-jailbroken-devices': 'enabled',
+                            'android-publishers': {
+                                '/Common/default.crt': {}
+                            },
+                            'client-side-challenge-mode': 'cshui',
+                            'ios-allowed-packages': {
+                                theName: {}
+                            },
+                            signatures: {
+                                '/Common/TEST_BP': {}
+                            }
+                        },
+                        'perform-challenge-in-transparent': 'enabled',
+                        'signature-category-overrides': {},
+                        'signature-overrides': {},
+                        'signature-staging-upon-update': 'enabled',
+                        'single-page-application': 'disabled',
+                        'site-domains': {},
+                        'staged-signatures': {
+                            '/Common/TEST_BP1': {}
+                        },
+                        whitelist: {
+                            apple_touch_1: {
+                                'match-order': 2,
+                                url: '/apple-touch-icon*.png'
+                            },
+                            favicon_1: {
+                                'match-order': 1,
+                                url: '/favicon.ico'
+                            },
+                            url_0: {
+                                'match-order': 3,
+                                url: 'www.bing.com'
+                            }
+                        }
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj, referenceObjs);
+                assert.deepStrictEqual(results[0], expected);
+            });
+
+            it('should create tm:security:bot-defense:profile:profilestate config with whitelist', () => {
+                defaultContext.target.tmosVersion = '15.0';
+                const obj = {
+                    kind: 'tm:security:bot-defense:profile:profilestate',
+                    name: 'botProfile',
+                    partition: 'Sample_dos_02',
+                    subPath: 'Application',
+                    fullPath: '/Sample_dos_02/Application/botProfile',
+                    generation: 884,
+                    selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile?ver\u003d17.5.1',
+                    allowBrowserAccess: 'enabled',
+                    apiAccessStrictMitigation: 'disabled',
+                    blockingPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    browserMitigationAction: 'none',
+                    captchaResponse: {
+                        failure: {
+                            body: 'failure body content',
+                            type: 'default'
+                        },
+                        first: {
+                            body: 'first first',
+                            type: 'default'
+                        }
+                    },
+                    crossDomainRequests: 'validate-bulk',
+                    defaultsFrom: '/Common/bot-defense',
+                    defaultsFromReference: {
+                        link: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Common~bot-defense?ver\u003d17.5.1'
+                    },
+                    deviceidMode: 'none',
+                    dosAttackStrictMitigation: 'disabled',
+                    enforcementMode: 'blocking',
+                    enforcementReadinessPeriod: 10,
+                    gracePeriod: 4000,
+                    honeypotPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    mobileDetection: {
+                        allowAndroidRootedDevice: 'enabled',
+                        allowAnyAndroidPackage: 'disabled',
+                        allowAnyIosPackage: 'disabled',
+                        allowEmulators: 'enabled',
+                        allowJailbrokenDevices: 'enabled',
+                        blockDebuggerEnabledDevice: 'enabled',
+                        clientSideChallengeMode: 'cshui',
+                        androidPublishers: [
+                            {
+                                name: 'default.crt',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/sys/file/ssl-cert/~Common~default.crt?ver\u003d17.5.1'
+                                }
+                            }
+                        ],
+                        iosAllowedPackages: [
+                            {
+                                name: 'theName'
+                            }
+                        ],
+                        signatures: [
+                            {
+                                name: 'TEST_BP',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/security/bot-defense/signature/~Common~TEST_BP?ver\u003d17.5.1'
+                                }
+                            }
+                        ]
+                    },
+                    performChallengeInTransparent: 'enabled',
+                    signatureStagingUponUpdate: 'enabled',
+                    singlePageApplication: 'disabled',
+                    template: 'balanced'
+                };
+                const referenceObjs = [
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'apple_touch_1',
+                        fullPath: 'apple_touch_1',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/apple_touch_1?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 2,
+                        sourceAddress: '::/32',
+                        url: '/apple-touch-icon*.png'
+                    },
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'favicon_1',
+                        fullPath: 'favicon_1',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/favicon_1?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 1,
+                        sourceAddress: '::/32',
+                        url: '/favicon.ico'
+                    },
+                    {
+                        kind: 'tm:security:bot-defense:profile:whitelist:whiteliststate',
+                        name: 'url_0',
+                        fullPath: 'url_0',
+                        generation: 884,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/whitelist/url_0?ver=17.5.1',
+                        disableMitigation: 'yes',
+                        disableVerification: 'yes',
+                        matchOrder: 3,
+                        sourceAddress: '::/32',
+                        url: 'www.bing.com'
+                    }
+                ];
+
+                const expected = {
+                    command: 'security bot-defense profile',
+                    ignore: [],
+                    path: '/Sample_dos_02/Application/botProfile',
+                    properties: {
+                        'allow-browser-access': 'enabled',
+                        'browser-mitigation-action': 'none',
+                        'class-overrides': {},
+                        'cross-domain-requests': 'validate-bulk',
+                        'deviceid-mode': 'none',
+                        'dos-attack-strict-mitigation': 'disabled',
+                        'enforcement-mode': 'blocking',
+                        'enforcement-readiness-period': 10,
+                        'external-domains': {},
+                        'grace-period': 4000,
+                        'mobile-detection': {
+                            'allow-android-rooted-device': 'enabled',
+                            'allow-any-android-package': 'disabled',
+                            'allow-any-ios-package': 'disabled',
+                            'allow-emulators': 'enabled',
+                            'allow-jailbroken-devices': 'enabled',
+                            'android-publishers': {
+                                '/Common/default.crt': {}
+                            },
+                            'client-side-challenge-mode': 'cshui',
+                            'ios-allowed-packages': {
+                                theName: {}
+                            },
+                            signatures: {
+                                '/Common/TEST_BP': {}
+                            }
+                        },
+                        'perform-challenge-in-transparent': 'enabled',
+                        'signature-category-overrides': {},
+                        'signature-overrides': {},
+                        'signature-staging-upon-update': 'enabled',
+                        'single-page-application': 'disabled',
+                        'site-domains': {},
+                        'staged-signatures': {},
+                        whitelist: {
+                            apple_touch_1: {
+                                'match-order': 2,
+                                url: '/apple-touch-icon*.png'
+                            },
+                            favicon_1: {
+                                'match-order': 1,
+                                url: '/favicon.ico'
+                            },
+                            url_0: {
+                                'match-order': 3,
+                                url: 'www.bing.com'
+                            }
+                        }
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj, referenceObjs);
+                assert.deepStrictEqual(results[0], expected);
+            });
+
+            it('should create tm:security:bot-defense:profile:profilestate config with stagedSignatures', () => {
+                defaultContext.target.tmosVersion = '15.0';
+                const obj = {
+                    kind: 'tm:security:bot-defense:profile:profilestate',
+                    name: 'botProfile',
+                    partition: 'Sample_dos_02',
+                    subPath: 'Application',
+                    fullPath: '/Sample_dos_02/Application/botProfile',
+                    generation: 884,
+                    selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile?ver\u003d17.5.1',
+                    allowBrowserAccess: 'enabled',
+                    apiAccessStrictMitigation: 'disabled',
+                    blockingPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    browserMitigationAction: 'none',
+                    captchaResponse: {
+                        failure: {
+                            body: 'failure body content',
+                            type: 'default'
+                        },
+                        first: {
+                            body: 'first first',
+                            type: 'default'
+                        }
+                    },
+                    crossDomainRequests: 'validate-bulk',
+                    defaultsFrom: '/Common/bot-defense',
+                    defaultsFromReference: {
+                        link: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Common~bot-defense?ver\u003d17.5.1'
+                    },
+                    deviceidMode: 'none',
+                    dosAttackStrictMitigation: 'disabled',
+                    enforcementMode: 'blocking',
+                    enforcementReadinessPeriod: 10,
+                    gracePeriod: 4000,
+                    honeypotPage: {
+                        body: 'body content',
+                        headers: 'test headers',
+                        statusCode: 200,
+                        type: 'default'
+                    },
+                    mobileDetection: {
+                        allowAndroidRootedDevice: 'enabled',
+                        allowAnyAndroidPackage: 'disabled',
+                        allowAnyIosPackage: 'disabled',
+                        allowEmulators: 'enabled',
+                        allowJailbrokenDevices: 'enabled',
+                        blockDebuggerEnabledDevice: 'enabled',
+                        clientSideChallengeMode: 'cshui',
+                        androidPublishers: [
+                            {
+                                name: 'default.crt',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/sys/file/ssl-cert/~Common~default.crt?ver\u003d17.5.1'
+                                }
+                            }
+                        ],
+                        iosAllowedPackages: [
+                            {
+                                name: 'theName'
+                            }
+                        ],
+                        signatures: [
+                            {
+                                name: 'TEST_BP',
+                                partition: 'Common',
+                                nameReference: {
+                                    link: 'https://localhost/mgmt/tm/security/bot-defense/signature/~Common~TEST_BP?ver\u003d17.5.1'
+                                }
+                            }
+                        ]
+                    },
+                    performChallengeInTransparent: 'enabled',
+                    signatureStagingUponUpdate: 'enabled',
+                    singlePageApplication: 'disabled',
+                    template: 'balanced'
+                };
+                const referenceObjs = [
+                    {
+                        kind: 'tm:security:bot-defense:profile:staged-signatures:staged-signaturesstate',
+                        name: 'TEST_BP1',
+                        partition: 'Common',
+                        fullPath: '/Common/TEST_BP1',
+                        generation: 1177,
+                        selfLink: 'https://localhost/mgmt/tm/security/bot-defense/profile/~Sample_dos_02~Application~botProfile/staged-signatures/~Common~TEST_BP1?ver\u003d17.5.1',
+                        since: '1970-01-01T00:00:00Z'
+                    }
+                ];
+
+                const expected = {
+                    command: 'security bot-defense profile',
+                    ignore: [],
+                    path: '/Sample_dos_02/Application/botProfile',
+                    properties: {
+                        'allow-browser-access': 'enabled',
+                        'browser-mitigation-action': 'none',
+                        'class-overrides': {},
+                        'cross-domain-requests': 'validate-bulk',
+                        'deviceid-mode': 'none',
+                        'dos-attack-strict-mitigation': 'disabled',
+                        'enforcement-mode': 'blocking',
+                        'enforcement-readiness-period': 10,
+                        'external-domains': {},
+                        'grace-period': 4000,
+                        'mobile-detection': {
+                            'allow-android-rooted-device': 'enabled',
+                            'allow-any-android-package': 'disabled',
+                            'allow-any-ios-package': 'disabled',
+                            'allow-emulators': 'enabled',
+                            'allow-jailbroken-devices': 'enabled',
+                            'android-publishers': {
+                                '/Common/default.crt': {}
+                            },
+                            'client-side-challenge-mode': 'cshui',
+                            'ios-allowed-packages': {
+                                theName: {}
+                            },
+                            signatures: {
+                                '/Common/TEST_BP': {}
+                            }
+                        },
+                        'perform-challenge-in-transparent': 'enabled',
+                        'signature-category-overrides': {},
+                        'signature-overrides': {},
+                        'signature-staging-upon-update': 'enabled',
+                        'single-page-application': 'disabled',
+                        'site-domains': {},
+                        'staged-signatures': {
+                            '/Common/TEST_BP1': {}
+                        },
+                        whitelist: {}
+                    }
+                };
+
+                const results = translate[obj.kind](defaultContext, obj, referenceObjs);
+                assert.deepStrictEqual(results[0], expected);
             });
         });
     });

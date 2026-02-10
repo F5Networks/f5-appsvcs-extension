@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -845,6 +845,9 @@ function getMcpObject(as3Class, index, options) {
 
     const itemName = options.mcpObjectName || getItemName(options);
     if (options.getMcpObject) {
+        if (Array.isArray(options.getMcpObject.itemNames)) {
+            options.getMcpObject.itemName = options.getMcpObject.itemNames[index];
+        }
         options.getMcpObject.itemName = options.getMcpObject.itemName || itemName;
         pathPrefix += options.getMcpObject.itemName;
     } else {
@@ -1040,7 +1043,9 @@ function checkMcpValue(result, properties, index) {
             const value = getExpectedValue(property, index);
             // This print can be very helpful for debugging the expect vs receive vals
             if (consoleOptions.expectedActual) {
-                console.log(`\t${property.name} => [ expected: ${value} ] [ actual: ${result[property.name]} ]`);
+                const expectedDisplay = typeof value === 'object' ? JSON.stringify(value, null, 4) : value;
+                const actualDisplay = typeof result[property.name] === 'object' ? JSON.stringify(result[property.name], null, 4) : result[property.name];
+                console.log(`\t${property.name} => [ expected: ${expectedDisplay} ] [ actual: ${actualDisplay} ]`);
             }
             if (typeof value === 'number') {
                 assert.equal(result[property.name],

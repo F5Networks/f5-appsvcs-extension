@@ -1,5 +1,5 @@
 /**
- * Copyright 2025 F5, Inc.
+ * Copyright 2026 F5, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,10 @@ describe('Pool', function () {
             },
             {
                 name: 'monitors',
-                inputValue: [undefined, ['https', 'http'], ['https', 'tcp', 'http'], undefined],
+                inputValue: [undefined, ['https', 'udp'], ['https', 'tcp', 'http'], undefined],
                 expectedValue: [
                     undefined,
-                    'min 2 of { /Common/https /Common/http }',
+                    'min 2 of { /Common/https /Common/udp }',
                     '/Common/https and /Common/tcp and /Common/http',
                     undefined
                 ],

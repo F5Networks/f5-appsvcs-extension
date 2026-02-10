@@ -1,0 +1,277 @@
+{
+  "class": "ADC",
+  "schemaVersion": "3.56.0",
+  "id": "DOS_Profile",
+  "Sample_dos_01": {
+    "class": "Tenant",
+    "DOSApp": {
+      "class": "Application",
+      "Service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "192.0.2.1"
+        ],
+        "profileDOS": {
+          "use": "DOS_Profile"
+        }
+      },
+      "DOS_Profile": {
+        "class": "DOS_Profile",
+        "application": {
+          "denylistedGeolocations": [
+            "Timor-Leste",
+            "Cocos (Keeling) Islands"
+          ],
+          "allowlistedGeolocations": [
+            "Bonaire, Saint Eustatius and Saba",
+            "Cote D'Ivoire"
+          ],
+          "captchaResponse": {
+            "first": "Are you a robot&quest;<br><br>%DOSL7.captcha.image% %DOSL7.captcha.change%<br><b>What code is in the image&quest;</b>%DOSL7.captcha.solution%<br>%DOSL7.captcha.submit%<br><br>Your supportID is: %DOSL7.captcha.support_id%.",
+            "failure": "Error!<br><br>%DOSL7.captcha.image% %DOSL7.captcha.change%<br><b>What code is in the image&quest;</b>%DOSL7.captcha.solution%<br>%DOSL7.captcha.submit%<br><br>Your support ID is: %DOSL7.captcha.support_id%."
+          },
+          "heavyURLProtection": {
+            "automaticDetectionEnabled": true,
+            "detectionThreshold": 16,
+            "excludeList": [
+              "example.com"
+            ],
+            "protectList": [
+              {
+                "url": "www.google.com",
+                "threshold": 0
+              }
+            ]
+          },
+          "triggerIRule": true,
+          "scrubbingDuration": 42,
+          "remoteTriggeredBlackHoleDuration": 10,
+          "botDefense": {
+            "createBotDefenseProfile": false,
+            "mode": "during-attacks",
+            "blockSuspiscousBrowsers": true,
+            "issueCaptchaChallenge": true,
+            "gracePeriod": 4000,
+            "crossDomainRequests": "validate-bulk",
+            "siteDomains": [
+              "www.google.com"
+            ],
+            "externalDomains": [
+              "www.yahoo.com"
+            ],
+            "urlAllowlist": [
+              "www.bing.com"
+            ]
+          },
+          "botSignatures": {
+            "checkingEnabled": true,
+            "blockedCategories": [
+              {
+                "bigip": "/Common/Search Engine"
+              }
+            ],
+            "reportedCategories": [
+              {
+                "bigip": "/Common/Crawler"
+              }
+            ]
+          },
+          "rateBasedDetection": {
+            "operationMode": "off",
+            "thresholdsMode": "manual",
+            "escalationPeriod": 120,
+            "deEscalationPeriod": 7200,
+            "sourceIP": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "deviceID": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "geolocation": {
+              "minimumShare": 10,
+              "shareIncreaseRate": 500,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "url": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true
+            },
+            "site": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true
+            }
+          },
+          "stressBasedDetection": {
+            "badActor": {
+              "detectionEnabled": false,
+              "mitigationMode": "none",
+              "signatureDetectionEnabled": false,
+              "useApprovedSignaturesOnly": false
+            },
+            "operationMode": "off",
+            "thresholdsMode": "manual",
+            "escalationPeriod": 120,
+            "deEscalationPeriod": 7200,
+            "sourceIP": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "deviceID": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "geolocation": {
+              "minimumShare": 10,
+              "shareIncreaseRate": 500,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "rateLimitingMode": "rate-limit"
+            },
+            "url": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true,
+              "heavyURLProtectionEnabled": true
+            },
+            "site": {
+              "minimumTps": 40,
+              "tpsIncreaseRate": 500,
+              "maximumTps": 200,
+              "minimumAutoTps": 5,
+              "maximumAutoTps": 5000,
+              "clientSideDefenseEnabled": false,
+              "captchaChallengeEnabled": false,
+              "rateLimitingEnabled": true
+            }
+          },
+          "recordTraffic": {
+            "maximumDuration": 10,
+            "maximumSize": 10,
+            "recordTrafficEnabled": false,
+            "repetitionInterval": 10
+          }
+        },
+        "network": {
+          "dynamicSignatures": {
+            "detectionMode": "enabled",
+            "mitigationMode": "medium",
+            "scrubbingEnabled": true,
+            "scrubbingCategory": {
+              "bigip": "/Common/attacked_ips"
+            },
+            "scrubbingDuration": 60
+          },
+          "vectors": [
+            {
+              "type": "hop-cnt-low",
+              "state": "learn-only",
+              "thresholdMode": "manual",
+              "rateThreshold": 40000,
+              "rateIncreaseThreshold": 600,
+              "rateLimit": 1000000,
+              "simulateAutoThresholdEnabled": true,
+              "badActorSettings": {
+                "enabled": true,
+                "sourceDetectionThreshold": 0,
+                "sourceMitigationThreshold": 0
+              },
+              "autoDenylistSettings": {
+                "enabled": true,
+                "category": {
+                  "bigip": "/Common/botnets"
+                },
+                "attackDetectionTime": 1,
+                "categoryDuration": 60,
+                "externalAdvertisementEnabled": true
+              }
+            }
+          ]
+        },
+        "protocolDNS": {
+          "vectors": [
+            {
+              "type": "ptr",
+              "state": "mitigate",
+              "thresholdMode": "fully-automatic",
+              "autoAttackFloor": 0,
+              "autoAttackCeiling": 0
+            }
+          ]
+        },
+        "allowlist": {
+          "use": "addressList"
+        },
+        "applicationAllowlist": {
+          "use": "addressListHTTP"
+        }
+      },
+      "addressList": {
+        "class": "Firewall_Address_List",
+        "addresses": [
+          "10.0.0.10"
+        ]
+      },
+      "addressListHTTP": {
+        "class": "Firewall_Address_List",
+        "addresses": [
+          "10.0.0.11"
+        ]
+      }
+    }
+  }
+}
