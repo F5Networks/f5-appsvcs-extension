@@ -40,3 +40,8 @@ We check for the following:
 - Email addresses
 - IP addresses
 - Generic credential keywords
+
+---
+### Github issue changes
+
+Github Issues are no longer monitored by F5 staff. Please open a case with [F5 Technical Support](https://www.f5.com/support) if this is a critical issue.
