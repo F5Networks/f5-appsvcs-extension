@@ -3,6 +3,5 @@ Release Checklist:
 * [ ] Test BIG-IQ
 * [ ] Test Container
 * [ ] Tag release and publish to Artifactory
-* [ ] Publish to GitHub
-* [ ] Publish to Docker Hub
+* [ ] Publish to f5-downloads
 /weight 1
