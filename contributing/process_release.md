@@ -9,7 +9,8 @@
   * Postman collection of examples
 * RPM is built in every pipeline run, and is kept in GitLab for one week
 * On a Git tag, all artifacts are built and published to Artifactory (f5-automation-toolchain-generic/f5-appsvcs)
-* On a release, artifacts are copied from Artifactory to GitHub
+* On a release, artifacts are copied from Artifactory to f5-downloads
+  * See AUTOTOOL-4994 for more details on f5-downloads release process
 
 ## Release Notes
 * Release notes, along with some examples, are tracked during development in the contributing directory as markdown
@@ -18,6 +19,7 @@
 
 ## Process for release
 ### Begin process release at the very beginning of the first sprint of a new release, by performing the following actions
+* See AUTOTOOL-4948 for package update process before release
 * Create a new release branch using the major version, minor version and patch number as the name (e.g 3.10.0)
   * Using the GitLab UI, create the branch from `develop` to avoid any issues with an out-of-date local repository
 * Point the `gitBranch` variable in the AS3 schedule in the atg-build repository at the release branch
@@ -98,7 +100,8 @@ Merge the release branch into `develop` and `main` following the steps below for
 * Follow the process for release for f5-service-discovery to prep SD for the next release cycle.
 
 ### Release Manager tasks
-* Artifacts are copied from `main` to GitHub and Docker Hub by release management
+* Artifacts are copied from `main` to f5-downloads by release management
+  * See AUTOTOOL-4994 for more details on f5-downloads release process
 * Add a `released` property with a value of `true` to the released RPM in Artifactory
 
 ## Process for LTS release
