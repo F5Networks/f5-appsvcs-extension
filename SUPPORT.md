@@ -1,5 +1,7 @@
 ## Support Information
 
+**Important**: As of February 2026, GitHub issues are no longer being monitored by F5 support staff.
+
 Maintenance and F5 Technical Support of this F5 code is provided only if the
 software (i) is unmodified; and (ii) has been marked as F5 Supported in
 SOL80012344, (https://support.f5.com/csp/article/K80012344).
@@ -7,6 +9,7 @@ SOL80012344, (https://support.f5.com/csp/article/K80012344).
 Support will only be provided to customers who have an existing BIG-IP support contract associated with a valid BIG-IP serial number.
 For information about support policies, see http://www.f5.com/about/guidelines-policies/ and http://askf5.com.
 
+If you encounter a bug or other issue while using BIG-IP DO, use [F5 Technical Support](https://www.f5.com/support) to submit it to our team.
 
 **AS3 Release Information**:
 
