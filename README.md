@@ -2,6 +2,10 @@
 
 [![Releases](https://img.shields.io/github/release/f5networks/f5-appsvcs-extension.svg)](https://github.com/f5networks/f5-appsvcs-extension/releases)
 
+**AS OF FEBRUARY 2026, THIS GITHUB REPOSITORY WILL NO LONGER BE MONITORED OR UPDATED.**
+
+This repository will remain available, at least temporarily. You can find the latest RPMs and other files on [MyF5 Downloads](https://my.f5.com/manage/s/downloads). Refer to 'Filing Issues and Getting Help' for additional details.
+
 ## Introduction
 F5 BIG-IP Application Services 3 Extension (F5 BIG-IP AS3) is a flexible, low-overhead mechanism for managing application-specific configurations on a F5 BIG-IP system. BIG-IP AS3 uses a declarative model, meaning you provide a JSON declaration rather than a set of imperative commands.
 
