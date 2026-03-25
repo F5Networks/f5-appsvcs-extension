@@ -27,6 +27,7 @@ Changes to this project are documented in this file. More detail (including info
 - AUTOTOOL-4964: ([Github Issue 943](https://github.com/F5Networks/f5-appsvcs-extension/issues/946)) Invalid characters in published schema may break tools trying to read it
 
 ### Changed
+- AUTOTOOL-4924: Update documentation to reflect dropping Github support for AS3 and directing users to F5 support and forums for help
 
 ### Removed
 
